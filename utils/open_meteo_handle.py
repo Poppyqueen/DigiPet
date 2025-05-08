@@ -1,0 +1,63 @@
+import openmeteo_requests
+import requests_cache
+from retry_requests import retry
+import os
+from dotenv import load_dotenv
+import sys
+
+load_dotenv()
+
+my_latitude = os.getenv("LATITUDE")
+my_longitude = os.getenv("LONGITUDE")
+
+
+if not my_longitude or not my_latitude:
+    sys.exit("Missing longitude and latitude on .env file. Necessary for weather integration.")
+
+# Setup the Open-Meteo API client with cache and retry on error
+cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+openmeteo = openmeteo_requests.Client(session=retry_session)
+
+# Make sure all required weather variables are listed here
+# The order of variables in 'current' must match how they are extracted
+url = "https://api.open-meteo.com/v1/forecast"
+params = {
+    "latitude": my_latitude,
+    "longitude": my_longitude,
+    "current": [
+        "relative_humidity_2m",
+        "apparent_temperature",
+        "is_day",
+        "wind_speed_10m",
+        "precipitation",
+        "cloud_cover"
+    ],
+    "timezone": "auto"
+}
+
+def get_full_weather():
+    responses = openmeteo.weather_api(url, params=params)
+    
+    # Process the first location in the response
+    response = responses[0]
+    current = response.Current()
+    
+    current_relative_humidity_2m = current.Variables(0).Value()
+    current_apparent_temperature = current.Variables(1).Value()
+    current_is_day = current.Variables(2).Value()
+    current_wind_speed_10m = current.Variables(3).Value()
+    current_precipitation = current.Variables(4).Value()
+    current_cloud_cover = current.Variables(5).Value()
+    
+    is_day = "True" if current_is_day == 1 else "False"
+
+    stringed_response = f"""
+Current apparent temperature: {current_apparent_temperature}°C
+Current relative humidity (2m): {current_relative_humidity_2m}%
+Is it daytime? {is_day}
+Current wind speed (10m): {current_wind_speed_10m} m/s
+Current precipitation: {current_precipitation} mm
+Current cloud cover: {current_cloud_cover}%
+"""
+    return stringed_response

@@ -1,0 +1,152 @@
+[
+  {
+      "name": "Heavy Brass Button",
+      "descriptions": ["A solid button made of tarnished brass.", "Engraved with a simple, repeating pattern.", "Likely fell off old workwear or military uniform."],
+      "static": false,
+      "type": "misc"
+  },
+  {
+      "name": "Chunk of Smoky Quartz",
+      "descriptions": ["A decent-sized crystal fragment of smoky quartz.", "Translucent with internal fractures.", "A nice, natural find."],
+      "static": false,
+      "type": "misc"
+  },
+  {
+      "name": "Small Locket (Empty)",
+      "descriptions": ["A tarnished metal locket on a short, broken chain.", "Snaps open but contains no pictures or contents.", "Suggests a personal item that was lost."],
+      "static": false,
+      "type": "misc"
+   },
+    {
+      "name": "Painted Ceramic Shard",
+      "descriptions": ["A fragment of old pottery with faded colored glaze.", "Shows a portion of a floral or geometric design.", "Hints at past settlement or activity."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Worn Leather Pouch",
+      "descriptions": ["A small, drawstring pouch made of aged leather.", "Feels soft and flexible from use.", "Currently empty, but might have held small items."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Flattened Lead Musketball",
+      "descriptions": ["A deformed lead ball, likely from a muzzle-loading firearm.", "Shows signs of impact.", "A relic of older conflicts or hunting."],
+      "static": false,
+      "type": "misc"
+    },
+     {
+      "name": "Cobalt Blue Glass Shard",
+      "descriptions": ["A smooth shard of vibrantly colored blue glass.", "Possibly from an old bottle or decorative item.", "Its rich color makes it stand out."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Rusty Pocket Knife",
+      "descriptions": ["A small folding knife, heavily rusted shut.", "The handle is cracked or worn.", "Likely lost and exposed to the elements."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Oddly Shaped River Stone",
+      "descriptions": ["A stone smoothed by water, but with an unusual, almost artificial shape.", "Fits comfortably in the hand.", "A unique natural curiosity."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Bent Copper Wire",
+      "descriptions": ["A length of thick copper wire, twisted and bent.", "Shows signs of being part of a mechanism or structure.", "Salvaged or lost from old construction."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Broken Spectacles Frame",
+      "descriptions": ["Part of an old eyeglass frame, made of thin metal or bone.", "One of the arms is snapped off.", "Lost or discarded vision aid."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Petrified Wood Shard",
+      "descriptions": ["A piece of ancient wood that has turned to stone.", "Retains the texture of bark or grain.", "A geological remnant of an old forest."],
+      "static": false,
+      "type": "misc"
+    },
+     {
+      "name": "Small Tin Soldier",
+      "descriptions": ["A miniature figurine of a soldier, made of lead or tin.", "Missing a limb or accessory.", "A child's lost toy from a different era."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Fragment of a Hand Mirror",
+      "descriptions": ["A piece of polished glass backed with silvering.", "Too small to reflect much, but shows skilled craftsmanship.", "From a personal grooming item."],
+      "static": false,
+      "type": "misc"
+    },
+     {
+      "name": "Unusual Seed Pod",
+      "descriptions": ["A large, durable seed pod from a plant not native to the area.", "Intact and feels surprisingly light.", "Carried here by wind, water, or animal."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Cracked Porcelain Doll Head",
+      "descriptions": ["The head of a small doll, made of painted porcelain.", "Features a prominent crack.", "A slightly eerie find."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Old Horseshoe",
+      "descriptions": ["A rusty horseshoe, slightly bent.", "Shows signs of wear from use.", "Dropped by a horse, likely long ago."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Piece of Driftwood (Carved)",
+      "descriptions": ["A smoothed piece of wood carried by water.", "Has simple, intentional carvings on its surface.", "Perhaps a trail marker or bored traveler's work."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Smooth Beach Stone (Unusual Color)",
+      "descriptions": ["A perfectly smooth stone, worn round by water.", "Exhibits a vibrant or unusual color.", "A pleasing natural artifact."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Thimble (Metal)",
+      "descriptions": ["A small metal cap used for sewing.", "Dented from use.", "Likely fell from a traveler's kit."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Fragment of Slate with Markings",
+      "descriptions": ["A piece of flat slate rock.", "Has faint lines or symbols scratched into it.", "Could be a child's drawing or a forgotten note."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Glass Marble (Old Style)",
+      "descriptions": ["A solid glass marble with a swirl pattern inside.", "Slightly chipped or scuffed.", "Lost from a game played long ago."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Small Bone Dice",
+      "descriptions": ["A tiny six-sided die carved from bone.", "Numbers are marked with small dots.", "Well-worn from much use."],
+      "static": false,
+      "type": "misc"
+    },
+     {
+      "name": "Segment of Chain Link",
+      "descriptions": ["A few links of heavy metal chain.", "Rusted and separated from a larger piece.", "Possibly from old restraints or equipment."],
+      "static": false,
+      "type": "misc"
+    },
+    {
+      "name": "Clay Smoking Pipe Bowl (Broken)",
+      "descriptions": ["The ceramic bowl of an old smoking pipe.", "The stem is snapped off.", "A common personal item from history."],
+      "static": false,
+      "type": "misc"
+    }
+]
