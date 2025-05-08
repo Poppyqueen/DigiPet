@@ -583,6 +583,10 @@ class CLIChatbot:
         finally:
             print("\nThank you for using the Memory-Enabled AI Chatbot!")
 
+    def shutdown(self):
+        self._current_tts_process.kill()
+
+
 def main():
     """Entry point for the application."""
 

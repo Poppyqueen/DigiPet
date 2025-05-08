@@ -2,7 +2,8 @@
 
 import pygame
 import math
-from care_packages import (
+
+from world_data.care_packages import (
     care_package_1_general_survival, care_package_2_hydration_refreshment,
     care_package_3_hearty_meal_kit, care_package_4_quick_snacks_energy,
     care_package_friend_comfort_food, care_package_6_extreme_hydration, 

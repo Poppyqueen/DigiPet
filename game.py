@@ -1,8 +1,8 @@
 # game.py
-import config
-import state
-import gui
-import animation
+from pygame_int import config
+from pygame_int import state
+from pygame_int import gui
+from pygame_int import animation
 
 import pygame
 import sys

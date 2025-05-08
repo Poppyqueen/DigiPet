@@ -1,8 +1,10 @@
 # gui.py
 
+from pygame_int import config # Needed for colors, padding, dimensions, max history
+from pygame_int import state # Needed for accessing/modifying chat_history, input_text, scroll_y, cursor state, background_image, sleep state, AND chatbot_is_processing!
+
 import pygame
-import config # Needed for colors, padding, dimensions, max history
-import state # Needed for accessing/modifying chat_history, input_text, scroll_y, cursor state, background_image, sleep state, AND chatbot_is_processing!
+
 import os
 import random # Add this import
 

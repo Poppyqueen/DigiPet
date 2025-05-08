@@ -1,10 +1,11 @@
 # animation.py
 
+from pygame_int import config # Needed for animation constants and event types
+from pygame_int import state # Needed for accessing/modifying animation state variables and sleep state
+
 import pygame
 import math # Needed for sine/cosine calculations
-import config # Needed for animation constants and event types
-import state # Needed for accessing/modifying animation state variables and sleep state
-import gui # Needed to add system messages to history (e.g., input locked)
+from pygame_int import gui # Needed to add system messages to history (e.g., input locked)
 
 # --- Function to start the circle shake animation ---
 def start_circle_shake():

@@ -880,6 +880,9 @@ class InventoryHouseManager(GenericJsonTool):
             return f"Failed to pick up: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
 
         item_info = self._find_item_info_by_id(item_id)
+        
+        if item_info == None:
+            return "Item not found anywhere."
 
         # Check if the item is already on inventory first of all
 
