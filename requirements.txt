@@ -1,0 +1,9 @@
+pygame==2.6.1
+atproto==0.0.61
+openai==1.70.0
+openmeteo_requests==1.4.0
+requests-cache==1.2.1
+retry-requests==2.0.0
+python-dotenv==1.1.0
+pandas==2.2.3
+numpy==2.2.5

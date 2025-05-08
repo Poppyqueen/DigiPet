@@ -236,3 +236,10 @@ def get_disabled_color(color):
     return (r, g, b)
 
 PACKAGE_BUTTON_COLOR_DISABLED = get_disabled_color # Store the function reference
+
+# config.py (add this line)
+HISTORY_HORIZONTAL_PADDING = 5 # Padding inside history display area (left and right)
+
+INVENTORY_PANEL_ITEM_HORIZONTAL_PADDING = 10
+INVENTORY_PANEL_ITEM_VERTICAL_PADDING = 10
+

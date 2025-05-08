@@ -166,7 +166,7 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="Bot_circle_pet", # Change this
+        sub_directory="bots/"+"Bot_circle_pet", # Change this
 
         deep_memory=False, # Preferably leave as false until deep memory is reworked
 
@@ -390,10 +390,9 @@ def start_chatbot_request(user_input, input_role='user'):
     """Starts a new thread to process the chatbot request."""
     global chatbot_available, chatbot
     current_time_ms = pygame.time.get_ticks()
-    state.chatbot_is_processing=True
 
     # Also check if inventory panel is open - block user input requests if it is
-    if input_role == 'user' and (current_time_ms < state.autonomous_action_paused_until_ms or state.inventory_panel_visible):
+    if input_role == 'user' and (current_time_ms < state.autonomous_action_paused_until_ms):
          block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
          print(f"Input locked - {block_reason}. Cannot process user input request.")
          gui.add_message_to_history(f"Cannot send input while {block_reason}", 'system')
@@ -401,6 +400,7 @@ def start_chatbot_request(user_input, input_role='user'):
 
     if chatbot_available and chatbot:
         print(f"Starting chatbot request thread (role: {input_role}) for input: {user_input[:50]}...")
+        state.chatbot_is_processing=True
         thread = threading.Thread(target=chatbot_worker, args=(user_input, input_role, chatbot))
         thread.start()
         return True
@@ -428,15 +428,10 @@ while running:
     # Update popups state (position, alpha, removal)
     gui.update_popups(current_time_ms)
 
-    # Update cursor timer (Only if panel is NOT visible)
-    if not state.inventory_panel_visible:
-        state.cursor_timer += dt
-        if state.cursor_timer >= CURSOR_INTERVAL:
-            state.cursor_visible = not state.cursor_visible
-            state.cursor_timer = 0
-    else:
-         state.cursor_visible = False # Ensure cursor is off when panel is open
-
+    state.cursor_timer += dt
+    if state.cursor_timer >= CURSOR_INTERVAL:
+        state.cursor_visible = not state.cursor_visible
+        state.cursor_timer = 0
 
     is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
 
@@ -599,148 +594,148 @@ while running:
                            continue # Consume event
 
                  # If the click wasn't on the toggle button or handled by scrolling, ignore it
-                 pass # Simply do nothing for other events inside the panel
+                 #continue # Simply do nothing for other events inside the panel
 
-        else:
-            # --- Inventory Panel IS NOT Open (Normal Game Behavior) ---
-               # Check the combined input lock state FIRST for user input events
-            is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms # Recalculate if needed, or pass from outside event loop
-            is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing # Recalculate or use external flag
-
-
-            # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                 #state.last_activity_time = current_time_ms # 
-
-                 # Check inventory toggle button click (to open)
-                 if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
-                      print("Inventory toggle button clicked while panel closed. Opening panel.")
-                      state.inventory_panel_visible = True
-                      # Reset scroll positions when opening
-                      state.room_inventory_scroll_y = 0
-                      state.player_inventory_scroll_y = 0
-                      continue # Consume event
-
-                 # Handle Mouse Wheel Scrolling for Chat History
-                 if history_rect.collidepoint(event.pos):
-                      if event.button == 4: # Scroll up
-                          state.scroll_y -= config.SCROLL_SPEED
-                      elif event.button == 5: # Scroll down
-                          state.scroll_y += config.SCROLL_SPEED
-                      # Clamp chat scroll
-                      current_total_height = gui.calculate_total_history_height(state.chat_history, text_width_limit)
-                      max_scroll = max(0, current_total_height - history_display_area.height)
-                      state.scroll_y = max(0, min(state.scroll_y, max_scroll))
-                      continue # Consume event
-
-                 # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
-                 # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
-                 if not is_input_locked_by_state:
-                     package_click_regions = gui.get_package_button_click_regions()
-                     clicked_package_button = False # Flag to consume event
-
-                     for identifier, rect in package_click_regions:
-                         if rect.collidepoint(event.pos):
-                             #print(f"Clicked on Care Package button region: {identifier}") # Debug click detection
-                             if identifier == "scroll_left":
-                                  # Check if we can scroll left
-                                  if state.package_button_visible_start_index > 0:
-                                       state.package_button_visible_start_index -= 1
-                                       #state.last_activity_time = current_time_ms # Scrolling counts as activity (it shouldt...)
-                                       #print(f"Scrolled package buttons left. New start index: {state.package_button_visible_start_index}")
-                                  else:
-                                       print("Scroll left clicked but already at the beginning.")
-                                  clicked_package_button = True # Event consumed by scroll click
-                                  break # Stop checking regions
-
-                             elif identifier == "scroll_right":
-                                  # Check if we can scroll right
-                                  total_packages = len(config.CARE_PACKAGES)
-                                  buttons_per_page = gui._buttons_per_page # Access the calculated value from gui
-                                  if state.package_button_visible_start_index + buttons_per_page < total_packages:
-                                       state.package_button_visible_start_index += 1
-                                       #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
-                                       #print(f"Scrolled package buttons right. New start index: {state.package_button_visible_start_index}")
-                                  else:
-                                       print("Scroll right clicked but already at the end.")
-                                  clicked_package_button = True # Event consumed by scroll click
-                                  break # Stop checking regions
-
-                             elif identifier.startswith("package_"):
-                                  # Extract package index from the identifier string "package_N"
-                                  try:
-                                      package_index = int(identifier.split('_')[1])
-                                      if 0 <= package_index < len(config.CARE_PACKAGES):
-                                           package_info = config.CARE_PACKAGES[package_index]
-                                           #print(f"Clicked on package button {package_index}. Calling add_items.")
-                                           # Call the add_items function with the package data
-                                           # The add_items function has its own lock check,
-                                           # but we already checked is_currently_asleep above.
-                                           add_items(package_info["package"], package_info["room_id"])
-                                           room_name=chatbot.get_room_name_out(package_info["room_id"])
-                                           message=f"Items placed in: {room_name}"
-                                           color=(0,255,255) 
-                                           gui.show_popup_message(message, color)
-
-                                      else:
-                                           print(f"Error: Clicked package button with invalid index: {package_index}")
-                                  except (ValueError, IndexError):
-                                      print(f"Error: Could not parse package index from identifier: {identifier}")
-
-                                  clicked_package_button = True # Event consumed by package button click
-                                  break # Stop checking regions
-
-                     if clicked_package_button:
-                          continue # Consume the mouse event if it was handled by a package/scroll button
-
-                 # If the click wasn't handled by buttons or scrolling, it's ignored or could activate input
-                 pass # Continue to next event processing if not handled
+        #else:
+        # --- Inventory Panel IS NOT Open (Normal Game Behavior) ---
+            # Check the combined input lock state FIRST for user input events
+        is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms # Recalculate if needed, or pass from outside event loop
+        is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing # Recalculate or use external flag
 
 
-            # Handle Keyboard events (typing, Ctrl+keys, Escape)
-            if event.type == pygame.KEYDOWN:
-                 state.last_activity_time = current_time_ms # Activity resets idle timer
+        # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+                #state.last_activity_time = current_time_ms # 
 
-                 if event.key == pygame.K_ESCAPE:
-                      running = False
-                      break
+                # Check inventory toggle button click (to open)
+                if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
+                    print("Inventory toggle button clicked while panel closed. Opening panel.")
+                    state.inventory_panel_visible = True
+                    # Reset scroll positions when opening
+                    state.room_inventory_scroll_y = 0
+                    state.player_inventory_scroll_y = 0
+                    continue # Consume event
 
-                 # Check if input is locked due to sleep state (Applies only when panel is NOT visible)
-                 if is_input_locked_by_state:
-                     continue # Skip rest of KEYDOWN handling if locked
+                # Handle Mouse Wheel Scrolling for Chat History
+                if history_rect.collidepoint(event.pos):
+                    if event.button == 4: # Scroll up
+                        state.scroll_y -= config.SCROLL_SPEED
+                    elif event.button == 5: # Scroll down
+                        state.scroll_y += config.SCROLL_SPEED
+                    # Clamp chat scroll
+                    current_total_height = gui.calculate_total_history_height(state.chat_history, text_width_limit)
+                    max_scroll = max(0, current_total_height - history_display_area.height)
+                    state.scroll_y = max(0, min(state.scroll_y, max_scroll))
+                    continue # Consume event
 
-                #
-                 # if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_circle_shake(); continue
-                 # if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
-                 # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
+                # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
+                # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
+                if not is_input_locked_by_state:
+                    package_click_regions = gui.get_package_button_click_regions()
+                    clicked_package_button = False # Flag to consume event
+
+                    for identifier, rect in package_click_regions:
+                        if rect.collidepoint(event.pos):
+                            #print(f"Clicked on Care Package button region: {identifier}") # Debug click detection
+                            if identifier == "scroll_left":
+                                # Check if we can scroll left
+                                if state.package_button_visible_start_index > 0:
+                                    state.package_button_visible_start_index -= 1
+                                    #state.last_activity_time = current_time_ms # Scrolling counts as activity (it shouldt...)
+                                    #print(f"Scrolled package buttons left. New start index: {state.package_button_visible_start_index}")
+                                else:
+                                    print("Scroll left clicked but already at the beginning.")
+                                clicked_package_button = True # Event consumed by scroll click
+                                break # Stop checking regions
+
+                            elif identifier == "scroll_right":
+                                # Check if we can scroll right
+                                total_packages = len(config.CARE_PACKAGES)
+                                buttons_per_page = gui._buttons_per_page # Access the calculated value from gui
+                                if state.package_button_visible_start_index + buttons_per_page < total_packages:
+                                    state.package_button_visible_start_index += 1
+                                    #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
+                                    #print(f"Scrolled package buttons right. New start index: {state.package_button_visible_start_index}")
+                                else:
+                                    print("Scroll right clicked but already at the end.")
+                                clicked_package_button = True # Event consumed by scroll click
+                                break # Stop checking regions
+
+                            elif identifier.startswith("package_"):
+                                # Extract package index from the identifier string "package_N"
+                                try:
+                                    package_index = int(identifier.split('_')[1])
+                                    if 0 <= package_index < len(config.CARE_PACKAGES):
+                                        package_info = config.CARE_PACKAGES[package_index]
+                                        #print(f"Clicked on package button {package_index}. Calling add_items.")
+                                        # Call the add_items function with the package data
+                                        # The add_items function has its own lock check,
+                                        # but we already checked is_currently_asleep above.
+                                        add_items(package_info["package"], package_info["room_id"])
+                                        room_name=chatbot.get_room_name_out(package_info["room_id"])
+                                        message=f"Items placed in: {room_name}"
+                                        color=(0,255,255) 
+                                        gui.show_popup_message(message, color)
+
+                                    else:
+                                        print(f"Error: Clicked package button with invalid index: {package_index}")
+                                except (ValueError, IndexError):
+                                    print(f"Error: Could not parse package index from identifier: {identifier}")
+
+                                clicked_package_button = True # Event consumed by package button click
+                                break # Stop checking regions
+
+                    if clicked_package_button:
+                        continue # Consume the mouse event if it was handled by a package/scroll button
+
+                # If the click wasn't handled by buttons or scrolling, it's ignored or could activate input
+                pass # Continue to next event processing if not handled
+
+
+        # Handle Keyboard events (typing, Ctrl+keys, Escape)
+        if event.type == pygame.KEYDOWN:
+                state.last_activity_time = current_time_ms # Activity resets idle timer
+
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    break
+
+                # Check if input is locked due to sleep state (Applies only when panel is NOT visible)
+                if is_input_locked_by_state:
+                    continue # Skip rest of KEYDOWN handling if locked
+
+            #
+                # if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_circle_shake(); continue
+                # if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
+                # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
 
 
 
-                 # Handle regular text input
-                 if event.key == pygame.K_BACKSPACE: state.input_text = state.input_text[:-1]; state.cursor_timer = 0; state.cursor_visible = True; continue
-                 elif event.key == pygame.K_RETURN:
-                     user_message = state.input_text.strip()
-                     if user_message:
-                         gui.add_message_to_history(f"{user_message}", 'user')
-                         state.input_text = ""
-                         state.cursor_timer = 0
-                         state.cursor_visible = True
-                         # This call includes its own lock check
-                         start_chatbot_request(user_message, 'user')
-                     else: # Empty message
-                         state.input_text = ""
-                         state.cursor_timer = 0
-                         state.cursor_visible = True
-                     continue
-                 else: # Other key press
-                     if event.unicode and event.unicode.isprintable():
-                         state.input_text += event.unicode
-                         state.cursor_timer = 0
-                         state.cursor_visible = True
-                         continue
+                # Handle regular text input
+                if event.key == pygame.K_BACKSPACE: state.input_text = state.input_text[:-1]; state.cursor_timer = 0; state.cursor_visible = True; continue
+                elif event.key == pygame.K_RETURN:
+                    user_message = state.input_text.strip()
+                    if user_message:
+                        gui.add_message_to_history(f"{user_message}", 'user')
+                        state.input_text = ""
+                        state.cursor_timer = 0
+                        state.cursor_visible = True
+                        # This call includes its own lock check
+                        start_chatbot_request(user_message, 'user')
+                    else: # Empty message
+                        state.input_text = ""
+                        state.cursor_timer = 0
+                        state.cursor_visible = True
+                    continue
+                else: # Other key press
+                    if event.unicode and event.unicode.isprintable():
+                        state.input_text += event.unicode
+                        state.cursor_timer = 0
+                        state.cursor_visible = True
+                        continue
 
-            # If event wasn't handled by specific checks above, continue to next event
-            pass # Or continue
+        # If event wasn't handled by specific checks above, continue to next event
+        pass # Or continue
 
     # --- Autonomous Action / Idle Logic ---
     # Check if enough time has passed, bot is not currently locked (sleeping)

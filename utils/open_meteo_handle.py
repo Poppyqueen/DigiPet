@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import sys
 
+
 load_dotenv()
 
 my_latitude = os.getenv("LATITUDE")
