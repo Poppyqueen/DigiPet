@@ -63,3 +63,5 @@ package_button_visible_start_index = 0
 # NEW, IS PROCESSING?
 
 chatbot_is_processing=False
+
+is_initial_popup_phase = True

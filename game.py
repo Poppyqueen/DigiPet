@@ -120,6 +120,16 @@ def handle_chatbot_signal(signal_data):
             else:
                  print("Signal 'player_inventory' received but no valid 'item_list' (list of strings) in data.")
 
+        # --- NEW: Handle Show Icon Popup Signal ---
+        elif action_type == "show_icon_popup":
+            icon_path = signal_data.get("icon_path")
+            duration_ms = signal_data.get("duration_ms", 2000) # Default duration 2 seconds
+            if icon_path:
+                 print(f"Signal type 'show_icon_popup' received with path: {icon_path}. Posting SHOW_ICON_POPUP_EVENT.")
+                 pygame.event.post(pygame.event.Event(config.SHOW_ICON_POPUP_EVENT, icon_path=icon_path, duration_ms=duration_ms))
+            else:
+                 print("Signal 'show_icon_popup' received but no 'icon_path' in data.")
+
         else:
              print(f"Unknown signal type received: {action_type}")
     else:
@@ -130,9 +140,6 @@ def handle_chatbot_signal(signal_data):
 chatbot = None
 chatbot_available = False
 try:
-    # This will try to initialize the real CLIChatbot if available,
-    # otherwise the MockCLIChatbot defined above will be used.
-    # Pass the signal callback to the chatbot instance
     chatbot = CLIChatbot(
         signal_callback=handle_chatbot_signal,
         system_prompt="""
@@ -166,7 +173,7 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet", # Change this
+        sub_directory="bots/"+"Bot_circle_pet_test", # Change this
 
         deep_memory=False, # Preferably leave as false until deep memory is reworked
 
@@ -325,8 +332,13 @@ gui_rects = {
     'text_width_limit': text_width_limit
 }
 
+
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
 gui.init_gui(font, line_height, gui_rects)
+
+#gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900)
+
+
 
 # Get the calculated rects from gui.py after initialization if needed in game.py
 # Note: We *can* get them here, but we don't strictly *need* them for click detection
@@ -563,6 +575,19 @@ while running:
             continue
 
 
+
+        # --- NEW: Handle SHOW_ICON_POPUP_EVENT ---
+        elif event.type == config.SHOW_ICON_POPUP_EVENT:
+            icon_path = getattr(event, 'icon_path', None)
+            duration_ms = getattr(event, 'duration_ms', 2000) # Default duration from config/signal
+            if icon_path:
+                 print(f"Main loop processing SHOW_ICON_POPUP_EVENT for icon: {icon_path}")
+                 gui.show_image_popup(icon_path, duration_ms) # Call the new GUI function
+            else:
+                 print("SHOW_ICON_POPUP_EVENT received but no 'icon_path' attribute.")
+            continue # Consume event
+
+
         # --- Handle Input/Clicks based on Panel Visibility ---
 
         if state.inventory_panel_visible:
@@ -791,26 +816,31 @@ while running:
 
     # --- Drawing ---
     # MODIFIED: Pass the combined lock state
+
     gui.draw_gui(screen, current_time_ms, is_input_locked_by_state)
-
     # --- Circle Position Calculation and Drawing ---
+
+    # moved into draw_gui
+
     # Draw the circle only when the inventory panel is NOT visible
-    if not state.inventory_panel_visible:
-        # Calculate current circle position
-        current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-        time_in_seconds = current_time_ms / 1000.0
-        animation.update_animation_state(current_time_ms) # Update animation state variables
-        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
+    # if not state.inventory_panel_visible:
+    #     # Calculate current circle position
+    #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X
+    #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+    #     time_in_seconds = current_time_ms / 1000.0
+    #     animation.update_animation_state(current_time_ms) # Update animation state variables
+    #     animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
 
-        current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+    #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
+    #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
 
-        # Draw the Circle (Ensure positions are integers)
-        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
-        # Example: Draw a border around the circle
-        pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
+    #     # Draw the Circle (Ensure positions are integers)
+    #     pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
+    #     # Example: Draw a border around the circle
+    #     pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
 
+
+    
 
     # --- Update Display ---
     pygame.display.flip()

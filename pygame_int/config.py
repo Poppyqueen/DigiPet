@@ -124,6 +124,9 @@ START_HAPPY_EVENT = pygame.event.custom_type()
 ROOM_INVENTORY_EVENT = pygame.event.custom_type() # Signal with room inventory LIST of strings
 PLAYER_INVENTORY_EVENT = pygame.event.custom_type() # Signal with player inventory LIST of strings
 
+ROOM_INVENTORY_EVENT = pygame.event.custom_type() # NEW in previous step
+PLAYER_INVENTORY_EVENT = pygame.event.custom_type() # NEW in previous step
+SHOW_ICON_POPUP_EVENT = pygame.event.custom_type() # <-- ADD THIS NEW EVENT
 
 # --- NEW: Inventory Toggle Button Config ---
 INVENTORY_TOGGLE_BUTTON_SIZE = 12 # Diameter of the dot

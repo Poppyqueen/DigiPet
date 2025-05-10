@@ -2,7 +2,7 @@
 
 from pygame_int import config # Needed for colors, padding, dimensions, max history
 from pygame_int import state # Needed for accessing/modifying chat_history, input_text, scroll_y, cursor state, background_image, sleep state, AND chatbot_is_processing!
-
+from pygame_int import animation
 import pygame
 
 import os
@@ -49,6 +49,21 @@ _care_package_area_rect = None
 _left_scroll_button_rect = None
 _right_scroll_button_rect = None
 _buttons_per_page = 0 # How many package buttons fit horizontally in the display area
+
+
+
+
+# State for the new image popup
+_image_popup_visible = False
+_image_popup_image = None # pygame.Surface
+_image_popup_start_time = 0
+_image_popup_duration = 0
+_image_popup_background_surface = None # Surface for the dimming effect
+_image_popup_display_area = None # The rect where the image popup draws (likely center of screen)
+
+# --- NEW Global Variables for Fading ---
+_image_popup_fade_in_duration = 0
+_image_popup_fade_out_duration = 0
 
 
 # --- Initialization Function ---
@@ -155,8 +170,38 @@ def init_gui(font, line_height, gui_rects):
     # print(f"Initialized GUI. Buttons per page in Care Package area: {_buttons_per_page}")
 
 
+
     # --- Load stat icons ---
     _load_stat_icons()
+
+
+    # Image popup display area - centered on the screen *outside* the panel
+    screen_width = pygame.display.get_surface().get_width()
+    screen_height = pygame.display.get_surface().get_height()
+    panel_width = _gui_rects.get('panel_rect', pygame.Rect(0,0,0,0)).width
+    main_display_width = screen_width - panel_width
+    main_display_height = screen_height # Image popup can span the whole height
+
+    popup_size = (65, 65) # 
+    # global _image_popup_display_area
+    # _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+    # # Center within the main display area (left of the panel)
+    # _image_popup_display_area.center = (main_display_width // 2, screen_height // 2)
+    global _image_popup_display_area
+    _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+
+    # Set the top-right corner to the top-right of the non-panel area
+    _image_popup_display_area.topright = (main_display_width, 0)
+
+    # Create dimming background surface initially
+    global _image_popup_background_surface
+    try:
+        _image_popup_background_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        _image_popup_background_surface.fill((0, 0, 0, 128)) # Semi-transparent black
+    except pygame.error as e:
+        print(f"Warning: Could not create dimming background surface: {e}")
+        _image_popup_background_surface = None
+
 
     print("GUI module initialized.")
 
@@ -528,6 +573,77 @@ def show_popup_message(text, color=config.POPUP_COLOR):
     state.active_popups.append(new_popup)
 
 
+
+
+# --- NEW Image Popup Function ---
+def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=500):
+    """
+    Shows a temporary image popup centered on the screen (outside the panel)
+    with optional fade-in and fade-out effects.
+
+    Args:
+        image_path (str): Path to the image file.
+        duration_ms (int): Total duration in milliseconds the popup should be visible
+                           (including fade-in and fade-out).
+        fade_in_ms (int): Duration in milliseconds for the fade-in effect.
+        fade_out_ms (int): Duration in milliseconds for the fade-out effect.
+                           Note: The solid display time is duration_ms - fade_in_ms - fade_out_ms.
+                                 If fade_in_ms + fade_out_ms >= duration_ms, there is no solid phase,
+                                 just fading or instant display/hide.
+    """
+    global _image_popup_visible, _image_popup_image, _image_popup_start_time, _image_popup_duration
+    global _image_popup_fade_in_duration, _image_popup_fade_out_duration
+    global _image_popup_background_surface, _image_popup_display_area # Assuming _image_popup_display_area is defined elsewhere
+
+    # Check if Pygame display is initialized
+    if pygame.display.get_surface() is None:
+         print("Error: Pygame display not initialized. Cannot show image popup.")
+         return
+
+    # Basic validation for durations
+    if duration_ms <= 0:
+        print("Warning: duration_ms must be positive for image popup.")
+        return
+    fade_in_ms = max(0, fade_in_ms)
+    fade_out_ms = max(0, fade_out_ms)
+    if fade_in_ms + fade_out_ms > duration_ms:
+         # If fade times are longer than total duration, adjust them proportionally
+         # or just let the alpha calculation handle it (it will become 0 rapidly after max alpha reached)
+         # Let's just ensure they don't exceed total if it simplifies calculation later
+         # Or more simply, just ensure they are capped individually by the total duration
+         # Let's keep it simple and just store the values. The drawing loop handles the rest.
+         pass # The alpha calculation handles this case implicitly
+
+    try:
+        # Load and scale the image
+        # It's crucial that the loaded image has an alpha channel for set_alpha() to work correctly.
+        # .convert_alpha() is needed.
+        raw_image = pygame.image.load(image_path)
+        # Scale to the predefined display area size
+        _image_popup_image = pygame.transform.scale(raw_image, _image_popup_display_area.size).convert_alpha()
+
+        _image_popup_visible = True
+        _image_popup_start_time = pygame.time.get_ticks()
+        _image_popup_duration = duration_ms
+        _image_popup_fade_in_duration = fade_in_ms
+        _image_popup_fade_out_duration = fade_out_ms
+
+
+        print(f"Attempting to show image popup: {image_path} (Total: {duration_ms}ms, FadeIn: {fade_in_ms}ms, FadeOut: {fade_out_ms}ms)") # Debug
+    except FileNotFoundError:
+        print(f"Error loading image for popup: File not found at '{image_path}'")
+        _image_popup_visible = False
+        _image_popup_image = None # Clean up state
+    except pygame.error as e:
+        print(f"Error loading or processing image for popup '{image_path}': {e}")
+        _image_popup_visible = False
+        _image_popup_image = None # Clean up state
+    except Exception as e:
+        print(f"An unexpected error occurred while preparing image popup '{image_path}': {e}")
+        _image_popup_visible = False
+        _image_popup_image = None # Clean up state
+
+
 # --- NEW: Function to update the state of active pop-up messages ---
 def update_popups(current_time_ms):
     """
@@ -535,6 +651,7 @@ def update_popups(current_time_ms):
     Removes messages that have exceeded their duration.
     Should be called once per frame in the game loop.
     """
+    global _image_popup_visible
     # Iterate backwards so removing items doesn't mess up the loop index
     for i in range(len(state.active_popups) - 1, -1, -1):
         popup = state.active_popups[i]
@@ -559,6 +676,16 @@ def update_popups(current_time_ms):
 
         # Update the surface's alpha
         popup.text_surface.set_alpha(int(alpha))
+
+
+
+    # Update image popup
+    if _image_popup_visible:
+        if current_time_ms >= _image_popup_start_time + _image_popup_duration:
+            _image_popup_visible = False
+            # Optional: Explicitly clear the image surface if memory is a concern
+            # _image_popup_image = None
+            print("Image popup duration ended.") # Debug
 
 # --- NEW: Function to draw active pop-up messages ---
 def draw_popups(screen):
@@ -717,6 +844,8 @@ def get_package_button_click_regions():
 # --- Function to draw the entire GUI panel ---
 # MODIFIED: Changed parameter name to is_input_locked
 def draw_gui(screen, current_time_ms, is_input_locked):
+    global _image_popup_visible, _image_popup_image, _image_popup_background_surface, _image_popup_display_area
+
     """
     Draws the background, panel, chat history, input box, stats,
     care package buttons, and conditionally the inventory panel.
@@ -727,7 +856,10 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
     # --- Always Draw Base Game UI Elements ---
 
-    # Draw background image or fallback color
+
+
+        # Draw background image or fallback color
+
     if state.background_image:
         screen.blit(state.background_image, (0, 0))
     else:
@@ -918,16 +1050,101 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     # Pass the is_input_locked flag
     draw_package_buttons(screen, is_input_locked)
 
+    if not state.inventory_panel_visible:
+        # Calculate current circle position
+        current_circle_center_x = config.BASE_CIRCLE_CENTER_X
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+        time_in_seconds = current_time_ms / 1000.0
+        animation.update_animation_state(current_time_ms) # Update animation state variables
+        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
 
+        current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+
+        # Draw the Circle (Ensure positions are integers)
+        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
+        # Example: Draw a border around the circle
+        pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
+
+
+
+    # --- Draw NEW Image Popup (Always draw last so it's on top, but *under* the panel if panel is truly modal) ---
+    # Decision: Should the image popup be visible *under* the inventory panel?
+    # User request implies it's "in the middle of the screen". Let's make it overlay everything *except* the modal inventory panel.
+    # So, draw it *before* the inventory panel drawing block.
+
+    # REVISED DRAWING ORDER:
+    # 1. Background (done in game.py)
+    # 2. Pet Stats (wherever they are drawn)
+    # 3. Care Package Buttons
+    # 4. Chat Panel (background, history, input)
+    # 5. Ephemeral Text Popups
+    # 6. NEW Image Popup (if visible AND inventory panel is NOT visible) <-- Let's draw it *over* the panel.
+    # 7. Inventory Panel (if visible) <-- If panel is modal, it should be on top.
+
+    # Let's draw the image popup *after* everything else except the inventory panel.
+
+    # --- Draw NEW Image Popup (Finally!) ---
+    # Draw this just before the `if state.inventory_panel_visible:` block
+
+    if _image_popup_visible and _image_popup_image:
+        current_time = pygame.time.get_ticks()
+        elapsed_time = current_time - _image_popup_start_time
+        remaining_time = (_image_popup_start_time + _image_popup_duration) - current_time
+
+        # Determine the alpha value
+        alpha = 255 # Start fully opaque
+
+        if elapsed_time < _image_popup_fade_in_duration:
+            # Fade in phase: alpha goes from 0 to 255
+            # Prevent division by zero if fade_in_duration is 0
+            if _image_popup_fade_in_duration > 0:
+                 alpha = int((elapsed_time / _image_popup_fade_in_duration) * 255)
+            else: # Instant fade in
+                 alpha = 255
+        elif remaining_time <= _image_popup_fade_out_duration:
+            # Fade out phase: alpha goes from 255 to 0
+            # remaining_time is the time left until the *very end* of the popup
+            # The time *into* the fade-out is (_image_popup_fade_out_duration - remaining_time)
+            # Example: If fade_out is 500ms and remaining is 500ms, we are just starting fade (alpha 255)
+            # If fade_out is 500ms and remaining is 0ms, we are at the end (alpha 0)
+            # Alpha should be proportional to remaining_time within the fade_out_duration
+            if _image_popup_fade_out_duration > 0:
+                 alpha = int((remaining_time / _image_popup_fade_out_duration) * 255)
+            else: # Instant fade out
+                 alpha = 0 # Will become invisible next frame anyway due to expiry check
+
+        # Ensure alpha is between 0 and 255
+        alpha = max(0, min(255, alpha))
+
+        # Apply the alpha to the image surface and blit
+        # set_alpha modifies the surface in place for the next blit
+        _image_popup_image.set_alpha(alpha)
+
+        # Blit the image centered/at the calculated position
+        # Assumes _image_popup_display_area is already centered or positioned correctly
+        screen.blit(_image_popup_image, _image_popup_display_area.topleft)
+
+        # Check if popup duration is over
+        if elapsed_time >= _image_popup_duration:
+            _image_popup_visible = False
+            # Optional: Clear the image reference to free memory, but keep it if the same icon might reappear
+            # _image_popup_image = None
+            # print("Image popup duration ended.") # Debug
+
+
+             # --- Draw Pop-up Messages ---
+    draw_popups(screen)
+    
     # --- Draw Inventory Panel (Conditional - Draws on top) ---
     # Only draw the inventory panel if it's visible
     if state.inventory_panel_visible:
         draw_inventory_panel(screen)
         # Note: Character drawing etc would typically happen before the base UI drawing
         # to be *under* the chat/inventory panels.
-    else:
-             # --- Draw Pop-up Messages ---
-        draw_popups(screen)
+    # else:
+    #          # --- Draw Pop-up Messages ---
+    #     draw_popups(screen)
 
 
     # --- Draw Inventory Toggle Button --- (always draw, typically on top)
