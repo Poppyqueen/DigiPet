@@ -864,6 +864,13 @@ class InventoryHouseManager(GenericJsonTool):
 
             return output_string
 
+    def is_inventory_full(self):
+        current_inventory = self._state.get("inventory", [])
+        if len(current_inventory) >= self.MAX_INVENTORY_SLOTS:
+            return True
+        else:
+            return False
+        # End of NEW check
 
     def pickup_item(self, item_id: int):
         """
@@ -880,37 +887,52 @@ class InventoryHouseManager(GenericJsonTool):
             return f"Failed to pick up: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
 
         item_info = self._find_item_info_by_id(item_id)
-        
-        if item_info == None:
+
+        if item_info is None: # Use 'is None' for clarity
             return "Item not found anywhere."
 
-        # Check if the item is already on inventory first of all
+        # --- MOVE THESE LINES UP ---
+        # Assign item_data and item_display immediately after finding item_info
+        try:
+            item_data = item_info.get("item_data") # Use .get for safety
+            if not item_data: # Ensure item_data exists within item_info
+                 print(f"Warning: item_info for ID {item_id} found but missing 'item_data'. item_info: {item_info}")
+                 return f"Error: Found item info for ID {item_id} but item data is missing."
 
+            item_display = self._format_item_for_display(item_data)
+        except Exception as e:
+            # Catch potential errors during formatting, though unlikely here
+            print(f"Error formatting item display for ID {item_id}: {e}")
+            # Fallback or return an error
+            item_display = f"item ID {item_id}" # Provide a fallback display
+            # Or: return f"Error processing item data for ID {item_id}." # Handle as failure
+
+
+        # Check if the item is already on inventory first of all
+        # item_display is now defined here
         if item_info["location"] == "inventory":
             return f"You already have the {item_display} in your inventory!"
 
-
-        # Check if inventory is full BEFORE attempting to pick up (NEW)
+        # Check if inventory is full BEFORE attempting to pick up
         current_inventory = self._state.get("inventory", [])
-        if not isinstance(current_inventory, list): # Defensive check, though validation should handle this
+        if not isinstance(current_inventory, list): # Defensive check
              print("Warning: Inventory state corrupted during pickup, treating as full for safety.")
              return "Error: Cannot pick up item, inventory state is corrupted."
 
         if len(current_inventory) >= self.MAX_INVENTORY_SLOTS:
+            # item_display is not used in this return string, so this is fine
             return f"Your inventory is full! You cannot pick up the item. Drop something first. (Max items: {self.MAX_INVENTORY_SLOTS})"
         # End of NEW check
 
 
-        if not item_info:
-            return f"Failed to pick up: Item with ID '{item_id}' not found anywhere."
+        # This check is now redundant because item_info is checked for None at the start
+        # if not item_info:
+        #    return f"Failed to pick up: Item with ID '{item_id}' not found anywhere."
 
-        item_data = item_info["item_data"]
-        item_display = self._format_item_for_display(item_data)
+
         current_room_id = self._state.get("current_room_id")
         current_room = self._find_room_by_id(current_room_id)
-        current_room_display = self._format_room_for_display(current_room) if current_room else f"Unknown Room (ID:{current_room_id})"
-
-
+        # current_room_display = self._format_room_for_display(current_room) if current_room else f"Unknown Room (ID:{current_room_id})" # Not used in final message
 
 
         # Check if item is in the current room
@@ -918,21 +940,28 @@ class InventoryHouseManager(GenericJsonTool):
             # Item is found, but not in the current room (it's in another room)
             item_location_room = self._find_room_by_id(item_info['location_id'])
             location_display = self._format_room_for_display(item_location_room) if item_location_room else f"Unknown Room (ID:{item_info['location_id']})"
+            # item_display is defined here
             return f"Failed to pick up {item_display}: It is in {location_display}, not here."
 
 
         # Item is confirmed to be in the current room
+        # item_data is defined here
         if item_data.get("static", False):
+            # item_display is defined here
             return f"You cannot pick up the {item_display}. It is too big!"
 
         # Remove from room
         if current_room and isinstance(current_room.get("items"), list):
             initial_count = len(current_room["items"])
-            current_room["items"] = [item for item in current_room["items"] if isinstance(item, dict) and item.get("id") != item_id]
+            # Use a robust check for item structure before comparison
+            current_room["items"] = [
+                item for item in current_room["items"]
+                if not (isinstance(item, dict) and item.get("id") == item_id)
+            ]
             if len(current_room["items"]) == initial_count:
                 # Item not removed, indicates inconsistency
-                print(f"Warning: Item ID '{item_id}' in room '{current_room_id}' not removed by filter during pickup.")
-                # Attempt fallback index removal if necessary, or return error
+                print(f"Warning: Item ID '{item_id}' in room '{current_room_id}' not removed by filter during pickup. Room items: {current_room.get('items', 'N/A')}")
+                # Return an error or attempt fallback
                 return f"Error: Could not find item ID '{item_id}' in current room list for removal during pickup." # Report failure
 
 
@@ -940,24 +969,22 @@ class InventoryHouseManager(GenericJsonTool):
             return f"Error: Cannot access items in current room (ID:{current_room_id}) during pickup. State might be corrupted."
 
         # Add to inventory
-        # The inventory full check was done earlier, so we assume there is space here
-        # Ensure inventory is a list before appending
+        # The inventory full check was done earlier
         if not isinstance(self._state.get("inventory"), list):
             print("Warning: Inventory state corrupted during item pickup, resetting to empty list.")
             self._state["inventory"] = [] # Reset inventory if corrupted
-            # Note: If we reset inventory here, the item was removed from the room but might not be added.
-            # This is an edge case due to corrupted state. The error message above is better.
-            # If we reach here, the inventory *should* be a list because of the check at the start.
+
         self._state["inventory"].append(item_data)
 
-        self._write_json(self._state) # Save changes
+        # Save changes BEFORE listing inventories, ensures signals reflect saved state
+        self._write_json(self._state)
 
+        # Now list the updated inventories
         list_room_items_names, list_inventory_item_names = self.list_inventories()
-        # list_inventory_item_names would now be ['old_key', 'Mysteries of the Cozy House']
-        # based on your base_state example
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
 
+        # item_display is defined here
         return f"You picked up the {item_display}."
     
 

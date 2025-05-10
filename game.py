@@ -514,13 +514,25 @@ while running:
              else: print(f"PLAYER_INVENTORY_EVENT received with invalid data.")
              continue
 
+        # --- 1. Fix the START_SLEEP_EVENT handler to properly calculate end time ---
         elif event.type == config.START_SLEEP_EVENT:
             sleep_duration_ms = getattr(event, 'duration_ms', 0)
             if sleep_duration_ms > 0:
-                state.autonomous_action_paused_until_ms = current_time_ms + sleep_duration_ms
-                print(f"Sleep signal processed in main loop. Locking input and pausing autonomous actions until {state.autonomous_action_paused_until_ms} ms (for {sleep_duration_ms} ms).")
+                # Calculate sleep end time
+                sleep_end_time_ms = current_time_ms + sleep_duration_ms
+                
+                # Update the autonomous_action_paused_until_ms to be AFTER the sleep ends
+                # This ensures no autonomous action triggers during sleep
+                state.autonomous_action_paused_until_ms = sleep_end_time_ms
+                
+                # Also reset the last_activity_time to the end of sleep
+                # This prevents autonomous action from triggering immediately after sleep
+                state.last_activity_time = sleep_end_time_ms
+                
+                print(f"Sleep signal processed in main loop. Locking input until {state.autonomous_action_paused_until_ms} ms (for {sleep_duration_ms} ms).")
                 gui.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
-            else: print(f"Received START_SLEEP_EVENT with zero or negative duration.")
+            else: 
+                print(f"Received START_SLEEP_EVENT with zero or negative duration.")
             continue
 
         elif event.type == config.STAT_CHANGED_EVENT:
@@ -599,8 +611,12 @@ while running:
         #else:
         # --- Inventory Panel IS NOT Open (Normal Game Behavior) ---
             # Check the combined input lock state FIRST for user input events
-        is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms # Recalculate if needed, or pass from outside event loop
-        is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing # Recalculate or use external flag
+
+        # # --- 2. Improve the is_currently_asleep check to use absolute time comparison ---
+        # # Before the drawing section, update the is_currently_asleep calculation:
+        # is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
+        # is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
+
 
 
         # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
@@ -674,8 +690,16 @@ while running:
                                         add_items(package_info["package"], package_info["room_id"])
                                         room_name=chatbot.get_room_name_out(package_info["room_id"])
                                         message=f"Items placed in: {room_name}"
-                                        color=(0,255,255) 
+                                        color=(0,255,120) 
                                         gui.show_popup_message(message, color)
+                                        # new
+                                        list_items=[]
+                                        for i in package_info["package"]:
+                                            item_name = i["name"]
+                                            list_items.append(item_name)
+                                        delimiter = ", " 
+                                        str_list = delimiter.join(list_items)
+                                        gui.add_message_to_history(f"{message}. Items: {str_list}", 'system')
 
                                     else:
                                         print(f"Error: Clicked package button with invalid index: {package_index}")
@@ -742,22 +766,28 @@ while running:
     # it can act even if the inventory is open
     elapsed_time_ms = current_time_ms - state.last_activity_time
 
+    # --- 3. Update the autonomous action logic to respect sleep state ---
+    # In the autonomous action trigger section:
     if chatbot_available and chatbot and \
-       elapsed_time_ms >= config.IDLE_TIMEOUT_MS and \
-       current_time_ms >= state.autonomous_action_paused_until_ms:
+    elapsed_time_ms >= config.IDLE_TIMEOUT_MS and \
+    current_time_ms >= state.autonomous_action_paused_until_ms and \
+    not state.chatbot_is_processing:
 
-        print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and panel closed. Triggering autonomous action.")
+        print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
 
         if start_chatbot_request("The following should be an autonomous action.", "system"):
-             state.last_activity_time = current_time_ms
+            state.last_activity_time = current_time_ms
 
 
     # --- Drawing ---
 # Inside the game loop, before drawing:
+
+    # --- 2. Improve the is_currently_asleep check to use absolute time comparison ---
+    # Before the drawing section, update the is_currently_asleep calculation:
     is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
-    # NEW: Combine sleep state and chatbot processing state for input lock visual/functional check
     is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
+
 
     # --- Drawing ---
     # MODIFIED: Pass the combined lock state

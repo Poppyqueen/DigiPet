@@ -8,7 +8,12 @@ from world_data.care_packages import (
     care_package_3_hearty_meal_kit, care_package_4_quick_snacks_energy,
     care_package_friend_comfort_food, care_package_6_extreme_hydration, 
     care_package_7_hearty_survival_rations, care_package_8_utility_mix,
-    care_package_9_basic_hygiene, care_package_2_cooking_kit
+    care_package_9_basic_hygiene, care_package_2_cooking_kit, a_bundle_for_hydration_some_misc_items,
+    the_most_epic_and_complete_bundle_for_cooking_raw_, a_bundle_for_energy_and_snacks,
+    a_bundle_for_outdoor_survival,kitchen_pantry_bottled_goods_spices_etc_all_consum,
+    salty_and_hardy_foods,fresh_vegetables,bread_package_all_kinds_of_food_implements_ingredi,
+    raw_protein_package,more_raw_protein_package
+
 )
 
 
@@ -47,7 +52,19 @@ CARE_PACKAGES = [
     {"package": care_package_7_hearty_survival_rations, "room_id": 200002, "color": RED}, #
     {"package": care_package_8_utility_mix, "room_id": 200001, "color": GREEN}, # 
     {"package": care_package_9_basic_hygiene, "room_id": 200004, "color": PURPLE}, # 
-    {"package": care_package_2_cooking_kit, "room_id": 200002, "color": WHITE} # KITCHEN
+    {"package": care_package_2_cooking_kit, "room_id": 200002, "color": WHITE}, # KITCHEN - Existing
+    
+    # Added Packages for Kitchen (ID 200002, Color WHITE)
+    {"package": a_bundle_for_hydration_some_misc_items, "room_id": 200002, "color": WHITE},
+    {"package": the_most_epic_and_complete_bundle_for_cooking_raw_, "room_id": 200002, "color": WHITE},
+    {"package": a_bundle_for_energy_and_snacks, "room_id": 200002, "color": WHITE},
+    {"package": a_bundle_for_outdoor_survival, "room_id": 200002, "color": WHITE},
+    {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum, "room_id": 200002, "color": WHITE},
+    {"package": salty_and_hardy_foods, "room_id": 200002, "color": WHITE},
+    {"package": fresh_vegetables, "room_id": 200002, "color": WHITE},
+    {"package": bread_package_all_kinds_of_food_implements_ingredi, "room_id": 200002, "color": WHITE},
+    {"package": raw_protein_package, "room_id": 200002, "color": WHITE},
+    {"package": more_raw_protein_package, "room_id": 200002, "color": WHITE}
 ]
 
 # Background

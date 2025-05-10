@@ -1,7 +1,6 @@
-# OLD NEEDS REVAMP
 # 
 # 
-# crafting_table.py
+# ai_cook.py
 
 # This is a simple crafting table class that uses OpenAI's API to process items
 # and create new items based on a given process.

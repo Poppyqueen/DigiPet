@@ -201,8 +201,14 @@ class room_kitchen:
         # Location for created items, hardcoded 200002 as in original code snippet
         # Here it is hardcoded with the ID for the initial kitchen, in practice, this function will only be ever active 
         # if the user is in the kitchen already, so placing the items directly into it is fine
-        creation_location_type = "room"
-        creation_location_id = 200002
+
+        # add to the kitchen if inventory is full, else, add to inventory
+        if self.state.is_inventory_full():
+            creation_location_type = "room"
+            creation_location_id = 200002
+        else:
+            creation_location_type = "inventory"
+            creation_location_id = None
 
         for generated_item_data in list_generated_items_data:
             item_name = generated_item_data.get('name', 'Unnamed Item')
@@ -233,7 +239,7 @@ class room_kitchen:
 
         # 8. Return success result
         created_item_names = [item_info.get('name', f"ID {item_info.get('id', '?')}") for item_info in successfully_created_items_info]
-        return f"Preparation successful! Items created placed into the kitchen: {', '.join(created_item_names)}."
+        return f"Preparation successful! Items created and placed in {creation_location_type}: {', '.join(created_item_names)}."
 
 
     def _rollback_preparation(self, removed_ingredients_data, created_items_info):
