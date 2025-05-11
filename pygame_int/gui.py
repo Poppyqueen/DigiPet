@@ -202,6 +202,18 @@ def init_gui(font, line_height, gui_rects):
         print(f"Warning: Could not create dimming background surface: {e}")
         _image_popup_background_surface = None
 
+    show_image_popup("style/images/stat_icons/fullness_empty.png", 5000, 1000, 3000, type=0)
+    if pygame.mixer.get_init(): # 
+        try:
+            sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
+            sound.set_volume(0.5)
+            sound.play()
+            print("Playing sound from GUI.")
+        except pygame.error as e:
+            print(f"Could not play sound: {e}")
+    else:
+        print("Pygame mixer not initialized. Cannot play sound.")
+
 
     print("GUI module initialized.")
 
@@ -576,7 +588,7 @@ def show_popup_message(text, color=config.POPUP_COLOR):
 
 
 # --- NEW Image Popup Function ---
-def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=500):
+def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=500, type=1):
     """
     Shows a temporary image popup centered on the screen (outside the panel)
     with optional fade-in and fade-out effects.
@@ -595,10 +607,40 @@ def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=5
     global _image_popup_fade_in_duration, _image_popup_fade_out_duration
     global _image_popup_background_surface, _image_popup_display_area # Assuming _image_popup_display_area is defined elsewhere
 
+    # Image popup display area - centered on the screen *outside* the panel
+    screen_width = pygame.display.get_surface().get_width()
+    screen_height = pygame.display.get_surface().get_height()
+    panel_width = _gui_rects.get('panel_rect', pygame.Rect(0,0,0,0)).width
+    main_display_width = screen_width - panel_width
+    main_display_height = screen_height # Image popup can span the whole height
+
     # Check if Pygame display is initialized
     if pygame.display.get_surface() is None:
          print("Error: Pygame display not initialized. Cannot show image popup.")
          return
+
+    if type == 0:
+        popup_size = (200, 200)
+        _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+        _image_popup_display_area.center = (screen_width // 2, screen_height // 2)
+    elif type == 1:
+        popup_size = (60, 60)
+        _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+        # Set the top-right corner to the top-right of the non-panel area
+        _image_popup_display_area.topright = (main_display_width, 0)
+
+    elif type == 2: # --- ADD THIS NEW CASE ---
+        # Centered within the NON-PANEL area
+        popup_size = (150, 150) # Choose a size for this type
+        _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+        _image_popup_display_area.center = (main_display_width // 2, screen_height // 2)
+
+    else:
+        # Default or handle unknown type
+        popup_size = (200, 200) # Default size
+        _image_popup_display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
+        _image_popup_display_area.center = (screen_width // 2, screen_height // 2) # Default to center of whole screen
+
 
     # Basic validation for durations
     if duration_ms <= 0:
@@ -860,296 +902,270 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         # Draw background image or fallback color
 
-    if state.background_image:
-        screen.blit(state.background_image, (0, 0))
-    else:
-        screen.fill(config.fallback_bg_color)
-
-    # Unpack rects for easier access (always needed)
-    panel_rect = _gui_rects['panel_rect']
-    input_rect = _gui_rects['input_rect']
-    history_rect = _gui_rects['history_rect']
-    # Use the stored _history_display_area rect from init
-    history_display_area = _history_display_area
-    # Use the stored _text_width_limit from init
-    text_width_limit = _text_width_limit
 
 
-    # Draw the panel and history area backgrounds (always)
-    pygame.draw.rect(screen, config.GREY, panel_rect)
-    pygame.draw.rect(screen, config.DARK_GREY, history_rect)
+    # --- Draw the Dimming Background Surface (if visible) ---
+    # Draw this *before* the popup image, *after* the background
+    if _image_popup_visible and _image_popup_background_surface:
+         screen.blit(_image_popup_background_surface, (0, 0))
 
 
-    # --- Draw Stat Icons --- (always)
-    stats_to_draw_order = ["fullness", "hydration", "energy"]
-    icon_start_x = config.STAT_ICON_START_X_SCREEN
-    icon_start_y = config.STAT_ICON_START_Y_SCREEN
-    icon_height = config.STAT_ICON_SIZE[1]
-    icon_spacing = config.STAT_ICON_SPACING_Y
+    if not state.is_initial_popup_phase:
 
-    for i, stat_name in enumerate(stats_to_draw_order):
-        stat_value = state.pet_stats.get(stat_name, 0)
-        stat_level = _get_stat_level(stat_value)
-        icon_surface = _stat_icons.get((stat_name, stat_level))
-        if icon_surface:
-            icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
-            screen.blit(icon_surface, (icon_start_x, icon_draw_y))
-
-
-    # --- Draw Input Box Area Background and Border --- (always)
-    pygame.draw.rect(screen, config.DARK_GREY, input_rect)
-
-
-    # --- Draw Wrapped & Scrollable Chat History --- (always)
-    # --- CHANGE 3: Update the chat history drawing code to use the improved wrap_text function ---
-    # Calculate total height using the text_width_limit (with padding)
-    total_history_height = calculate_total_history_height(state.chat_history, text_width_limit)
-    max_scroll = max(0, total_history_height - history_display_area.height)
-    state.scroll_y = max(0, min(state.scroll_y, max_scroll))  # Clamp state scroll_y
-
-    # Current draw Y calculation with bottom-up drawing relative to history area's bottom
-    # Adjusted by config.PADDING at the bottom of the history area itself
-    current_draw_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
-
-    # Set clipping area for history display - make sure it's the right size
-    history_clip_rect = history_display_area.copy()
-    original_clip = screen.get_clip()
-    screen.set_clip(history_clip_rect)
-
-    for text, msg_type in state.chat_history:
-        # Determine the prefix based on message type
-        display_prefix = ""
-        if msg_type == 'user':
-            display_prefix = "You: "
-            text_color = config.BLUE
-        elif msg_type == 'bot':
-            display_prefix = "Bot: "
-            text_color = config.GREEN
-        elif msg_type == 'error':
-            display_prefix = "Error: "
-            text_color = config.RED
-        elif msg_type == 'system':
-            display_prefix = "System: "
-            text_color = config.YELLOW
-        elif msg_type == 'system_instruction':
-            display_prefix = "Instruction: "
-            text_color = config.ORANGE
+        if state.background_image:
+            screen.blit(state.background_image, (0, 0))
         else:
-            text_color = config.BLUE  # Default
+            screen.fill(config.fallback_bg_color)
 
-        # Wrap text considering the prefix for the first line
-        # Use the global _text_width_limit which includes padding
-        wrapped_lines = wrap_text(text, _text_width_limit, display_prefix)
-        message_total_line_height = len(wrapped_lines) * _line_height
+        # Unpack rects for easier access (always needed)
+        panel_rect = _gui_rects['panel_rect']
+        input_rect = _gui_rects['input_rect']
+        history_rect = _gui_rects['history_rect']
+        # Use the stored _history_display_area rect from init
+        history_display_area = _history_display_area
+        # Use the stored _text_width_limit from init
+        text_width_limit = _text_width_limit
 
-        # Draw each line of the current message
-        for i, line in enumerate(wrapped_lines):
-            line_draw_y = current_draw_y + i * _line_height
 
-            # Only add prefix string to the first line.
-            # Subsequent lines are just the wrapped content.
-            # The wrapping function ensures the first line has room for the prefix,
-            # and the drawing position handles the overall left padding.
-            rendered_line_text = display_prefix + line if i == 0 else line
+        # Draw the panel and history area backgrounds (always)
+        pygame.draw.rect(screen, config.GREY, panel_rect)
+        pygame.draw.rect(screen, config.DARK_GREY, history_rect)
 
-            # Apply proper left padding.
-            # The x position starts at the history_display_area's left edge,
-            # and we add the horizontal padding.
-            left_pad = config.HISTORY_HORIZONTAL_PADDING
+
+        # --- Draw Stat Icons --- (always)
+        stats_to_draw_order = ["fullness", "hydration", "energy"]
+        icon_start_x = config.STAT_ICON_START_X_SCREEN
+        icon_start_y = config.STAT_ICON_START_Y_SCREEN
+        icon_height = config.STAT_ICON_SIZE[1]
+        icon_spacing = config.STAT_ICON_SPACING_Y
+
+        for i, stat_name in enumerate(stats_to_draw_order):
+            stat_value = state.pet_stats.get(stat_name, 0)
+            stat_level = _get_stat_level(stat_value)
+            icon_surface = _stat_icons.get((stat_name, stat_level))
+            if icon_surface:
+                icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
+                screen.blit(icon_surface, (icon_start_x, icon_draw_y))
+
+
+        # --- Draw Input Box Area Background and Border --- (always)
+        pygame.draw.rect(screen, config.DARK_GREY, input_rect)
+
+
+        # --- Draw Wrapped & Scrollable Chat History --- (always)
+        # --- CHANGE 3: Update the chat history drawing code to use the improved wrap_text function ---
+        # Calculate total height using the text_width_limit (with padding)
+        total_history_height = calculate_total_history_height(state.chat_history, text_width_limit)
+        max_scroll = max(0, total_history_height - history_display_area.height)
+        state.scroll_y = max(0, min(state.scroll_y, max_scroll))  # Clamp state scroll_y
+
+        # Current draw Y calculation with bottom-up drawing relative to history area's bottom
+        # Adjusted by config.PADDING at the bottom of the history area itself
+        current_draw_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
+
+        # Set clipping area for history display - make sure it's the right size
+        history_clip_rect = history_display_area.copy()
+        original_clip = screen.get_clip()
+        screen.set_clip(history_clip_rect)
+
+        for text, msg_type in state.chat_history:
+            # Determine the prefix based on message type
+            display_prefix = ""
+            if msg_type == 'user':
+                display_prefix = "You: "
+                text_color = config.BLUE
+            elif msg_type == 'bot':
+                display_prefix = "Bot: "
+                text_color = config.GREEN
+            elif msg_type == 'error':
+                display_prefix = "Error: "
+                text_color = config.RED
+            elif msg_type == 'system':
+                display_prefix = "System: "
+                text_color = config.YELLOW
+            elif msg_type == 'system_instruction':
+                display_prefix = "Instruction: "
+                text_color = config.ORANGE
+            else:
+                text_color = config.BLUE  # Default
+
+            # Wrap text considering the prefix for the first line
+            # Use the global _text_width_limit which includes padding
+            wrapped_lines = wrap_text(text, _text_width_limit, display_prefix)
+            message_total_line_height = len(wrapped_lines) * _line_height
+
+            # Draw each line of the current message
+            for i, line in enumerate(wrapped_lines):
+                line_draw_y = current_draw_y + i * _line_height
+
+                # Only add prefix string to the first line.
+                # Subsequent lines are just the wrapped content.
+                # The wrapping function ensures the first line has room for the prefix,
+                # and the drawing position handles the overall left padding.
+                rendered_line_text = display_prefix + line if i == 0 else line
+
+                # Apply proper left padding.
+                # The x position starts at the history_display_area's left edge,
+                # and we add the horizontal padding.
+                left_pad = config.HISTORY_HORIZONTAL_PADDING
+                try:
+                    line_surface = _font.render(rendered_line_text, True, text_color)
+                    screen.blit(line_surface, (history_display_area.left + left_pad, line_draw_y))
+                except pygame.error as e:
+                    print(f"Pygame error rendering history line '{rendered_line_text}': {e}")
+
+
+            # Move the drawing position DOWN for the next message
+            current_draw_y += message_total_line_height
+
+        # Restore original clipping area after drawing history
+        screen.set_clip(original_clip)
+
+
+        # --- Draw Input Box Content (Handles Locked State) --- (always)
+        input_border_color = config.ORANGE if is_input_locked else config.WHITE
+        pygame.draw.rect(screen, input_border_color, input_rect, 1) # Draw border
+
+
+        # Calculate the drawing area for the input text within the input_rect
+        # This already includes padding thanks to how input_rect was defined in game.py based on panel_rect
+        input_text_draw_area = pygame.Rect(
+            input_rect.left + config.PADDING,
+            input_rect.top + config.PADDING,
+            input_rect.width - 2 * config.PADDING,
+            input_rect.height - 2 * config.PADDING
+        )
+
+        # Set clipping for the input box text
+        input_clip_rect = input_text_draw_area.copy()
+        original_clip = screen.get_clip()
+        screen.set_clip(input_clip_rect)
+
+        display_text = ""
+        text_color = config.LIGHT_GREY # Default text color for input
+
+        # Use is_input_locked here to determine what to draw in the input box
+        if is_input_locked:
+            # Input is locked (either asleep or bot processing)
+            display_text = "Waiting for bot..."
+            # Use a greyed-out color
             try:
-                line_surface = _font.render(rendered_line_text, True, text_color)
-                screen.blit(line_surface, (history_display_area.left + left_pad, line_draw_y))
+                text_surface = _font.render(display_text, True, config.GREY)
+                # Center the "Waiting..." text in the input box
+                text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2
+                text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
+                screen.blit(text_surface, (text_x, text_y))
             except pygame.error as e:
-                 print(f"Pygame error rendering history line '{rendered_line_text}': {e}")
+                print(f"Pygame error rendering locked input text: {e}")
+
+            state.cursor_visible = False # Ensure cursor is off when locked
+
+        else:
+            # Input is NOT locked, draw the user's text and cursor
+            display_text = state.input_text
+            input_text_width_limit = input_text_draw_area.width # Use the calculated inner width
+
+            # Clip text if it's too long to fit (from the front)
+            clipped_display_text = display_text
+            try:
+                text_width = _font.size(clipped_display_text)[0]
+                while text_width > input_text_width_limit and len(clipped_display_text) > 0:
+                    clipped_display_text = clipped_display_text[1:] # Remove character from the front
+                    text_width = _font.size(clipped_display_text)[0]
+
+                text_surface = _font.render(clipped_display_text, True, text_color)
+                # Draw text aligned to the left within the padded area
+                text_x = input_text_draw_area.left
+                text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
+                screen.blit(text_surface, (text_x, text_y))
+
+                # Draw cursor only if visible and input is not locked
+                if state.cursor_visible: # The check for is_input_locked is implicitly handled by the outer else block
+                        cursor_pos_in_input_clipped = _font.size(clipped_display_text)[0]
+                        # Cursor position is relative to the start of the drawn text
+                        cursor_x = text_x + cursor_pos_in_input_clipped
+                        cursor_y_start = text_y
+                        cursor_y_end = text_y + text_surface.get_height()
+                        # Clamp cursor x position just in case it goes slightly out
+                        cursor_x = max(input_text_draw_area.left, min(cursor_x, input_text_draw_area.right - 1))
+                        pygame.draw.line(screen, config.WHITE, (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
+
+            except pygame.error as e:
+                print(f"Pygame error rendering user input or cursor: {e}")
 
 
-        # Move the drawing position DOWN for the next message
-        current_draw_y += message_total_line_height
-
-    # Restore original clipping area after drawing history
-    screen.set_clip(original_clip)
+        # Restore original clipping area after drawing input box content
+        screen.set_clip(original_clip)
 
 
-    # --- Draw Input Box Content (Handles Locked State) --- (always)
-    input_border_color = config.ORANGE if is_input_locked else config.WHITE
-    pygame.draw.rect(screen, input_border_color, input_rect, 1) # Draw border
+        # --- NEW: Draw Care Package Buttons and Scroll Controls --- (always)
+        # Pass the is_input_locked flag
+        draw_package_buttons(screen, is_input_locked)
+
+        if not state.inventory_panel_visible:
+            # Calculate current circle position
+            current_circle_center_x = config.BASE_CIRCLE_CENTER_X
+            current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+            time_in_seconds = current_time_ms / 1000.0
+            animation.update_animation_state(current_time_ms) # Update animation state variables
+            animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
+
+            current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
+            current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+
+            # Draw the Circle (Ensure positions are integers)
+            pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
+            # Example: Draw a border around the circle
+            pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
 
 
-    # Calculate the drawing area for the input text within the input_rect
-    # This already includes padding thanks to how input_rect was defined in game.py based on panel_rect
-    input_text_draw_area = pygame.Rect(
-        input_rect.left + config.PADDING,
-        input_rect.top + config.PADDING,
-        input_rect.width - 2 * config.PADDING,
-        input_rect.height - 2 * config.PADDING
-    )
-
-    # Set clipping for the input box text
-    input_clip_rect = input_text_draw_area.copy()
-    original_clip = screen.get_clip()
-    screen.set_clip(input_clip_rect)
-
-    display_text = ""
-    text_color = config.LIGHT_GREY # Default text color for input
-
-    # Use is_input_locked here to determine what to draw in the input box
-    if is_input_locked:
-        # Input is locked (either asleep or bot processing)
-        display_text = "Waiting for bot..."
-        # Use a greyed-out color
-        try:
-            text_surface = _font.render(display_text, True, config.GREY)
-            # Center the "Waiting..." text in the input box
-            text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2
-            text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
-            screen.blit(text_surface, (text_x, text_y))
-        except pygame.error as e:
-            print(f"Pygame error rendering locked input text: {e}")
-
-        state.cursor_visible = False # Ensure cursor is off when locked
-
-    else:
-        # Input is NOT locked, draw the user's text and cursor
-        display_text = state.input_text
-        input_text_width_limit = input_text_draw_area.width # Use the calculated inner width
-
-        # Clip text if it's too long to fit (from the front)
-        clipped_display_text = display_text
-        try:
-            text_width = _font.size(clipped_display_text)[0]
-            while text_width > input_text_width_limit and len(clipped_display_text) > 0:
-                 clipped_display_text = clipped_display_text[1:] # Remove character from the front
-                 text_width = _font.size(clipped_display_text)[0]
-
-            text_surface = _font.render(clipped_display_text, True, text_color)
-            # Draw text aligned to the left within the padded area
-            text_x = input_text_draw_area.left
-            text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
-            screen.blit(text_surface, (text_x, text_y))
-
-            # Draw cursor only if visible and input is not locked
-            if state.cursor_visible: # The check for is_input_locked is implicitly handled by the outer else block
-                    cursor_pos_in_input_clipped = _font.size(clipped_display_text)[0]
-                    # Cursor position is relative to the start of the drawn text
-                    cursor_x = text_x + cursor_pos_in_input_clipped
-                    cursor_y_start = text_y
-                    cursor_y_end = text_y + text_surface.get_height()
-                    # Clamp cursor x position just in case it goes slightly out
-                    cursor_x = max(input_text_draw_area.left, min(cursor_x, input_text_draw_area.right - 1))
-                    pygame.draw.line(screen, config.WHITE, (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
-
-        except pygame.error as e:
-             print(f"Pygame error rendering user input or cursor: {e}")
-
-
-    # Restore original clipping area after drawing input box content
-    screen.set_clip(original_clip)
-
-
-    # --- NEW: Draw Care Package Buttons and Scroll Controls --- (always)
-    # Pass the is_input_locked flag
-    draw_package_buttons(screen, is_input_locked)
-
-    if not state.inventory_panel_visible:
-        # Calculate current circle position
-        current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-        time_in_seconds = current_time_ms / 1000.0
-        animation.update_animation_state(current_time_ms) # Update animation state variables
-        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
-
-        current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
-
-        # Draw the Circle (Ensure positions are integers)
-        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
-        # Example: Draw a border around the circle
-        pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
-
-
-
-    # --- Draw NEW Image Popup (Always draw last so it's on top, but *under* the panel if panel is truly modal) ---
-    # Decision: Should the image popup be visible *under* the inventory panel?
-    # User request implies it's "in the middle of the screen". Let's make it overlay everything *except* the modal inventory panel.
-    # So, draw it *before* the inventory panel drawing block.
-
-    # REVISED DRAWING ORDER:
-    # 1. Background (done in game.py)
-    # 2. Pet Stats (wherever they are drawn)
-    # 3. Care Package Buttons
-    # 4. Chat Panel (background, history, input)
-    # 5. Ephemeral Text Popups
-    # 6. NEW Image Popup (if visible AND inventory panel is NOT visible) <-- Let's draw it *over* the panel.
-    # 7. Inventory Panel (if visible) <-- If panel is modal, it should be on top.
-
-    # Let's draw the image popup *after* everything else except the inventory panel.
-
-    # --- Draw NEW Image Popup (Finally!) ---
-    # Draw this just before the `if state.inventory_panel_visible:` block
-
+    # --- Draw NEW Image Popup (This is OUTSIDE the conditional block) ---
+    # Draw this on top of the background/dimming, regardless of initial phase
     if _image_popup_visible and _image_popup_image:
         current_time = pygame.time.get_ticks()
         elapsed_time = current_time - _image_popup_start_time
         remaining_time = (_image_popup_start_time + _image_popup_duration) - current_time
 
-        # Determine the alpha value
-        alpha = 255 # Start fully opaque
-
+        alpha = 255
         if elapsed_time < _image_popup_fade_in_duration:
-            # Fade in phase: alpha goes from 0 to 255
-            # Prevent division by zero if fade_in_duration is 0
             if _image_popup_fade_in_duration > 0:
                  alpha = int((elapsed_time / _image_popup_fade_in_duration) * 255)
-            else: # Instant fade in
-                 alpha = 255
+            else: alpha = 255
         elif remaining_time <= _image_popup_fade_out_duration:
-            # Fade out phase: alpha goes from 255 to 0
-            # remaining_time is the time left until the *very end* of the popup
-            # The time *into* the fade-out is (_image_popup_fade_out_duration - remaining_time)
-            # Example: If fade_out is 500ms and remaining is 500ms, we are just starting fade (alpha 255)
-            # If fade_out is 500ms and remaining is 0ms, we are at the end (alpha 0)
-            # Alpha should be proportional to remaining_time within the fade_out_duration
             if _image_popup_fade_out_duration > 0:
                  alpha = int((remaining_time / _image_popup_fade_out_duration) * 255)
-            else: # Instant fade out
-                 alpha = 0 # Will become invisible next frame anyway due to expiry check
-
-        # Ensure alpha is between 0 and 255
+            else: alpha = 0
         alpha = max(0, min(255, alpha))
 
-        # Apply the alpha to the image surface and blit
-        # set_alpha modifies the surface in place for the next blit
-        _image_popup_image.set_alpha(alpha)
+        _image_popup_image.set_alpha(alpha) # Apply alpha
+        screen.blit(_image_popup_image, _image_popup_display_area.topleft) # Blit
 
-        # Blit the image centered/at the calculated position
-        # Assumes _image_popup_display_area is already centered or positioned correctly
-        screen.blit(_image_popup_image, _image_popup_display_area.topleft)
-
-        # Check if popup duration is over
+        # Check if popup duration is over *in this frame*
         if elapsed_time >= _image_popup_duration:
             _image_popup_visible = False
-            # Optional: Clear the image reference to free memory, but keep it if the same icon might reappear
-            # _image_popup_image = None
-            # print("Image popup duration ended.") # Debug
+            #print("Image popup duration ended.") # Debug
 
 
-             # --- Draw Pop-up Messages ---
-    draw_popups(screen)
-    
+    # --- Draw Pop-up Messages --- (Draw these regardless of initial phase, or maybe only after?)
+    # You'll need to decide if ephemeral popups should appear during the initial phase.
+    # For now, let's assume they wait until the main GUI is visible.
+    if not state.is_initial_popup_phase:
+         draw_popups(screen)
+
+
     # --- Draw Inventory Panel (Conditional - Draws on top) ---
-    # Only draw the inventory panel if it's visible
-    if state.inventory_panel_visible:
+    # This should also be inside the conditional block, UNLESS you want the inventory
+    # panel to be instantly available even during the initial popup phase.
+    # Assuming you want it to appear *after* the initial phase:
+    if not state.is_initial_popup_phase and state.inventory_panel_visible:
         draw_inventory_panel(screen)
-        # Note: Character drawing etc would typically happen before the base UI drawing
-        # to be *under* the chat/inventory panels.
-    # else:
-    #          # --- Draw Pop-up Messages ---
-    #     draw_popups(screen)
 
 
-    # --- Draw Inventory Toggle Button --- (always draw, typically on top)
-    # This draws the button regardless of which panel is open, so you can always click it.
-    if _inventory_toggle_button_rect:
+    # --- Draw Inventory Toggle Button --- (Conditional?)
+    # Do you want this button visible during the initial popup phase?
+    # Probably not, unless it's the *only* thing besides the popup.
+    # Let's put it inside the conditional block too.
+    if not state.is_initial_popup_phase and _inventory_toggle_button_rect:
         pygame.draw.circle(screen, config.INVENTORY_BUTTON_COLOR, _inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
         pygame.draw.circle(screen, config.WHITE, _inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
 

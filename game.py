@@ -3,6 +3,7 @@ from pygame_int import config
 from pygame_int import state
 from pygame_int import gui
 from pygame_int import animation
+from pygame_int.juke_box import jukebox # Assuming this import is correct
 
 import pygame
 import sys
@@ -40,6 +41,8 @@ except pygame.error:
 
 
 
+
+
 # --- Callback function to receive signals from the chatbot ---
 # This callback is already designed to run potentially in the chatbot's
 # internal thread(s) and post events to the main Pygame loop. This part is good.
@@ -54,6 +57,8 @@ def handle_chatbot_signal(signal_data):
             if image_path:
                 print(f"Signal type 'change_background' received with path: {image_path}, posting event.")
                 pygame.event.post(pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_path=image_path))
+                loc = chatbot.get_current_location()
+                music_player.play_new_song(f"style/sounds/music/rooms/{loc}.mp3")
             else:
                  print("Signal 'change_background' received but no 'image_path' in data.")
 
@@ -74,10 +79,10 @@ def handle_chatbot_signal(signal_data):
             sound_path = signal_data.get("sound_path")
             if emote_name == "sad":
                 print("Signal type 'emote_changed' received (sad), posting START_SAD_EVENT.")
-                pygame.event.post(pygame.event.Event(config.START_SAD_EVENT))
+                animation.start_sad_animation() # Call animation directly
             if emote_name == "happy":
                 print("Signal type 'emote_changed' received (happy)")
-                pygame.event.post(pygame.event.Event(config.START_HAPPY_EVENT))
+                animation.start_happy_animation() # Call animation directly
             if sound_path:
                 print(f"Signal type 'emote_changed' received with sound path: {sound_path}, posting PLAY_SOUND_EVENT.")
                 pygame.event.post(pygame.event.Event(config.PLAY_SOUND_EVENT, sound_path=sound_path))
@@ -151,13 +156,13 @@ You are an autonomous digital pet living in a digital environment created for yo
 - Verbalize your experiences, thoughts, and actions as you explore the environment.
 - Take note of key learnings and behaviors.
 - Make independent decisions using your built-in memory system to guide your future and present actions.
-- Manage your wellness stats by consuming items when necesary and when you feel you need replenishment if they get too low. 
+- Manage your wellness stats by consuming items when necesary and when you feel you need replenishment if they get too low.
 
 # Output Format
 
 Engage in a or a set of actions and interactions with your environment, with a limit of 8 actions in a row.
 
-Then, 
+Then,
 Document your experiences, thoughts findings and learnings as a single detailed narrative structured in paragraphs. This narrative should describe your interactions with the environment, how actions affected your wellness stats, and any reflection on the actions performed.
 
 Repeat.
@@ -200,6 +205,7 @@ if chatbot_available and chatbot and hasattr(chatbot, 'get_current_location'):
              loc = chatbot.get_current_location()
              if loc: # Use chatbot location if it returned something
                   starting_location_name = loc
+                  print("found starting location!")
                   print(f"Getting initial location from chatbot: {starting_location_name}")
              else: # Fallback if chatbot returned None or empty string
                   print("Chatbot get_current_location returned empty. Using default 'bedroom'.")
@@ -215,6 +221,7 @@ else:
 
 
 gui.load_and_set_background(f"{starting_location_name}.jpg")
+
 
 # --- NEW: Initial Wellness State Load ---
 if chatbot_available and chatbot and hasattr(chatbot, 'get_wellness_states'):
@@ -336,8 +343,6 @@ gui_rects = {
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
 gui.init_gui(font, line_height, gui_rects)
 
-#gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900)
-
 
 
 # Get the calculated rects from gui.py after initialization if needed in game.py
@@ -427,7 +432,10 @@ CURSOR_INTERVAL = 500 # Milliseconds
 running = True
 clock = pygame.time.Clock()
 
-# Initialize last_activity_time after Pygame init is complete
+# Initialize music_player to None. It will be initialized later
+# when the initial popup phase is over.
+music_player = None
+
 state.last_activity_time = pygame.time.get_ticks()
 print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
 
@@ -467,14 +475,16 @@ while running:
             animation.start_circle_shake()
             continue
 
-        elif event.type == config.START_SAD_EVENT:
-            print("Main loop processing START_SAD_EVENT")
-            animation.start_sad_animation()
-            continue
+        # Note: Emote events now call animation directly in handle_chatbot_signal
+        # elif event.type == config.START_SAD_EVENT:
+        #     print("Main loop processing START_SAD_EVENT")
+        #     animation.start_sad_animation()
+        #     continue
+        # elif event.type == config.START_HAPPY_EVENT:
+        #     print()
+        #     animation.start_happy_animation()
+        #     continue
 
-        elif event.type == config.START_HAPPY_EVENT:
-            print()
-            animation.start_happy_animation()
 
         elif event.type == config.PLAY_SOUND_EVENT:
             sound_path = getattr(event, 'sound_path', None)
@@ -482,6 +492,7 @@ while running:
                 print(f"Main loop received and processing PLAY_SOUND_EVENT for: {sound_path}")
                 try:
                     if pygame.mixer.get_init():
+                         # Consider loading sound once if it's common
                          sound = pygame.mixer.Sound(sound_path)
                          sound.play()
                          sound.set_volume(0.3)
@@ -498,11 +509,13 @@ while running:
              message_type = getattr(event, 'msg_type', 'bot')
              if response_text:
                  gui.add_message_to_history(response_text, message_type)
-                 state.last_activity_time = current_time_ms # Activity from bot resets idle timer
+                 # Activity from bot only resets idle timer if it's not a 'system' message
+                 # System messages might just be info, not necessarily a bot action response
                  if message_type != "system":
-                    state.chatbot_is_processing=False
+                     state.last_activity_time = current_time_ms
+                     state.chatbot_is_processing=False # Bot finished processing user/system request
+                 print(f"Bot response received via event (type: {message_type}). Idle timer reset? {'Yes' if message_type != 'system' else 'No'}. Time: {state.last_activity_time}")
 
-                 print(f"Bot response received via event (type: {message_type}). Resetting idle timer to {state.last_activity_time}")
              continue
 
         # --- Handle Inventory Events (Update State) ---
@@ -512,8 +525,7 @@ while running:
                   print(f"Main loop processing ROOM_INVENTORY_EVENT. Updating room inventory state.")
                   state.room_inventory_list = item_list_data # Update the state LIST
                   # Optionally reset scroll to top when new data arrives?
-                  # Let's reset for now to easily see new items
-                  state.room_inventory_scroll_y = 0
+                  state.room_inventory_scroll_y = 0 # Let's reset for now to easily see new items
              else: print(f"ROOM_INVENTORY_EVENT received with invalid data.")
              continue
 
@@ -532,18 +544,18 @@ while running:
             if sleep_duration_ms > 0:
                 # Calculate sleep end time
                 sleep_end_time_ms = current_time_ms + sleep_duration_ms
-                
+
                 # Update the autonomous_action_paused_until_ms to be AFTER the sleep ends
                 # This ensures no autonomous action triggers during sleep
                 state.autonomous_action_paused_until_ms = sleep_end_time_ms
-                
+
                 # Also reset the last_activity_time to the end of sleep
                 # This prevents autonomous action from triggering immediately after sleep
                 state.last_activity_time = sleep_end_time_ms
-                
+
                 print(f"Sleep signal processed in main loop. Locking input until {state.autonomous_action_paused_until_ms} ms (for {sleep_duration_ms} ms).")
                 gui.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
-            else: 
+            else:
                 print(f"Received START_SLEEP_EVENT with zero or negative duration.")
             continue
 
@@ -555,17 +567,20 @@ while running:
                  state.pet_stats[stat_name] = new_value
                  print(f"Main loop processed STAT_CHANGED_EVENT: Updated {stat_name} to {state.pet_stats[stat_name]:.3f}")
                  change = new_value - old_value
-                 formatted_change = f"{change:+.3f}" if change != 0 else "" # Add + for positive changes
-                 formatted_current_value = f"{state.pet_stats[stat_name]:.3f}"
+                 formatted_change = f"{change:+.3f}" if abs(change) > 0.001 else "" # Add + for positive changes, only show if change is significant
+                 formatted_current_value = f"{state.pet_stats[stat_name]:.1f}" # Maybe format current value differently?
                  # Show popup only if there was a significant change
                  if abs(change) > 0.001: # Threshold for showing popup
-                     popup_text = f"{stat_name.capitalize()}: {formatted_change} ({formatted_current_value})"
+                     # Adjust popup text based on whether there was a visible change value
+                     popup_text = f"{stat_name.capitalize()}: {formatted_current_value}"
+                     if formatted_change: # Only add change if it's shown
+                         popup_text += f" ({formatted_change})"
 
-                     ## -- Choose red or green depending on positive or negative change 
+                     # Choose red or green depending on positive or negative change
                      if change >= 0.0:
-                         color=(0, 255, 0) # Green for positive
+                         color=(0, 255, 0) # Green for positive/no change
                      else:
-                         color=(255, 0, 0) # Red for negative 
+                         color=(255, 0, 0) # Red for negative
 
                      gui.show_popup_message(popup_text, color)
                  # else:
@@ -614,6 +629,7 @@ while running:
                       if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
                            state.room_inventory_scroll_y += scroll_speed
                            # Clamp scroll
+                           # Need to calculate content height dynamically based on current list items
                            room_content_height = gui.calculate_list_height(state.room_inventory_list, room_list_area_rect.width)
                            max_room_scroll = max(0, room_content_height - room_list_area_rect.height)
                            state.room_inventory_scroll_y = max(0, min(state.room_inventory_scroll_y, max_room_scroll))
@@ -646,7 +662,7 @@ while running:
 
         # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
         if event.type == pygame.MOUSEBUTTONDOWN:
-                #state.last_activity_time = current_time_ms # 
+                #state.last_activity_time = current_time_ms #
 
                 # Check inventory toggle button click (to open)
                 if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
@@ -658,16 +674,20 @@ while running:
                     continue # Consume event
 
                 # Handle Mouse Wheel Scrolling for Chat History
-                if history_rect.collidepoint(event.pos):
+                # Ensure mouse is over the history display area, not just the larger history_rect
+                if history_display_area.collidepoint(event.pos): # Use history_display_area for scroll detection
                     if event.button == 4: # Scroll up
                         state.scroll_y -= config.SCROLL_SPEED
                     elif event.button == 5: # Scroll down
                         state.scroll_y += config.SCROLL_SPEED
                     # Clamp chat scroll
                     current_total_height = gui.calculate_total_history_height(state.chat_history, text_width_limit)
+                    # Scroll range goes from 0 (top) to max_scroll (bottom)
                     max_scroll = max(0, current_total_height - history_display_area.height)
                     state.scroll_y = max(0, min(state.scroll_y, max_scroll))
+                    #print(f"Chat scroll adjusted. Current: {state.scroll_y}, Max: {max_scroll}")
                     continue # Consume event
+
 
                 # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
                 # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
@@ -715,14 +735,14 @@ while running:
                                         add_items(package_info["package"], package_info["room_id"])
                                         room_name=chatbot.get_room_name_out(package_info["room_id"])
                                         message=f"Items placed in: {room_name}"
-                                        color=(0,255,120) 
+                                        color=(0,255,120)
                                         gui.show_popup_message(message, color)
                                         # new
                                         list_items=[]
                                         for i in package_info["package"]:
                                             item_name = i["name"]
                                             list_items.append(item_name)
-                                        delimiter = ", " 
+                                        delimiter = ", "
                                         str_list = delimiter.join(list_items)
                                         gui.add_message_to_history(f"{message}. Items: {str_list}", 'system')
 
@@ -746,42 +766,67 @@ while running:
                 state.last_activity_time = current_time_ms # Activity resets idle timer
 
                 if event.key == pygame.K_ESCAPE:
-                    running = False
-                    break
+                    # If inventory is open, close it. If closed, exit.
+                    if state.inventory_panel_visible:
+                        print("Escape pressed. Closing inventory panel.")
+                        state.inventory_panel_visible = False
+                    else:
+                        running = False # Exit the game
+                    continue
 
                 # Check if input is locked due to sleep state (Applies only when panel is NOT visible)
                 if is_input_locked_by_state:
-                    continue # Skip rest of KEYDOWN handling if locked
+                    # Allow Escape key to exit/close panel even when locked
+                    if event.key == pygame.K_ESCAPE:
+                         pass # Already handled above
+                    else:
+                         print("Input locked by state. Ignoring key press.")
+                         continue # Skip rest of KEYDOWN handling if locked and not Escape
 
-            #
-                # if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_circle_shake(); continue
-                # if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
-                # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
 
 
 
-                # Handle regular text input
-                if event.key == pygame.K_BACKSPACE: state.input_text = state.input_text[:-1]; state.cursor_timer = 0; state.cursor_visible = True; continue
-                elif event.key == pygame.K_RETURN:
-                    user_message = state.input_text.strip()
-                    if user_message:
-                        gui.add_message_to_history(f"{user_message}", 'user')
-                        state.input_text = ""
-                        state.cursor_timer = 0
-                        state.cursor_visible = True
-                        # This call includes its own lock check
-                        start_chatbot_request(user_message, 'user')
-                    else: # Empty message
-                        state.input_text = ""
-                        state.cursor_timer = 0
-                        state.cursor_visible = True
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
+                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_popup_message("testing!!!!!!") ; continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
+
+                if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
                     continue
-                else: # Other key press
-                    if event.unicode and event.unicode.isprintable():
-                        state.input_text += event.unicode
-                        state.cursor_timer = 0
-                        state.cursor_visible = True
+
+
+                # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
+#                    loc = chatbot.get_current_location()
+#                    music_player = jukebox(f"style/sounds/music/rooms/{loc}.mp3") # Initialize ONLY ONCE
+
+                # Handle regular text input (only if inventory panel is NOT visible)
+                if not state.inventory_panel_visible:
+                    if event.key == pygame.K_BACKSPACE: state.input_text = state.input_text[:-1]; state.cursor_timer = 0; state.cursor_visible = True; continue
+                    elif event.key == pygame.K_RETURN:
+                        user_message = state.input_text.strip()
+                        if user_message:
+                            gui.add_message_to_history(f"{user_message}", 'user')
+                            state.input_text = ""
+                            state.cursor_timer = 0
+                            state.cursor_visible = True
+                            # This call includes its own lock check
+                            start_chatbot_request(user_message, 'user')
+                        else: # Empty message
+                            state.input_text = ""
+                            state.cursor_timer = 0
+                            state.cursor_visible = True
                         continue
+                    else: # Other key press
+                        if event.unicode and event.unicode.isprintable():
+                            state.input_text += event.unicode
+                            state.cursor_timer = 0
+                            state.cursor_visible = True
+                            continue
+                # else: # If inventory panel IS visible, text input is ignored here
+                #     pass
+
 
         # If event wasn't handled by specific checks above, continue to next event
         pass # Or continue
@@ -791,22 +836,32 @@ while running:
     # it can act even if the inventory is open
     elapsed_time_ms = current_time_ms - state.last_activity_time
 
-    # --- 3. Update the autonomous action logic to respect sleep state ---
+    # --- 3. Update the is_currently_asleep check to use absolute time comparison ---
+    # Before the drawing section, update the is_currently_asleep calculation:
+    is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
+    is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
+
+
     # In the autonomous action trigger section:
+    # Check if idle timeout is reached, bot is not asleep/paused, and bot is not currently processing
     if chatbot_available and chatbot and \
-    elapsed_time_ms >= config.IDLE_TIMEOUT_MS and \
-    current_time_ms >= state.autonomous_action_paused_until_ms and \
-    not state.chatbot_is_processing:
+       elapsed_time_ms >= config.IDLE_TIMEOUT_MS and \
+       current_time_ms >= state.autonomous_action_paused_until_ms and \
+       not state.chatbot_is_processing:
 
         print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
 
+        # Start the autonomous action request. This sets state.chatbot_is_processing = True
+        # The response event CHATBOT_RESPONSE_EVENT will set it back to False later.
         if start_chatbot_request("The following should be an autonomous action.", "system"):
-            state.last_activity_time = current_time_ms
+            # last_activity_time is NOT reset here immediately, it's reset when the bot *responds*
+            # This prevents spamming requests if the bot is slow to respond.
+            pass # Do nothing here, last_activity_time is reset on CHATBOT_RESPONSE_EVENT
 
 
     # --- Drawing ---
-# Inside the game loop, before drawing:
+    # Inside the game loop, before drawing:
 
     # --- 2. Improve the is_currently_asleep check to use absolute time comparison ---
     # Before the drawing section, update the is_currently_asleep calculation:
@@ -818,29 +873,30 @@ while running:
     # MODIFIED: Pass the combined lock state
 
     gui.draw_gui(screen, current_time_ms, is_input_locked_by_state)
-    # --- Circle Position Calculation and Drawing ---
 
-    # moved into draw_gui
+    # --- Check for the end of the initial popup phase and initialize jukebox ---
+    # This needs to happen *after* update_popups in gui.update_popups
+    # which is where _image_popup_visible state is managed.
+    # The initial popup phase is true, and no image popups are currently visible.
+    if state.is_initial_popup_phase and not gui._image_popup_visible:
+        print("Initial popup phase detected as ending.") # Debug
+        state.is_initial_popup_phase = False # This is the transition point
 
-    # Draw the circle only when the inventory panel is NOT visible
-    # if not state.inventory_panel_visible:
-    #     # Calculate current circle position
-    #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-    #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-    #     time_in_seconds = current_time_ms / 1000.0
-    #     animation.update_animation_state(current_time_ms) # Update animation state variables
-    #     animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
+        # --- Jukebox Initialization Logic ---
+        # Check if the music_player has NOT been initialized yet (it starts as None)
+        if music_player is None:
+            # Also double-check if mixer is initialized before trying to create jukebox
+            if pygame.mixer.get_init():
+                print("Initial popup phase has ended. Jukebox is None. Attempting to initialize jukebox.") # Debug
+                try:
+                    loc = chatbot.get_current_location()
+                    music_player = jukebox(f"style/sounds/music/rooms/{loc}.mp3") # Initialize ONLY ONCE
+                except Exception as e:
+                    print(f"Error initializing jukebox: {e}")
+                    music_player = None # Ensure it stays None if initialization fails unexpectedly
+            else:
+                 print("Pygame Mixer not initialized. Cannot initialize Jukebox.")
 
-    #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
-    #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
-
-    #     # Draw the Circle (Ensure positions are integers)
-    #     pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
-    #     # Example: Draw a border around the circle
-    #     pygame.draw.circle(screen, config.GREEN, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
-
-
-    
 
     # --- Update Display ---
     pygame.display.flip()
@@ -856,6 +912,10 @@ if chatbot and hasattr(chatbot, 'shutdown') and callable(chatbot.shutdown):
     except Exception as e:
         print(f"Error during chatbot shutdown: {e}")
 
+# Clean up mixer before quitting pygame
+if pygame.mixer.get_init():
+    print("Quitting Pygame Mixer.")
+    pygame.mixer.quit()
 
 pygame.quit()
 sys.exit()

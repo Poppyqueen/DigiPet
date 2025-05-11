@@ -105,7 +105,7 @@ class CLIChatbot:
         return self.state_manager.get_room_name(id)
     def get_current_location(self):
         """
-        Returns 
+        Returns the name of the current room, or an error string if current room is invalid.
         """
         return self.state_manager.get_current_room_name()
 
