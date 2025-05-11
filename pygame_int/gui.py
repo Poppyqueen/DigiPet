@@ -202,7 +202,7 @@ def init_gui(font, line_height, gui_rects):
         print(f"Warning: Could not create dimming background surface: {e}")
         _image_popup_background_surface = None
 
-    show_image_popup("style/images/stat_icons/fullness_empty.png", 5000, 1000, 3000, type=0)
+    show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
     if pygame.mixer.get_init(): # 
         try:
             sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
@@ -602,6 +602,10 @@ def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=5
                            Note: The solid display time is duration_ms - fade_in_ms - fade_out_ms.
                                  If fade_in_ms + fade_out_ms >= duration_ms, there is no solid phase,
                                  just fading or instant display/hide.
+        types:
+                            Type 0 for main screen splash
+                            Type 1 for top right icon
+                            Type 2 for icon on front of circle character
     """
     global _image_popup_visible, _image_popup_image, _image_popup_start_time, _image_popup_duration
     global _image_popup_fade_in_duration, _image_popup_fade_out_duration
@@ -612,7 +616,6 @@ def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=5
     screen_height = pygame.display.get_surface().get_height()
     panel_width = _gui_rects.get('panel_rect', pygame.Rect(0,0,0,0)).width
     main_display_width = screen_width - panel_width
-    main_display_height = screen_height # Image popup can span the whole height
 
     # Check if Pygame display is initialized
     if pygame.display.get_surface() is None:

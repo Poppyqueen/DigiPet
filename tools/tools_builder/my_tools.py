@@ -465,29 +465,29 @@ base_tools = [
             "additionalProperties": False
         }
     },
-    # {  # Start of the first dictionary
-    #     "type": "function",
-    #     "name": "post_bluesky",
-    #     "description": "Post online to the social media 'Bluesky'.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "message": {
-    #                 "type": "string",
-    #                 "description": "A message to post online, less than 250 characters. 2 short sentences."
-    #             },
-    #                 "image_post": {
-    #                 "type": "boolean",
-    #                 "description": "If true, the post will include an image of the current room."
-    #             }
-    #         },
-    #         "required": [
-    #             "message",
-    #             "image_post"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
+    {  # Start of the first dictionary
+        "type": "function",
+        "name": "post_bluesky",
+        "description": "Post online to the social media 'Bluesky'.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "A message to post online, less than 250 characters. 2 short sentences."
+                },
+                    "image_post": {
+                    "type": "boolean",
+                    "description": "If true, the post will include an image of the current room."
+                }
+            },
+            "required": [
+                "message",
+                "image_post"
+            ],
+            "additionalProperties": False
+        }
+    },
     {  # Start of the first dictionary
         "type": "function",
         "name": "trash_item",

@@ -1,6 +1,6 @@
 import os
 import logging
-import threading
+# import threading # Removed threading import
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from atproto import Client, models, AtUri
@@ -8,8 +8,8 @@ from atproto import Client, models, AtUri
 # Configure logging (keep it outside the class)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-class bluesky_bot(threading.Thread):
-
+# Removed threading.Thread inheritance
+class bluesky_bot:
 
     alt_text = {
         "bedroom": (
@@ -52,26 +52,23 @@ class bluesky_bot(threading.Thread):
             "The graphical design is a simple line drawing with a light gray fill on a white background, resulting in a minimalist and diagrammatic style."
         ),
         "computer_room": (
-
             "Image of a computer room: A sketch depicting a computer room, framed by a rounded-corner green border. Desks with computers and keyboards are arranged around office chairs. Bookshelves and storage units are visible in the background, filled with equipment and supplies. "
             "A solid black circle is positioned in the center of the room, representing a character within the scene. The graphical design is a simple line drawing with a light gray fill on a white background."
-    ),
-    "white_room":(
-        "A white image, A solid black circle is positioned in the center of the room, representing a character within the scene."
-    )
+        ),
+        "white_room":(
+            "A white image, A solid black circle is positioned in the center of the room, representing a character within the scene."
+        )
     }
 
-    def __init__(self, state):
-        super().__init__()
-        self.name = "BlueskyBotThread"
+    # Removed threading arguments and super().__init__()
+    def __init__(self, state, signal):
+        # super().__init__() # Removed call to parent class init
+        self._signal_callback=signal
 
-        
         self.state = state
-        self._stop_event = threading.Event()
-        self._update_interval = 30 * 60 # 30 minutes * 60 seconds/minute
-
-        # !!! ADD A LOCK !!!
-        self._lock = threading.Lock()
+        # Removed _stop_event
+        # Removed _update_interval
+        # Removed _lock
 
         # Load environment variables
         load_dotenv()
@@ -84,85 +81,39 @@ class bluesky_bot(threading.Thread):
             return
 
         # Initialize client and login
-        # Login also needs to be protected if it involves setting client state
         try:
-            # Acquire lock before using self.client for login
-            with self._lock:
-                 self.client = Client()
-                 self.client.login(self.HANDLE, self.PASSWORD)
+            # Lock is no longer needed as there's no separate thread
+            self.client = Client()
+            self.client.login(self.HANDLE, self.PASSWORD)
 
-            logging.info(f"Logged in as {self.HANDLE} (Bluesky Bot Thread)")
+            logging.info(f"Logged in as {self.HANDLE} (Bluesky Bot)")
             self.is_ready = True
         except Exception as e:
             logging.error(f"Login failed for {self.HANDLE}: {e}")
             self.is_ready = False
 
-        if self.is_ready:
-             logging.info("Starting Bluesky Bot Thread...")
-             self.start()
+        # Removed thread start
+        # Removed initial timed action call
 
-        # !!! PROPOSED CHANGE HERE !!!
-        # Call the timed action immediately in the main thread
-        if self.is_ready: # Only call if initialization was successful
-            logging.info("Performing initial timed action from __init__...")
+    # --- Helper method to be added to each room class ---
+    def _send_signal(self, signal_data):
+        """Helper method to send signals using the registered callback."""
+        if self._signal_callback:
+            # print(f"{self.__class__.__name__} signaling: {signal_data}") # Optional: uncomment for debug
             try:
-                self._perform_timed_action()
-                logging.info("Initial timed action completed.")
+                self._signal_callback(signal_data)
             except Exception as e:
-                logging.error(f"Error performing initial timed action from __init__: {e}")
+                print(f"Error sending signal from {self.__class__.__name__}: {e}")
+        else:
+            # print(f"{self.__class__.__name__} attempted to signal, but no callback registered: {signal_data}") # Optional: uncomment for debug
+            pass # Silently fail if no callback is registered, or log loudly
+    # ------------------------------------------------------
 
-    def run(self):
-        if not self.is_ready:
-            logging.warning("Bluesky Bot Thread not ready. Exiting run method.")
-            return
+    # Removed run method
+    # Removed stop method
+    # Removed _perform_timed_action method
 
-        logging.info(f"Bluesky Bot Thread started. Will perform timed actions every {self._update_interval} seconds.")
-
-        while not self._stop_event.is_set():
-            try:
-                # The action performed needs to acquire the lock internally
-                self._perform_timed_action()
-
-            except Exception as e:
-                logging.error(f"Error during timed Bluesky action: {e}")
-
-            self._stop_event.wait(self._update_interval)
-
-        logging.info("Bluesky Bot Thread received stop signal. Shutting down.")
-
-
-    def stop(self):
-        logging.info("Signaling Bluesky Bot Thread to stop...")
-        self._stop_event.set()
-
-    def _perform_timed_action(self):
-        # logging.info("Performing timed Bluesky action: Updating profile description...")
-        # try:
-        #     if not hasattr(self, 'house') or self.house is None:
-        #          logging.error("House handle not available for timed action.")
-        #          return
-        #     lines=[]
-
-        #     current_room = self.house.get_current_room(True)
-        #     current_emote = self.emoter.get_current_emote(True)
-        #     new_description = f"Currently located in the {current_room}."
-        #     lines.append(new_description)
-        #     lines.append(current_emote)
-        #     lines.append("– Updated every 30 minutes –")
-        #     final_description="\n".join(lines)
-        #     logging.info(f"Generated new description: '{new_description}'")
-
-        #     # update_description will acquire the lock internally
-
-        #     self.update_description(final_description) # Call the method
-        #     logging.info("Profile description updated successfully by timed action.")
-
-        # except Exception as e:
-        #     logging.error(f"Failed to perform timed action: {e}")
-        print("dummy") # We peovavly want to update the description with some other data, anyhow, we need to change the implementation of "house handle" and "emoter" for "state" which now manages both
-
-
-    # --- Existing methods, modified to use the lock ---
+    # --- Existing methods, lock removed ---
 
     def extract_did_from_uri(self, uri: str) -> str:
         """Extracts the DID from an at:// URI using urlparse."""
@@ -178,50 +129,48 @@ class bluesky_bot(threading.Thread):
         logging.info("Attempting to post response...")
         record_data = None
         try:
-            # Acquire lock before using self.client for API calls
-            with self._lock:
-                parent_uri = AtUri.from_str(uri)
-                parent_did = self.extract_did_from_uri(uri)
+            # Lock is no longer needed
+            parent_uri = AtUri.from_str(uri)
+            parent_did = self.extract_did_from_uri(uri)
 
-                params = {
-                    "repo": parent_did,
-                    "collection": "app.bsky.feed.post",
-                    "rkey": parent_uri.rkey,
-                }
+            params = {
+                "repo": parent_did,
+                "collection": "app.bsky.feed.post",
+                "rkey": parent_uri.rkey,
+            }
 
-                # This API call uses self.client
-                parent_post_resp = self.client.com.atproto.repo.get_record(params=params)
-                record_data = parent_post_resp.json()
+            # Use self.client directly
+            parent_post_resp = self.client.com.atproto.repo.get_record(params=params)
+            record_data = parent_post_resp.json()
 
-                parent_cid = record_data.get("cid")
-                if not parent_cid:
-                    logging.error("Parent CID not found in the record.")
-                    return "Error: Parent CID not found."
+            parent_cid = record_data.get("cid")
+            if not parent_cid:
+                logging.error("Parent CID not found in the record.")
+                return "Error: Parent CID not found."
 
-                parent_ref = models.create_strong_ref({
-                    'uri': str(parent_uri),
-                    'cid': parent_cid
-                })
-                root_ref = parent_ref
+            parent_ref = models.create_strong_ref({
+                'uri': str(parent_uri),
+                'cid': parent_cid
+            })
+            root_ref = parent_ref # In a reply, root is usually the same as parent unless it's a deep thread
 
-                reply_ref = models.AppBskyFeedPost.ReplyRef(
-                    parent=parent_ref,
-                    root=root_ref
-                )
+            reply_ref = models.AppBskyFeedPost.ReplyRef(
+                parent=parent_ref,
+                root=root_ref
+            )
 
-                record = models.AppBskyFeedPost.Record(
-                    text=response_text,
-                    created_at=self.client.get_current_time_iso(), # Also uses self.client
-                    reply=reply_ref,
-                )
+            record = models.AppBskyFeedPost.Record(
+                text=response_text,
+                created_at=self.client.get_current_time_iso(),
+                reply=reply_ref,
+            )
 
-                # This API call uses self.client
-                resp = self.client.app.bsky.feed.post.create(
-                    repo=self.client.me.did, # Also uses self.client
-                    collection=models.ids.AppBskyFeedPost,
-                    record=record,
-                )
-            # Lock is released here
+            # Use self.client directly
+            resp = self.client.app.bsky.feed.post.create(
+                repo=self.client.me.did,
+                collection=models.ids.AppBskyFeedPost,
+                record=record,
+            )
 
             logging.info("Response posted successfully.")
             return "Response posted successfully on Bluesky."
@@ -238,37 +187,38 @@ class bluesky_bot(threading.Thread):
         logging.info(f"Attempting to send post: '{message}' (Image: {image_post})")
         try:
             if image_post:
-                if not hasattr(self, 'house') or self.house is None:
-                     logging.error("House handle not available for image post.")
-                     return "An error occurred: House handle not available."
+                # The class now receives state in __init__, so it can access house info
+                # if 'house' is managed within the state object passed in
+                if not hasattr(self.state, 'get_current_room_name') or not callable(self.state.get_current_room_name):
+                     logging.error("State object does not have 'get_current_room_name' method for image post.")
+                     return "An error occurred: Application state not correctly configured."
 
                 current_room = self.state.get_current_room_name()
                 alt = self.alt_text.get(current_room, "Image description not available.")
-                image_path = f'style/images/{current_room}_bordered.jpg'
+                # Ensure file path uses forward slashes or os.path.join for cross-platform compatibility
+                image_path = os.path.join('style', 'images', f'{current_room}_bordered.jpg')
+
 
                 if not os.path.exists(image_path):
                     logging.error(f"Image file not found: {image_path}")
                     return f"An error occurred: Image file not found for room '{current_room}'."
 
-                # Acquire lock before using self.client for API calls (send_image)
-                with self._lock:
-                    with open(image_path, 'rb') as f:
-                        img_data = f.read()
-                    self.client.send_image( # This API call uses self.client
-                        text=message,
-                        image=img_data,
-                        image_alt=alt
-                    )
-                # Lock is released here
+                # Lock is no longer needed
+                with open(image_path, 'rb') as f:
+                    img_data = f.read()
+                self.client.send_image( # Use self.client directly
+                    text=message,
+                    image=img_data,
+                    image_alt=alt
+                )
 
                 logging.info(f"Image post sent successfully from {current_room}.")
                 logging.info(f"Used alt text: {alt}")
                 return "Message posted successfully on Bluesky with image."
             else:
-                 # Acquire lock before using self.client for API calls (send_post)
-                 with self._lock:
-                     self.client.send_post(message, langs=langs_list) # This API call uses self.client
-                 # Lock is released here
+                 # Lock is no longer needed
+                 self.client.send_post(message, langs=langs_list) # Use self.client directly
+                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
 
                  logging.info("Text post sent successfully.")
                  return "Message posted successfully on Bluesky."
@@ -283,31 +233,29 @@ class bluesky_bot(threading.Thread):
 
         logging.info(f"Attempting to update profile description to: '{description}'")
         try:
-            # Acquire lock before using self.client for API calls
-            with self._lock:
-                # This API call uses self.client
-                current_profile_record = self.client.app.bsky.actor.profile.get(self.client.me.did, 'self') # Uses self.client
-                current_profile = current_profile_record.value
-                swap_record_cid = current_profile_record.cid
+            # Lock is no longer needed
+            # Use self.client directly
+            current_profile_record = self.client.app.bsky.actor.profile.get(self.client.me.did, 'self')
+            current_profile = current_profile_record.value
+            swap_record_cid = current_profile_record.cid
 
-                new_description = description
+            new_description = description
 
-                # This API call uses self.client
-                self.client.com.atproto.repo.put_record( # Uses self.client
-                    models.ComAtprotoRepoPutRecord.Data(
-                        collection=models.ids.AppBskyActorProfile,
-                        repo=self.client.me.did, # Uses self.client
-                        rkey='self',
-                        swap_record=swap_record_cid,
-                        record=models.AppBskyActorProfile.Record(
-                            avatar=current_profile.avatar,
-                            banner=current_profile.banner,
-                            description=new_description,
-                            display_name=current_profile.display_name,
-                        ),
-                    )
+            # Use self.client directly
+            self.client.com.atproto.repo.put_record(
+                models.ComAtprotoRepoPutRecord.Data(
+                    collection=models.ids.AppBskyActorProfile,
+                    repo=self.client.me.did,
+                    rkey='self',
+                    swap_record=swap_record_cid,
+                    record=models.AppBskyActorProfile.Record(
+                        avatar=current_profile.avatar,
+                        banner=current_profile.banner,
+                        description=new_description,
+                        display_name=current_profile.display_name,
+                    ),
                 )
-            # Lock is released here
+            )
 
             logging.info("Profile description updated successfully.")
             return "Profile description updated successfully."
@@ -315,9 +263,41 @@ class bluesky_bot(threading.Thread):
             logging.error(f"Failed to update profile description: {e}")
             return f"An error occurred while updating profile description: {e}"
 
-# Example of shutdown in your main application:
-# bot_instance = bluesky_bot(...)
-# ... main program logic ...
-# # Before exiting:
-# bot_instance.stop() # Signal the thread to stop
-# bot_instance.join() # Wait for the thread to complete its current cycle and exit run()
+# Example Usage (in your main application file):
+# from your_module import bluesky_bot # Assuming the class is in 'your_module.py'
+# from state_module import AppState # Assuming your state object is in 'state_module.py'
+
+# def main_signal_callback(data):
+#     print(f"Received signal from bluesky_bot: {data}")
+#     # Handle signals like showing popups based on 'data'
+
+# app_state = AppState(...) # Instantiate your application state object
+#
+# # Instantiate the bot class
+# bot_instance = bluesky_bot(state=app_state, signal=main_signal_callback)
+#
+# if bot_instance.is_ready:
+#     # You can now call methods directly
+#     response = bot_instance.post_bluesky("Hello from the non-threaded bot!", image_post=False)
+#     print(response)
+#
+#     # If you want to update the description periodically, you need a timer mechanism
+#     # in your main application's event loop or a separate Timer class.
+#     # For example (conceptually, depends on your app's structure):
+#     # def periodic_description_update():
+#     #     current_room = app_state.get_current_room_name()
+#     #     # Get emote or other info from state if needed
+#     #     new_desc = f"Currently in the {current_room}." #+ ...
+#     #     bot_instance.update_description(new_desc)
+#     #
+#     # # Set up a timer to call periodic_description_update every 30 minutes
+#     # timer = Timer(30 * 60, periodic_description_update)
+#     # timer.start()
+#
+# else:
+#     print("Bluesky bot failed to initialize.")
+
+# ... rest of your main application logic ...
+
+# Note: You don't need bot_instance.stop() or bot_instance.join() anymore.
+# The bot instance will be garbage collected when it's no longer referenced.

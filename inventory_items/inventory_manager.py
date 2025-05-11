@@ -52,7 +52,7 @@ class InventoryHouseManager(GenericJsonTool):
         Args:
             base_path (str): The base directory path for the state JSON file.
             signal (callable, optional): A callback function to send signals.
-                                         Expected signature: `signal(data_dict)`.
+                                        Expected signature: `signal(data_dict)`.
         """
         # --- IMPORTANT: Override attributes BEFORE calling super().__init__() ---
         self.json_filename = 'house_inventory_state_id.json'
@@ -70,13 +70,13 @@ class InventoryHouseManager(GenericJsonTool):
         # Instantiate the BookComponent AFTER the state is loaded/initialized by super()
         self._book_component = BookComponent(self)
         try:
-             self._stats_component = StatsComponent(self) # Pass self reference
+            self._stats_component = StatsComponent(self) # Pass self reference
         except TypeError as e:
-             print(f"Error initializing StatsComponent: {e}")
-             # Decide if this is a fatal error for your application.
-             # If stats are non-critical, just log and continue with _stats_component = None.
-             # If critical, you might re-raise the error or sys.exit(1).
-             # For now, just log and keep it None.
+            print(f"Error initializing StatsComponent: {e}")
+            # Decide if this is a fatal error for your application.
+            # If stats are non-critical, just log and continue with _stats_component = None.
+            # If critical, you might re-raise the error or sys.exit(1).
+            # For now, just log and keep it None.
         # Perform validation after loading or using default state
 
 
@@ -99,10 +99,10 @@ class InventoryHouseManager(GenericJsonTool):
         """Generates and increments the next unique item ID."""
         next_id = self._state.get("next_item_id", self.ITEM_ID_START_COUNTER) # Use .get() for robustness
         if not isinstance(next_id, int) or next_id < self.ITEM_ID_START_COUNTER:
-             next_id = self.ITEM_ID_START_COUNTER
-             print(f"Warning: Resetting next_item_id counter due to invalid value: {self._state.get('next_item_id')}")
-             self._state["next_item_id"] = next_id # Correct the state if invalid
-             # Note: This correction isn't saved until the next write_json
+            next_id = self.ITEM_ID_START_COUNTER
+            print(f"Warning: Resetting next_item_id counter due to invalid value: {self._state.get('next_item_id')}")
+            self._state["next_item_id"] = next_id # Correct the state if invalid
+            # Note: This correction isn't saved until the next write_json
 
         self._state["next_item_id"] = next_id + 1 # Increment the counter for next time
         if next_id + 1 > 999999: # Check the *new* value after increment
@@ -113,236 +113,236 @@ class InventoryHouseManager(GenericJsonTool):
         """Generates and increments the next unique room ID."""
         next_id = self._state.get("next_room_id", self.ROOM_ID_START_COUNTER) # Use .get() for robustness
         if not isinstance(next_id, int) or next_id < self.ROOM_ID_START_COUNTER:
-             next_id = self.ROOM_ID_START_COUNTER
-             print(f"Warning: Resetting next_room_id counter due to invalid value: {self._state.get('next_room_id')}")
-             self._state["next_room_id"] = next_id # Correct the state if invalid
+            next_id = self.ROOM_ID_START_COUNTER
+            print(f"Warning: Resetting next_room_id counter due to invalid value: {self._state.get('next_room_id')}")
+            self._state["next_room_id"] = next_id # Correct the state if invalid
 
         self._state["next_room_id"] = next_id + 1 # Increment the counter for next time
         if next_id + 1 > 999999: # Check the *new* value after increment
-             print(f"Warning: Room ID counter exceeds 6 digits ({next_id + 1}). Consider implementing ID reuse or expansion.")
+            print(f"Warning: Room ID counter exceeds 6 digits ({next_id + 1}). Consider implementing ID reuse or expansion.")
         return next_id
 
     # --- Post-Init Validation (Updated to include Emote State) ---
     def _post_init_state_validation(self):
-            # ... (existing _post_init_state_validation code, which now uses the updated _is_valid_item_data internally) ...
-            """
-            Performs validation on the loaded or default state to ensure structural integrity
-            and ID consistency for inventory, rooms, emotes, and stats. Corrects common issues
-            if possible and persists changes.
-            This method implicitly validates consumable structure because it calls
-            _is_valid_item_data for every item.
-            """
-            needs_save = False
+        # ... (existing _post_init_state_validation code, which now uses the updated _is_valid_item_data internally) ...
+        """
+        Performs validation on the loaded or default state to ensure structural integrity
+        and ID consistency for inventory, rooms, emotes, and stats. Corrects common issues
+        if possible and persists changes.
+        This method implicitly validates consumable structure because it calls
+        _is_valid_item_data for every item.
+        """
+        needs_save = False
 
-            # --- Validate ID counters ---
-            # Check and correct next_item_id
-            if not isinstance(self._state.get("next_item_id"), int) or self._state.get("next_item_id", 0) < self.ITEM_ID_START_COUNTER:
-                print(f"Validation Warning: 'next_item_id' invalid ({self._state.get('next_item_id')}). Resetting to start counter {self.ITEM_ID_START_COUNTER}.")
-                self._state["next_item_id"] = self.ITEM_ID_START_COUNTER
+        # --- Validate ID counters ---
+        # Check and correct next_item_id
+        if not isinstance(self._state.get("next_item_id"), int) or self._state.get("next_item_id", 0) < self.ITEM_ID_START_COUNTER:
+            print(f"Validation Warning: 'next_item_id' invalid ({self._state.get('next_item_id')}). Resetting to start counter {self.ITEM_ID_START_COUNTER}.")
+            self._state["next_item_id"] = self.ITEM_ID_START_COUNTER
+            needs_save = True
+        # Check and correct next_room_id
+        if not isinstance(self._state.get("next_room_id"), int) or self._state.get("next_room_id", 0) < self.ROOM_ID_START_COUNTER:
+            print(f"Validation Warning: 'next_room_id' invalid ({self._state.get('next_room_id')}). Resetting to start counter {self.ROOM_ID_START_COUNTER}.")
+            self._state["next_room_id"] = self.ROOM_ID_START_COUNTER
+            needs_save = True
+
+        # --- Validate basic structure keys and types ---
+        if not isinstance(self._state.get("current_room_id"), int):
+            print("Validation Warning: 'current_room_id' missing or not integer. Setting to default from _default_state.")
+            self._state["current_room_id"] = self._default_state.get("current_room_id", -1) # Use default, fallback to -1
+            needs_save = True
+
+        if not isinstance(self._state.get("rooms"), list):
+            print("Validation Warning: 'rooms' missing or not list. Resetting to default.")
+            # Use deepcopy or json dump/load for mutable defaults
+            self._state["rooms"] = json.loads(json.dumps(self._default_state["rooms"]))
+            needs_save = True
+
+        if not isinstance(self._state.get("inventory"), list):
+            print("Validation Warning: 'inventory' missing or not list. Resetting to default.")
+            self._state["inventory"] = json.loads(json.dumps(self._default_state["inventory"]))
+            needs_save = True
+
+        # --- Validate Emote State ---
+        possible_emotes = self._state.get("possible_emotes")
+        default_possible_emotes = self._default_state.get("possible_emotes", {})
+
+        if not isinstance(possible_emotes, dict):
+            print(f"Validation Warning: 'possible_emotes' in state is not a dict ({type(possible_emotes).__name__}). Resetting to default possible emotes.")
+            self._state["possible_emotes"] = json.loads(json.dumps(default_possible_emotes))
+            possible_emotes = self._state["possible_emotes"]
+            needs_save = True
+
+        current_emote = self._state.get("current_emote")
+        if current_emote is None or current_emote not in possible_emotes:
+            default_current_emote = self._default_state.get("current_emote", "unknown")
+            print(f"Validation Warning: current_emote '{current_emote}' not found or invalid in possible_emotes. Setting to default.")
+            new_current = default_current_emote
+            if new_current not in possible_emotes:
+                print(f"Validation Warning: Default current_emote '{new_current}' not available. Falling back to first available or 'unknown'.")
+                new_current = next(iter(possible_emotes), "unknown")
+            self._state["current_emote"] = new_current
+            needs_save = True
+        # --- End Emote State Validation ---
+
+        # --- Validate Stats State ---
+        stats_data = self._state.get("stats")
+        default_stats_data = self._default_state.get("stats", {})
+        required_stats_keys = ["fullness", "hydration", "energy"]
+
+        if not isinstance(stats_data, dict):
+            print(f"Validation Warning: 'stats' missing or not a dictionary ({type(stats_data).__name__}). Resetting to default stats.")
+            self._state["stats"] = json.loads(json.dumps(default_stats_data))
+            stats_data = self._state["stats"]
+            needs_save = True
+
+        for stat_key in required_stats_keys:
+            stat_value = stats_data.get(stat_key)
+            default_value = default_stats_data.get(stat_key, 200)
+
+            if stat_value is None or not isinstance(stat_value, (int, float)):
+                print(f"Validation Warning: Stat '{stat_key}' missing or invalid value ({stat_value}). Setting to default ({default_value}).")
+                stats_data[stat_key] = default_value
                 needs_save = True
-            # Check and correct next_room_id
-            if not isinstance(self._state.get("next_room_id"), int) or self._state.get("next_room_id", 0) < self.ROOM_ID_START_COUNTER:
-                print(f"Validation Warning: 'next_room_id' invalid ({self._state.get('next_room_id')}). Resetting to start counter {self.ROOM_ID_START_COUNTER}.")
-                self._state["next_room_id"] = self.ROOM_ID_START_COUNTER
+            elif not (0 <= stat_value <= 200):
+                print(f"Validation Warning: Stat '{stat_key}' value ({stat_value}) is outside expected range (0-200). Clamping.")
+                stats_data[stat_key] = max(0, min(200, stat_value))
                 needs_save = True
+        # --- End Stats State Validation ---
 
-            # --- Validate basic structure keys and types ---
-            if not isinstance(self._state.get("current_room_id"), int):
-                print("Validation Warning: 'current_room_id' missing or not integer. Setting to default from _default_state.")
-                self._state["current_room_id"] = self._default_state.get("current_room_id", -1) # Use default, fallback to -1
+        # --- Validate Rooms ---
+        room_ids_seen = set()
+        valid_rooms = []
+        for room in self._state.get("rooms", []):
+            if not isinstance(room, dict):
+                print(f"Validation Warning: Found non-dict entry in rooms list: {room}. Removing.")
                 needs_save = True
-
-            if not isinstance(self._state.get("rooms"), list):
-                print("Validation Warning: 'rooms' missing or not list. Resetting to default.")
-                # Use deepcopy or json dump/load for mutable defaults
-                self._state["rooms"] = json.loads(json.dumps(self._default_state["rooms"]))
+                continue
+            required_room_keys = ["id", "name", "descriptions", "items"]
+            if not all(key in room for key in required_room_keys):
+                print(f"Validation Warning: Room missing required keys ({required_room_keys}): ID {room.get('id', 'unknown')}. Removing.")
                 needs_save = True
+                continue
 
-            if not isinstance(self._state.get("inventory"), list):
-                print("Validation Warning: 'inventory' missing or not list. Resetting to default.")
-                self._state["inventory"] = json.loads(json.dumps(self._default_state["inventory"]))
+            if not isinstance(room.get("id"), int):
+                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-integer ID: {room.get('id')}. Removing.")
                 needs_save = True
-
-            # --- Validate Emote State ---
-            possible_emotes = self._state.get("possible_emotes")
-            default_possible_emotes = self._default_state.get("possible_emotes", {})
-
-            if not isinstance(possible_emotes, dict):
-                print(f"Validation Warning: 'possible_emotes' in state is not a dict ({type(possible_emotes).__name__}). Resetting to default possible emotes.")
-                self._state["possible_emotes"] = json.loads(json.dumps(default_possible_emotes))
-                possible_emotes = self._state["possible_emotes"]
+                continue
+            if room["id"] in room_ids_seen:
+                print(f"Validation Warning: Duplicate room ID found: {room['id']}. Removing this instance.")
                 needs_save = True
-
-            current_emote = self._state.get("current_emote")
-            if current_emote is None or current_emote not in possible_emotes:
-                default_current_emote = self._default_state.get("current_emote", "unknown")
-                print(f"Validation Warning: current_emote '{current_emote}' not found or invalid in possible_emotes. Setting to default.")
-                new_current = default_current_emote
-                if new_current not in possible_emotes:
-                    print(f"Validation Warning: Default current_emote '{new_current}' not available. Falling back to first available or 'unknown'.")
-                    new_current = next(iter(possible_emotes), "unknown")
-                self._state["current_emote"] = new_current
+                continue
+            if not isinstance(room.get("name"), str) or not room.get("name", "").strip():
+                print(f"Validation Warning: Room ID {room['id']} has invalid or empty name. Setting to 'Unnamed Room'.")
+                room["name"] = "Unnamed Room"
                 needs_save = True
-            # --- End Emote State Validation ---
-
-            # --- Validate Stats State ---
-            stats_data = self._state.get("stats")
-            default_stats_data = self._default_state.get("stats", {})
-            required_stats_keys = ["fullness", "hydration", "energy"]
-
-            if not isinstance(stats_data, dict):
-                print(f"Validation Warning: 'stats' missing or not a dictionary ({type(stats_data).__name__}). Resetting to default stats.")
-                self._state["stats"] = json.loads(json.dumps(default_stats_data))
-                stats_data = self._state["stats"]
+            if not isinstance(room.get("descriptions"), list) or not all(isinstance(d, str) for d in room.get("descriptions", [])):
+                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid descriptions (not list of strings). Correcting to empty list.")
+                room["descriptions"] = []
                 needs_save = True
+            # Ensure items is a list before processing
+            if not isinstance(room.get("items"), list):
+                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'items' (not list). Correcting to empty list.")
+                room["items"] = []
+                needs_save = True # Need to re-validate items in this corrected list
 
-            for stat_key in required_stats_keys:
-                stat_value = stats_data.get(stat_key)
-                default_value = default_stats_data.get(stat_key, 200)
-
-                if stat_value is None or not isinstance(stat_value, (int, float)):
-                    print(f"Validation Warning: Stat '{stat_key}' missing or invalid value ({stat_value}). Setting to default ({default_value}).")
-                    stats_data[stat_key] = default_value
-                    needs_save = True
-                elif not (0 <= stat_value <= 200):
-                    print(f"Validation Warning: Stat '{stat_key}' value ({stat_value}) is outside expected range (0-200). Clamping.")
-                    stats_data[stat_key] = max(0, min(200, stat_value))
-                    needs_save = True
-            # --- End Stats State Validation ---
-
-            # --- Validate Rooms ---
-            room_ids_seen = set()
-            valid_rooms = []
-            for room in self._state.get("rooms", []):
-                if not isinstance(room, dict):
-                    print(f"Validation Warning: Found non-dict entry in rooms list: {room}. Removing.")
-                    needs_save = True
-                    continue
-                required_room_keys = ["id", "name", "descriptions", "items"]
-                if not all(key in room for key in required_room_keys):
-                    print(f"Validation Warning: Room missing required keys ({required_room_keys}): ID {room.get('id', 'unknown')}. Removing.")
-                    needs_save = True
-                    continue
-
-                if not isinstance(room.get("id"), int):
-                    print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-integer ID: {room.get('id')}. Removing.")
-                    needs_save = True
-                    continue
-                if room["id"] in room_ids_seen:
-                    print(f"Validation Warning: Duplicate room ID found: {room['id']}. Removing this instance.")
-                    needs_save = True
-                    continue
-                if not isinstance(room.get("name"), str) or not room.get("name", "").strip():
-                    print(f"Validation Warning: Room ID {room['id']} has invalid or empty name. Setting to 'Unnamed Room'.")
-                    room["name"] = "Unnamed Room"
-                    needs_save = True
-                if not isinstance(room.get("descriptions"), list) or not all(isinstance(d, str) for d in room.get("descriptions", [])):
-                    print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid descriptions (not list of strings). Correcting to empty list.")
-                    room["descriptions"] = []
-                    needs_save = True
-                # Ensure items is a list before processing
-                if not isinstance(room.get("items"), list):
-                    print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'items' (not list). Correcting to empty list.")
-                    room["items"] = []
-                    needs_save = True # Need to re-validate items in this corrected list
-
-                # Validate items within the room using _is_valid_item_data (which now includes consumable checks)
-                # Filter out invalid ones and collect unique IDs
-                original_item_count_in_room = len(room.get("items", []))
-                valid_room_items_list = []
-                if isinstance(room.get("items"), list): # Double check it's a list before iterating
-                    for item in room["items"]:
-                        # _is_valid_item_data now checks for ID and structure including consumable/book specifics
-                        is_valid, msg = self._is_valid_item_data(item, check_id=True)
-                        if not is_valid:
-                            print(f"Validation Warning: Invalid item found in room ID {room.get('id', 'unknown')}: {msg}. Removing.")
-                            needs_save = True
-                            continue
-                        # Add valid item to temp list
-                        valid_room_items_list.append(item)
-
-                room["items"] = valid_room_items_list # Update room's item list with valid items
-                if len(room["items"]) < original_item_count_in_room:
-                    needs_save = True # Items were removed due to validation
-
-                room_ids_seen.add(room["id"])
-                valid_rooms.append(room)
-
-            self._state["rooms"] = valid_rooms
-
-            # Validate current_room_id against validated rooms
-            room_id_exists = any(r['id'] == self._state.get("current_room_id") for r in self._state.get("rooms", []))
-            if not room_id_exists and self._state.get("rooms"):
-                print(f"Validation Warning: current_room_id '{self._state.get('current_room_id')}' not found in valid rooms. Setting to first available room ID ({self._state['rooms'][0]['id']}).")
-                self._state["current_room_id"] = self._state["rooms"][0]["id"]
-                needs_save = True
-            elif not room_id_exists and not self._state.get("rooms"):
-                print("FATAL Error: No valid rooms defined in state or default state. Cannot set current_room_id. Setting to -1.")
-                self._state["current_room_id"] = -1
-                needs_save = True
-
-            # --- Validate Inventory and collect ALL valid item IDs seen ---
-            item_ids_seen = set()
-            # First, collect valid item IDs from rooms
-            for room in self._state.get("rooms", []):
-                if isinstance(room, dict) and isinstance(room.get("items"), list):
-                    # Iterate through the list that was just validated/filtered above
-                    for item in room["items"]:
-                        # At this point, items in room["items"] should be valid based on _is_valid_item_data
-                        # But we still need to check for duplicates across ALL locations
-                        if isinstance(item, dict) and isinstance(item.get('id'), int):
-                                if item['id'] in item_ids_seen:
-                                    print(f"Validation Warning: Duplicate item ID found ({item['id']}) in room ID {room.get('id', 'unknown')}. Item '{item.get('name', 'Unnamed')}'. This instance will be removed during final item list construction.")
-                                    needs_save = True # Duplicate found, will need saving
-                                item_ids_seen.add(item['id'])
-
-
-            # Now process inventory, filtering invalid items and duplicates against items_ids_seen
-            valid_inventory_items_list = []
-            if isinstance(self._state.get("inventory"), list):
-                original_inventory_count = len(self._state["inventory"])
-                for item in self._state["inventory"]:
+            # Validate items within the room using _is_valid_item_data (which now includes consumable checks)
+            # Filter out invalid ones and collect unique IDs
+            original_item_count_in_room = len(room.get("items", []))
+            valid_room_items_list = []
+            if isinstance(room.get("items"), list): # Double check it's a list before iterating
+                for item in room["items"]:
                     # _is_valid_item_data now checks for ID and structure including consumable/book specifics
                     is_valid, msg = self._is_valid_item_data(item, check_id=True)
                     if not is_valid:
-                        print(f"Validation Warning: Invalid item found in inventory: {msg}. Removing.")
+                        print(f"Validation Warning: Invalid item found in room ID {room.get('id', 'unknown')}: {msg}. Removing.")
                         needs_save = True
                         continue
+                    # Add valid item to temp list
+                    valid_room_items_list.append(item)
+
+            room["items"] = valid_room_items_list # Update room's item list with valid items
+            if len(room["items"]) < original_item_count_in_room:
+                needs_save = True # Items were removed due to validation
+
+            room_ids_seen.add(room["id"])
+            valid_rooms.append(room)
+
+        self._state["rooms"] = valid_rooms
+
+        # Validate current_room_id against validated rooms
+        room_id_exists = any(r['id'] == self._state.get("current_room_id") for r in self._state.get("rooms", []))
+        if not room_id_exists and self._state.get("rooms"):
+            print(f"Validation Warning: current_room_id '{self._state.get('current_room_id')}' not found in valid rooms. Setting to first available room ID ({self._state['rooms'][0]['id']}).")
+            self._state["current_room_id"] = self._state["rooms"][0]["id"]
+            needs_save = True
+        elif not room_id_exists and not self._state.get("rooms"):
+            print("FATAL Error: No valid rooms defined in state or default state. Cannot set current_room_id. Setting to -1.")
+            self._state["current_room_id"] = -1
+            needs_save = True
+
+        # --- Validate Inventory and collect ALL valid item IDs seen ---
+        item_ids_seen = set()
+        # First, collect valid item IDs from rooms
+        for room in self._state.get("rooms", []):
+            if isinstance(room, dict) and isinstance(room.get("items"), list):
+                # Iterate through the list that was just validated/filtered above
+                for item in room["items"]:
+                    # At this point, items in room["items"] should be valid based on _is_valid_item_data
+                    # But we still need to check for duplicates across ALL locations
                     if isinstance(item, dict) and isinstance(item.get('id'), int):
-                        if item['id'] in item_ids_seen: # Check against IDs seen in rooms *and* previous inventory items
-                                print(f"Validation Warning: Duplicate item ID found ({item['id']}) in inventory. Item '{item.get('name', 'Unnamed')}'. Removing this instance.")
-                                needs_save = True
-                                continue
-                        item_ids_seen.add(item['id'])
-                        valid_inventory_items_list.append(item)
-                    else: # Item is valid structure but ID is not int (should be caught by _is_valid_item_data, but defensive)
-                        print(f"Validation Warning: Item passed basic validation but ID invalid: {item}. Removing.")
-                        needs_save = True
-                        continue # Skip adding it
-
-                self._state["inventory"] = valid_inventory_items_list # Update inventory list
-                if len(self._state["inventory"]) < original_inventory_count:
-                    needs_save = True # Items were removed due to validation or duplicates
+                            if item['id'] in item_ids_seen:
+                                print(f"Validation Warning: Duplicate item ID found ({item['id']}) in room ID {room.get('id', 'unknown')}. Item '{item.get('name', 'Unnamed')}'. This instance will be removed during final item list construction.")
+                                needs_save = True # Duplicate found, will need saving
+                            item_ids_seen.add(item['id'])
 
 
-            # Ensure all existing item IDs are below the next_item_id counter
-            # Use the item_ids_seen set which contains IDs of all valid, non-duplicate items now
-            max_existing_item_id = max(list(item_ids_seen) + [self.ITEM_ID_START_COUNTER - 1])
-            if self._state.get("next_item_id", 0) <= max_existing_item_id:
-                print(f"Validation Warning: 'next_item_id' ({self._state.get('next_item_id')}) is not greater than the highest existing item ID ({max_existing_item_id}). Adjusting.")
-                self._state["next_item_id"] = max_existing_item_id + 1
-                needs_save = True
+        # Now process inventory, filtering invalid items and duplicates against items_ids_seen
+        valid_inventory_items_list = []
+        if isinstance(self._state.get("inventory"), list):
+            original_inventory_count = len(self._state["inventory"])
+            for item in self._state["inventory"]:
+                # _is_valid_item_data now checks for ID and structure including consumable/book specifics
+                is_valid, msg = self._is_valid_item_data(item, check_id=True)
+                if not is_valid:
+                    print(f"Validation Warning: Invalid item found in inventory: {msg}. Removing.")
+                    needs_save = True
+                    continue
+                if isinstance(item, dict) and isinstance(item.get('id'), int):
+                    if item['id'] in item_ids_seen: # Check against IDs seen in rooms *and* previous inventory items
+                            print(f"Validation Warning: Duplicate item ID found ({item['id']}) in inventory. Item '{item.get('name', 'Unnamed')}'. Removing this instance.")
+                            needs_save = True
+                            continue
+                    item_ids_seen.add(item['id'])
+                    valid_inventory_items_list.append(item)
+                else: # Item is valid structure but ID is not int (should be caught by _is_valid_item_data, but defensive)
+                    print(f"Validation Warning: Item passed basic validation but ID invalid: {item}. Removing.")
+                    needs_save = True
+                    continue # Skip adding it
 
-            # Ensure all existing room IDs are below the next_room_id counter
-            max_existing_room_id = max(list(room_ids_seen) + [self.ROOM_ID_START_COUNTER - 1])
-            if self._state.get("next_room_id", 0) <= max_existing_room_id:
-                print(f"Validation Warning: 'next_room_id' ({self._state.get('next_room_id')}) is not greater than the highest existing room ID ({max_existing_room_id}). Adjusting.")
-                self._state["next_room_id"] = max_existing_room_id + 1
-                needs_save = True
+            self._state["inventory"] = valid_inventory_items_list # Update inventory list
+            if len(self._state["inventory"]) < original_inventory_count:
+                needs_save = True # Items were removed due to validation or duplicates
 
-            if needs_save:
-                print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
-                self._write_json(self._state)
+
+        # Ensure all existing item IDs are below the next_item_id counter
+        # Use the item_ids_seen set which contains IDs of all valid, non-duplicate items now
+        max_existing_item_id = max(list(item_ids_seen) + [self.ITEM_ID_START_COUNTER - 1])
+        if self._state.get("next_item_id", 0) <= max_existing_item_id:
+            print(f"Validation Warning: 'next_item_id' ({self._state.get('next_item_id')}) is not greater than the highest existing item ID ({max_existing_item_id}). Adjusting.")
+            self._state["next_item_id"] = max_existing_item_id + 1
+            needs_save = True
+
+        # Ensure all existing room IDs are below the next_room_id counter
+        max_existing_room_id = max(list(room_ids_seen) + [self.ROOM_ID_START_COUNTER - 1])
+        if self._state.get("next_room_id", 0) <= max_existing_room_id:
+            print(f"Validation Warning: 'next_room_id' ({self._state.get('next_room_id')}) is not greater than the highest existing room ID ({max_existing_room_id}). Adjusting.")
+            self._state["next_room_id"] = max_existing_room_id + 1
+            needs_save = True
+
+        if needs_save:
+            print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
+            self._write_json(self._state)
 
 
     # --- Helper Methods (Internal Use - STAY here) ---
@@ -363,13 +363,13 @@ class InventoryHouseManager(GenericJsonTool):
 
         Returns:
             dict or None: A dictionary like {'location': 'room'|'inventory',
-                          'location_name': room_name_or_None, 'location_id': room_id_or_None,
-                          'item_data': item_dict}
-                          if found, otherwise None.
+                        'location_name': room_name_or_None, 'location_id': room_id_or_None,
+                        'item_data': item_dict}
+                        if found, otherwise None.
         """
         if not isinstance(item_id, int):
-             # print(f"Debug: _find_item_info_by_id received non-int ID: {item_id}") # Optional debug
-             return None # Cannot search for non-integer ID
+            # print(f"Debug: _find_item_info_by_id received non-int ID: {item_id}") # Optional debug
+            return None # Cannot search for non-integer ID
 
         # Check Inventory
         # Ensure inventory is a list before iterating
@@ -391,8 +391,8 @@ class InventoryHouseManager(GenericJsonTool):
                 # Robust check for room dictionary, ID, and items list
                 if isinstance(room, dict) and isinstance(room.get("id"), int) and isinstance(room.get("items"), list):
                     for item in room["items"]:
-                         # Robust check for item dictionary and ID key/type
-                         if isinstance(item, dict) and item.get("id") == item_id and isinstance(item.get("id"), int):
+                        # Robust check for item dictionary and ID key/type
+                        if isinstance(item, dict) and item.get("id") == item_id and isinstance(item.get("id"), int):
                             return {
                                 "location": "room",
                                 "location_name": room.get("name"),
@@ -405,181 +405,181 @@ class InventoryHouseManager(GenericJsonTool):
     def _find_room_by_id(self, room_id):
         """Internal helper to find a room dictionary by its ID, returning None if not found."""
         if not isinstance(room_id, int):
-             return None
+            return None
         if isinstance(self._state.get("rooms"), list): # Ensure rooms is a list
             for room in self._state["rooms"]:
-                 if isinstance(room, dict) and room.get("id") == room_id and isinstance(room.get("id"), int):
-                      return room
+                if isinstance(room, dict) and room.get("id") == room_id and isinstance(room.get("id"), int):
+                    return room
         return None
 
     def _find_room_id_by_name(self, room_name):
-         """Internal helper to find a room ID by its name (case-insensitive), returning None if not found."""
-         if not isinstance(room_name, str) or not room_name.strip():
-              return None
-         name_lower = room_name.strip().lower()
-         if isinstance(self._state.get("rooms"), list): # Ensure rooms is a list
-             for room in self._state["rooms"]:
-                  if isinstance(room, dict) and isinstance(room.get("name"), str) and room["name"].lower() == name_lower:
-                       return room.get("id") # Return the ID if found
-         return None
+        """Internal helper to find a room ID by its name (case-insensitive), returning None if not found."""
+        if not isinstance(room_name, str) or not room_name.strip():
+            return None
+        name_lower = room_name.strip().lower()
+        if isinstance(self._state.get("rooms"), list): # Ensure rooms is a list
+            for room in self._state["rooms"]:
+                if isinstance(room, dict) and isinstance(room.get("name"), str) and room["name"].lower() == name_lower:
+                    return room.get("id") # Return the ID if found
+        return None
 
     def _is_valid_item_data(self, item_data, check_id=False):
-         """
-         Internal helper to validate the structure and content of an item dictionary.
-         Optionally checks for the 'id' key's presence and type.
-         Includes book-specific and consumable-specific validation.
-         """
-         if not isinstance(item_data, dict):
-              return False, "Item data is not a dictionary."
+        """
+        Internal helper to validate the structure and content of an item dictionary.
+        Optionally checks for the 'id' key's presence and type.
+        Includes book-specific and consumable-specific validation.
+        """
+        if not isinstance(item_data, dict):
+            return False, "Item data is not a dictionary."
 
-         if check_id:
-              # Use .get() for safety before checking isinstance
-              item_id_val = item_data.get('id')
-              if item_id_val is None or not isinstance(item_id_val, int):
-                   return False, f"Item data missing or has invalid 'id' ({item_id_val})."
+        if check_id:
+            # Use .get() for safety before checking isinstance
+            item_id_val = item_data.get('id')
+            if item_id_val is None or not isinstance(item_id_val, int):
+                return False, f"Item data missing or has invalid 'id' ({item_id_val})."
 
-         # Required keys for ALL item types (excluding ID if check_id=False)
-         # Note: 'stats_edit' and 'effects' are specific to 'consumable', 'chapters' to 'book'
-         # We check for type-specific keys below.
-         required_keys_base = ["name", "descriptions", "static", "type"]
-         if not all(key in item_data for key in required_keys_base):
-              missing = [key for key in required_keys_base if key not in item_data]
-              # Attempt to include item name if available for better logging
-              item_name_for_log = item_data.get('name', 'Unnamed Item')
-              item_id_for_log = item_data.get('id', 'unknown')
-              return False, f"Item '{item_name_for_log}' (ID:{item_id_for_log}) missing base required keys: {missing}"
+        # Required keys for ALL item types (excluding ID if check_id=False)
+        # Note: 'stats_edit' and 'effects' are specific to 'consumable', 'chapters' to 'book'
+        # We check for type-specific keys below.
+        required_keys_base = ["name", "descriptions", "static", "type"]
+        if not all(key in item_data for key in required_keys_base):
+            missing = [key for key in required_keys_base if key not in item_data]
+            # Attempt to include item name if available for better logging
+            item_name_for_log = item_data.get('name', 'Unnamed Item')
+            item_id_for_log = item_data.get('id', 'unknown')
+            return False, f"Item '{item_name_for_log}' (ID:{item_id_for_log}) missing base required keys: {missing}"
 
-         # Basic type checks for required keys
-         item_name = item_data.get('name', 'Unnamed') # Use get for safety
-         if not isinstance(item_data["name"], str) or not item_data["name"].strip():
-              item_id_for_log = item_data.get('id', 'unknown')
-              return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'name' must be a non-empty string."
+        # Basic type checks for required keys
+        item_name = item_data.get('name', 'Unnamed') # Use get for safety
+        if not isinstance(item_data["name"], str) or not item_data["name"].strip():
+            item_id_for_log = item_data.get('id', 'unknown')
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'name' must be a non-empty string."
 
-         # Descriptions validation also checks if it's a list of strings
-         descriptions = item_data.get("descriptions", []) # Use get
-         if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
-              item_id_for_log = item_data.get('id', 'unknown')
-              return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'descriptions' must be a list of strings."
+        # Descriptions validation also checks if it's a list of strings
+        descriptions = item_data.get("descriptions", []) # Use get
+        if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
+            item_id_for_log = item_data.get('id', 'unknown')
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'descriptions' must be a list of strings."
 
-         if not isinstance(item_data.get("static"), bool): # Use get
-              item_id_for_log = item_data.get('id', 'unknown')
-              return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'static' must be a boolean."
+        if not isinstance(item_data.get("static"), bool): # Use get
+            item_id_for_log = item_data.get('id', 'unknown')
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'static' must be a boolean."
 
-         item_type = item_data.get("type")
-         if item_type not in self.ALLOWED_ITEM_TYPES:
-              item_id_for_log = item_data.get('id', 'unknown')
-              return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' '{item_type}' is not allowed. Allowed types: {self.ALLOWED_ITEM_TYPES}"
+        item_type = item_data.get("type")
+        if item_type not in self.ALLOWED_ITEM_TYPES:
+            item_id_for_log = item_data.get('id', 'unknown')
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' '{item_type}' is not allowed. Allowed types: {self.ALLOWED_ITEM_TYPES}"
 
-         # --- Type-specific validation ---
+        # --- Type-specific validation ---
 
-         # --- Book-specific validation ---
-         if item_type == "book":
-              # Use .get() for 'chapters' key
-              chapters_list = item_data.get("chapters")
-              if not isinstance(chapters_list, list):
-                   item_id_for_log = item_data.get('id', 'unknown')
-                   return False, f"Book item '{item_name}' (ID:{item_id_for_log}) missing 'chapters' key or 'chapters' is not a list."
-              # Validate structure of each chapter in the list
-              for i, chapter in enumerate(chapters_list):
-                   if not isinstance(chapter, dict):
+        # --- Book-specific validation ---
+        if item_type == "book":
+            # Use .get() for 'chapters' key
+            chapters_list = item_data.get("chapters")
+            if not isinstance(chapters_list, list):
+                item_id_for_log = item_data.get('id', 'unknown')
+                return False, f"Book item '{item_name}' (ID:{item_id_for_log}) missing 'chapters' key or 'chapters' is not a list."
+            # Validate structure of each chapter in the list
+            for i, chapter in enumerate(chapters_list):
+                if not isinstance(chapter, dict):
                         item_id_for_log = item_data.get('id', 'unknown')
                         return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid chapter entry (not dict) at index {i}."
-                   # Use .get() for chapter keys
-                   chapter_title = chapter.get("title")
-                   chapter_content = chapter.get("content")
-                   if chapter_title is None or not isinstance(chapter_title, str) or not chapter_title.strip():
+                # Use .get() for chapter keys
+                chapter_title = chapter.get("title")
+                chapter_content = chapter.get("content")
+                if chapter_title is None or not isinstance(chapter_title, str) or not chapter_title.strip():
                         item_id_for_log = item_data.get('id', 'unknown')
                         return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid or empty chapter 'title' at index {i}."
-                   if chapter_content is None or not isinstance(chapter_content, str):
+                if chapter_content is None or not isinstance(chapter_content, str):
                         item_id_for_log = item_data.get('id', 'unknown')
                         return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid or missing chapter 'content' at index {i}."
-              # Note: We don't enforce chapter title uniqueness here, could add if needed.
+            # Note: We don't enforce chapter title uniqueness here, could add if needed.
 
-         # --- Consumable-specific validation (NEW/UPDATED) ---
-         elif item_type == "consumable":
-              # Validate stats_edit
-              stats_edit_data = item_data.get("stats_edit")
-              item_id_for_log = item_data.get('id', 'unknown') # Get ID for logging
-              if not isinstance(stats_edit_data, dict):
-                   return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) missing 'stats_edit' key or 'stats_edit' is not a dictionary."
+        # --- Consumable-specific validation (NEW/UPDATED) ---
+        elif item_type == "consumable":
+            # Validate stats_edit
+            stats_edit_data = item_data.get("stats_edit")
+            item_id_for_log = item_data.get('id', 'unknown') # Get ID for logging
+            if not isinstance(stats_edit_data, dict):
+                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) missing 'stats_edit' key or 'stats_edit' is not a dictionary."
 
-              valid_stats_keys = {"fullness", "hydration", "energy"}
-              # Check that stats_edit only contains expected keys and values are integers
-              for key, value in stats_edit_data.items():
-                   if key not in valid_stats_keys:
+            valid_stats_keys = {"fullness", "hydration", "energy"}
+            # Check that stats_edit only contains expected keys and values are integers
+            for key, value in stats_edit_data.items():
+                if key not in valid_stats_keys:
                         return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) has unexpected key '{key}' in 'stats_edit'. Valid keys are: {list(valid_stats_keys)}"
-                   if not isinstance(value, (int, float)):
+                if not isinstance(value, (int, float)):
                         return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) has non-integer or float value for stat '{key}' in 'stats_edit'."
 
-              # Validate effects list (NEW)
-              effects_list = item_data.get("effects")
-              if effects_list is None: # Allow effects to be optional, but warn if missing for consumable? Or make required? Let's make it optional for now.
-                   # print(f"Validation Info: Consumable item '{item_name}' (ID:{item_id_for_log}) is missing optional 'effects' list.") # Optional info log
-                   pass # Effects list is optional
-              elif not isinstance(effects_list, list):
-                   return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' key is not a list."
-              elif not all(isinstance(effect, str) for effect in effects_list):
-                   return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' list contains non-string values."
+            # Validate effects list (NEW)
+            effects_list = item_data.get("effects")
+            if effects_list is None: # Allow effects to be optional, but warn if missing for consumable? Or make required? Let's make it optional for now.
+                # print(f"Validation Info: Consumable item '{item_name}' (ID:{item_id_for_log}) is missing optional 'effects' list.") # Optional info log
+                pass # Effects list is optional
+            elif not isinstance(effects_list, list):
+                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' key is not a list."
+            elif not all(isinstance(effect, str) for effect in effects_list):
+                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' list contains non-string values."
 
 
-         # Add validation for other types if they have specific requirements
+        # Add validation for other types if they have specific requirements
 
 
 # -------- Plant validation (NEW)
 
-         # --- Plant-specific validation ---
-         if item_type == "plant":
-              item_id_for_log = item_data.get('id', 'unknown') # Get ID once for logging
+        # --- Plant-specific validation ---
+        if item_type == "plant":
+            item_id_for_log = item_data.get('id', 'unknown') # Get ID once for logging
 
-              # Use .get() for required keys and check types
-              timestamp_of_creation = item_data.get("timestamp_of_creation")
-              if timestamp_of_creation is None or not isinstance(timestamp_of_creation, (int, float)): # Assuming timestamp is a number (Unix epoch, etc.)
-                   return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'timestamp_of_creation' or it's not a number (int or float)."
+            # Use .get() for required keys and check types
+            timestamp_of_creation = item_data.get("timestamp_of_creation")
+            if timestamp_of_creation is None or not isinstance(timestamp_of_creation, (int, float)): # Assuming timestamp is a number (Unix epoch, etc.)
+                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'timestamp_of_creation' or it's not a number (int or float)."
 
-              last_watered = item_data.get("last_watered")
-              if last_watered is None or not isinstance(last_watered, (int, float)): # Assuming timestamp is a number
-                   return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'last_watered' or it's not a number (int or float)."
+            last_watered = item_data.get("last_watered")
+            if last_watered is None or not isinstance(last_watered, (int, float)): # Assuming timestamp is a number
+                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'last_watered' or it's not a number (int or float)."
 
-              current_stage = item_data.get("current_stage")
-              if current_stage is None or not isinstance(current_stage, float):
-                   return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'current_stage' or it's not a float."
+            current_stage = item_data.get("current_stage")
+            if current_stage is None or not isinstance(current_stage, float):
+                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'current_stage' or it's not a float."
 
-              total_stages = item_data.get("total_stages")
-              if total_stages is None or not isinstance(total_stages, float):
-                   return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'total_stages' or it's not a float."
+            total_stages = item_data.get("total_stages")
+            if total_stages is None or not isinstance(total_stages, float):
+                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'total_stages' or it's not a float."
 
-              # Note: You might want to add checks like current_stage <= total_stages and total_stages > 0
-              # but the request was just for type validation.
-         return True, "" # Item is valid
+            # Note: You might want to add checks like current_stage <= total_stages and total_stages > 0
+            # but the request was just for type validation.
+        return True, "" # Item is valid
 
 
     def _format_item_for_display(self, item_dict):
         """Formats an item dictionary into a readable string including name and ID."""
         if not isinstance(item_dict, dict):
-             return "Invalid Item Data" # Handle cases where dict is expected but not received
+            return "Invalid Item Data" # Handle cases where dict is expected but not received
 
         item_id = item_dict.get('id', -1)
         item_name = item_dict.get('name', 'Unnamed Item')
 
         # Ensure ID is an integer before formatting
         if not isinstance(item_id, int):
-             return f"{item_name} (ID:INVALID)"
+            return f"{item_name} (ID:INVALID)"
 
         return f"{item_name} (ID:{item_id:06d})" # Format ID to be 6 digits with leading zeros
 
 
     def _format_room_for_display(self, room_dict):
-         """Formats a room dictionary into a readable string including name and ID."""
-         if not isinstance(room_dict, dict):
-              return "Invalid Room Data"
+        """Formats a room dictionary into a readable string including name and ID."""
+        if not isinstance(room_dict, dict):
+            return "Invalid Room Data"
 
-         room_id = room_dict.get('id', -1)
-         room_name = room_dict.get('name', 'Unnamed Room')
+        room_id = room_dict.get('id', -1)
+        room_name = room_dict.get('name', 'Unnamed Room')
 
-         if not isinstance(room_id, int):
-              return f"{room_name} (ID:INVALID)"
+        if not isinstance(room_id, int):
+            return f"{room_name} (ID:INVALID)"
 
-         return f"{room_name} (ID:{room_id:06d})"
+        return f"{room_name} (ID:{room_id:06d})"
 
 
     # --- Public Methods (Core Inventory/House - MOST STAY here) ---
@@ -631,9 +631,9 @@ class InventoryHouseManager(GenericJsonTool):
         """
         current_room = self._find_room_by_id(self._state.get("current_room_id")) # Use .get()
         if current_room:
-             return current_room.get("name", "Unnamed Room") # Use .get()
+            return current_room.get("name", "Unnamed Room") # Use .get()
         else:
-             return f"Error: Current room ID '{self._state.get('current_room_id')}' is invalid or room not found." # Use .get()
+            return f"Error: Current room ID '{self._state.get('current_room_id')}' is invalid or room not found." # Use .get()
 
 
     def set_current_room(self, room_id: int):
@@ -648,13 +648,13 @@ class InventoryHouseManager(GenericJsonTool):
             str: A message indicating success or failure.
         """
         if not isinstance(room_id, int):
-             return f"Failed to move: Room ID must be an integer, received '{room_id}' ({type(room_id).__name__})."
+            return f"Failed to move: Room ID must be an integer, received '{room_id}' ({type(room_id).__name__})."
 
         target_room = self._find_room_by_id(room_id)
 
         if target_room:
             if self._state.get("current_room_id") == room_id: # Use .get() for safety
-                 return f"You are already in the {self._format_room_for_display(target_room)}."
+                return f"You are already in the {self._format_room_for_display(target_room)}."
             else:
                 self._state["current_room_id"] = room_id
                 self._write_json(self._state)
@@ -668,18 +668,20 @@ class InventoryHouseManager(GenericJsonTool):
                 descriptions = target_room.get("descriptions", []) # Use .get(), default to empty list
                 # Ensure descriptions is a list of strings before joining
                 if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
-                     descriptions = [] # Reset if invalid type
-                     desc_str = "(No description available.)"
+                    descriptions = [] # Reset if invalid type
+                    desc_str = "(No description available.)"
                 else:
-                     desc_str = ", ".join(descriptions)
-                     if not desc_str: # If list was empty
-                         desc_str = "(No description available.)"
+                    desc_str = ", ".join(descriptions)
+                    if not desc_str: # If list was empty
+                        desc_str = "(No description available.)"
 
                 list_room_items_names, list_inventory_item_names = self.list_inventories()
                 # list_inventory_item_names would now be ['old_key', 'Mysteries of the Cozy House']
                 # based on your base_state example
 
                 self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
+
+                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pointer_icon.png"}) 
 
                 return f"You move to the {self._format_room_for_display(target_room)}. {desc_str}"
         else:
@@ -701,13 +703,13 @@ class InventoryHouseManager(GenericJsonTool):
             descriptions = room_data.get("descriptions", []) # Use .get(), default to empty list
 
             if isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
-                 if descriptions:
-                     return f"Description for {room_display}:\n" + "\n".join(descriptions)
-                 else:
-                     return f"The {room_display} has no specific description."
+                if descriptions:
+                    return f"Description for {room_display}:\n" + "\n".join(descriptions)
+                else:
+                    return f"The {room_display} has no specific description."
             else:
-                 # This case should ideally be caught by validation, but defensive
-                 return f"Error: Descriptions for {room_display} are corrupted."
+                # This case should ideally be caught by validation, but defensive
+                return f"Error: Descriptions for {room_display} are corrupted."
         else:
             # This case means _find_room_by_id returned None, current_room_id is invalid
             return f"Error: Could not find description for current room (ID: {current_room_id}). State might be corrupted."
@@ -719,7 +721,7 @@ class InventoryHouseManager(GenericJsonTool):
 
         Returns:
             str: A comma-separated string of item descriptions (Name (ID:XXXXXX)),
-                 or a message if the room is empty or not found.
+                or a message if the room is empty or not found.
         """
 
         current_room_id = self._state.get("current_room_id") # Use .get()
@@ -741,8 +743,8 @@ class InventoryHouseManager(GenericJsonTool):
                 else:
                     return f"There are no items in the {room_display}."
             else:
-                 # This case should ideally be caught by validation, but defensive
-                 return f"Error: Item list for {room_display} is corrupted."
+                # This case should ideally be caught by validation, but defensive
+                return f"Error: Item list for {room_display} is corrupted."
         else:
             # This case means _find_room_by_id returned None
             return f"Error: Could not access item list for current room (ID: {current_room_id}). State might be corrupted."
@@ -754,7 +756,7 @@ class InventoryHouseManager(GenericJsonTool):
 
         Returns:
             str: A comma-separated string of item descriptions (Name (ID:XXXXXX)),
-                 or a message if the inventory is empty or not found.
+                or a message if the inventory is empty or not found.
         """
         inventory_list = self._state.get("inventory") # Use .get()
 
@@ -770,8 +772,8 @@ class InventoryHouseManager(GenericJsonTool):
             else:
                 return "Your inventory is empty."
         else:
-             # This case should ideally be caught by validation, but defensive
-             return "Error: Could not access inventory. State might be corrupted."
+            # This case should ideally be caught by validation, but defensive
+            return "Error: Could not access inventory. State might be corrupted."
     def get_item_details(self, item_id: int, internal=False):
         """
         Provides detailed information about an item by its ID.
@@ -896,8 +898,8 @@ class InventoryHouseManager(GenericJsonTool):
         try:
             item_data = item_info.get("item_data") # Use .get for safety
             if not item_data: # Ensure item_data exists within item_info
-                 print(f"Warning: item_info for ID {item_id} found but missing 'item_data'. item_info: {item_info}")
-                 return f"Error: Found item info for ID {item_id} but item data is missing."
+                print(f"Warning: item_info for ID {item_id} found but missing 'item_data'. item_info: {item_info}")
+                return f"Error: Found item info for ID {item_id} but item data is missing."
 
             item_display = self._format_item_for_display(item_data)
         except Exception as e:
@@ -916,8 +918,8 @@ class InventoryHouseManager(GenericJsonTool):
         # Check if inventory is full BEFORE attempting to pick up
         current_inventory = self._state.get("inventory", [])
         if not isinstance(current_inventory, list): # Defensive check
-             print("Warning: Inventory state corrupted during pickup, treating as full for safety.")
-             return "Error: Cannot pick up item, inventory state is corrupted."
+            print("Warning: Inventory state corrupted during pickup, treating as full for safety.")
+            return "Error: Cannot pick up item, inventory state is corrupted."
 
         if len(current_inventory) >= self.MAX_INVENTORY_SLOTS:
             # item_display is not used in this return string, so this is fine
@@ -983,6 +985,8 @@ class InventoryHouseManager(GenericJsonTool):
         list_room_items_names, list_inventory_item_names = self.list_inventories()
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"}) 
+
 
         # item_display is defined here
         return f"You picked up the {item_display}."
@@ -1029,7 +1033,7 @@ class InventoryHouseManager(GenericJsonTool):
 
             # Optional: Check if name exists before appending (defensive)
             if name:
-                 list_inventory_item_names.append(name)
+                list_inventory_item_names.append(name)
 
         # list_inventory_item_names would now be ['old_key', 'Mysteries of the Cozy House']
         # based on your base_state example
@@ -1121,6 +1125,8 @@ class InventoryHouseManager(GenericJsonTool):
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
 
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"}) 
+
         return f"You dropped the {item_display} in the {current_room_display}."
     
     def get_room_name(self, room_id) -> str:
@@ -1198,8 +1204,8 @@ class InventoryHouseManager(GenericJsonTool):
             # Check if inventory is full BEFORE creating the item (NEW)
             current_inventory = self._state.get("inventory", [])
             if not isinstance(current_inventory, list): # Defensive check
-                 print("Warning: Inventory state corrupted during item creation into inventory, treating as full for safety.")
-                 return f"Error: Cannot create item {item_display}, inventory state is corrupted."
+                print("Warning: Inventory state corrupted during item creation into inventory, treating as full for safety.")
+                return f"Error: Cannot create item {item_display}, inventory state is corrupted."
 
             if len(current_inventory) >= self.MAX_INVENTORY_SLOTS:
                 # Optionally decrement ID counter if it was incremented but item wasn't added
@@ -1211,8 +1217,8 @@ class InventoryHouseManager(GenericJsonTool):
 
             # Ensure inventory is a list before appending (re-check after potential corruption check)
             if not isinstance(self._state.get("inventory"), list):
-                 print("Warning: Inventory state corrupted during item creation, resetting to empty list before append.")
-                 self._state["inventory"] = [] # Reset inventory if corrupted
+                print("Warning: Inventory state corrupted during item creation, resetting to empty list before append.")
+                self._state["inventory"] = [] # Reset inventory if corrupted
 
             self._state["inventory"].append(new_item_data) # Add the complete item dict
             added = True
@@ -1304,6 +1310,9 @@ class InventoryHouseManager(GenericJsonTool):
             # its error message is appropriate.
             if not removal_result.startswith("Error:"):
                 # Success message from remove_item
+
+                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trashcan_icon.png"}) 
+
                 return f"You trashed the {item_display}."
             else:
                 # Error message from remove_item
@@ -1392,30 +1401,30 @@ class InventoryHouseManager(GenericJsonTool):
             return f"Failed to remove item {item_display} from {location_desc}: Could not remove from list."
 
     def get_all_rooms(self):
-         """
-         Lists all rooms in the game by name and ID.
+        """
+        Lists all rooms in the game by name and ID.
 
-         Returns:
-             str: A comma-separated string of room descriptions (Name (ID:XXXXXX)),
-                  or a message if no rooms are defined.
-         """
-         rooms_list = self._state.get("rooms") # Use .get()
+        Returns:
+            str: A comma-separated string of room descriptions (Name (ID:XXXXXX)),
+                or a message if no rooms are defined.
+        """
+        rooms_list = self._state.get("rooms") # Use .get()
 
-         if isinstance(rooms_list, list): # Ensure it's a list before processing
-              # Filter out invalid room data before formatting
-              # Filter criteria: is a dict, has 'id', 'id' is int, 'name' is string
-              valid_rooms = [
-                  room for room in rooms_list
-                  if isinstance(room, dict) and isinstance(room.get('id'), int) and isinstance(room.get('name'), str)
-              ]
-              room_display = [self._format_room_for_display(room) for room in valid_rooms]
-              if room_display:
-                   return f"Available rooms: {', '.join(room_display)}"
-              else:
-                   return "No rooms are currently defined."
-         else:
-              # This case should ideally be caught by validation, but defensive
-              return "Error: Could not access room list. State might be corrupted."
+        if isinstance(rooms_list, list): # Ensure it's a list before processing
+            # Filter out invalid room data before formatting
+            # Filter criteria: is a dict, has 'id', 'id' is int, 'name' is string
+            valid_rooms = [
+                room for room in rooms_list
+                if isinstance(room, dict) and isinstance(room.get('id'), int) and isinstance(room.get('name'), str)
+            ]
+            room_display = [self._format_room_for_display(room) for room in valid_rooms]
+            if room_display:
+                return f"Available rooms: {', '.join(room_display)}"
+            else:
+                return "No rooms are currently defined."
+        else:
+            # This case should ideally be caught by validation, but defensive
+            return "Error: Could not access room list. State might be corrupted."
 
 
     # --- Public Methods (Emote Management - NEW) ---
@@ -1427,11 +1436,11 @@ class InventoryHouseManager(GenericJsonTool):
         Args:
             act (bool): If True, perform the action (default True). If False, do nothing.
             internal (bool): If True, returns the raw emote state dictionary.
-                             If False (default), returns a human-readable string.
+                            If False (default), returns a human-readable string.
 
         Returns:
             str or dict: The current emote state (internal=True) or a formatted message (internal=False).
-                         Returns "unknown" or a corresponding message if state is invalid or act is False.
+                        Returns "unknown" or a corresponding message if state is invalid or act is False.
         """
         # Added robustness checks using .get() and isinstance
         current_emote = self._state.get("current_emote", "unknown")
@@ -1467,11 +1476,11 @@ class InventoryHouseManager(GenericJsonTool):
         Args:
             act (bool): If True, perform the action (default True). If False, do nothing.
             internal (bool): If True, returns the raw dictionary of emotes.
-                             If False (default), returns a human-readable string listing emotes and descriptions.
+                            If False (default), returns a human-readable string listing emotes and descriptions.
 
         Returns:
             dict or str: The dictionary of possible emotes (internal=True) or a formatted message (internal=False).
-                         Returns an empty dict, message if state is invalid, or message if act is False.
+                        Returns an empty dict, message if state is invalid, or message if act is False.
         """
         # Added robustness checks using .get() and isinstance
         possible_emotes = self._state.get("possible_emotes", {})
@@ -1507,34 +1516,34 @@ class InventoryHouseManager(GenericJsonTool):
         Args:
             emote_name (str): The name of the emote to set.
             internal (bool): If True, returns a boolean indicating success.
-                             If False (default), returns a string message.
+                            If False (default), returns a string message.
 
         Returns:
             str or bool: A string message (internal=False) or a boolean (True for success, False for failure) (internal=True).
         """
         if not isinstance(emote_name, str) or not emote_name.strip():
-             message = "Error: Emote name must be a non-empty string."
-             print(message) # Log internally
-             return False if internal else message
+            message = "Error: Emote name must be a non-empty string."
+            print(message) # Log internally
+            return False if internal else message
 
 
         # Added robustness checks using .get() and isinstance
         possible_emotes = self._state.get("possible_emotes", {})
         # Ensure possible_emotes is a dictionary before using it
         if not isinstance(possible_emotes, dict):
-             message = f"Error setting emote: 'possible_emotes' in state is not a dict ({type(possible_emotes).__name__}). Cannot set emote."
-             print(message) # Log internally
-             # We don't write state here as it's corrupted, validation should fix it on next load.
-             return False if internal else message
+            message = f"Error setting emote: 'possible_emotes' in state is not a dict ({type(possible_emotes).__name__}). Cannot set emote."
+            print(message) # Log internally
+            # We don't write state here as it's corrupted, validation should fix it on next load.
+            return False if internal else message
 
 
         if emote_name in possible_emotes:
             # Check if the emote is already the current one
             current_emote = self._state.get("current_emote")
             if current_emote == emote_name:
-                 message = f"The current emote is already '{emote_name}'."
-                 # print(message) # Often not needed for success messages
-                 return True if internal else message # Return success even if already set
+                message = f"The current emote is already '{emote_name}'."
+                # print(message) # Often not needed for success messages
+                return True if internal else message # Return success even if already set
 
             # Emote is valid and different from current, proceed to set
             self._state["current_emote"] = emote_name
@@ -1552,12 +1561,15 @@ class InventoryHouseManager(GenericJsonTool):
             })
 
             # print(f"Current emote set to '{emote_name}'") # Keep print for internal logging
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/bubble_icon.png"}) 
+
             if internal:
                 # If internal, return True for success
                 return True
             else:
                 # If not internal, return a success message
                 return f"Current emote successfully set to '{emote_name}' - {emote_description}"
+
         else:
             message = f"Error: Emote '{emote_name}' is not a possible emote. Available emotes: {', '.join(sorted(possible_emotes.keys()) if possible_emotes else ['none'])}"
             print(message) # Log internally
@@ -1595,28 +1607,32 @@ class InventoryHouseManager(GenericJsonTool):
             'chapters': [] # New books start with no chapters
         }
         # Delegate to the generic create_item method, placing in inventory
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+
         return self.create_item("inventory", None, book_data)
 
 
     def list_inventory_books(self, internal=False) -> str | list[dict]:
-         """
-         Lists all book items currently in the player's inventory by name and ID.
-         Delegates to BookComponent.
+        """
+        Lists all book items currently in the player's inventory by name and ID.
+        Delegates to BookComponent.
 
-         Args:
-            internal (bool): If True, returns a list of book dictionaries.
-                             If False (default), returns a formatted string.
+        Args:
+        internal (bool): If True, returns a list of book dictionaries.
+                            If False (default), returns a formatted string.
 
-         Returns:
-            str or list[dict]: A formatted string or a list of book item dictionaries.
-         """
-         # The BookComponent's list_inventory_books expects the raw inventory list
-         inventory_list = self._state.get("inventory", [])
-         if not isinstance(inventory_list, list):
-              print("Warning: Inventory list corrupted, providing empty list to BookComponent.")
-              inventory_list = [] # Provide empty list if state is bad
+        Returns:
+        str or list[dict]: A formatted string or a list of book item dictionaries.
+        """
+        # The BookComponent's list_inventory_books expects the raw inventory list
+        inventory_list = self._state.get("inventory", [])
+        if not isinstance(inventory_list, list):
+            print("Warning: Inventory list corrupted, providing empty list to BookComponent.")
+            inventory_list = [] # Provide empty list if state is bad
+        if not internal:
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
 
-         return self._book_component.list_inventory_books(internal) # Pass inventory list
+        return self._book_component.list_inventory_books(internal) # Pass inventory list
 
 
     def list_book_chapters(self, book_item_id: int) -> str:
@@ -1632,19 +1648,19 @@ class InventoryHouseManager(GenericJsonTool):
         # Find the item data using the generic helper
         item_info = self._find_item_info_by_id(book_item_id)
         if not item_info:
-             return f"Error: No item found with ID '{book_item_id}'."
+            return f"Error: No item found with ID '{book_item_id}'."
 
         item_data = item_info["item_data"]
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
         if not is_valid_book or item_data.get("type") != "book":
-             # Even if _is_valid_item_data passed, check the type explicitly
-             if item_data.get("type") != "book":
-                  return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-             else:
-                 # This shouldn't happen if validation passed, but handle defensively
-                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
+            # Even if _is_valid_item_data passed, check the type explicitly
+            if item_data.get("type") != "book":
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+            else:
+                # This shouldn't happen if validation passed, but handle defensively
+                return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
 
         # Check if the book is accessible (in current room or inventory) before listing chapters
@@ -1652,8 +1668,8 @@ class InventoryHouseManager(GenericJsonTool):
         is_accessible = (item_info["location"] == "inventory") or (item_info["location"] == "room" and item_info["location_id"] == current_room_id)
 
         if not is_accessible:
-             item_display = self._format_item_for_display(item_data)
-             return f"You can only examine items in your current location or inventory. Item {item_display} is not here." # Simpler message for user
+            item_display = self._format_item_for_display(item_data)
+            return f"You can only examine items in your current location or inventory. Item {item_display} is not here." # Simpler message for user
 
         # Delegate to the BookComponent, passing the item data
         return self._book_component.list_chapters(book_item_id)
@@ -1671,28 +1687,30 @@ class InventoryHouseManager(GenericJsonTool):
         Returns:
             str: The chapter content or an error message.
         """
-         # Find the item data using the generic helper
+        # Find the item data using the generic helper
         item_info = self._find_item_info_by_id(book_item_id)
         if not item_info:
-             return f"Error: No item found with ID '{book_item_id}'."
+            return f"Error: No item found with ID '{book_item_id}'."
 
         item_data = item_info["item_data"]
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
         if not is_valid_book or item_data.get("type") != "book":
-             if item_data.get("type") != "book":
-                  return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-             else:
-                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
+            if item_data.get("type") != "book":
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+            else:
+                return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Check if the book is accessible
         current_room_id = self._state.get("current_room_id")
         is_accessible = (item_info["location"] == "inventory") or (item_info["location"] == "room" and item_info["location_id"] == current_room_id)
 
         if not is_accessible:
-             item_display = self._format_item_for_display(item_data)
-             return f"You can only read books in your current location or inventory. Item {item_display} is not here."
+            item_display = self._format_item_for_display(item_data)
+            return f"You can only read books in your current location or inventory. Item {item_display} is not here."
+
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
 
         # Delegate to the BookComponent, passing the item data and chapter title
         return self._book_component.read_chapter(book_item_id, chapter_title)
@@ -1710,20 +1728,20 @@ class InventoryHouseManager(GenericJsonTool):
         Returns:
             str: Message indicating success or failure.
         """
-         # Find the item data using the generic helper
+        # Find the item data using the generic helper
         item_info = self._find_item_info_by_id(book_item_id)
         if not item_info:
-             return f"Error: No item found with ID '{book_item_id}'."
+            return f"Error: No item found with ID '{book_item_id}'."
 
         item_data = item_info["item_data"]
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
         if not is_valid_book or item_data.get("type") != "book":
-             if item_data.get("type") != "book":
-                  return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-             else:
-                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
+            if item_data.get("type") != "book":
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+            else:
+                return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Delegate to the BookComponent, passing the item data and new chapter details
         result = self._book_component.add_chapter(book_item_id, chapter_title, content)
@@ -1736,6 +1754,8 @@ class InventoryHouseManager(GenericJsonTool):
             self._write_json(self._state) # Save the state changes
             # Optional: Send a signal about the book content change
             # self._send_signal({"type": "book_updated", "item_id": book_item_id})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+
         return result
 
 
@@ -1751,20 +1771,20 @@ class InventoryHouseManager(GenericJsonTool):
         Returns:
             str: Message indicating success or failure.
         """
-         # Find the item data using the generic helper
+        # Find the item data using the generic helper
         item_info = self._find_item_info_by_id(book_item_id)
         if not item_info:
-             return f"Error: No item found with ID '{book_item_id}'."
+            return f"Error: No item found with ID '{book_item_id}'."
 
         item_data = item_info["item_data"]
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
         if not is_valid_book or item_data.get("type") != "book":
-             if item_data.get("type") != "book":
-                  return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-             else:
-                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
+            if item_data.get("type") != "book":
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+            else:
+                return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Delegate to the BookComponent, passing the book item ID, chapter title and new content
         result = self._book_component.update_chapter(book_item_id, chapter_title, new_content)
@@ -1774,6 +1794,8 @@ class InventoryHouseManager(GenericJsonTool):
             self._write_json(self._state) # Save the state changes
             # Optional: Send a signal about the book content change
             # self._send_signal({"type": "book_updated", "item_id": book_item_id})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+
         return result
 
 
@@ -1788,29 +1810,31 @@ class InventoryHouseManager(GenericJsonTool):
         Returns:
             str: Message indicating success or failure.
         """
-         # Find the item data using the generic helper
+        # Find the item data using the generic helper
         item_info = self._find_item_info_by_id(book_item_id)
         if not item_info:
-             return f"Error: No item found with ID '{book_item_id}'."
+            return f"Error: No item found with ID '{book_item_id}'."
 
         item_data = item_info["item_data"]
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
         if not is_valid_book or item_data.get("type") != "book":
-             if item_data.get("type") != "book":
-                  return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-             else:
-                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
+            if item_data.get("type") != "book":
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+            else:
+                return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Delegate to the BookComponent, passing the item data and chapter title
         result = self._book_component.delete_chapter(item_data, chapter_title)
 
-         # If the component modified the item data successfully, save the state
+        # If the component modified the item data successfully, save the state
         if not result.startswith("Error:"):
             self._write_json(self._state) # Save the state changes
             # Optional: Send a signal about the book content change
             # self._send_signal({"type": "book_updated", "item_id": book_item_id})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+
         return result
 
     def sleep(self, seconds):
@@ -1820,6 +1844,8 @@ class InventoryHouseManager(GenericJsonTool):
         #int_gain=int(energy_gain)
         self.adjust_stat("energy", energy_gain)
         self._send_signal({"type": "sleep", "duration": seconds})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"}) 
+
         return f"Sleeping for: {seconds}, after you send your last message in this chain of actions, you will sleep for that ammount of time. This action will restore a total of {energy_gain} energy points. Make sure your next output only contains a message and no more actions. Get ready to sleep!"
 
     # --- Public Methods (Stats-Specific - Delegate to component - STAY here) ---
@@ -1833,25 +1859,25 @@ class InventoryHouseManager(GenericJsonTool):
 
         Args:
             internal (bool): If True, returns the raw stats dictionary.
-                             If False (default), returns a human-readable string.
+                            If False (default), returns a human-readable string.
 
         Returns:
             str or dict: The current stats dictionary (internal=True) or a formatted message (internal=False).
-                         Returns an error message if the stats system is not available.
+                        Returns an error message if the stats system is not available.
         """
         # Delegate the call to the StatsComponent instance
         if self._stats_component is not None:
-             return self._stats_component.get_stats(internal)
+            return self._stats_component.get_stats(internal)
         else:
-             # Fallback/Error if component wasn't initialized
-             print("Warning: Stats component not available when get_stats was called.")
-             if internal:
-                  # Return a standard structure indicating error for internal use
-                  # Optionally try to return the raw state stats if they exist, though potentially corrupted
-                  return {"status": "error", "message": "Stats system not available.", "stats_data_raw": self._state.get("stats", {})}
-             else:
-                  # Return a user-friendly error message
-                  return "Error: Stats system not available."
+            # Fallback/Error if component wasn't initialized
+            print("Warning: Stats component not available when get_stats was called.")
+            if internal:
+                # Return a standard structure indicating error for internal use
+                # Optionally try to return the raw state stats if they exist, though potentially corrupted
+                return {"status": "error", "message": "Stats system not available.", "stats_data_raw": self._state.get("stats", {})}
+            else:
+                # Return a user-friendly error message
+                return "Error: Stats system not available."
 
 
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
@@ -1866,16 +1892,16 @@ class InventoryHouseManager(GenericJsonTool):
 
         Returns:
             str: Message indicating success or failure or no change.
-                 Returns an error message if the stats system is not available.
+                Returns an error message if the stats system is not available.
         """
         # Delegate the call to the StatsComponent instance
         # The component handles validation, state modification, saving, and signaling.
         if self._stats_component is not None:
-             return self._stats_component.adjust_stat(stat_name, amount)
+            return self._stats_component.adjust_stat(stat_name, amount)
         else:
-             # Fallback/Error if component wasn't initialized
-             print("Warning: Stats component not available when adjust_stat was called.")
-             return "Error: Stats system not available, unable to adjust stat."
+            # Fallback/Error if component wasn't initialized
+            print("Warning: Stats component not available when adjust_stat was called.")
+            return "Error: Stats system not available, unable to adjust stat."
 
 
     # --- NEW PUBLIC METHOD for Consumables ---
@@ -1927,39 +1953,39 @@ class InventoryHouseManager(GenericJsonTool):
         # 6. Apply stat effects using the StatsComponent
         if self._stats_component is None:
             # Stats component failed to initialize
-             print("Warning: StatsComponent not available during item consumption.")
-             # Decide how to handle this - consume item anyway? Or fail?
-             # Let's fail, as the primary effect (stat change) cannot happen.
-             return f"Failed to consume {item_display}: The stats system is not available."
+            print("Warning: StatsComponent not available during item consumption.")
+            # Decide how to handle this - consume item anyway? Or fail?
+            # Let's fail, as the primary effect (stat change) cannot happen.
+            return f"Failed to consume {item_display}: The stats system is not available."
 
         # Call the component to apply effects; it handles clamping and signaling
         # It returns a dict of actual changes or None if stats data is corrupted
         stat_changes_summary = self._stats_component.apply_consumable_effects(stats_edit)
 
         if stat_changes_summary is None:
-             # Stats component reported corrupted stats data
-             return f"Failed to consume {item_display}: Error applying effects, stats data is corrupted."
+            # Stats component reported corrupted stats data
+            return f"Failed to consume {item_display}: Error applying effects, stats data is corrupted."
 
         # 7. Remove the item from inventory
         # Do this manually here *after* effects are applied but *before* saving the overall state
         if isinstance(self._state.get("inventory"), list):
-             initial_count = len(self._state["inventory"])
-             # Filter inventory, keeping items whose ID is not the one we're consuming
-             self._state["inventory"] = [item for item in self._state["inventory"] if isinstance(item, dict) and item.get("id") != item_id]
+            initial_count = len(self._state["inventory"])
+            # Filter inventory, keeping items whose ID is not the one we're consuming
+            self._state["inventory"] = [item for item in self._state["inventory"] if isinstance(item, dict) and item.get("id") != item_id]
 
-             if len(self._state["inventory"]) == initial_count:
-                 # Item wasn't removed, indicates inconsistency
-                 print(f"Warning: Item ID '{item_id}' not removed from inventory list during consumption.")
-                 # Decide if this is a fatal error - item consumed effects but not removed
-                 # Let's proceed but warn, as effects were applied. The user gets the effect but keeps the item.
-                 removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
-                 print(removal_status) # Log the warning
-             else:
-                  removal_status = f"Item {item_display} consumed."
+            if len(self._state["inventory"]) == initial_count:
+                # Item wasn't removed, indicates inconsistency
+                print(f"Warning: Item ID '{item_id}' not removed from inventory list during consumption.")
+                # Decide if this is a fatal error - item consumed effects but not removed
+                # Let's proceed but warn, as effects were applied. The user gets the effect but keeps the item.
+                removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
+                print(removal_status) # Log the warning
+            else:
+                removal_status = f"Item {item_display} consumed."
         else:
-             # Inventory list corrupted during the process (unlikely if validation passed)
-             print("Critical Error: Inventory state corrupted during item removal after consumption effects applied.")
-             removal_status = f"Item {item_display} consumed effects, but inventory is corrupted and item removal failed."
+            # Inventory list corrupted during the process (unlikely if validation passed)
+            print("Critical Error: Inventory state corrupted during item removal after consumption effects applied.")
+            removal_status = f"Item {item_display} consumed effects, but inventory is corrupted and item removal failed."
 
 
         # 8. Select a random effect text (if available and valid)
@@ -1969,8 +1995,8 @@ class InventoryHouseManager(GenericJsonTool):
             if valid_effect_texts:
                 selected_effect_text = random.choice(valid_effect_texts)
         else:
-             # This case should be caught by _is_valid_item_data, but defensive
-             print(f"Warning: Consumable item ID {item_id} ('{item_data.get('name', 'Unnamed')}') had invalid 'effects' structure.")
+            # This case should be caught by _is_valid_item_data, but defensive
+            print(f"Warning: Consumable item ID {item_id} ('{item_data.get('name', 'Unnamed')}') had invalid 'effects' structure.")
 
 
         # 9. Construct the final message
@@ -1984,7 +2010,7 @@ class InventoryHouseManager(GenericJsonTool):
                 sign = "+" if change >= 0 else "" # Add + sign for positive changes
                 changes_strings.append(f"{stat}: {sign}{change:.1f} points")
             message += f"\nYour stats changed: {', '.join(changes_strings)}."
-             # Optionally add current stats here:
+            # Optionally add current stats here:
             current_stats_msg = self.get_stats(internal=False) # Calls component for formatted string
             if not current_stats_msg.startswith("Error:"):
                 message += f"\n{current_stats_msg.replace('Current Stats: ', '')}" # Add just the values
@@ -2001,182 +2027,6 @@ class InventoryHouseManager(GenericJsonTool):
 
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png"}) 
 
         return message
-
-    # ... existing public book methods ...
-    # ... example usage __main__ block ...
-
-# Example Usage (for testing the class)
-if __name__ == "__main__":
-    # Create a directory for the state file
-    state_dir = "tool_states_house_emote_test" # New test directory name
-    json_file_path = os.path.join(state_dir, 'house_inventory_state_id.json') # File name inside directory
-
-    # Clean up existing file for a clean test run
-    if os.path.exists(json_file_path):
-        try:
-            os.remove(json_file_path)
-            print("Removed existing state file for clean test.")
-        except OSError as e:
-            print(f"Error removing existing state file: {e}")
-    # Ensure the test directory exists
-    os.makedirs(state_dir, exist_ok=True)
-
-    # Simple signal callback for testing
-    def test_signal_callback(data):
-        print(f"--- RECEIVED SIGNAL: {data} ---")
-
-    print("\n--- Initializing Manager (should use default state) ---")
-    # Pass the test signal callback
-    manager = InventoryHouseManager(state_dir, signal=test_signal_callback)
-
-    print("\n--- Getting initial Emote state ---")
-    print(manager.get_current_emote()) # Should be neutral
-    print(manager.get_possible_emotes()) # Should list defaults
-
-    print("\n--- Getting initial Emote state (internal) ---")
-    print(json.dumps(manager.get_current_emote(internal=True), indent=4))
-    print(json.dumps(manager.get_possible_emotes(internal=True), indent=4))
-
-
-    print("\n--- Setting Emote to 'happy' ---")
-    print(manager.set_current_emote("happy")) # Should succeed and send signal
-
-    print("\n--- Getting Emote state after setting ---")
-    print(manager.get_current_emote()) # Should be happy
-
-    print("\n--- Setting Emote to 'thinking' ---")
-    print(manager.set_current_emote("thinking")) # Should succeed and send signal
-
-    print("\n--- Getting Emote state after setting again ---")
-    print(manager.get_current_emote()) # Should be thinking
-
-    print("\n--- Setting Emote to an invalid emote ---")
-    print(manager.set_current_emote("silly_face")) # Should fail and list options
-
-    print("\n--- Getting Emote state after failed set ---")
-    print(manager.get_current_emote()) # Should still be thinking
-
-    print("\n--- Test internal=True for set_current_emote ---")
-    print(f"Setting 'happy' internally: {manager.set_current_emote('happy', internal=True)}")
-    print(f"Setting 'silly_face' internally: {manager.set_current_emote('silly_face', internal=True)}")
-    print(manager.get_current_emote()) # Should be happy
-
-    print("\n--- Getting other initial states to show they still work ---")
-    print(f"Current Room ID: {manager.get_current_room_id()}")
-    print(f"Current Room Name: {manager.get_current_room_name()}")
-    print(manager.get_items_in_current_room())
-    print(manager.get_inventory_items())
-    print(manager.get_all_rooms())
-
-
-    print("\n--- List books in inventory (delegated call) ---")
-    print(manager.list_inventory_books())
-
-    print("\n--- Get details for the default book item (internal=False) ---")
-    # Find the ID of the default book for testing
-    default_book_id = -1
-    # Use internal=True first to safely get the item data for its ID
-    default_book_info = manager.get_item_details(100004, internal=True) # Assuming default ID 100004
-    if default_book_info and default_book_info.get('status') == 'found':
-         default_book_id = default_book_info['details'].get('id')
-         print(f"Default book (Mysteries of the Cozy House) ID: {default_book_id}")
-         # Now test the public (internal=False) output
-         print("\n--- Public Details for default book item ---")
-         print(manager.get_item_details(default_book_id, internal=False))
-
-         # Test internal=True output again to show the difference
-         print("\n--- Internal Details for default book item ---")
-         print(json.dumps(manager.get_item_details(default_book_id, internal=True), indent=4))
-
-
-         print("\n--- List chapters of the default book (delegated call) ---")
-         print(manager.list_book_chapters(default_book_id))
-
-         print("\n--- Read a chapter from the default book (delegated call) ---")
-         print(manager.read_book_chapter(default_book_id, "The Creaking Floorboard")) # Case-insensitive match test
-
-         print("\n--- Add a new chapter to the default book (delegated call) ---")
-         print(manager.add_book_chapter(default_book_id, "The Secret Attic", "The attic was full of dust and old memories."))
-         print(manager.list_book_chapters(default_book_id)) # Verify new chapter is listed
-
-         print("\n--- Update a chapter in the default book (delegated call) ---")
-         print(manager.update_book_chapter(default_book_id, "The Creaking Floorboard", "It was a dark and stormy night. The floorboard creaked ominously."))
-         print(manager.read_book_chapter(default_book_id, "The Creaking Floorboard")) # Read updated content
-
-         print("\n--- Delete a chapter from the default book (delegated call) ---")
-         print(manager.delete_book_chapter(default_book_id, "Whispers in the Walls"))
-         print(manager.list_book_chapters(default_book_id)) # Verify chapter is gone
-
-    else:
-         print("\n--- Could not find the default book item ID! Skipping book-specific tests. ---")
-
-
-    print("\n--- Creating a new book item using create_book_item (delegated call) ---")
-    print(manager.create_book_item("Adventure Journal", "A small, leather-bound journal."))
-    print(manager.list_inventory_books()) # Should list the new book
-
-    print("\n--- Test examining the new book in inventory (internal=False) ---")
-    # Find the ID of the new book
-    inventory_books_str = manager.list_inventory_books()
-    adventure_book_id = -1
-    import re
-    match = re.search(r"Adventure Journal \(ID:(\d+)\)", inventory_books_str)
-    if match:
-         adventure_book_id = int(match.group(1))
-         print(f"Found Adventure Journal ID: {adventure_book_id}")
-
-         print(manager.get_item_details(adventure_book_id, internal=False)) # Should show name/ID and descriptions
-
-         print("\n--- Add a chapter to the Adventure Journal ---")
-         print(manager.add_book_chapter(adventure_book_id, "Day 1", "Started my journey..."))
-         print(manager.list_book_chapters(adventure_book_id))
-
-         print("\n--- Read the new chapter ---")
-         print(manager.read_book_chapter(adventure_book_id, "Day 1"))
-
-         print("\n--- Remove the Adventure Journal item from inventory (using generic remove_item) ---")
-         print(manager.remove_item(adventure_book_id))
-         print(manager.get_inventory_items()) # Should be gone
-         print(manager.list_inventory_books()) # Should be gone
-
-
-    else:
-         print("\n--- Could not find Adventure Journal ID after creation! Skipping related tests. ---")
-
-    print("\n--- State file should now exist and reflect all changes ---")
-    if os.path.exists(json_file_path) and os.path.getsize(json_file_path) > 0:
-        print(f"State successfully saved to {json_file_path}")
-        # Read the file to confirm emote state is present
-        with open(json_file_path, 'r') as f:
-            saved_state = json.load(f)
-            print("\n--- Emote state in saved file ---")
-            print(f"current_emote: {saved_state.get('current_emote')}")
-            print(f"possible_emotes keys: {list(saved_state.get('possible_emotes', {}).keys())}")
-
-    else:
-        print(f"Error: State file {json_file_path} was not created or is empty.")
-
-    print("\n--- Initializing Manager again (should load state with happy emote) ---")
-    manager2 = InventoryHouseManager(state_dir, signal=test_signal_callback)
-    print(f"Current Room ID: {manager2.get_current_room_id()}")
-    print(manager2.get_items_in_current_room())
-    print(manager2.get_inventory_items())
-    print(manager2.list_inventory_books())
-    print("\n--- Emote state after reloading ---")
-    print(manager2.get_current_emote()) # Should be happy
-
-    # Re-find the default book ID if needed for checking its final state
-    default_book_id_2 = -1
-    inventory_items_on_reload = manager2._state.get("inventory", []) # Use .get()
-    if isinstance(inventory_items_on_reload, list):
-        for item in inventory_items_on_reload:
-            if isinstance(item, dict) and item.get("name") == "Mysteries of the Cozy House":
-                 default_book_id_2 = item.get("id")
-                 break
-    if default_book_id_2 != -1:
-         print(f"\n--- Final chapters in default book (ID:{default_book_id_2:06d}) after tests ---")
-         print(manager2.list_book_chapters(default_book_id_2)) # Should list "The Creaking Floorboard" (updated) and "The Secret Attic" (added), NOT "Whispers in the Walls" (deleted)
-    else:
-        print("\n--- Default book not found after reload! ---")

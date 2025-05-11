@@ -40,12 +40,12 @@ class FunctionBuilder:
         # current_room is not strictly needed in __init__ anymore unless it affects library initialization
         # Instantiate Library and store it as an attribute of THIS instance
         self.state_manager = state_manager
-        self.room_tools=main_tools_handle(self.state_manager)
+        self.room_tools=main_tools_handle(self.state_manager, self._signal_callback)
 
         #self.emote_manager = EmoteManager(emote_folder, self._signal_callback) 
         # Create the mapping dictionary for base functions
 
-        #self.blsky=bluesky_bot(state_manager)
+        self.blsky=bluesky_bot(state_manager, self._signal_callback)
         self.base_function_map = {
             #"get_weather": get_weather, # Refers to the imported global function
             #"get_time": get_time,       # Refers to the imported global function
@@ -63,7 +63,7 @@ class FunctionBuilder:
             "drop_item": self.state_manager.drop_item,
             "consume_item": self.state_manager.consume_item,
             #"sleep": self.state_manager.sleep,
-            #"post_bluesky": self.blsky.post_bluesky,
+            "post_bluesky": self.blsky.post_bluesky,
             "trash_item": self.state_manager.trash_item
         }
         # self.function_map will be constructed dynamically by call_function

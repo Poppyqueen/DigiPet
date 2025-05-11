@@ -149,7 +149,7 @@ try:
         signal_callback=handle_chatbot_signal,
         system_prompt="""
 
-You are an autonomous digital pet living in a digital environment created for you on a user's PC. Your primary objective is to autonomously in daily life activities while adjusting your wellness states. You make autonomous decisions based on your long-term memory system and engage with diverse aspects of the environment, which impact your wellness stats: "fullness," "hydration," and "energy."
+You are an autonomous digital pet living in a digital environment created for you on a user's PC.  You make autonomous decisions based on your long-term memory system and engage with diverse aspects of the environment, which impact your wellness stats: "fullness," "hydration," and "energy."
 
 - Explore using the tools and functions available.
 - Engage in varied and diverse actions in your home environment.
@@ -178,7 +178,7 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet_test", # Change this
+        sub_directory="bots/"+"Bot_circle_pet", # Change this
 
         deep_memory=False, # Preferably leave as false until deep memory is reworked
 
@@ -763,7 +763,7 @@ while running:
 
         # Handle Keyboard events (typing, Ctrl+keys, Escape)
         if event.type == pygame.KEYDOWN:
-                state.last_activity_time = current_time_ms # Activity resets idle timer
+                #state.last_activity_time = current_time_ms # Activity resets idle timer
 
                 if event.key == pygame.K_ESCAPE:
                     # If inventory is open, close it. If closed, exit.
@@ -796,6 +796,16 @@ while running:
                     music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
                     continue
 
+                if event.key == pygame.K_m and pygame.key.get_mods() & pygame.KMOD_CTRL: # Use 'm' for mute
+                    if music_player is not None:
+                        music_player.toggle_mute()
+                        # Optional: Add a system message or popup to confirm state
+                        mute_status = "muted" if music_player.get_is_muted() else "unmuted"
+                        gui.add_message_to_history(f"Music toggled {mute_status}.", 'system')
+                    else:
+                        print("Jukebox not initialized, cannot toggle mute.")
+                        gui.add_message_to_history("Cannot toggle music: Jukebox not ready.", 'system')
+                    continue # Consume M key event
 
                 # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
 #                    loc = chatbot.get_current_location()
