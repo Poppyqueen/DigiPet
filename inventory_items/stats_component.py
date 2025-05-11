@@ -2,8 +2,6 @@
 # Contains stat-specific logic for fullness, hydration, and energy.
 # Designed to be used by InventoryHouseManager.
 
-import math # Import math for potential future float operations, though not strictly needed for current adjust logic
-import json # Import json for debugging/seeing data structure if needed
 
 class StatsComponent:
     """

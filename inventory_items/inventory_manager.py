@@ -985,7 +985,7 @@ class InventoryHouseManager(GenericJsonTool):
         list_room_items_names, list_inventory_item_names = self.list_inventories()
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"}) 
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"}) 
 
 
         # item_display is defined here
@@ -1125,7 +1125,7 @@ class InventoryHouseManager(GenericJsonTool):
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
 
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"}) 
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"}) 
 
         return f"You dropped the {item_display} in the {current_room_display}."
     
@@ -1561,7 +1561,7 @@ class InventoryHouseManager(GenericJsonTool):
             })
 
             # print(f"Current emote set to '{emote_name}'") # Keep print for internal logging
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/bubble_icon.png"}) 
+            #self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/bubble_icon.png"}) 
 
             if internal:
                 # If internal, return True for success

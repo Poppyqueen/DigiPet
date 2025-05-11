@@ -133,7 +133,7 @@ class cook:
             with 'effects' and 'stats_edit' removed for 'misc' type items.
             Returns an empty list if the AI call fails.
         """
-        system=f"You are a cooking AI, given a set of items and a process, you will return a list of item definitions. You should identify the main resulting item(s) which are likely 'consumable' and any byproducts or scraps which should be 'misc'. Return the response as a JSON object matching the ItemDefinitionListContainer structure."
+        system=f"You are a cooking AI, given a set of items and a process, you will return a list of item definitions. You should identify the main resulting item(s) which are likely 'consumable' and any byproducts or scraps which should be 'misc'. Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, make detailed and evocative descriptions and effects for the items, deescribe then, and in effects, write text directed to whomever just consumed this item, i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', you can make 2 to 3 effects for each item. The stats for the items you create should be high, minimum 20 points of replenishment for small items, up to 80 points for big food items."
         process_prompt=f"Using the items: {items}, and applying the process: {process}, design a set of items that would result from it."
 
         print("\n--- Calling AI ---")

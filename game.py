@@ -3,7 +3,8 @@ from pygame_int import config
 from pygame_int import state
 from pygame_int import gui
 from pygame_int import animation
-from pygame_int.juke_box import jukebox # Assuming this import is correct
+from pygame_int.juke_box import jukebox 
+
 
 import pygame
 import sys
@@ -84,8 +85,8 @@ def handle_chatbot_signal(signal_data):
                 print("Signal type 'emote_changed' received (happy)")
                 animation.start_happy_animation() # Call animation directly
             if sound_path:
-                print(f"Signal type 'emote_changed' received with sound path: {sound_path}, posting PLAY_SOUND_EVENT.")
-                pygame.event.post(pygame.event.Event(config.PLAY_SOUND_EVENT, sound_path=sound_path))
+                print(f"Signal type 'emote_changed' received with sound path: {sound_path}. Using Jukebox.")
+                music_player.play_sound_effect(sound_path)
 
         elif action_type == "sleep":
             sleep_duration_seconds = signal_data.get("duration", 0)
@@ -486,23 +487,21 @@ while running:
         #     continue
 
 
-        elif event.type == config.PLAY_SOUND_EVENT:
-            sound_path = getattr(event, 'sound_path', None)
-            if sound_path:
-                print(f"Main loop received and processing PLAY_SOUND_EVENT for: {sound_path}")
-                try:
-                    if pygame.mixer.get_init():
-                         # Consider loading sound once if it's common
-                         sound = pygame.mixer.Sound(sound_path)
-                         sound.play()
-                         sound.set_volume(0.3)
-                         print(f"Successfully played sound: {sound_path}")
-                    else: print("Pygame Mixer not initialized. Cannot play sound.")
-                except pygame.error as e: print(f"Error playing sound '{sound_path}': {e}")
-                except FileNotFoundError: print(f"Sound file not found: {sound_path}")
-                except Exception as e: print(f"An unexpected error occurred while playing sound '{sound_path}': {e}")
-            else: print("PLAY_SOUND_EVENT received but no 'sound_path' attribute.")
-            continue
+        # elif event.type == config.PLAY_SOUND_EVENT:
+        #     sound_path = getattr(event, 'sound_path', None)
+        #     if sound_path:
+        #         print(f"Main loop received and processing PLAY_SOUND_EVENT for: {sound_path}")
+        #         try:
+        #             if pygame.mixer.get_init():
+        #                  # Consider loading sound once if it's common
+        #                  music_player.play_sound_effect(sound_path)
+        #                  print(f"Successfully played sound: {sound_path}")
+        #             else: print("Pygame Mixer not initialized. Cannot play sound.")
+        #         except pygame.error as e: print(f"Error playing sound '{sound_path}': {e}")
+        #         except FileNotFoundError: print(f"Sound file not found: {sound_path}")
+        #         except Exception as e: print(f"An unexpected error occurred while playing sound '{sound_path}': {e}")
+        #     else: print("PLAY_SOUND_EVENT received but no 'sound_path' attribute.")
+        #     continue
 
         elif event.type == config.CHATBOT_RESPONSE_EVENT:
              response_text = getattr(event, 'text', None)

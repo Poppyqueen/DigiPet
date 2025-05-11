@@ -588,7 +588,7 @@ class CLIChatbot:
 
 
 def main():
-    """Entry point for the application."""
+    """Examply entry point for the application."""
 
 
     # Example usage: set deep_memory=True to enable
