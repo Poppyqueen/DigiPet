@@ -340,6 +340,39 @@ class InventoryHouseManager(GenericJsonTool):
             self._state["next_room_id"] = max_existing_room_id + 1
             needs_save = True
 
+
+        # --- NEW: Validate Pet Theme Color State ---
+        # Check is_color_configured
+        is_color_configured_val = self._state.get("is_color_configured")
+        if not isinstance(is_color_configured_val, bool):
+            print(f"Validation Warning: 'is_color_configured' missing or not boolean ({type(is_color_configured_val).__name__}). Setting to default (False).")
+            self._state["is_color_configured"] = False
+            needs_save = True
+
+        # Check pet_theme_color
+        pet_theme_color_val = self._state.get("pet_theme_color")
+        # Basic check: is it a list/tuple of 3 numbers?
+        is_valid_color_format = (
+            isinstance(pet_theme_color_val, (list, tuple)) and
+            len(pet_theme_color_val) == 3 and
+            all(isinstance(c, (int, float)) for c in pet_theme_color_val)
+        )
+        if not is_valid_color_format:
+            default_color = self._default_state.get("pet_theme_color", [100, 255, 100]) # Use default, fallback to green list
+            print(f"Validation Warning: 'pet_theme_color' missing or invalid format ({pet_theme_color_val}). Setting to default {default_color}.")
+            self._state["pet_theme_color"] = list(default_color) # Ensure it's a list for storage
+            needs_save = True
+        else:
+            # Ensure values are within 0-255 range and are integers for consistency
+            clamped_color = [
+                max(0, min(255, int(c))) for c in pet_theme_color_val
+            ]
+            if clamped_color != pet_theme_color_val:
+                print(f"Validation Warning: 'pet_theme_color' values ({pet_theme_color_val}) outside 0-255 range or not integers. Clamping to {clamped_color}.")
+                self._state["pet_theme_color"] = clamped_color
+                needs_save = True
+        # --- End New Validation ---
+
         if needs_save:
             print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
             self._write_json(self._state)
@@ -2030,3 +2063,57 @@ class InventoryHouseManager(GenericJsonTool):
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png"}) 
 
         return message
+    
+
+
+    # --- NEW: Pet Theme Color Getters and Setters ---
+
+    def get_pet_color(self) -> tuple[int, int, int] | None:
+        """
+        Returns the pet's theme color as an RGB tuple (0-255), or None if not set or invalid.
+        Validation should ensure it's usually valid after load.
+        """
+        color_list = self._state.get("pet_theme_color")
+        if isinstance(color_list, (list, tuple)) and len(color_list) == 3:
+            # Ensure it's returned as a tuple with integer values
+            return tuple(max(0, min(255, int(c))) for c in color_list)
+        # Fallback if validation somehow missed something critical
+        print("Warning: get_pet_color returning default due to unexpected state format.")
+        return (100, 255, 100) # Return default green if something is wrong
+
+
+    def set_pet_color(self, color: tuple[int, int, int]):
+        """
+        Sets the pet's theme color and saves the state.
+        Args:
+            color: An RGB tuple (r, g, b) where each component is 0-255.
+        """
+        if not (isinstance(color, (list, tuple)) and len(color) == 3 and
+                all(isinstance(c, (int, float)) and 0 <= c <= 255 for c in color)):
+            print(f"Error: Attempted to set invalid pet color format: {color}. Ignoring.")
+            return
+
+        # Store as a list of integers for JSON compatibility
+        self._state["pet_theme_color"] = [int(c) for c in color]
+        self._write_json(self._state) # Save immediately
+
+
+    def is_color_configured(self) -> bool:
+        """
+        Checks if the pet's theme color has been configured by the user.
+        """
+        return self._state.get("is_color_configured", False)
+
+
+    def set_color_configured(self, configured: bool):
+        """
+        Sets the flag indicating whether the color configuration is complete and saves the state.
+        Args:
+            configured: Boolean value (True if configured, False otherwise).
+        """
+        if not isinstance(configured, bool):
+            print(f"Error: Attempted to set 'is_color_configured' with non-boolean value: {configured}. Ignoring.")
+            return
+
+        self._state["is_color_configured"] = configured
+        self._write_json(self._state) # Save immediately

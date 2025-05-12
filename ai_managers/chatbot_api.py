@@ -289,6 +289,36 @@ class CLIChatbot:
         #self.memory.save_to_memory(f"A package of helpful items has been delivered for you in the room {room_name}! Enjoy.", "short_term", "system")
         return result
 
+
+
+    # --- NEW: Pet Theme Color Bridge Methods ---
+
+    def get_pet_color(self) -> tuple[int, int, int] | None:
+        """Bridge to InventoryHouseManager.get_pet_color()."""
+        if self.state_manager: # Defensive check
+            return self.state_manager.get_pet_color()
+        return (100, 255, 100) # Fallback default if manager isn't ready
+
+    def set_pet_color(self, color: tuple[int, int, int]):
+        """Bridge to InventoryHouseManager.set_pet_color()."""
+        if self.state_manager: # Defensive check
+            self.state_manager.set_pet_color(color)
+            # Optional: send a signal? Maybe not needed, game.py updates state directly
+            # self._signal_callback({"type": "pet_color_changed", "color": color})
+
+
+    def is_color_configured(self) -> bool:
+        """Bridge to InventoryHouseManager.is_color_configured()."""
+        if self.state_manager: # Defensive check
+            return self.state_manager.is_color_configured()
+        return False # Default to not configured if manager isn't ready
+
+
+    def set_color_configured(self, configured: bool):
+        """Bridge to InventoryHouseManager.set_color_configured()."""
+        if self.state_manager: # Defensive check
+            self.state_manager.set_color_configured(configured)
+
     def process_response_with_tts(self, final_ai_response):
         """
         Processes the AI response, including TTS if enabled, stopping

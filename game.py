@@ -179,7 +179,7 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet", # Change this
+        sub_directory="bots/"+"Bot_circle_pet_test_2", # Change this
 
         deep_memory=False, # Preferably leave as false until deep memory is reworked
 
@@ -194,6 +194,47 @@ except Exception as e:
     print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
     chatbot_available = False
     chatbot = None # Ensure chatbot is None if initialization failed
+
+
+# Ensure state.pet_color is initialized to the default before potential load/selection
+state.pet_color = config.GREEN # Or use the default from state.py (which is already green)
+
+if chatbot_available and chatbot and hasattr(chatbot, 'is_color_configured') and callable(chatbot.is_color_configured):
+    if not chatbot.is_color_configured():
+        # --- Run Color Selection UI ---
+        print("Color not configured. Starting color selection UI...")
+        # Call the blocking UI function
+        selected_color = gui.run_color_selection_ui(screen, font) # Pass screen and font
+
+        if selected_color is not None:
+            # Color was selected, save it via the chatbot
+            print(f"Color selected: {selected_color}. Saving configuration...")
+            chatbot.set_pet_color(selected_color)
+            chatbot.set_color_configured(True)
+            # Update runtime state with the selected color
+            state.pet_color = selected_color
+            print("Color configuration saved and applied.")
+        else:
+            # User quit during color selection
+            print("User quit during color selection. Exiting game.")
+            running = False # Set main game loop flag to False
+
+    else:
+        # --- Load Configured Color ---
+        print("Color already configured. Loading saved color...")
+        # Load the saved color from the chatbot's state manager
+        loaded_color = chatbot.get_pet_color()
+        if loaded_color: # Check if get_pet_color returned a valid color
+            state.pet_color = loaded_color # Update runtime state
+            print(f"Loaded pet color: {state.pet_color}")
+        else:
+             # This case should be rare if validation works, but good to handle
+             print("Error loading pet color from config. Using default green.")
+             state.pet_color = config.GREEN # Fallback to default green
+else:
+    # Chatbot unavailable, color configuration is skipped. Use default color.
+    print("Chatbot not available. Skipping color configuration/load. Using default green.")
+    state.pet_color = config.GREEN
 
 
 # --- Initial Background Load ---

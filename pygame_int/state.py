@@ -65,3 +65,9 @@ package_button_visible_start_index = 0
 chatbot_is_processing=False
 
 is_initial_popup_phase = True
+
+
+# --- NEW: Pet Theme Color (Runtime) ---
+pet_color = (100, 255, 100) # Default RGB tuple for drawing
+# This value will be updated by game.py based on loaded config or user selection
+# --- End Pet Theme Color ---

@@ -644,7 +644,13 @@ custom_state = {
         "fullness": 200.0,
         "hydration": 200.0,
         "energy": 200.0
-    }
+    },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done
+    "pet_theme_color": [100, 255, 100] # Default color (green), stored as list for JSON
+    # --- End Pet Theme Color ---
     # --- End Stats State ---
 }
 
@@ -755,7 +761,13 @@ base_state={
                 "fullness": 200.0,
                 "hydration": 200.0,
                 "energy": 200.0
-            }
+            },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done
+    "pet_theme_color": [100, 255, 100] # Default color (green), stored as list for JSON
+    # --- End Pet Theme Color ---
             # --- End Stats State -
         }
         # --- End of override ---
