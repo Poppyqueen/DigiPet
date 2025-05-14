@@ -42,6 +42,40 @@ except pygame.error:
 
 
 
+def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=250):
+  """
+  Calculates a size based on steps, scaling linearly up to a step limit
+  and then clamping at the maximum size.
+
+  Args:
+    current_steps: The current number of steps (integer).
+    start_size: The size at step 0 (integer).
+    end_size: The size at the step_limit (integer).
+    step_limit: The step at which the size reaches the end_size and stops increasing (integer).
+
+  Returns:
+    The calculated and clamped size (integer).
+  """
+
+  # Ensure step_limit is not zero to avoid division by zero
+  if step_limit == 0:
+    # Handle this case based on your requirements.
+    # For now, let's assume if step_limit is 0, the size is always the start_size.
+    return start_size
+
+  # Linear interpolation: Calculate a potential size based on the current steps
+  # within the scaling range (0 to step_limit).
+  # We use float division for accuracy before converting to int.
+  scale_factor = min(current_steps, step_limit) / step_limit
+  potential_size = start_size + (end_size - start_size) * scale_factor
+
+  # Clamp the potential size between the start_size and end_size
+  # This ensures the size doesn't go below start_size or above end_size
+  # after the step_limit is reached.
+  final_size = max(start_size, min(potential_size, end_size))
+
+  # Convert to integer pixels
+  return int(final_size)
 
 
 # --- Callback function to receive signals from the chatbot ---
@@ -78,16 +112,28 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "emote_changed":
             emote_name = signal_data.get("emote_name")
             sound_path = signal_data.get("sound_path")
-            if emote_name == "sad":
-                print("Signal type 'emote_changed' received (sad), posting START_SAD_EVENT.")
-                animation.start_sad_animation() # Call animation directly
-            if emote_name == "happy":
-                print("Signal type 'emote_changed' received (happy)")
-                animation.start_happy_animation() # Call animation directly
+
+            emote_animations = {
+                "sad": animation.start_sad_animation,
+                "happy": animation.start_happy_animation,
+                "angry": animation.start_angry_animation,
+                "excited": animation.start_excited_animation,
+                "thinking": animation.start_thinking_animation,
+                "curious": animation.start_curious_animation,
+                "confused": animation.start_confused_animation,
+            }
+
+            # Look up the emote name in the dictionary and call the function if found
+            if emote_name in emote_animations:
+                print(f"Signal type 'emote_changed' received ({emote_name})")
+                emote_animations[emote_name]() # Call the function associated with the emote
+            elif emote_name is not None: # Handle cases where emote_name might be missing but sound_path is present
+                 print(f"Signal type 'emote_changed' received with unhandled emote: {emote_name}")
+
+
             if sound_path:
                 print(f"Signal type 'emote_changed' received with sound path: {sound_path}. Using Jukebox.")
                 music_player.play_sound_effect(sound_path)
-
         elif action_type == "sleep":
             sleep_duration_seconds = signal_data.get("duration", 0)
             if sleep_duration_seconds > 0:
@@ -179,7 +225,7 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet_test_2", # Change this
+        sub_directory="bots/"+"Bot_circle_pet_test_me_test", # Change this
 
         deep_memory=False, # Preferably leave as false until deep memory is reworked
 
@@ -398,7 +444,10 @@ inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The b
 room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
 player_list_area_rect = inventory_panel_rects.get('player_list_area') # Area for player list items
 
-
+steps=chatbot.get_steps()
+size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+state.pet_radius=size
+state.current_radius = state.pet_radius
 
 # --- Worker Function for Chatbot API Call ---
 def chatbot_worker(user_input, input_role, chatbot_instance):
@@ -486,6 +535,11 @@ print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
 while running:
     dt = clock.tick(60)
     current_time_ms = pygame.time.get_ticks()
+    steps=chatbot.get_steps()
+    size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+    state.pet_radius=size
+    state.current_radius = state.pet_radius
+
 
     # Update popups state (position, alpha, removal)
     gui.update_popups(current_time_ms)
@@ -825,12 +879,25 @@ while running:
 
 
 
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_angry_animation(); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_thinking_animation(); continue
+                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_curious_animation(); continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_confused_animation(); continue
+                if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
+                if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
-                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_popup_message("testing!!!!!!") ; continue
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
+                if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(1); continue
+
+                #if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
+
+
+
+                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
+                # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
+                # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
+                # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_popup_message("testing!!!!!!") ; continue
+                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
 
                 if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
                     music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")

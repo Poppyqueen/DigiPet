@@ -649,7 +649,8 @@ custom_state = {
 
     # --- NEW: Pet Theme Color Configuration ---
     "is_color_configured": False, # Flag to indicate if the one-time setup is done
-    "pet_theme_color": [100, 255, 100] # Default color (green), stored as list for JSON
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
+    "steps": 0
     # --- End Pet Theme Color ---
     # --- End Stats State ---
 }
@@ -766,7 +767,8 @@ base_state={
 
     # --- NEW: Pet Theme Color Configuration ---
     "is_color_configured": False, # Flag to indicate if the one-time setup is done
-    "pet_theme_color": [100, 255, 100] # Default color (green), stored as list for JSON
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
+    "steps": 0
     # --- End Pet Theme Color ---
             # --- End Stats State -
         }

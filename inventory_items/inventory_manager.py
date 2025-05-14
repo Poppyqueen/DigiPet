@@ -373,6 +373,20 @@ class InventoryHouseManager(GenericJsonTool):
                 needs_save = True
         # --- End New Validation ---
 
+# --- NEW: Validate Steps State ---
+        steps_value = self._state.get("steps")
+        default_steps_value = 0 # Assuming a default of 0 for steps
+
+        if not isinstance(steps_value, int):
+            print(f"Validation Warning: 'steps' missing or not an integer ({type(steps_value).__name__}). Setting to default ({default_steps_value}).")
+            self._state["steps"] = default_steps_value
+            needs_save = True
+        elif steps_value < 0:
+            print(f"Validation Warning: 'steps' value ({steps_value}) is negative. Resetting to default ({default_steps_value}).")
+            self._state["steps"] = default_steps_value
+            needs_save = True
+        # --- End New Validation ---
+
         if needs_save:
             print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
             self._write_json(self._state)
@@ -432,6 +446,7 @@ class InventoryHouseManager(GenericJsonTool):
                                 "location_id": room.get("id"),
                                 "item_data": item
                             }
+
 
         return None # Item not found anywhere
 
@@ -2116,4 +2131,52 @@ class InventoryHouseManager(GenericJsonTool):
             return
 
         self._state["is_color_configured"] = configured
+        self._write_json(self._state) # Save immediately
+
+# --- NEW: Steps Getters and Setters ---
+
+    def get_steps(self) -> int:
+        """
+        Returns the current steps count.
+        Defaults to 0 if the state value is missing or invalid (validation should prevent this).
+        """
+        steps_value = self._state.get("steps")
+        # Validation should ideally ensure this is always an int >= 0, but defensive check
+        if not isinstance(steps_value, int) or steps_value < 0:
+             # This case should be rare if validation runs on load/init
+            print(f"Warning: get_steps found invalid state value ({steps_value}). Returning default 0.")
+            return 0
+        return steps_value
+
+    def set_steps(self, count: int):
+        """
+        Sets the steps count to a specific value and saves the state.
+        Args:
+            count: An integer representing the new steps count (must be non-negative).
+        """
+        if not isinstance(count, int):
+            print(f"Error: Attempted to set 'steps' with non-integer value: {count}. Ignoring.")
+            return
+        if count < 0:
+            print(f"Error: Attempted to set 'steps' with negative value: {count}. Clamping to 0.")
+            count = 0 # Clamp negative values to 0
+
+        self._state["steps"] = count
+        self._write_json(self._state) # Save immediately
+
+    def add_steps(self, amount: int):
+        """
+        Adds a specified amount to the current steps count and saves the state.
+        Args:
+            amount: An integer representing the amount to add (must be non-negative).
+        """
+        if not isinstance(amount, int):
+            print(f"Error: Attempted to add non-integer amount to 'steps': {amount}. Ignoring.")
+            return
+        if amount < 0:
+            print(f"Error: Attempted to add negative amount ({amount}) to 'steps'. Please use set_steps if reducing. Ignoring.")
+            return
+
+        current_steps = self.get_steps() # Use getter to safely get current value
+        self._state["steps"] = current_steps + amount
         self._write_json(self._state) # Save immediately

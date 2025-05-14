@@ -54,7 +54,7 @@ class room_kitchen:
         # Store the state_manager reference
         self.state = state_manager
         self.cook = cook()
-        print("Kitchen initialized.")
+        #print("Kitchen initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -362,7 +362,7 @@ class room_bathroom:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("Bathroom initialized.")
+        #print("Bathroom initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -398,7 +398,7 @@ class room_bedroom:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("Bedroom initialized.")
+        #print("Bedroom initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -440,7 +440,7 @@ class room_garden:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("Garden initialized.")
+        #print("Garden initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -450,7 +450,7 @@ class room_garden:
         self.state.adjust_stat("energy", edit)
         message=f"You lay down in the middle of the garden. The fresh ambience makes you feel revilatized, you recover {edit} energy points."
         # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/grass_icon.png"}) # Example icon
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/lying_icon.png"}) # Example icon
         # ------------------------
         return message
 
@@ -479,7 +479,7 @@ class room_living_room:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("Living room initialized.")
+        #print("Living room initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -524,7 +524,7 @@ class room_computer:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("Computer room initialized.")
+        #print("Computer room initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
@@ -551,7 +551,7 @@ class room_white:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
-        print("White room initialized.")
+        #print("White room initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function

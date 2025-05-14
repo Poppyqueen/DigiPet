@@ -50,8 +50,7 @@ class FunctionBuilder:
             #"get_weather": get_weather, # Refers to the imported global function
             #"get_time": get_time,       # Refers to the imported global function
             #"send_email": send_email,   # Refers to the imported global function
-
-            #"list_items_in_current_room": self.room_handler.list_items_in_current_room, # Refers to the method on the injected instance
+            "get_items_in_current_room": self.state_manager.get_items_in_current_room, # Refers to the method on the injected instance
             #"get_current_emote": self.emote_manager.get_current_emote, # Refers to the method on the injected instance
             "set_current_emote": self.state_manager.set_current_emote, # Refers to the method on the injected instance
             #"get_possible_emotes": self.state_manager.get_possible_emotes, # Refers to the method on the injected instance
@@ -111,7 +110,8 @@ class FunctionBuilder:
         elif current_room == "bedroom":
             bedroom_functions={
             "sleep": self.room_tools.bedroom.sleep,
-            "hug_pillow": self.room_tools.bedroom.hug_pillow
+            "hug_pillow": self.room_tools.bedroom.hug_pillow,
+            "look_under_bed": self.room_tools.bedroom.look_under_bed
             }
             self.function_map.update(bedroom_functions)
 
@@ -270,9 +270,9 @@ class FunctionBuilder:
         
         # Append already formatted context
         # Including inventory, items in current room and current emote
-        context.append("#############")
-        context.append("In the current room the items are:")
-        context.append(self.state_manager.get_items_in_current_room())
+        # context.append("#############")
+        # context.append("In the current room the items are:")
+        # context.append(self.state_manager.get_items_in_current_room())
         context.append("#############")
         context.append(self.state_manager.get_current_emote())
         context.append("#############")

@@ -150,7 +150,21 @@ bedroom_tools=[
             ],
             "additionalProperties": False
         }
+    },    
+    {
+        "type": "function",
+        "name": "look_under_bed",
+        "description": "Look under the bed, who knows what might be there",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [
+            ],
+            "additionalProperties": False
+        }
     },
+
 ]
 
 bathroom_tools=[
@@ -158,7 +172,7 @@ bathroom_tools=[
     {
         "type": "function",
         "name": "drink_water",
-        "description": "Drink water from the bathroom.",
+        "description": "Drink water from the faucet.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -341,22 +355,18 @@ base_tools = [
     #         "additionalProperties": False
     #     }
     # },
-    # {
-    #     "type": "function",
-    #     "name": "list_items_in_current_room",
-    #     "description": "List all items in the current room.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "check": {
-    #                 "type": "boolean",
-    #                 "description": ""
-    #             }
-    #         },
-    #         "required": ["check"],
-    #         "additionalProperties": False
-    #     }
-    # },
+    {
+        "type": "function",
+        "name": "get_items_in_current_room",
+        "description": "List all items in the current room.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
     # {
     #     "type": "function",
     #     "name": "process",

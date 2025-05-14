@@ -414,10 +414,13 @@ class CLIChatbot:
         base_prompt = self.sys_prompt
         full_prompt = base_prompt + tools_context
         if deep_memory_context:
+            
              # Add deep memory context to the prompt
              full_prompt += f"\n\n{deep_memory_context}\nUse any relevant information above to inform your response."
 
+        steps=self.get_steps()
 
+        full_prompt += f"\n\n You have been here for: {steps} steps. Your own size is relative to this!"
         # Note: The memory structure itself is passed separately to the AI call (self.ai.adventure_response)
         # This deep_memory_context is added to the *prompt string* for models that can process it there.
         # Ensure your AI model's underlying implementation (`adventure_response`) correctly combines
@@ -431,6 +434,7 @@ class CLIChatbot:
             mem_structure if isinstance(mem_structure, dict) else {},
             full_prompt
         )
+        self.add_steps(1)
 
 
 # --- wellness stats check -----
@@ -565,6 +569,19 @@ class CLIChatbot:
 
         return final_ai_response # Return the final text response
 
+
+
+
+# Bridge to inventory manager
+
+    def get_steps(self):
+        return self.state_manager.get_steps()
+    
+    def set_steps(self, count: int):
+        return self.state_manager.set_steps(count)
+    
+    def add_steps(self, amount: int):
+        return self.state_manager.add_steps(amount)
 
     def get_wellness_states(self):
         return self.state_manager.get_stats(True)

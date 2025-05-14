@@ -1219,6 +1219,27 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         else:
             screen.fill(config.fallback_bg_color)
 
+        #if not state.inventory_panel_visible:
+
+# ------- draw pet ----------
+
+        # Calculate current circle position
+        current_circle_center_x = config.BASE_CIRCLE_CENTER_X
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+        time_in_seconds = current_time_ms / 1000.0
+        animation.update_animation_state(current_time_ms) # Update animation state variables
+        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
+
+        current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+
+        # Draw the Circle (Ensure positions are integers)
+        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius)
+        # Example: Draw a border around the circle
+    # --- MODIFIED: Use state.pet_color for the circle outline ---
+        pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius, 5)
+
+# ----------------------
         # Unpack rects for easier access (always needed)
         panel_rect = _gui_rects['panel_rect']
         input_rect = _gui_rects['input_rect']
@@ -1409,22 +1430,24 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         # Pass the is_input_locked flag
         draw_package_buttons(screen, is_input_locked)
 
-        if not state.inventory_panel_visible:
-            # Calculate current circle position
-            current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-            current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-            time_in_seconds = current_time_ms / 1000.0
-            animation.update_animation_state(current_time_ms) # Update animation state variables
-            animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
+        # if not state.inventory_panel_visible:
 
-            current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
-            current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+        #     # draw cricle pet
+        #     # Calculate current circle position
+        #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X
+        #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+        #     time_in_seconds = current_time_ms / 1000.0
+        #     animation.update_animation_state(current_time_ms) # Update animation state variables
+        #     animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
 
-            # Draw the Circle (Ensure positions are integers)
-            pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS)
-            # Example: Draw a border around the circle
-        # --- MODIFIED: Use state.pet_color for the circle outline ---
-            pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), config.CIRCLE_RADIUS, 5)
+        #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
+        #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
+
+        #     # Draw the Circle (Ensure positions are integers)
+        #     pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius)
+        #     # Example: Draw a border around the circle
+        # # --- MODIFIED: Use state.pet_color for the circle outline ---
+        #     pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius, 5)
 
 
     # --- Draw NEW Image Popup (This is OUTSIDE the conditional block) ---

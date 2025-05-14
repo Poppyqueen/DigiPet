@@ -57,7 +57,7 @@ class GenericJsonTool:
             # Write the default state immediately if file was missing or invalid
             self._write_json(self._state)
 
-        print(f"{self.__class__.__name__} initialized with state: {self._state}")
+        #print(f"{self.__class__.__name__} initialized with state: {self._state}")
 
 
     def _ensure_base_path_exists(self):

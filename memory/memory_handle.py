@@ -59,7 +59,7 @@ class memory_manager:
                     ai_bot_instance=self.bot_instance,
                     memory_instance=self # Pass this memory_manager instance
                 )
-                print(f"DeepMemory initialized with file: {self.deep_memory_filepath}")
+                #print(f"DeepMemory initialized with file: {self.deep_memory_filepath}")
             except Exception as e:
                 print(f"Error initializing DeepMemory: {e}")
                 self.deep_memory = None
