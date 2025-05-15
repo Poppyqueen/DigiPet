@@ -92,8 +92,12 @@ def handle_chatbot_signal(signal_data):
             if image_path:
                 print(f"Signal type 'change_background' received with path: {image_path}, posting event.")
                 pygame.event.post(pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_path=image_path))
-                loc = chatbot.get_current_location()
-                music_player.play_new_song(f"style/sounds/music/rooms/{loc}.mp3")
+
+                current_room = chatbot.state_manager._find_room_by_id(chatbot.state_manager._state.get("current_room_id"))
+
+                loc_music = current_room.get("music")
+
+                music_player.play_new_song(f"style/sounds/music/rooms/{loc_music}.mp3")
             else:
                  print("Signal 'change_background' received but no 'image_path' in data.")
 
@@ -157,8 +161,9 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "room_inventory":
             # Expecting a list of strings under 'item_list' key
             item_list_data = signal_data.get("item_list")
+            #print(f"Signal type 'room_inventory' received with {len(item_list_data)} items. Posting ROOM_INVENTORY_EVENT.")
+
             if isinstance(item_list_data, list):
-                 print(f"Signal type 'room_inventory' received with {len(item_list_data)} items. Posting ROOM_INVENTORY_EVENT.")
                  pygame.event.post(pygame.event.Event(config.ROOM_INVENTORY_EVENT, item_list=item_list_data))
             else:
                  print("Signal 'room_inventory' received but no valid 'item_list' (list of strings) in data.")
@@ -166,8 +171,9 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "player_inventory":
              # Expecting a list of strings under 'item_list' key
             item_list_data = signal_data.get("item_list")
+            #print(f"Signal type 'player_inventory' received with {len(item_list_data)} items. Posting PLAYER_INVENTORY_EVENT.")
             if isinstance(item_list_data, list):
-                 print(f"Signal type 'player_inventory' received with {len(item_list_data)} items. Posting PLAYER_INVENTORY_EVENT.")
+                 #print(f"Signal type 'player_inventory' received with {len(item_list_data)} items. Posting PLAYER_INVENTORY_EVENT.")
                  pygame.event.post(pygame.event.Event(config.PLAYER_INVENTORY_EVENT, item_list=item_list_data))
             else:
                  print("Signal 'player_inventory' received but no valid 'item_list' (list of strings) in data.")
@@ -225,9 +231,9 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet_test_me_test", # Change this
+        sub_directory="bots/"+"Bot_circle_pet", # Change this
 
-        deep_memory=False, # Preferably leave as false until deep memory is reworked
+        deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
 
         base_model="gpt-4.1-mini", # Set as needed
         select_memory_model="gpt-4.1-mini", # Set as needed
@@ -616,7 +622,7 @@ while running:
         elif event.type == config.ROOM_INVENTORY_EVENT:
              item_list_data = getattr(event, 'item_list', None)
              if isinstance(item_list_data, list):
-                  print(f"Main loop processing ROOM_INVENTORY_EVENT. Updating room inventory state.")
+                  #print(f"Main loop processing ROOM_INVENTORY_EVENT. Updating room inventory state.")
                   state.room_inventory_list = item_list_data # Update the state LIST
                   # Optionally reset scroll to top when new data arrives?
                   state.room_inventory_scroll_y = 0 # Let's reset for now to easily see new items
@@ -626,7 +632,7 @@ while running:
         elif event.type == config.PLAYER_INVENTORY_EVENT:
              item_list_data = getattr(event, 'item_list', None)
              if isinstance(item_list_data, list):
-                  print(f"Main loop processing PLAYER_INVENTORY_EVENT. Updating player inventory state.")
+                  #print(f"Main loop processing PLAYER_INVENTORY_EVENT. Updating player inventory state.")
                   state.player_inventory_list = item_list_data # Update the state LIST
                   state.player_inventory_scroll_y = 0 # Reset scroll
              else: print(f"PLAYER_INVENTORY_EVENT received with invalid data.")
@@ -826,8 +832,10 @@ while running:
                                         # Call the add_items function with the package data
                                         # The add_items function has its own lock check,
                                         # but we already checked is_currently_asleep above.
-                                        add_items(package_info["package"], package_info["room_id"])
-                                        room_name=chatbot.get_room_name_out(package_info["room_id"])
+                                        current_room_id=chatbot.state_manager.get_current_room_id()
+                                        add_items(package_info["package"], current_room_id )
+                                        
+                                        room_name=chatbot.get_room_name_out(current_room_id)
                                         message=f"Items placed in: {room_name}"
                                         color=(0,255,120)
                                         gui.show_popup_message(message, color)
@@ -879,17 +887,17 @@ while running:
 
 
 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_angry_animation(); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_thinking_animation(); continue
-                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_curious_animation(); continue
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_confused_animation(); continue
-                if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
-                if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
+                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_angry_animation(); continue
+                # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
+                # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_thinking_animation(); continue
+                # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_curious_animation(); continue
+                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_confused_animation(); continue
+                # if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
+                # if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
 
-                if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(1); continue
+                # if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(1); continue
 
-                #if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
+                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
 
 
 

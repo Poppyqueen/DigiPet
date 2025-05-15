@@ -62,7 +62,7 @@ class ItemDefinition(BaseModel):
     """
     name: str = Field(description="A unique string identifier for the item type (e.g., 'bowl_of_nuts').")
     descriptions: List[str] = Field(description="A list of strings providing descriptions for the item.")
-    static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved).")
+    static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved like furniture).")
     type: str = Field(description="Options: 'consumable' or 'misc' for items that are not consumable. Raw items should be considered 'consumable' too.")
 
     # MAKE effects and stats_edit OPTIONAL
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     target_output_file = "care_packages.py" # Using a distinct name for generated file
 
     bundle_concepts = [
-"more raw protein package"
+"spaceship items"
 
         # Add more concepts as needed
     ]

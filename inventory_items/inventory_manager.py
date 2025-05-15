@@ -2,13 +2,14 @@
 # Manages rooms, items, inventory, and emotes using GenericJsonTool with unique IDs.
 # Delegates book-specific logic to BookComponent.
 
-import os
 import json
 import sys
 import random
 import math
+import datetime # Import datetime for timestamping
 
-from inventory_items.items_init import custom_state
+
+from inventory_items.items_init import custom_state, base_state
 # Assuming generic_json_tool.py is in the same directory or accessible in the path
 try:
     from utils.generic_json_tool import GenericJsonTool
@@ -58,7 +59,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
         # Define the default state structure, now moved to items_init
-        self._default_state = custom_state
+        self._default_state = custom_state # custom_state
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state
@@ -66,6 +67,9 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Store the signal callback provided during initialization
         self._signal_callback = signal
+
+        self._assign_missing_ids()
+
 
         # Instantiate the BookComponent AFTER the state is loaded/initialized by super()
         self._book_component = BookComponent(self)
@@ -81,6 +85,88 @@ class InventoryHouseManager(GenericJsonTool):
 
 
         self._post_init_state_validation()
+
+    def _assign_missing_ids(self):
+        """
+        Assigns unique numerical IDs to rooms and items if they do not already
+        have an 'id' key. Handles setting current_room_id based on initial
+        value: if 0, prioritize room with ID 0 if it exists, otherwise use
+        ID of the first room in the list.
+        """
+        needs_save = False
+
+        # First pass: Assign missing IDs to rooms and items based on next_id counters.
+        # This ensures all rooms and items have stable IDs before we decide on the start room.
+        if isinstance(self._state.get("rooms"), list):
+            for i, room in enumerate(self._state["rooms"]):
+                if isinstance(room, dict):
+                    # Assign room ID if missing
+                    if 'id' not in room:
+                        room_id = self._generate_next_room_id()
+                        room['id'] = room_id
+                        #print(f"Assigned ID {room['id']} to room '{room.get('name', f'Unnamed Room Index {i}')}'")
+                        needs_save = True
+
+                    # Assign IDs to items within rooms if missing
+                    if isinstance(room.get("items"), list):
+                         for j, item in enumerate(room["items"]):
+                             if isinstance(item, dict) and 'id' not in item:
+                                 item_id = self._generate_next_item_id()
+                                 item['id'] = item_id
+                                 #print(f"Assigned ID {item['id']} to item '{item.get('name', f'Unnamed Item Index {j}')}' in room '{room.get('name', f'Unnamed Room Index {i}')}'")
+                                 needs_save = True
+
+        # Assign IDs to items in inventory if missing
+        if isinstance(self._state.get("inventory"), list):
+            for i, item in enumerate(self._state["inventory"]):
+                 if isinstance(item, dict) and 'id' not in item:
+                     item_id = self._generate_next_item_id()
+                     item['id'] = item_id
+                     #print(f"Assigned ID {item['id']} to inventory item '{item.get('name', f'Unnamed Inventory Item Index {i}')}'")
+                     needs_save = True
+
+        # Second pass: Handle setting the initial current_room_id if it was defaulted to 0
+        if self._state.get("current_room_id") == 0:
+            print("Initial current_room_id is 0. Determining actual start room...")
+            target_start_room_id = 0 # The ID we prefer if the initial is 0
+
+            found_preferred_start_room = False
+            if isinstance(self._state.get("rooms"), list) and len(self._state["rooms"]) > 0:
+                # First, check if any room *already* has the target_start_room_id (0)
+                for room in self._state["rooms"]:
+                    if isinstance(room, dict) and room.get("id") == target_start_room_id:
+                        self._state["current_room_id"] = target_start_room_id
+                        #print(f"Found room with ID {target_start_room_id} ('{room.get('name', 'Unnamed')}'). Setting current_room_id to {target_start_room_id}.")
+                        needs_save = True
+                        found_preferred_start_room = True
+                        break # Found the preferred start room, exit the loop
+
+                # If the preferred room (ID 0) was NOT found after checking all rooms,
+                # fall back to using the ID of the first room in the list.
+                if not found_preferred_start_room:
+                    first_room = self._state["rooms"][0]
+                    # The first pass guarantees first_room now has an integer ID if it's a dict
+                    if isinstance(first_room, dict) and isinstance(first_room.get("id"), int):
+                        print(f"No room with ID {target_start_room_id} found. Setting current_room_id from default 0 to the ID of the first room ('{first_room.get('name', 'Unnamed')}'), which is {first_room['id']}.")
+                        self._state["current_room_id"] = first_room["id"]
+                        needs_save = True
+                    else:
+                         # This case should be unlikely after the first pass, but included for robustness
+                        print("Warning: Initial current_room_id was 0, but no rooms found or first room has no valid ID after assignment.")
+
+            elif not self._state.get("rooms"):
+                 # No rooms available, current_room_id cannot be set to a valid room.
+                 print("Warning: Initial current_room_id is 0 but no rooms are defined.")
+
+        # If current_room_id was NOT 0 initially, this block is skipped, and its value is preserved.
+
+
+        # Save the state immediately after assigning IDs and setting the start room if changes occurred.
+        if needs_save:
+            print("Finished assigning missing IDs and setting initial room if needed. Saving state.")
+            # Assuming self._write_json exists to persist the state
+            self._write_json(self._state)
+
 
     def _send_signal(self, signal_data):
         """Helper method to send signals using the registered callback."""
@@ -124,7 +210,6 @@ class InventoryHouseManager(GenericJsonTool):
 
     # --- Post-Init Validation (Updated to include Emote State) ---
     def _post_init_state_validation(self):
-        # ... (existing _post_init_state_validation code, which now uses the updated _is_valid_item_data internally) ...
         """
         Performs validation on the loaded or default state to ensure structural integrity
         and ID consistency for inventory, rooms, emotes, and stats. Corrects common issues
@@ -218,12 +303,23 @@ class InventoryHouseManager(GenericJsonTool):
                 print(f"Validation Warning: Found non-dict entry in rooms list: {room}. Removing.")
                 needs_save = True
                 continue
-            required_room_keys = ["id", "name", "descriptions", "items"]
+            required_room_keys = ["id", "name", "descriptions", "items", "image", "room_types"]
             if not all(key in room for key in required_room_keys):
                 print(f"Validation Warning: Room missing required keys ({required_room_keys}): ID {room.get('id', 'unknown')}. Removing.")
                 needs_save = True
                 continue
-
+            if not isinstance(room.get("image"), str):
+                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string image name. Removing")
+                needs_save =True
+                continue
+            if not isinstance(room.get("music"), str):
+                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string music name. Removing")
+                needs_save =True
+                continue
+            if not isinstance(room.get("room_types"), list) or not all(isinstance(d, str) for d in room.get("room_types", [])):
+                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string room_type. Removing")
+                needs_save = True
+                continue
             if not isinstance(room.get("id"), int):
                 print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-integer ID: {room.get('id')}. Removing.")
                 needs_save = True
@@ -596,8 +692,7 @@ class InventoryHouseManager(GenericJsonTool):
             if total_stages is None or not isinstance(total_stages, float):
                 return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'total_stages' or it's not a float."
 
-            # Note: You might want to add checks like current_stage <= total_stages and total_stages > 0
-            # but the request was just for type validation.
+        
         return True, "" # Item is valid
 
 
@@ -644,6 +739,79 @@ class InventoryHouseManager(GenericJsonTool):
     # drop_item (STAY)
     # create_item (STAY, used for all item types including books)
     # remove_item (STAY)
+
+    # Add the new method
+    def add_item_description(self, item_id: int, new_description: str) -> str:
+        """
+        Adds a new, time-tagged description to the list of descriptions
+        for a specific item instance identified by its ID.
+        This operation is only allowed for items currently in the inventory.
+
+        Args:
+            item_id (int): The unique ID of the item to modify.
+            new_description (str): The new description string to add.
+
+        Returns:
+            str: A message indicating success or failure (e.g., item not found,
+                 item not in inventory, invalid input, empty description).
+        """
+        # 1. Validate inputs
+        if not isinstance(item_id, int):
+            return f"Failed to add description: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
+        if not isinstance(new_description, str) or not new_description.strip():
+            return "Failed to add description: New description must be a non-empty string."
+
+        # 2. Get the current inventory list (internal data structure)
+        # Use get_inventory_items with internal=True to get the list directly
+        inventory_list = self.get_inventory_items(internal=True)
+
+        # Ensure we actually received a list (defensive check)
+        if not isinstance(inventory_list, list):
+            # This case should be rare if validation and get_inventory_items are correct
+            return "Error: Could not access inventory data to add description."
+
+        # 3. Search for the item within the inventory list by its ID
+        found_item = None
+        # Iterate through the actual dictionaries in the inventory list
+        for item_data in inventory_list:
+            # Safely check if item_data is a dict and has the 'id' key
+            if isinstance(item_data, dict) and item_data.get("id") == item_id:
+                # Optionally, add another check here if you want to restrict
+                # description changes only to specific item types, e.g., "misc" or "book"
+                # if item_data.get("type") not in ["misc", "book", "consumable"]:
+                #     return f"Failed to add description: Item '{item_data.get('name', 'Unnamed')}' (ID: {item_id}) is of type '{item_data.get('type', 'unknown')}', which cannot have descriptions added."
+                found_item = item_data
+                break # Found the item, stop searching
+
+        # 4. Add the description if the item was found in inventory
+        if found_item:
+            # Prepare the time-tagged description entry
+            timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+            timed_description = f"{timestamp} {new_description.strip()}" # Use strip to clean leading/trailing whitespace
+
+            # Get the existing descriptions list, ensuring it's a list
+            # If 'descriptions' key doesn't exist or isn't a list, initialize it as empty
+            descriptions_list = found_item.get("descriptions")
+            if not isinstance(descriptions_list, list):
+                descriptions_list = []
+                # Note: We don't need to explicitly set found_item["descriptions"] = [] yet,
+                # as append will happen next and then the list reference is assigned.
+
+            # Append the new timed description
+            descriptions_list.append(timed_description)
+
+            # Ensure the item data now has the (potentially newly created) descriptions list
+            found_item["descriptions"] = descriptions_list
+
+            # 5. Save the state to persist the change
+            self._write_json(self._state)
+
+            # Retrieve the item's name for a helpful success message
+            item_name = found_item.get("name", "Unnamed Item")
+            return f"Added description for '{item_name}' (ID: {item_id}) in inventory."
+        else:
+            # 6. Item with the given ID was not found in the inventory
+            return f"Failed to add description: Item with ID {item_id} not found in your inventory."
 
     def get_room_name(self, room_id: int) -> str:
         """
@@ -709,7 +877,7 @@ class InventoryHouseManager(GenericJsonTool):
                 # Retrieve updated current room info for signal
                 current_room = self._find_room_by_id(self._state.get("current_room_id")) # Use .get()
                 if current_room:
-                    c_name = current_room.get("name", "unnamed_room") # Use .get(), lowercase for path convention
+                    c_name = current_room.get("image", "unnamed_image") # Use .get(), lowercase for path convention
                     # Send signal for background change
                     self._send_signal({"type": "change_background", "image_path": f"{c_name}"}) # Assuming .png extension
 
@@ -1605,7 +1773,7 @@ class InventoryHouseManager(GenericJsonTool):
             self._send_signal({
                 "type": "emote_changed",
                 "emote_name": emote_name,
-                "sound_path": f"style/sounds/{emote_name.lower()}.wav" # Assuming lowercase file names
+                "sound_path": f"style/sounds/{emote_name.lower()}.mp3" # Assuming lowercase file names
             })
 
             # print(f"Current emote set to '{emote_name}'") # Keep print for internal logging

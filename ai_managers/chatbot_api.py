@@ -420,7 +420,7 @@ class CLIChatbot:
 
         steps=self.get_steps()
 
-        full_prompt += f"\n\n You have been here for: {steps} steps. Your own size is relative to this!"
+        full_prompt += f"\n\n You have been in your digital home for: {steps} steps. Your own size is relative to this!"
         # Note: The memory structure itself is passed separately to the AI call (self.ai.adventure_response)
         # This deep_memory_context is added to the *prompt string* for models that can process it there.
         # Ensure your AI model's underlying implementation (`adventure_response`) correctly combines
@@ -429,12 +429,13 @@ class CLIChatbot:
         # 5. Get AI response (now handled recursively)
         # The recursive function prints intermediate steps and the final response,
         # and saves all intermediate function results and the final response to memory.
-        #print(f"full system prompt: {full_prompt}")
+
+
         final_ai_response = self._get_ai_response_sequence(
             mem_structure if isinstance(mem_structure, dict) else {},
             full_prompt
         )
-        self.add_steps(1)
+        self.add_steps(1) # add a step to the counter
 
 
 # --- wellness stats check -----
@@ -459,7 +460,7 @@ class CLIChatbot:
         # 2. Get the *updated* stats dictionary using the helper
         # This gets the dictionary containing "fullness", "hydration", etc.
         # Returns None if state is corrupted or missing the 'stats' key
-        stats_data = self.state_manager.get_stats(True) # Assuming _get_stats_data is a method of state_manager
+        stats_data = self.state_manager.get_stats(True) # Assuming get_stats is a method of state_manager
 
         # 3. Check if any of the monitored stats are below the threshold
         # We can only do this check if we successfully got the stats data

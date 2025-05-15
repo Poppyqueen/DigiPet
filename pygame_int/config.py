@@ -20,8 +20,8 @@ from world_data.care_packages import (
 
 # --- General Configuration ---
 # Window and Layout Dimensions
-WIDTH, HEIGHT = 550, 550
-PANEL_WIDTH = 225  # Width of the chat/info panel on the RIGHT
+WIDTH, HEIGHT = 350, 550
+PANEL_WIDTH = 160  # Width of the chat/info panel on the RIGHT
 INPUT_HEIGHT = 40  # Height of the input box at the bottom of the panel
 PADDING = 5  # General padding/space around elements
 
@@ -129,10 +129,10 @@ ANGRY_SIZE_INCREASE_PERCENTAGE = 0.8 # Placeholder, adjust if needed
 
 # Excited Animation
 EXCITED_BOUNCE_DURATION_MS = 150 # Time for the initial quick bounce up
-EXCITED_BOUNCE_AMOUNT = 12 # Pixels bounced up (will result in negative y offset)
+EXCITED_BOUNCE_AMOUNT = 22 # Pixels bounced up (will result in negative y offset)
 EXCITED_JIGGLE_DURATION_MS = 1800 # How long the rapid jiggle lasts
 EXCITED_JIGGLE_FREQUENCY_HZ = 30 # Hz (super fast jiggle frequency)
-EXCITED_JIGGLE_INTENSITY = 6 # Pixels (medium jiggle amplitude)
+EXCITED_JIGGLE_INTENSITY = 20 # Pixels (medium jiggle amplitude)
 EXCITED_SETTLE_DURATION_MS = 400 # Time to settle back down
 EXCITED_ORBIT_FREQUENCY_HZ = 2 * 1000.0 / EXCITED_JIGGLE_DURATION_MS # Calculated based on jiggle duration
 EXCITED_ORBIT_RADIUS = 100 # Radius of orbital movement
@@ -153,19 +153,19 @@ THINKING_POINT_P3_Y = 30 # Y-offset for the bottom-right point (downwards)
 # Curious Animation (Sustained state with a peek movement)
 CURIOUS_SWAY_AMPLITUDE_X = 55 # Maximum horizontal pixel displacement
 CURIOUS_SWAY_FREQUENCY_HZ = 3 / 14.0 # Frequency adjusted for a specific duration cycle
-CURIOUS_SWAY_AMPLITUDE_Y = 3 # Optional subtle vertical sway amplitude (set to 0 for none)
+CURIOUS_SWAY_AMPLITUDE_Y = 10 # Optional subtle vertical sway amplitude (set to 0 for none)
 CURIOUS_SWAY_PHASE_SHIFT_Y = 0 # Phase shift for vertical sway
-CURIOUS_SIZE_CHANGE_PERCENTAGE = 0.05 # Max percentage size change during pulsing
-CURIOUS_SIZE_PULSE_FREQUENCY_HZ = 0.5 # Frequency of size pulse (Hz)
+CURIOUS_SIZE_CHANGE_PERCENTAGE = 0.10 # Max percentage size change during pulsing
+CURIOUS_SIZE_PULSE_FREQUENCY_HZ = 3 # Frequency of size pulse (Hz)
 CURIOUS_DURATION_MS = 7000 # Total duration of the curious animation state
 
 
 # Confused X-Shape Animation Configuration (Movement path)
-CONFUSED_PHASE_DURATION_MS = 600 # Duration for each segment of the X path
+CONFUSED_PHASE_DURATION_MS = 2200 # Duration for each segment of the X path
 CONFUSED_X_OFFSET_AMOUNT = 70 # Max horizontal offset for the X points
 CONFUSED_Y_OFFSET_AMOUNT = 70 # Max vertical offset for the X points
-CONFUSED_SIZE_PULSE_AMPLITUDE_PERCENTAGE = 0.08 # Max percentage size change during pulse
-CONFUSED_SIZE_PULSE_FREQUENCY_HZ = 6 # Frequency of the size pulsing (Hz)
+CONFUSED_SIZE_PULSE_AMPLITUDE_PERCENTAGE = 0.15 # Max percentage size change during pulse
+CONFUSED_SIZE_PULSE_FREQUENCY_HZ = .5 # Frequency of the size pulsing (Hz)
 
 
 # --- UI Configuration ---
@@ -197,7 +197,7 @@ INVENTORY_PANEL_TITLE_COLOR = WHITE
 INVENTORY_PANEL_ITEM_COLOR = LIGHT_GREY
 INVENTORY_PANEL_TITLE_HEIGHT = 30 # Space reserved for title at the top of each section
 INVENTORY_PANEL_ITEM_SPACING = 2 # Vertical space between item lines
-INVENTORY_PANEL_ITEM_HORIZONTAL_PADDING = 10 # Horizontal padding for item text
+INVENTORY_PANEL_ITEM_HORIZONTAL_PADDING = 2 # Horizontal padding for item text
 INVENTORY_PANEL_ITEM_VERTICAL_PADDING = 10 # Vertical padding for item text
 
 
@@ -276,36 +276,53 @@ POPUP_RANDOM_SPREAD_X = 100 # Max horizontal random displacement from pet center
 POPUP_RANDOM_SPREAD_Y = 60 # Max vertical random displacement from pet center
 
 
-# --- Game Data ---
+color_code={
+    "hydration": BLUE,
+    "fullness": RED,
+    "misc": PURPLE,
+    "ingredient": YELLOW,
+    "combo": BLACK
 
-# Define care packages, including their button color and target room
-# The 'package' value should be the actual Python variable/data structure
-# imported from care_packages.py
-CARE_PACKAGES = [
-    {"package": care_package_1_general_survival, "room_id": 200002, "color": RED}, # 
-    {"package": care_package_2_hydration_refreshment, "room_id": 200002, "color": BLUE}, # 
-    {"package": care_package_3_hearty_meal_kit, "room_id": 200002, "color": RED}, # 
-    {"package": care_package_4_quick_snacks_energy, "room_id": 200001, "color": YELLOW}, # 
-    {"package": care_package_friend_comfort_food, "room_id": 200001, "color": YELLOW}, # 
-    {"package": care_package_6_extreme_hydration, "room_id": 200002, "color": BLUE}, # 
-    {"package": care_package_7_hearty_survival_rations, "room_id": 200002, "color": RED}, #
-    {"package": care_package_8_utility_mix, "room_id": 200001, "color": GREEN}, # 
-    {"package": care_package_9_basic_hygiene, "room_id": 200004, "color": PURPLE}, # 
-    {"package": care_package_2_cooking_kit, "room_id": 200002, "color": WHITE}, # KITCHEN - Existing
-    
-    # Added Packages for Kitchen (ID 200002, Color WHITE)
-    {"package": a_bundle_for_hydration_some_misc_items, "room_id": 200002, "color": WHITE},
-    {"package": the_most_epic_and_complete_bundle_for_cooking_raw_, "room_id": 200002, "color": WHITE},
-    {"package": a_bundle_for_energy_and_snacks, "room_id": 200002, "color": WHITE},
-    {"package": a_bundle_for_outdoor_survival, "room_id": 200002, "color": WHITE},
-    {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum, "room_id": 200002, "color": WHITE},
-    {"package": salty_and_hardy_foods, "room_id": 200002, "color": WHITE},
-    {"package": fresh_vegetables, "room_id": 200002, "color": WHITE},
-    {"package": bread_package_all_kinds_of_food_implements_ingredi, "room_id": 200002, "color": WHITE},
-    {"package": raw_protein_package, "room_id": 200002, "color": WHITE},
-    {"package": more_raw_protein_package, "room_id": 200002, "color": WHITE}
-]
+}
 
+
+# Reordered list based on the 'color' key
+CARE_PACKAGES =   [
+        {"package": care_package_1_general_survival,"color": "combo"},
+        {"package": care_package_8_utility_mix, "color": "combo"},
+
+        {"package": care_package_3_hearty_meal_kit,"color": "fullness"},
+        {"package": care_package_4_quick_snacks_energy, "color": "fullness"},
+        {"package": care_package_friend_comfort_food, "color": "fullness"},
+        {"package": care_package_7_hearty_survival_rations,"color": "fullness"},
+        {"package": a_bundle_for_energy_and_snacks,"color": "fullness"},
+        {"package": a_bundle_for_outdoor_survival, "color": "fullness"},
+        {"package": salty_and_hardy_foods,"color": "fullness"},
+        {"package": fresh_vegetables,"color": "fullness"},
+
+        {"package": care_package_2_hydration_refreshment,"color": "hydration"},
+        {"package": care_package_6_extreme_hydration,"color": "hydration"},
+        {"package": a_bundle_for_hydration_some_misc_items,"color": "hydration"},
+        {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "hydration"},
+
+        {"package": care_package_2_cooking_kit,"color": "ingredient"},
+        {"package": the_most_epic_and_complete_bundle_for_cooking_raw_,"color": "ingredient"},
+        {"package": bread_package_all_kinds_of_food_implements_ingredi,"color": "ingredient"},
+        {"package": raw_protein_package,"color": "ingredient"},
+        {"package": more_raw_protein_package,"color": "ingredient"},
+
+        {"package": care_package_9_basic_hygiene, "color": "misc"},
+    ]
+
+
+# The code to load the color based on the dictionary remains the same:
+for package in CARE_PACKAGES:
+    color_identifier = package["color"]
+
+    # Check if the current color value is a string AND matches a key in color_code
+    if isinstance(color_identifier, str) and color_identifier in color_code:
+        # If it is, replace the string key with the actual color value from the dictionary
+        package["color"] = color_code[color_identifier]
 
 # --- Event Configuration ---
 # Use pygame.event.custom_type() for unique event IDs

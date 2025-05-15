@@ -263,6 +263,28 @@ base_tools = [
     # },
     {
         "type": "function",
+        "name": "add_item_description",
+        "description": "Add your own description to an specified item currently in your inventory",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "ID for the item to add a new description to."
+                },
+                    "new_description": {
+                    "type": "string",
+                    "description": "The description to append to the current object."
+                }
+            },
+            "required": [
+                "item_id"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
         "name": "move_to_room",
         "description": "Move to a specified room.",
         "parameters": {

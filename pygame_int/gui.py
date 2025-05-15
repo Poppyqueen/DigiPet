@@ -1112,9 +1112,7 @@ def draw_package_buttons(screen, is_input_locked):
                  (_right_scroll_button_rect.right - tri_pad_x, _right_scroll_button_rect.bottom - tri_pad_y) # Bottom-right
              ]
              pygame.draw.polygon(screen, config.WHITE, points_right) # Draw white arrow shape
-
-
-    # Draw Package Buttons within the display area
+# Draw Package Buttons within the display area
     button_size = config.PACKAGE_BUTTON_SIZE
     button_spacing = config.PACKAGE_BUTTON_SPACING_X
     # Center of the first button position within the care package area
@@ -1133,11 +1131,42 @@ def draw_package_buttons(screen, is_input_locked):
         # Calculate the button's center position relative to the screen
         # Position is based on its index within the *visible* page (i - visible_start)
         button_center_x = start_x_offset + (i - visible_start) * (button_size + button_spacing)
+        button_center = (button_center_x, button_y_center) # Store center as a tuple
 
         # Draw the filled circle
-        pygame.draw.circle(screen, button_color, (button_center_x, button_y_center), button_size // 2)
+        pygame.draw.circle(screen, button_color, button_center, button_size // 2)
         # Draw the border
-        pygame.draw.circle(screen, config.PACKAGE_BUTTON_BORDER_COLOR, (button_center_x, button_y_center), button_size // 2, 1)
+        pygame.draw.circle(screen, config.PACKAGE_BUTTON_BORDER_COLOR, button_center, button_size // 2, 1)
+
+        # --- ADDED CODE: Draw the number ---
+        # Use the index 'i' (0-based) + 1 for the displayed number
+# --- MODIFIED CODE: Draw the number with outline ---
+        # Use the index 'i' (0-based) + 1 for the displayed number
+        number_text = str(i + 1)
+
+        # Assuming 'number_font', 'number_color', and 'outline_color' are defined/available
+
+        # Render the outline text slightly offset
+        outline_surface = _font.render(number_text, True, button_color)
+        outline_rect = outline_surface.get_rect(center=button_center)
+
+        # Define offsets for the outline
+        offsets = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+        # Draw the outline by blitting the outline surface at various offsets
+        for dx, dy in offsets:
+            outline_pos = (outline_rect.x + dx, outline_rect.y + dy)
+            screen.blit(outline_surface, outline_pos)
+
+        text_color=(0,0,0)
+        if button_color == (0,0,0):
+            text_color=(255,255,255)
+        # Render the main text on top
+        text_surface = _font.render(number_text, True, text_color)
+        text_rect = text_surface.get_rect(center=button_center) # Center text on the button's center
+        screen.blit(text_surface, text_rect)
+
+
 # --- NEW: Function to get clickable regions for Care Package Buttons and Scroll Controls ---
 def get_package_button_click_regions():
     """

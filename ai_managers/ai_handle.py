@@ -83,8 +83,7 @@ class ai_bot:
 
         
     def call_function(self, name, args):
-        our_room= self.state_manager.get_current_room_name() # Get the current room from the room handler
-        result = self.functions_builder.call_function(name, args, current_room=our_room) # Call the function using the function builder
+        result = self.functions_builder.call_function(name, args) # Call the function using the function builder
         return result # Return the result of the function call
 
     
@@ -102,7 +101,7 @@ class ai_bot:
 
 
             messages_data = self.construct_data(mem_structure, final_prompt)
-            tools = self.functions_builder.construct_tools(current_room=our_room) # Get the tools for the current room
+            tools = self.functions_builder.construct_tools() # Get the tools for the current room
             try:
                 response = self.client.responses.create(
                     model=self.action_model, # Using a widely available model name
