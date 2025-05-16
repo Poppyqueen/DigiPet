@@ -4,7 +4,70 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
-
+lab_room_tools=[        {
+        "type": "function",
+        "name": "forward",
+        "description": "Move forward the A-Life simulation one step.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "backward",
+        "description": "Move backwards the A-Life simulation one step.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },  
+    {
+    "type": "function",
+    "name": "observe",
+    "description": "Get the current observation of the A-life simulation.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        },
+        "required": [],
+        "additionalProperties": False
+    }
+    },  
+    {
+    "type": "function",
+    "name": "set_current_tick",
+    "description": "Sets the current simulation tick to the given int value",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "tick": {
+                "type": "number",
+                "description": "A number to set the current A-life simulation tick to."
+            }
+        },
+        "required": ["tick"],
+        "additionalProperties": False
+    }
+    },    {
+    "type": "function",
+    "name": "create_new_simulation",
+    "description": "Create a whole new simulation run with the previous settings. Will override current simulation.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        },
+        "required": [],
+        "additionalProperties": False
+    }
+    },  
+    ]
 kitchen_room_tools=[
         {
         "type": "function",

@@ -9,7 +9,7 @@
 # the state manager has access to inventory and wellness stats access
 
 
-from utils import open_meteo_handle, tv_handle, wiki_handle, random_object
+from utils import open_meteo_handle, tv_handle, wiki_handle, random_object, simulation
 
 from utils.ai_cook import cook
 
@@ -544,6 +544,7 @@ class room_computer:
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
         return wiki_handle.fetch_random_wiki_article()
+
 
 
 class room_white:

@@ -23,6 +23,9 @@
 # Import tools and their definitions from the tools folder
 # Here we can import tools that don't need to interact inside the AI agent itself or the CLI, so we can construct them directly here
 from datetime import datetime
+import os.path
+import json
+
 # Import the tool definitions lists
 # We still need to import these lists, but they will be organized differently below
 from .my_tools import (
@@ -35,21 +38,28 @@ from .my_tools import (
     bathroom_tools,
     computer_room_tools,
     garden_room_tools,
-    kitchen_room_tools
+    kitchen_room_tools,
+    lab_room_tools
 )
 
-from utils import open_meteo_handle
+from utils import open_meteo_handle, simulation
 
 # Import tools
 # We import the tool handlers/classes here
 from tools.tools_folder.bluesky_handle import bluesky_bot
 from tools.tools_folder.rooms_tools import main_tools_handle
 
+
+
 class FunctionBuilder:
-    def __init__(self, state_manager=None, signal=None):
+    def __init__(self, state_manager=None, signal=None, subdirectory=None):
+        self.sub_directory=subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback)
+        self.A_Life = None
+        self._init_alife()
+
 
         # --- Central Mapping of Room Types to Functions and Definitions ---
         # This dictionary holds the functions and tool definitions associated with each room type.
@@ -113,6 +123,17 @@ class FunctionBuilder:
                     "prepare_food": self.room_tools.kitchen.prepare_food
                 },
                 "definitions": kitchen_room_tools
+            },
+            "ALIFE_research":{
+                "functions": {
+                    "set_current_tick":self.A_Life.set_current_tick,
+                    "observe":self.A_Life.observe,
+                    "forward": self.A_Life.forward,
+                    "backward": self.A_Life.backward,
+                    "create_new_simulation": self.A_Life.create_new_simulation
+
+                },
+                "definitions": lab_room_tools
             }
             # Add entries for other room types as needed
         }
@@ -165,6 +186,43 @@ class FunctionBuilder:
 
         # self.function_map will be constructed dynamically by construct_map
         self.function_map = {} # Initialize as empty; filled by construct_map
+
+
+    def _init_alife(self):
+        memory_filepath = os.path.join(self.sub_directory, "simulation/archives")
+        os.makedirs(memory_filepath, exist_ok=True)
+
+        save_name = "current_simulation" # Use a variable for the base name
+        # Construct the full path including the .json extension for loading/checking
+        simulation_json_path = os.path.join(memory_filepath, f"{save_name}.json")
+
+        # Check if the JSON file exists
+        if os.path.exists(simulation_json_path):
+            print(f"File exists at: {simulation_json_path}, loading simulation")
+            with open(simulation_json_path, 'r') as f:
+                data = json.load(f)
+                # Assuming ALifeSimulation can be initialized with loaded config
+                self.A_Life = simulation.ALifeSimulation(data["config"], memory_filepath)
+                self.A_Life.history = data["history"]
+                self.A_Life.entity_id_counter = data["entity_id_counter"]
+                self.A_Life.current_tick = 0 # Start at the beginning for playback
+                # Max ticks should probably be the number of ticks in the history
+                self.A_Life.max_ticks = len(self.A_Life.history) - 1
+        else:
+            print(f"File does not exist at: {simulation_json_path}, creating new simulation")
+            # Create a new simulation with default config
+            self.A_Life = simulation.ALifeSimulation(archive=memory_filepath)
+            # Run the simulation to populate history
+            self.A_Life.run_simulation() # Make sure run_simulation populates self.history
+
+            # Archive the newly run simulation to the correct location
+            # Pass the desired directory and base name to archive_simulation_run
+            self.A_Life.archive_simulation_run()
+
+            self.A_Life.current_tick = 0
+            # Update max_ticks based on the history created by run_simulation
+            self.A_Life.max_ticks = len(self.A_Life.history) - 1
+
 
 
     def get_current_room_types(self):

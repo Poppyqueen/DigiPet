@@ -55,7 +55,7 @@ from utils.pydantic_models import ItemDefinitionListContainer
 
 
 class cook:
-    client = OpenAI()  # client is correctly set up here at the class level
+    #client = OpenAI()  # client is correctly set up here at the class level
 
     def __init__(self):
         pass

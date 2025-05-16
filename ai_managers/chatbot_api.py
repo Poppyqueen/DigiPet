@@ -69,7 +69,7 @@ class CLIChatbot:
 
             #self.blsk=bluesky_bot()
 
-            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback)  # Initialize the function builder
+            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory)  # Initialize the function builder
 
             self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, memory_model=select_memory_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback) # 4.1-nano is the newest widely available model
             self.tts = tts_flag # Set to True if you want to enable text-to-speech output
@@ -323,8 +323,6 @@ class CLIChatbot:
         """
         Processes the AI response, including TTS if enabled, stopping
         any existing TTS process first.
-
-
     
         """
         # This works in the CLI in macos, however it needs a compatibility update, 

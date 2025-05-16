@@ -17,9 +17,12 @@ from utils.capture_text import TextCapture
 
 
 
+
+
 class ai_bot:
     client = OpenAI()  # client is correctly set up here at the class level
 
+    
 
     def __init__(self, data_filepath="captured_text.txt", act_model="gpt-4.1-mini", memory_model="gpt-4.1-mini", functions_builder=None, state_manager=None, signal=None):
         self._signal_callback=signal

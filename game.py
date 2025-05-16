@@ -231,12 +231,12 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet", # Change this
+        sub_directory="bots/"+"Bot_circle_pet_first_lab_gem", # Change this
 
         deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
 
-        base_model="gpt-4.1-mini", # Set as needed
-        select_memory_model="gpt-4.1-mini", # Set as needed
+        base_model="gemini-2.0-flash", # Set as needed
+        select_memory_model="gemini-2.0-flash", # Set as needed
 
         tts_flag=True # Set as needed
     )

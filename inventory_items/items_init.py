@@ -694,7 +694,7 @@ custom_state = {
         {
             "name": "computer_room",
             "image": "computer_room",
-            "room_types": ["computer_room"],
+            "room_types": ["computer_room", "ALIFE_research"],
             "music": "computer_room",
             "descriptions": [
                 "A room filled with the quiet hum of electronic machines.",
