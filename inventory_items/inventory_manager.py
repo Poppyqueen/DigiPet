@@ -1,4 +1,4 @@
-# inventory_house_manager_id.py
+# inventory_house_manager.py
 # Manages rooms, items, inventory, and emotes using GenericJsonTool with unique IDs.
 # Delegates book-specific logic to BookComponent.
 

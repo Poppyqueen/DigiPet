@@ -20,10 +20,28 @@ from world_data.care_packages import (
 
 # --- General Configuration ---
 # Window and Layout Dimensions
-WIDTH, HEIGHT = 350, 550
-PANEL_WIDTH = 160  # Width of the chat/info panel on the RIGHT
-INPUT_HEIGHT = 40  # Height of the input box at the bottom of the panel
-PADDING = 5  # General padding/space around elements
+# slightly taller design?
+WIDTH, HEIGHT = 450, 550
+PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
+INPUT_HEIGHT = 40
+PADDING = 5 # Space around elements within the panel
+
+
+# Window and Layout Dimensions
+# square window?
+# WIDTH, HEIGHT = 550, 550
+# PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
+# INPUT_HEIGHT = 40
+# PADDING = 5 # Space around elements within the panel
+
+
+# # Window and Layout Dimensions 
+# Smaller design?
+# WIDTH, HEIGHT = 350, 550
+# PANEL_WIDTH = 160  # Width of the chat/info panel on the RIGHT
+# INPUT_HEIGHT = 40  # Height of the input box at the bottom of the panel
+# PADDING = 5  # General padding/space around elements
+
 
 # Interaction & Timing
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick

@@ -16,7 +16,7 @@ if not my_longitude or not my_latitude:
     sys.exit("Missing longitude and latitude on .env file. Necessary for weather integration.")
 
 # Setup the Open-Meteo API client with cache and retry on error
-cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+cache_session = requests_cache.CachedSession('.cache', expire_after=900)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
 

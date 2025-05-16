@@ -907,9 +907,9 @@ while running:
                 # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_popup_message("testing!!!!!!") ; continue
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
 
-                if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                    music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
-                    continue
+                # if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                #     music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
+                #     continue
 
                 if event.key == pygame.K_m and pygame.key.get_mods() & pygame.KMOD_CTRL: # Use 'm' for mute
                     if music_player is not None:
