@@ -108,7 +108,13 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "function_called":
             function_name = signal_data.get("function_name")
             function_result = signal_data.get("function_result")
+            muted = signal_data.get("muted", False)
             string_result = f"Called: {function_name}, result: {function_result}"
+            if muted:
+                print("DEBUG DEBUG Mute recieved, trying to set display redacted response: ")
+                max_length = 50
+                shortened_function_string = function_result[:max_length] + "..."
+                string_result = f"Called: {function_name}, result truncated: {shortened_function_string}"
             print(f"Signal type 'function_called' received, posting CHATBOT_RESPONSE_EVENT (system).")
             pygame.event.post(pygame.event.Event(config.CHATBOT_RESPONSE_EVENT, text=string_result, msg_type="system"))
             pygame.event.post(pygame.event.Event(config.SHAKE_CIRCLE_EVENT))
@@ -231,12 +237,12 @@ Repeat.
 - You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
 - You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
 """,
-        sub_directory="bots/"+"Bot_circle_pet_first_lab_gem", # Change this
+        sub_directory="bots/"+"Bot_circle_pet_test_mute", # Change this Bot_circle_pet_scientist_run
 
         deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
 
-        base_model="gemini-2.0-flash", # Set as needed
-        select_memory_model="gemini-2.0-flash", # Set as needed
+        base_model="gpt-4.1-nano", # Set as needed
+        select_memory_model="gpt-4.1-nano", # Set as needed
 
         tts_flag=True # Set as needed
     )
@@ -1014,8 +1020,9 @@ while running:
             if pygame.mixer.get_init():
                 print("Initial popup phase has ended. Jukebox is None. Attempting to initialize jukebox.") # Debug
                 try:
-                    loc = chatbot.get_current_location()
-                    music_player = jukebox(f"style/sounds/music/rooms/{loc}.mp3") # Initialize ONLY ONCE
+                    current_room = chatbot.state_manager._find_room_by_id(chatbot.state_manager._state.get("current_room_id"))
+                    loc_music = current_room.get("music")
+                    music_player = jukebox(f"style/sounds/music/rooms/{loc_music}.mp3") # Initialize ONLY ONCE
                 except Exception as e:
                     print(f"Error initializing jukebox: {e}")
                     music_player = None # Ensure it stays None if initialization fails unexpectedly

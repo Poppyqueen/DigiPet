@@ -158,7 +158,21 @@ class ai_bot:
                                 function_result = self.call_function(item.name, parsed_args)
                                 function_array["result"] = function_result # Store successful result
                                 #print(f"Function call '{item.name}' executed successfully.")
-                                self._send_signal({"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}"})
+
+
+                                # Add the names of the functions in here you want to have muted for the GUI text. It will truncate the text result on the window
+
+
+                                muted_functions=["forward_ALIFE", "backward_ALIFE", "observe_ALIFE"]
+                                
+                                signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}"}
+                                if str(item.name) in muted_functions:
+                                    #print("📌📌📌📌📌 DEBUG FUNCTION MUTE 📌📌📌📌📌")
+                                    #print(str(item.name))
+                                    signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}", "muted": True}
+
+
+                                self._send_signal(signal_message)
 
                             except json.JSONDecodeError as e:
                                 print(f"Error parsing JSON arguments for {item.name}: {e}")

@@ -9,7 +9,7 @@ import math
 import datetime # Import datetime for timestamping
 
 
-from inventory_items.items_init import custom_state, base_state
+from inventory_items.items_init import custom_state, base_state, simple_lab
 # Assuming generic_json_tool.py is in the same directory or accessible in the path
 try:
     from utils.generic_json_tool import GenericJsonTool
@@ -59,7 +59,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
         # Define the default state structure, now moved to items_init
-        self._default_state = custom_state # custom_state
+        self._default_state = simple_lab # custom_state
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state

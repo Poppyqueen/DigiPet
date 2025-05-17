@@ -1044,3 +1044,78 @@ base_state={
             # --- End Stats State -
         }
         # --- End of override ---
+
+
+
+simple_lab={
+            # --- Inventory/House State ---
+            "next_item_id": ITEM_ID_START_COUNTER,
+            "next_room_id": ROOM_ID_START_COUNTER,
+            "current_room_id": 0, # Default starting room ID (must match one below)
+            "rooms": [
+                
+                {
+                    "name": "kitchen",
+                    "image": "kitchen",
+                    "room_types": ["kitchen"],
+                    "music": "kitchen",
+                    "descriptions": [
+                        "A clean, modern kitchen.",
+                        "The smell of fresh coffee lingers."
+                    ],
+                    "items": []
+                },
+                {
+                    "name": "library",
+                    "image": "library",
+                    "room_types": ["library", "computer_room"],
+                    "music": "library",
+                    "descriptions": [
+                        "A clean, modern library.",
+                        "It looks quite dark"
+                    ],
+                    "items": []
+                },
+                {
+                    "name": "lab_room",
+                    "id": 0,
+                    "image": "lab_room",
+                    "room_types": ["ALIFE_research"],
+                    "music": "white_room",
+                    "descriptions": [
+                        "A modern laboratory dedicated to A-Life research.",
+                        "The light in here is of a deep blue tone"
+                    ],
+                    "items": []
+                }
+            ],
+            "inventory": [],
+            # --- Emote State (NEW) ---
+            "current_emote": "neutral",
+            "possible_emotes": {
+                "neutral": "I'm feeling calm and attentive.",
+                "happy": "I'm feeling cheerful and optimistic.",
+                "sad": "I'm feeling down.",
+                "confused": "I'm unsure or puzzled.",
+                "excited": "I'm enthusiastic and eager.",
+                "thinking": "I'm processing information or contemplating.",
+                "angry": "I'm feeling frustrated or upset."
+            },
+            # --- End Emote State ---
+
+            ## -- health state -- ##
+                "stats": {
+                "fullness": 200.0,
+                "hydration": 200.0,
+                "energy": 200.0
+            },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
+    "steps": 0
+    # --- End Pet Theme Color ---
+            # --- End Stats State -
+        }
+        # --- End of override ---

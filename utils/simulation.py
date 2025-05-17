@@ -4,31 +4,306 @@ import copy
 from typing import List, Dict, Tuple, Any, Optional
 import os
 from datetime import datetime
+from utils.generic_json_tool import GenericJsonTool
+
+
+import string
+import time
+
+# --- Your ALifeManager class ---
+
+class ALifeManager(GenericJsonTool):
+    """
+    A tool to manage multiple ALife simulation states using a single JSON archive file.
+    Each simulation is stored as an entry in the main state dictionary, keyed by its ID.
+    """
+
+    # Define the expected structure for a single simulation entry for validation/template
+    _simulation_entry_template = {
+        "simulation_ID": "", # This will also be the key in the main state dict
+        "simulation_file_path": "",
+        "simulation_name": "",
+        "simulation_details": [] # Changed to list of strings as default example
+    }
+
+
+    def __init__(self, base_path):
+        # --- REQUIRED: Define json_filename and _default_state BEFORE super().__init__ ---
+
+        # 1. Define the name of the JSON file for this specific tool
+        self.json_filename = "simulations_archive.json"
+
+        # 2. Define the initial/default state structure (a dictionary)
+        # This will be the container for all simulations, keyed by ID.
+        self._default_state = {} # Starts as an empty dictionary
+
+        # --- Call the parent constructor AFTER setting filename and default state ---
+        super().__init__(base_path)
+
+        # Now self._state is initialized (either loaded from file or is a copy of _default_state)
+        print(f"ALifeManager initialized. State contains {len(self._state)} simulations.")
+
+
+    # --- Methods for managing individual simulations ---
+
+    def add_simulation_detail(self, simulation_id: str, detail_string: str) -> str:
+        """
+        Adds a string detail to the list of simulation details for a given simulation ID.
+
+        Args:
+            simulation_id (str): The ID of the simulation to update.
+            detail_string (str): The string to add to the 'simulation_details' list.
+
+        Returns:
+            str: A string indicating success or failure.
+        """
+        if simulation_id not in self._state:
+            return f"Error: Simulation with ID '{simulation_id}' not found."
+
+        if not isinstance(detail_string, str):
+             return f"Error: The detail to add must be a string, received {type(detail_string).__name__}."
+
+        sim_entry = self._state[simulation_id]
+
+        # Ensure simulation_details exists and is a list, handle potential issues
+        if "simulation_details" not in sim_entry or not isinstance(sim_entry["simulation_details"], list):
+            print(f"Warning: 'simulation_details' field for ID '{simulation_id}' was missing or not a list. Re-initializing.")
+            sim_entry["simulation_details"] = [] # Re-initialize if not found or wrong type
+
+        try:
+            # Add the detail to the list
+            sim_entry["simulation_details"].append(detail_string)
+
+            # --- Save the state after modification ---
+            self._write_json(self._state)
+
+            return f"Detail added to simulation '{simulation_id}'."
+        except Exception as e:
+            print(f"An unexpected error occurred adding detail to simulation {simulation_id}: {e}")
+            return f"Error adding detail to simulation '{simulation_id}': An internal error occurred."
+
+
+    def update_simulation_name(self, simulation_id: str, new_name: str) -> str:
+        """
+        Updates the 'simulation_name' for a specific simulation entry.
+
+        Args:
+            simulation_id (str): The ID of the simulation to update.
+            new_name (str): The new name for the simulation.
+
+        Returns:
+            str: A string indicating success or failure.
+        """
+        if simulation_id not in self._state:
+            return f"Error: Simulation with ID '{simulation_id}' not found."
+
+        if not isinstance(new_name, str):
+             return f"Error: New simulation name must be a string, received {type(new_name).__name__}."
+
+        sim_entry = self._state[simulation_id]
+
+        try:
+            # Update the simulation_name field
+            sim_entry["simulation_name"] = new_name
+
+            # --- Save the state after modification ---
+            self._write_json(self._state)
+
+            return f"Simulation '{simulation_id}' name updated to '{new_name}'."
+        except Exception as e:
+            print(f"An unexpected error occurred updating simulation name for {simulation_id}: {e}")
+            return f"Error updating simulation name for '{simulation_id}': An internal error occurred."
+
+
+    def add_simulation(self, simulation_data: dict) -> str:
+        """
+        Adds a new simulation entry to the archive.
+
+        Args:
+            simulation_data (dict): A dictionary containing the simulation data,
+                                    expected to have a 'simulation_ID' key.
+
+        Returns:
+            str: A string indicating success or failure.
+        """
+        # Basic validation
+        sim_id = simulation_data.get("simulation_ID")
+        if not sim_id:
+            return "Error: 'simulation_ID' key is required to add a simulation."
+
+        if not isinstance(simulation_data, dict):
+             return f"Error: Input data must be a dictionary, received {type(simulation_data).__name__}."
+
+        if sim_id in self._state:
+            return f"Error: Simulation with ID '{sim_id}' already exists."
+
+        try:
+            # Add the new simulation dictionary to the main state dictionary
+            self._state[sim_id] = simulation_data
+
+            # --- Save the state after modification ---
+            self._write_json(self._state)
+
+            return f"Simulation '{sim_id}' added successfully."
+        except TypeError as e:
+             # Catch non-serializable data before write_json
+             print(f"Error adding simulation {sim_id}: Data is not JSON serializable: {e}")
+             # Optionally remove the invalid data from _state if it was added
+             self._state.pop(sim_id, None)
+             return f"Error: Could not add simulation '{sim_id}'. Data format issue: {e}"
+        except Exception as e:
+            print(f"An unexpected error occurred adding simulation {sim_id}: {e}")
+            return f"Error adding simulation '{sim_id}': An internal error occurred."
+
+
+    def details_of_simulation(self, simulation_id: str) -> str:
+        """
+        Retrieves a specific simulation's data by its ID.
+
+        Args:
+            simulation_id (str): The ID of the simulation to retrieve.
+
+        Returns:
+            str: A string containing the simulation data in JSON format, or an error message.
+        """
+        if simulation_id in self._state:
+            # Return the data as a formatted JSON string for clarity
+            sim_data_str = json.dumps(self._state[simulation_id], indent=2)
+            return f"Data for simulation '{simulation_id}':\n```json\n{sim_data_str}\n```"
+        else:
+            return f"Error: Simulation with ID '{simulation_id}' not found."
+
+    def delete_simulation(self, simulation_id: str) -> str:
+        """
+        Deletes a simulation entry by its ID.
+
+        Args:
+            simulation_id (str): The ID of the simulation to delete.
+
+        Returns:
+            str: A string indicating success or failure.
+        """
+        if simulation_id not in self._state:
+            return f"Error: Simulation with ID '{simulation_id}' not found for deletion."
+
+        try:
+            # Remove the entry from the main state dictionary
+            del self._state[simulation_id]
+
+            # --- Save the state after modification ---
+            self._write_json(self._state)
+
+            return f"Simulation '{simulation_id}' deleted successfully."
+        except Exception as e:
+            print(f"An unexpected error occurred deleting simulation {simulation_id}: {e}")
+            return f"Error deleting simulation '{simulation_id}': An internal error occurred."
+
+
+    def list_simulations(self) -> str:
+        """
+        Lists all simulation IDs currently in the archive.
+
+        Returns:
+            str: A string listing the simulation IDs or indicating none exist.
+        """
+        sim_ids = list(self._state.keys())
+        if not sim_ids:
+            return "No simulations found in the archive."
+        else:
+            # Format the list nicely for AI/user
+            # Optionally include simulation names if they exist
+            sim_list = "\n".join([
+                f"- ID: '{sim_id}', Name: '{self._state[sim_id].get('simulation_name', 'N/A')}'"
+                for sim_id in sim_ids
+            ])
+            return f"Found {len(sim_ids)} simulation(s):\n{sim_list}"
+
+    def get_all_simulations_data(self) -> str:
+        """
+        Retrieves data for all simulations.
+
+        Returns:
+            str: A string containing all simulation data in JSON format, or an error message.
+        """
+        if not self._state:
+             return "No simulations found in the archive."
+
+        try:
+            all_data_str = json.dumps(self._state, indent=2)
+            return f"All simulation data:\n```json\n{all_data_str}\n```"
+        except Exception as e:
+            print(f"Error retrieving all simulation data: {e}")
+            return f"Error retrieving all simulation data: An internal error occurred."
+
+    def create_entry(self, json_path: str) -> str: # Changed return type hint to str
+            """
+            Creates a new simulation entry dictionary with a unique short UID
+            and sets the simulation file path, then adds it to the manager.
+
+            Args:
+                json_path (str): The file path to the specific simulation's data.
+
+            Returns:
+                str: A string indicating success or failure of adding the entry,
+                     or an error message if creation failed.
+            """
+            # --- 1. Generate a unique short UID ---
+            def generate_short_uid(length=6):
+                """Generates a random alphanumeric string of specified length."""
+                characters = string.ascii_lowercase + string.digits
+                return ''.join(random.choice(characters) for _ in range(length))
+
+            sim_id = generate_short_uid()
+            # Ensure the ID is unique among existing entries
+            while sim_id in self._state:
+                sim_id = generate_short_uid()
+
+            # --- 2. Create the base structure for the entry ---
+            # We use the template but populate the specific fields
+            new_entry = self._simulation_entry_template.copy()
+            new_entry["simulation_ID"] = sim_id # Set the generated ID
+            new_entry["simulation_file_path"] = json_path
+            new_entry["simulation_name"] = "" # As requested, leave empty
+            new_entry["simulation_details"] = [] # As requested, leave as empty list
+
+            # --- 3. Add the entry using the existing add_simulation method ---
+            # This handles the validation and saving
+            add_result = self.add_simulation(new_entry)
+
+            # Return the result from add_simulation
+            if "Error" in add_result:
+                 return f"Error creating archive entry for {json_path}: {add_result}"
+            else:
+                 return f"Archive entry created with ID '{sim_id}'. {add_result}"
+
 
 class ALifeSimulation:
     """
     A configurable A-Life simulation with plants, herbivores, and carnivores
     on a grid-based environment that can be observed by an AI.
     """
-    
+
     # Entity type IDs
     PLANT = 0
     HERBIVORE = 1
     CARNIVORE = 2
-    
+
     # Status constants
     ALIVE = "alive"
     DEAD = "dead"
-    
-    def __init__(self, config: Dict[str, Any] = None, archive=None):
-        self.archive_path=archive
-                # Create the archive directory if it doesn't exist
-        os.makedirs(self.archive_path, exist_ok=True)
-        
-        # Create the archive file paths
-        self.json_path = os.path.join(self.archive_path, f"current_simulation.json")
-        self.txt_path = os.path.join(self.archive_path, f"current_simulation.txt")
+
+    def __init__(self, config: Dict[str, Any] = None, archive_path=None):
         """Initialize the ALifeSimulation with optional configuration."""
+
+        self.archive_path = archive_path
+        if self.archive_path:
+            # Create the archive directory if it doesn't exist
+            os.makedirs(self.archive_path, exist_ok=True)
+            self.simulations_manager = ALifeManager(archive_path) # Initialize manager with archive_path
+        else:
+            self.simulations_manager = None
+            print("Warning: archive_path not provided. Archiving features will be disabled.")
+
         # Default configuration
         default_config = {
             "grid_size": [5, 5],
@@ -62,25 +337,25 @@ class ALifeSimulation:
                 "carnivore_eat_herbivore": 8  # Energy gained
             }
         }
-        
+
         # Use provided config or default
         self.config = default_config
         if config:
             self._deep_update(self.config, config)
-            
-        # Initialize simulation state
+
+        # Initialize simulation state - This happens when the object is created
         self.current_tick = 0
         self.max_ticks = self.config["max_ticks"]
         self.grid_size = self.config["grid_size"]
         self.entities = []
         self.entity_id_counter = 0
-        
+
         # History for time-scrubbing
         self.history = []
-        
-        # Initialize the simulation
+
+        # Initialize the simulation state (placing initial entities etc.)
         self._init_simulation()
-    
+
     def _deep_update(self, d: Dict, u: Dict) -> Dict:
         """Recursively update a dictionary."""
         for k, v in u.items():
@@ -89,18 +364,26 @@ class ALifeSimulation:
             else:
                 d[k] = v
         return d
-    
+
     def _init_simulation(self):
-        """Initialize the simulation with entities based on configuration."""
+        """
+        Initialize the simulation with entities based on configuration.
+        Resets internal state variables.
+        """
         # Clear existing state
         self.entities = []
         self.entity_id_counter = 0
         self.current_tick = 0
-        self.history = []
-        
+        self.history = [] # Clear history for a new run
+
+        # Ensure grid_size and max_ticks are set from config
+        self.grid_size = self.config.get("grid_size", [5, 5])
+        self.max_ticks = self.config.get("max_ticks", 20)
+
+
         # Create plants
         self._create_initial_entities(
-            self.PLANT, 
+            self.PLANT,
             self.config["entity_config"]["plant"]["initial_count"],
             {
                 "energy": self.config["entity_config"]["plant"]["initial_energy"],
@@ -108,10 +391,10 @@ class ALifeSimulation:
                 "status": self.ALIVE
             }
         )
-        
+
         # Create herbivores
         self._create_initial_entities(
-            self.HERBIVORE, 
+            self.HERBIVORE,
             self.config["entity_config"]["herbivore"]["initial_count"],
             {
                 "energy": self.config["entity_config"]["herbivore"]["initial_energy"],
@@ -119,10 +402,10 @@ class ALifeSimulation:
                 "status": self.ALIVE
             }
         )
-        
+
         # Create carnivores
         self._create_initial_entities(
-            self.CARNIVORE, 
+            self.CARNIVORE,
             self.config["entity_config"]["carnivore"]["initial_count"],
             {
                 "energy": self.config["entity_config"]["carnivore"]["initial_energy"],
@@ -130,117 +413,152 @@ class ALifeSimulation:
                 "status": self.ALIVE
             }
         )
-        
+
         # Store initial state in history
         self._save_current_state()
-    
+
+
     def _create_initial_entities(self, type_id: int, count: int, state: Dict):
         """Create initial entities of a specific type."""
-        for _ in range(count):
+        entities_created = 0
+        max_attempts = self.grid_size[0] * self.grid_size[1] * 5 # Prevent infinite loops on full grid
+        attempts = 0
+
+        while entities_created < count and attempts < max_attempts:
+            attempts += 1
             # Find an unoccupied position
-            while True:
-                pos = [random.randint(0, self.grid_size[0]-1), 
-                       random.randint(0, self.grid_size[1]-1)]
-                
-                # Check if position is empty
-                if not self._get_entity_at_position(pos):
-                    break
-            
-            # Create the entity
-            entity = {
-                "id": f"E{self.entity_id_counter}",
-                "type_id": type_id,
-                "pos": pos,
-                "state": copy.deepcopy(state)
-            }
-            
-            self.entities.append(entity)
-            self.entity_id_counter += 1
-    
+            pos = [random.randint(0, self.grid_size[0]-1),
+                   random.randint(0, self.grid_size[1]-1)]
+
+            # Check if position is empty
+            if not self._get_entity_at_position(pos):
+                # Create the entity
+                entity = {
+                    "id": f"E{self.entity_id_counter}",
+                    "type_id": type_id,
+                    "pos": pos,
+                    "state": copy.deepcopy(state)
+                }
+
+                self.entities.append(entity)
+                self.entity_id_counter += 1
+                entities_created += 1
+
+        if entities_created < count:
+            print(f"Warning: Could only place {entities_created}/{count} entities of type {type_id} due to grid full or placement issues.")
+
+
     def _get_entity_at_position(self, pos: List[int]) -> Optional[Dict]:
-        """Get entity at a specific position if any."""
+        """Get entity at a specific position if any (only checks ALIVE entities)."""
+        # Iterate in reverse to potentially find recently added entities faster? Or just standard order.
         for entity in self.entities:
             if entity["pos"] == pos and entity["state"]["status"] == self.ALIVE:
                 return entity
         return None
-    
+
     def _get_entities_by_type(self, type_id: int) -> List[Dict]:
-        """Get all entities of a specific type."""
+        """Get all entities of a specific type (only ALIVE entities)."""
+        # Return a list copy ([...]) to avoid modifying the list while iterating in processing loops
         return [e for e in self.entities if e["type_id"] == type_id and e["state"]["status"] == self.ALIVE]
-    
+
     def _get_distance(self, pos1: List[int], pos2: List[int]) -> int:
         """Calculate Manhattan distance between two positions."""
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
-    
+
     def _get_adjacent_positions(self, pos: List[int], distance: int = 1) -> List[List[int]]:
-        """Get all valid positions within a certain distance."""
+        """Get all valid positions at a specific Manhattan distance."""
         adjacent = []
-        for dx in range(-distance, distance+1):
-            for dy in range(-distance, distance+1):
-                # Skip the current position
-                if dx == 0 and dy == 0:
-                    continue
-                
-                new_x = pos[0] + dx
-                new_y = pos[1] + dy
-                
-                # Check bounds
-                if 0 <= new_x < self.grid_size[0] and 0 <= new_y < self.grid_size[1]:
-                    adjacent.append([new_x, new_y])
-        
+        # Iterate through all possible relative positions up to the max distance
+        max_dist = distance
+        for dx in range(-max_dist, max_dist + 1):
+            for dy in range(-max_dist, max_dist + 1):
+                # Check if this relative position is exactly the desired Manhattan distance
+                if abs(dx) + abs(dy) == distance:
+                    new_x = pos[0] + dx
+                    new_y = pos[1] + dy
+
+                    # Check bounds
+                    if 0 <= new_x < self.grid_size[0] and 0 <= new_y < self.grid_size[1]:
+                        adjacent.append([new_x, new_y])
+
         return adjacent
-    
+
+
     def _move_toward(self, entity: Dict, target_pos: List[int]) -> None:
-        """Move entity one step toward target position."""
+        """Move entity one step toward target position if possible (unoccupied)."""
         current_pos = entity["pos"]
         dx = target_pos[0] - current_pos[0]
         dy = target_pos[1] - current_pos[1]
-        
-        # Determine movement direction (selfplified)
-        if abs(dx) > abs(dy):
-            # Move horizontally
-            new_x = current_pos[0] + (1 if dx > 0 else -1)
-            new_pos = [new_x, current_pos[1]]
-        else:
-            # Move vertically
-            new_y = current_pos[1] + (1 if dy > 0 else -1)
-            new_pos = [current_pos[0], new_y]
-        
-        # Check bounds and occupancy
-        if (0 <= new_pos[0] < self.grid_size[0] and 
-            0 <= new_pos[1] < self.grid_size[1] and
-            not self._get_entity_at_position(new_pos)):
-            entity["pos"] = new_pos
-    
+
+        # Determine movement direction (prioritize axis with larger difference, tie-break randomly?)
+        # Simple approach: Choose one axis based on which difference is larger.
+        # If equal, pick one (e.g., horizontal first).
+        move_options = []
+        if dx != 0:
+            move_options.append([current_pos[0] + (1 if dx > 0 else -1), current_pos[1]])
+        if dy != 0:
+            move_options.append([current_pos[0], current_pos[1] + (1 if dy > 0 else -1)])
+
+        if not move_options: # Already at target or no movement possible
+            return
+
+        # Prioritize moves that get closer or maintain distance if blocked, prefer open cells
+        random.shuffle(move_options) # Shuffle to add some randomness in tie-breaking
+        best_move = None
+        current_dist = self._get_distance(current_pos, target_pos)
+
+        for next_pos in move_options:
+            # Check bounds (should be covered by _get_adjacent_positions but double check)
+            if not (0 <= next_pos[0] < self.grid_size[0] and 0 <= next_pos[1] < self.grid_size[1]):
+                continue
+
+            # Check if cell is occupied (only by ALIVE entities)
+            if self._get_entity_at_position(next_pos):
+                continue # Cannot move to occupied cell
+
+            # If we found a valid move, pick the first one (due to shuffling, it's somewhat random)
+            # or pick one that reduces distance if possible
+            next_dist = self._get_distance(next_pos, target_pos)
+            if next_dist < current_dist:
+                 best_move = next_pos # Found a move that gets strictly closer
+                 break # Prioritize getting closer
+            elif best_move is None: # If no closer move found yet, keep this as a possibility
+                 best_move = next_pos # Keep the first valid move found (might be diagonal or same distance if blocked)
+
+
+        if best_move:
+            entity["pos"] = best_move
+
+
     def _save_current_state(self) -> None:
         """Save the current state to history."""
         state = {
             "tick": self.current_tick,
-            "entities": copy.deepcopy(self.entities),
+            "entities": copy.deepcopy(self.entities), # Deep copy ensures entities state at this tick is preserved
             "grid_size": self.grid_size
         }
         self.history.append(state)
-    
+
     def _process_plants(self) -> None:
         """Process plant behavior."""
-        plants = self._get_entities_by_type(self.PLANT)
-        
-        # Plants try to grow to adjacent cells
+        plants = self._get_entities_by_type(self.PLANT) # Gets list of ALIVE plants
+
+        # Plants try to grow to adjacent cells (distance 1)
         for plant in plants:
             # Increase energy
             plant_config = self.config["entity_config"]["plant"]
             plant["state"]["energy"] = min(
-                plant["state"]["energy"] + 1, 
+                plant["state"]["energy"] + 1,
                 plant_config["max_energy"]
             )
-            
+
             # Try to spread to adjacent cells
             if random.random() < plant_config["growth_rate"]:
-                adjacent = self._get_adjacent_positions(plant["pos"])
-                random.shuffle(adjacent)
-                
+                adjacent = self._get_adjacent_positions(plant["pos"], distance=1)
+                random.shuffle(adjacent) # Randomize order of checking adjacent cells
+
                 for new_pos in adjacent:
-                    if not self._get_entity_at_position(new_pos):
+                    if not self._get_entity_at_position(new_pos): # Check if target cell is empty
                         # Create a new plant
                         new_plant = {
                             "id": f"E{self.entity_id_counter}",
@@ -252,456 +570,789 @@ class ALifeSimulation:
                                 "status": self.ALIVE
                             }
                         }
-                        
-                        self.entities.append(new_plant)
+
+                        self.entities.append(new_plant) # Add to the active list
                         self.entity_id_counter += 1
-                        break  # Only create one plant per tick
-    
+                        break  # Only create one plant per successful spreading attempt
+
     def _process_herbivores(self) -> None:
         """Process herbivore behavior."""
-        herbivores = self._get_entities_by_type(self.HERBIVORE)
+        herbivores = self._get_entities_by_type(self.HERBIVORE) # Gets list of ALIVE herbivores
         herbivore_config = self.config["entity_config"]["herbivore"]
-        
+        interaction_rules = self.config["interaction_rules"]
+
+        # Process herbivores in a random order to avoid bias based on list index
+        random.shuffle(herbivores)
+
         for herbivore in herbivores:
+             # Note: Status check already done by _get_entities_by_type
+
             # Decrease energy
-            herbivore["state"]["energy"] -= herbivore_config["energy_consumption"]
-            
+             herbivore["state"]["energy"] -= herbivore_config["energy_consumption"]
+
             # Check if herbivore dies
-            if herbivore["state"]["energy"] <= 0:
-                herbivore["state"]["status"] = self.DEAD
-                continue
-            
+             if herbivore["state"]["energy"] <= 0:
+                 herbivore["state"]["status"] = self.DEAD
+                 continue # Stop processing this herbivore for this tick
+
             # Find and eat plants
-            plants = self._get_entities_by_type(self.PLANT)
-            plants_sorted = sorted(
-                plants,
-                key=lambda p: self._get_distance(herbivore["pos"], p["pos"])
-            )
-            
-            if plants_sorted:
-                closest_plant = plants_sorted[0]
-                distance = self._get_distance(herbivore["pos"], closest_plant["pos"])
-                
-                if distance <= herbivore_config["movement_range"]:
-                    # If adjacent, eat plant
-                    if distance == 1:
-                        herbivore["state"]["energy"] += self.config["interaction_rules"]["herbivore_eat_plant"]
-                        closest_plant["state"]["status"] = self.DEAD
-                    # Otherwise move toward plant
-                    else:
-                        self._move_toward(herbivore, closest_plant["pos"])
-                else:
-                    # Move randomly if no plant is in range
-                    adjacent = self._get_adjacent_positions(herbivore["pos"])
-                    valid_moves = [pos for pos in adjacent if not self._get_entity_at_position(pos)]
-                    if valid_moves:
-                        herbivore["pos"] = random.choice(valid_moves)
-            
-            # Reproduction
-            if herbivore["state"]["energy"] >= herbivore_config["reproduction_threshold"]:
-                adjacent = self._get_adjacent_positions(herbivore["pos"])
-                valid_cells = [pos for pos in adjacent if not self._get_entity_at_position(pos)]
-                
-                if valid_cells:
-                    # Create offspring
-                    offspring_pos = random.choice(valid_cells)
-                    offspring = {
-                        "id": f"E{self.entity_id_counter}",
-                        "type_id": self.HERBIVORE,
-                        "pos": offspring_pos,
-                        "state": {
-                            "energy": herbivore_config["initial_energy"],
-                            "age": 0,
-                            "status": self.ALIVE
-                        }
-                    }
-                    
-                    self.entities.append(offspring)
-                    self.entity_id_counter += 1
-                    
-                    # Deduct reproduction cost
-                    herbivore["state"]["energy"] -= herbivore_config["reproduction_cost"]
-    
+             plants = self._get_entities_by_type(self.PLANT) # Gets list of ALIVE plants
+             # Find closest plant within movement range
+             closest_plant = None
+             min_dist = float('inf')
+
+             # Find the closest plant among all ALIVE plants
+             for plant in plants:
+                 dist = self._get_distance(herbivore["pos"], plant["pos"])
+                 if dist < min_dist and dist <= herbivore_config["movement_range"]: # Check distance <= movement_range
+                     min_dist = dist
+                     closest_plant = plant
+
+             if closest_plant:
+                 # If adjacent (distance 1), eat plant
+                 if min_dist == 1:
+                     # Ensure the plant is still alive before eating (might have been eaten by another herbivore this tick)
+                     # Check again from the full entities list as _get_entities_by_type is a snapshot at start of method
+                     # Or, simpler, just check the status of the specific plant found
+                     if closest_plant["state"]["status"] == self.ALIVE:
+                         herbivore["state"]["energy"] += interaction_rules["herbivore_eat_plant"]
+                         closest_plant["state"]["status"] = self.DEAD # Mark plant as dead
+
+                 # Otherwise move toward plant (if distance > 1 and <= movement_range)
+                 elif min_dist > 1:
+                    self._move_toward(herbivore, closest_plant["pos"])
+
+             else:
+                 # Move randomly if no plant is in range or none are alive
+                 adjacent = self._get_adjacent_positions(herbivore["pos"], distance=1) # Get adjacent cells (dist 1)
+                 valid_moves = [pos for pos in adjacent if not self._get_entity_at_position(pos)] # Filter for empty cells
+                 if valid_moves:
+                     herbivore["pos"] = random.choice(valid_moves) # Move to a random empty adjacent cell
+
+            # Reproduction - check energy *after* movement/eating
+             if herbivore["state"]["status"] == self.ALIVE and herbivore["state"]["energy"] >= herbivore_config["reproduction_threshold"]:
+                 adjacent = self._get_adjacent_positions(herbivore["pos"], distance=1) # Offspring appears in adjacent cell
+                 valid_cells = [pos for pos in adjacent if not self._get_entity_at_position(pos)] # Find empty adjacent cells
+
+                 if valid_cells:
+                     # Create offspring
+                     offspring_pos = random.choice(valid_cells)
+                     offspring = {
+                         "id": f"E{self.entity_id_counter}",
+                         "type_id": self.HERBIVORE,
+                         "pos": offspring_pos,
+                         "state": {
+                             "energy": herbivore_config["initial_energy"], # Offspring starts with initial energy
+                             "age": 0,
+                             "status": self.ALIVE
+                         }
+                     }
+
+                     self.entities.append(offspring) # Add to the active list
+                     self.entity_id_counter += 1
+
+                     # Deduct reproduction cost from parent
+                     herbivore["state"]["energy"] -= herbivore_config["reproduction_cost"]
+
+
     def _process_carnivores(self) -> None:
         """Process carnivore behavior."""
-        carnivores = self._get_entities_by_type(self.CARNIVORE)
+        carnivores = self._get_entities_by_type(self.CARNIVORE) # Gets list of ALIVE carnivores
         carnivore_config = self.config["entity_config"]["carnivore"]
-        
+        interaction_rules = self.config["interaction_rules"]
+
+        # Process carnivores in a random order
+        random.shuffle(carnivores)
+
         for carnivore in carnivores:
+             # Note: Status check already done by _get_entities_by_type
+
             # Decrease energy
-            carnivore["state"]["energy"] -= carnivore_config["energy_consumption"]
-            
+             carnivore["state"]["energy"] -= carnivore_config["energy_consumption"]
+
             # Check if carnivore dies
-            if carnivore["state"]["energy"] <= 0:
-                carnivore["state"]["status"] = self.DEAD
-                continue
-            
+             if carnivore["state"]["energy"] <= 0:
+                 carnivore["state"]["status"] = self.DEAD
+                 continue # Stop processing this carnivore for this tick
+
             # Find and hunt herbivores
-            herbivores = self._get_entities_by_type(self.HERBIVORE)
-            herbivores_sorted = sorted(
-                herbivores,
-                key=lambda h: self._get_distance(carnivore["pos"], h["pos"])
-            )
-            
-            if herbivores_sorted:
-                closest_herbivore = herbivores_sorted[0]
-                distance = self._get_distance(carnivore["pos"], closest_herbivore["pos"])
-                
-                if distance <= carnivore_config["movement_range"]:
-                    # If adjacent, eat herbivore
-                    if distance == 1:
-                        carnivore["state"]["energy"] += self.config["interaction_rules"]["carnivore_eat_herbivore"]
-                        closest_herbivore["state"]["status"] = self.DEAD
-                    # Otherwise move toward herbivore
-                    else:
-                        self._move_toward(carnivore, closest_herbivore["pos"])
-                else:
-                    # Move randomly if no herbivore is in range
-                    adjacent = self._get_adjacent_positions(carnivore["pos"])
-                    valid_moves = [pos for pos in adjacent if not self._get_entity_at_position(pos)]
-                    if valid_moves:
-                        carnivore["pos"] = random.choice(valid_moves)
-            
-            # Reproduction
-            if carnivore["state"]["energy"] >= carnivore_config["reproduction_threshold"]:
-                adjacent = self._get_adjacent_positions(carnivore["pos"])
-                valid_cells = [pos for pos in adjacent if not self._get_entity_at_position(pos)]
-                
-                if valid_cells:
-                    # Create offspring
-                    offspring_pos = random.choice(valid_cells)
-                    offspring = {
-                        "id": f"E{self.entity_id_counter}",
-                        "type_id": self.CARNIVORE,
-                        "pos": offspring_pos,
-                        "state": {
-                            "energy": carnivore_config["initial_energy"],
-                            "age": 0,
-                            "status": self.ALIVE
-                        }
-                    }
-                    
-                    self.entities.append(offspring)
-                    self.entity_id_counter += 1
-                    
-                    # Deduct reproduction cost
-                    carnivore["state"]["energy"] -= carnivore_config["reproduction_cost"]
-    
+             herbivores = self._get_entities_by_type(self.HERBIVORE) # Gets list of ALIVE herbivores
+             # Find closest herbivore within movement range
+             closest_herbivore = None
+             min_dist = float('inf')
+
+             # Find the closest herbivore among all ALIVE herbivores
+             for herbivore in herbivores:
+                  dist = self._get_distance(carnivore["pos"], herbivore["pos"])
+                  if dist < min_dist and dist <= carnivore_config["movement_range"]: # Check distance <= movement_range
+                     min_dist = dist
+                     closest_herbivore = herbivore
+
+             if closest_herbivore:
+                # If adjacent (distance 1), eat herbivore
+                if min_dist == 1:
+                    # Ensure the herbivore is still alive before eating
+                    if closest_herbivore["state"]["status"] == self.ALIVE:
+                        carnivore["state"]["energy"] += interaction_rules["carnivore_eat_herbivore"]
+                        closest_herbivore["state"]["status"] = self.DEAD # Mark herbivore as dead
+                # Otherwise move toward herbivore (if distance > 1 and <= movement_range)
+                elif min_dist > 1:
+                    self._move_toward(carnivore, closest_herbivore["pos"])
+
+             else:
+                 # Move randomly if no herbivore is in range or none are alive
+                 adjacent = self._get_adjacent_positions(carnivore["pos"], distance=1) # Get adjacent cells (dist 1)
+                 valid_moves = [pos for pos in adjacent if not self._get_entity_at_position(pos)] # Filter for empty cells
+                 if valid_moves:
+                     carnivore["pos"] = random.choice(valid_moves) # Move to a random empty adjacent cell
+
+            # Reproduction - check energy *after* movement/eating
+             if carnivore["state"]["status"] == self.ALIVE and carnivore["state"]["energy"] >= carnivore_config["reproduction_threshold"]:
+                 adjacent = self._get_adjacent_positions(carnivore["pos"], distance=1) # Offspring appears in adjacent cell
+                 valid_cells = [pos for pos in adjacent if not self._get_entity_at_position(pos)] # Find empty adjacent cells
+
+                 if valid_cells:
+                     # Create offspring
+                     offspring_pos = random.choice(valid_cells)
+                     offspring = {
+                         "id": f"E{self.entity_id_counter}",
+                         "type_id": self.CARNIVORE,
+                         "pos": offspring_pos,
+                         "state": {
+                             "energy": carnivore_config["initial_energy"], # Offspring starts with initial energy
+                             "age": 0,
+                             "status": self.ALIVE
+                         }
+                     }
+
+                     self.entities.append(offspring) # Add to the active list
+                     self.entity_id_counter += 1
+
+                     # Deduct reproduction cost from parent
+                     carnivore["state"]["energy"] -= carnivore_config["reproduction_cost"]
+
+
     def _update_ages(self) -> None:
         """Update ages of all living entities."""
+        # Need to iterate through the main self.entities list, as dead ones are kept for history
         for entity in self.entities:
             if entity["state"]["status"] == self.ALIVE:
                 entity["state"]["age"] += 1
-    
+
     def step(self) -> bool:
         """
         Advance the simulation by one tick.
-        Returns True if the simulation can continue, False if it has ended.
+        Processes entity actions and saves the resulting state.
+        Returns True if the simulation can continue (hasn't reached max_ticks), False otherwise.
         """
+        # Check if max_ticks is already reached
         if self.current_tick >= self.max_ticks:
-            return False
-        
-        # Process entities in order: plants, herbivores, carnivores
+             # Cannot step beyond max_ticks
+             return False
+
+        # Ensure the state for the current tick is loaded before processing
+        # This is important if set_current_tick_ALIFE was used.
+        if self.current_tick < len(self.history):
+             # Load the state corresponding to self.current_tick from history
+             # This prepares self.entities for processing *into* the next tick (current_tick + 1)
+             self.entities = copy.deepcopy(self.history[self.current_tick]["entities"])
+             self.grid_size = self.history[self.current_tick]["grid_size"]
+             # Note: self.max_ticks and self.entity_id_counter are instance-level, not per-tick
+
+        elif self.current_tick == len(self.history):
+             # This is the expected case when stepping forward normally
+             # The entities state is already what resulted from the previous tick's processing
+             # (which was saved as history[current_tick-1]).
+             # Nothing specific to load here, self.entities is ready.
+             pass # self.entities holds the state from the end of the previous tick's process
+
+        else:
+             # Current tick is beyond available history AND not just the next tick index
+             print(f"Error: Cannot step from tick {self.current_tick}. History is only {len(self.history)} ticks long.")
+             return False
+
+
+        # Process entity behaviors for the *transition* from current_tick to current_tick + 1
+        # Note: Processing order can affect outcomes! (Plants -> Herbivores -> Carnivores)
         self._process_plants()
         self._process_herbivores()
         self._process_carnivores()
-        
-        # Update ages
+
+        # Update ages of all living entities *after* behaviors
         self._update_ages()
-        
-        # Increment tick
+
+        # Increment tick counter (we are now at the *end* of the actions for the old current_tick)
         self.current_tick += 1
-        
-        # Save state
-        self._save_current_state()
-        
-        return self.current_tick < self.max_ticks
-    
-    def run_simulation(self) -> None:
-        """Run the entire simulation from current state to max_ticks."""
+
+        # Save the state *resulting from* this tick's actions.
+        # This state corresponds to self.current_tick - 1 in the history *before* the increment,
+        # but we save it as the state *at* the new self.current_tick.
+        # The history list should store states for ticks 0, 1, 2... up to max_ticks.
+        # If current_tick becomes max_ticks + 1, we should NOT save another state.
+        if self.current_tick <= self.max_ticks:
+             self._save_current_state()
+             # After saving, self.entities contains the state for the new self.current_tick
+
+        # Determine if simulation should continue
+        return self.current_tick <= self.max_ticks # Continue if the *next* tick (current_tick now) is <= max_ticks
+
+
+    def run_simulation(self, new_run: bool = False) -> None:
+        """
+        Run the entire simulation from current state to max_ticks.
+
+        Args:
+            new_run (bool): If True, re-initializes the simulation and re-seeds
+                            the random generator before running.
+        """
+        if new_run:
+            print("Starting a brand new simulation run...")
+            random.seed(None) # Re-seed the random number generator using system time
+            self._init_simulation() # Reset state (clears history too, sets current_tick to 0)
+            self.max_ticks = self.config.get("max_ticks", 20) # Reset max_ticks based on config
+            # _init_simulation already saved the state for tick 0.
+            # The loop below will run from tick 1 up to max_ticks.
+
+        print(f"Running simulation from tick {self.current_tick} up to tick {self.max_ticks} (inclusive)...")
+
+        # If we are already at or past max_ticks, the loop won't run
+        # The loop continues as long as step() successfully advances *and* indicates more ticks are possible
+        initial_tick = self.current_tick
+        ticks_ran = 0
         while self.step():
-            pass
-    
+             ticks_ran += 1
+             # Optional: Add a small delay or progress print if running long simulations
+             # print(f"Completed tick {self.current_tick - 1}") # Print the tick that just finished processing
+
+             # Prevent infinite loops if simulation state becomes stuck
+             if ticks_ran > self.max_ticks * 2 and self.current_tick > self.max_ticks:
+                  print("Warning: Simulation running unexpectedly long. Stopping.")
+                  break
+
+        print(f"Simulation finished. Ran {ticks_ran} steps starting from tick {initial_tick}. Current tick is {self.current_tick}.")
+        # After the loop, self.current_tick is typically max_ticks + 1 if it completed fully.
+        # Or it might be less if `step()` returned False early for another reason (e.g. no entities left).
+        # The history will contain states from 0 up to the last successfully processed tick.
+
     def reset(self) -> None:
-        """Reset the simulation to initial state."""
+        """Reset the simulation instance to its initial state based on config."""
+        print("Resetting simulation state based on current configuration...")
         self._init_simulation()
-    
+        # Note: This does NOT re-seed random. Use run_simulation(new_run=True) for that if needed.
+
     # AI  TOOLS
 
-    def set_current_tick(self, tick:int) -> str:
+    def set_current_tick_ALIFE(self, tick:int) -> str:
         """
-        Set the current tick of the simulation to the given argument, (int)
+        Set the current tick of the simulation to the given argument (int).
+        Allows viewing specific moments in the simulation history.
+        Loads the state corresponding to the specified tick from history.
         """
-        if tick >= len(self.history):
-            return "Tried to set a tick larger than the total life-span of the simulation"
+        if not self.history:
+             return "Error: No simulation history available to set the tick."
+
+        max_valid_tick = len(self.history) - 1
+
+        if not isinstance(tick, int) or tick < 0:
+             return f"Error: Invalid tick value '{tick}'. Must be a non-negative integer."
+
+        if tick > max_valid_tick:
+            return f"Error: Tried to set tick to {tick}, which is larger than the last available tick ({max_valid_tick}) in the current history."
         else:
             self.current_tick= tick
-            return f"Correctly set the new current tick to {tick} {self.observe()}"
+            # Load the state from history so observe() reflects it
+            try:
+                state_at_tick = self.history[self.current_tick]
+                self.entities = copy.deepcopy(state_at_tick["entities"])
+                self.grid_size = state_at_tick["grid_size"]
+                # Note: self.max_ticks and self.entity_id_counter are instance-level attributes
+                # reflecting the overall run, not per-tick state, and are not loaded here.
+            except IndexError:
+                 # This should ideally not happen due to the tick > max_valid_tick check
+                 return f"Error: Failed to load state for tick {tick}. History length is {len(self.history)}."
 
-    def observe(self) -> str:
+
+            return f"Successfully set the current tick to {tick} of {max_valid_tick}."
+        
+    def observe_ALIFE(self) -> str:
+            """
+            Return a string representation of the current state of the simulation.
+            This is one of the three tools available to the AI.
+            """
+            state = self.history[self.current_tick]
+
+            # Add a progress indicator
+            state_with_progress = copy.deepcopy(state)
+            state_with_progress["progress"] = f"Tick {self.current_tick} of {self.max_ticks}"
+            # Assuming _state exists and has simulation_ID
+            #current_simulation_id = self._state["simulation_ID"] # <--- This line is the problem
+
+            tick_info=json.dumps(state_with_progress, indent=2)
+
+            return tick_info
+            
+    def forward_ALIFE(self) -> str:
         """
-        Return a string representation of the current state of the simulation.
+        Move one tick forward in the simulation history.
+        Loads the state from history at the new tick.
+        Returns a message indicating the new tick number.
         This is one of the three tools available to the AI.
         """
-        state = self.history[self.current_tick]
-        
-        # Add a progress indicator
-        state_with_progress = copy.deepcopy(state)
-        state_with_progress["progress"] = f"Tick {self.current_tick} of {self.max_ticks}"
-        
-        return json.dumps(state_with_progress, indent=2)
-    
-    def forward(self) -> str:
-        """
-        Move one tick forward in the simulation.
-        This is one of the three tools available to the AI.
-        """
-        if self.current_tick < len(self.history) - 1:
+        if not self.history:
+             return "Simulation is not initialized or has no history to move forward."
+
+        max_valid_tick = len(self.history) - 1
+
+        if self.current_tick < max_valid_tick:
             self.current_tick += 1
-
-            return f"Moved forward to tick {self.current_tick } of {self.max_ticks}. {self.observe()}"
+            # Load the state for the new current_tick using set_current_tick_ALIFE for consistency
+            self.set_current_tick_ALIFE(self.current_tick) # This also validates and loads state
+            return f"Moved forward to tick {self.current_tick} of {max_valid_tick}. {self.observe_ALIFE()}"
         else:
-            return f"Already at the last tick ({self.current_tick } of {self.max_ticks})."
-    
-    def backward(self) -> str:
+            return f"Already at the last tick ({self.current_tick} of {max_valid_tick}). Cannot move forward."
+
+    def backward_ALIFE(self) -> str:
         """
-        Move one tick backward in the simulation.
+        Move one tick backward in the simulation history.
+        Loads the state from history at the new tick.
+        Returns a message indicating the new tick number.
         This is one of the three tools available to the AI.
         """
+        if not self.history:
+             return "Simulation is not initialized or has no history to move backward."
+
+        max_valid_tick = len(self.history) - 1
+
         if self.current_tick > 0:
             self.current_tick -= 1
-            return f"Moved backward to tick {self.current_tick} of {self.max_ticks}. {self.observe()}"
+            # Load the state for the new current_tick using set_current_tick_ALIFE for consistency
+            self.set_current_tick_ALIFE(self.current_tick) # This also validates and loads state
+            return f"Moved backward to tick {self.current_tick} of {max_valid_tick}. {self.observe_ALIFE()}"
         else:
-            return f"Already at the first tick (1 of {self.max_ticks})."
-        
+            return f"Already at the first tick (0 of {max_valid_tick}). Cannot move backward."
 
-    
+
     def get_visualization(self) -> str:
         """
-        Create a selfple ASCII visualization of the current state.
-        This is a bonus tool to help visualize the simulation for debugging.
+        Create a simple ASCII visualization of the current state (`self.current_tick`).
+        Uses entity type IDs (0, 1, 2) mapping them to P, H, C for the grid display.
+        This visualization provides positional information and basic counts.
         """
-        # Create an empty grid
-        grid = [[' ' for _ in range(self.grid_size[0])] for _ in range(self.grid_size[1])]
-        
-        # Fill in entities
+        if not self.history or self.current_tick >= len(self.history):
+             if not self.history:
+                 return "Visualization Error: Simulation not initialized or has no history."
+             else:
+                 return f"Visualization Error: Current tick {self.current_tick} out of history bounds (0 to {len(self.history)-1})."
+
+        # Get the state for the current tick from history
         state = self.history[self.current_tick]
+        grid_size = state.get("grid_size", [5, 5]) # Use get with default for safety
+
+        # Create an empty grid representation (using state's grid_size)
+        grid = [[' ' for _ in range(grid_size[0])] for _ in range(grid_size[1])]
+
+        # Map entity type IDs to characters for the visualization
+        type_map = {
+            self.PLANT: 'P',
+            self.HERBIVORE: 'H',
+            self.CARNIVORE: 'C'
+        }
+
+        # Fill in entities (only alive ones for visualization) and count them
+        plants_alive = 0
+        herbivores_alive = 0
+        carnivores_alive = 0
+
         for entity in state["entities"]:
-            if entity["state"]["status"] == self.ALIVE:
-                x, y = entity["pos"]
-                if entity["type_id"] == self.PLANT:
-                    grid[y][x] = 'P'
-                elif entity["type_id"] == self.HERBIVORE:
-                    grid[y][x] = 'H'
-                elif entity["type_id"] == self.CARNIVORE:
-                    grid[y][x] = 'C'
-        
+            if entity["state"].get("status") == self.ALIVE:
+                pos = entity.get("pos")
+                type_id = entity.get("type_id")
+
+                if pos and type_id is not None: # Basic check for required keys
+                    x, y = pos
+                    # Check bounds again just to be safe
+                    if 0 <= x < grid_size[0] and 0 <= y < grid_size[1]:
+                        grid[y][x] = type_map.get(type_id, '?') # Use '?' for unknown types
+
+                        # Count entities
+                        if type_id == self.PLANT:
+                            plants_alive += 1
+                        elif type_id == self.HERBIVORE:
+                            herbivores_alive += 1
+                        elif type_id == self.CARNIVORE:
+                            carnivores_alive += 1
+
+
         # Convert grid to string
-        visualization = f"Tick {self.current_tick + 1} of {self.max_ticks}\n"
-        visualization += '+' + '-' * self.grid_size[0] + '+\n'
+        visualization = f"Tick {self.current_tick} of {len(self.history) - 1}\n" # Show total ticks
+        visualization += '+' + '-' * grid_size[0] + '+\n'
         for row in grid:
             visualization += '|' + ''.join(row) + '|\n'
-        visualization += '+' + '-' * self.grid_size[0] + '+\n'
-        
-        # Add entity counts
-        plants = sum(1 for e in state["entities"] if e["type_id"] == self.PLANT and e["state"]["status"] == self.ALIVE)
-        herbivores = sum(1 for e in state["entities"] if e["type_id"] == self.HERBIVORE and e["state"]["status"] == self.ALIVE)
-        carnivores = sum(1 for e in state["entities"] if e["type_id"] == self.CARNIVORE and e["state"]["status"] == self.ALIVE)
-        
-        visualization += f"Plants (P): {plants}, Herbivores (H): {herbivores}, Carnivores (C): {carnivores}\n"
-        
+        visualization += '+' + '-' * grid_size[0] + '+\n'
+
+        # Add entity counts based on the *current* state in history
+        visualization += f"Alive counts: Plants (P): {plants_alive}, Herbivores (H): {herbivores_alive}, Carnivores (C): {carnivores_alive}\n"
+
         return visualization
 
 
     def archive_simulation_run(self):
         """
-        Archive a completed simulation run by saving:
+        Archive the completed simulation run by saving:
         1. A JSON file with the complete simulation history
         2. A text file with the visualization of each tick and simulation metadata
-        
+
         Args:
-            self: ALifesimulation instance that has completed a run
-            archive_dir: Directory to save the archives (created if it doesn't exist)
-        
+            self: ALifesimulation instance that has completed a run (history is populated)
+
         Returns:
-            dict: Information about the archived files
+            str: A message indicating success or failure, including the simulation ID.
         """
-        
-        # Save the JSON history
-        with open(self.json_path, 'w') as f:
-            json.dump({
+        if not self.archive_path or not self.simulations_manager:
+             return "Archiving is disabled because archive_path was not provided during initialization."
+
+        if not self.history:
+             return "Error: No simulation history to archive."
+
+        timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp_time = int(time.time())
+        run_filename_base = f"SIM_{timestamp_str}_{timestamp_time}"
+
+        json_file_name = f"{run_filename_base}.json"
+        txt_file_name = f"{run_filename_base}.txt"
+
+        json_file_path = os.path.join(self.archive_path, json_file_name)
+        txt_file_path = os.path.join(self.archive_path, txt_file_name)
+
+        try:
+            # Save the JSON history
+            # Include the final entity_id_counter for potential future resuming/analysis
+            run_data = {
                 "config": self.config,
                 "history": self.history,
-                "entity_id_counter": self.entity_id_counter
-            }, f, indent=2)
-        
-        # Save the visualizations and metadata
-        with open(self.txt_path, 'w') as f:
-            # Write simulation metadata
-            f.write("=" * 60 + "\n")
-            f.write("A-LIFE simulation ARCHIVE\n")
-            f.write(f"Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write("=" * 60 + "\n\n")
-            
-            # Write configuration information
-            f.write("CONFIGURATION\n")
-            f.write("-" * 60 + "\n")
-            f.write(f"Grid Size: {self.grid_size[0]} x {self.grid_size[1]}\n")
-            f.write(f"Max Ticks: {self.max_ticks}\n\n")
-            
-            # Write entity type information
-            f.write("ENTITY TYPES\n")
-            f.write("-" * 60 + "\n")
-            f.write(f"PLANT (Type ID: {self.PLANT}): Plants grow and spread to adjacent cells\n")
-            f.write(f"  - Initial Count: {self.config['entity_config']['plant']['initial_count']}\n")
-            f.write(f"  - Initial Energy: {self.config['entity_config']['plant']['initial_energy']}\n")
-            f.write(f"  - Growth Rate: {self.config['entity_config']['plant']['growth_rate']}\n")
-            f.write(f"  - Max Energy: {self.config['entity_config']['plant']['max_energy']}\n\n")
-            
-            f.write(f"HERBIVORE (Type ID: {self.HERBIVORE}): Herbivores move to and eat plants\n")
-            f.write(f"  - Initial Count: {self.config['entity_config']['herbivore']['initial_count']}\n")
-            f.write(f"  - Initial Energy: {self.config['entity_config']['herbivore']['initial_energy']}\n")
-            f.write(f"  - Movement Range: {self.config['entity_config']['herbivore']['movement_range']}\n")
-            f.write(f"  - Energy Consumption: {self.config['entity_config']['herbivore']['energy_consumption']}\n")
-            f.write(f"  - Reproduction Threshold: {self.config['entity_config']['herbivore']['reproduction_threshold']}\n")
-            f.write(f"  - Reproduction Cost: {self.config['entity_config']['herbivore']['reproduction_cost']}\n")
-            f.write(f"  - Energy Gained from eating plants: {self.config['interaction_rules']['herbivore_eat_plant']}\n\n")
-            
-            f.write(f"CARNIVORE (Type ID: {self.CARNIVORE}): Carnivores move to and eat herbivores\n")
-            f.write(f"  - Initial Count: {self.config['entity_config']['carnivore']['initial_count']}\n")
-            f.write(f"  - Initial Energy: {self.config['entity_config']['carnivore']['initial_energy']}\n")
-            f.write(f"  - Movement Range: {self.config['entity_config']['carnivore']['movement_range']}\n")
-            f.write(f"  - Energy Consumption: {self.config['entity_config']['carnivore']['energy_consumption']}\n")
-            f.write(f"  - Reproduction Threshold: {self.config['entity_config']['carnivore']['reproduction_threshold']}\n")
-            f.write(f"  - Reproduction Cost: {self.config['entity_config']['carnivore']['reproduction_cost']}\n")
-            f.write(f"  - Energy Gained from eating herbivores: {self.config['interaction_rules']['carnivore_eat_herbivore']}\n\n")
-            
-            f.write("simulation BEHAVIORS\n")
-            f.write("-" * 60 + "\n")
-            f.write("1. Plants passively grow and spread to adjacent empty cells based on growth rate\n")
-            f.write("2. Herbivores move toward and consume plants, gaining energy\n")
-            f.write("3. Carnivores move toward and consume herbivores, gaining energy\n")
-            f.write("4. All entities consume energy each tick\n")
-            f.write("5. Animals reproduce when energy threshold is reached\n")
-            f.write("6. Entities die when energy reaches zero\n\n")
-            
-            # Write visualizations for each tick
-            f.write("simulation VISUALIZATION\n")
-            f.write("-" * 60 + "\n\n")
-            
-            # Store the current tick so we can restore it
-            original_tick = self.current_tick
-            
-            # Loop through all ticks and write visualization
-            for tick in range(len(self.history)):
-                self.set_current_tick(tick)
-                visualization = self.get_visualization()
-                f.write(visualization)
-                f.write("\n" + "-" * 40 + "\n\n")
-            
-            # Restore the original tick
-            self.set_current_tick(original_tick)
-            
-            # Write summary statistics
-            final_state = self.history[-1]
-            plants_alive = sum(1 for e in final_state["entities"] if e["type_id"] == self.PLANT and e["state"]["status"] == self.ALIVE)
-            herbivores_alive = sum(1 for e in final_state["entities"] if e["type_id"] == self.HERBIVORE and e["state"]["status"] == self.ALIVE)
-            carnivores_alive = sum(1 for e in final_state["entities"] if e["type_id"] == self.CARNIVORE and e["state"]["status"] == self.ALIVE)
-            
-            f.write("\nFINAL STATISTICS\n")
-            f.write("-" * 60 + "\n")
-            f.write(f"Total Ticks: {len(self.history)}\n")
-            f.write(f"Total Entities Generated: {self.entity_id_counter}\n")
-            f.write(f"Plants Remaining: {plants_alive}\n")
-            f.write(f"Herbivores Remaining: {herbivores_alive}\n")
-            f.write(f"Carnivores Remaining: {carnivores_alive}\n")
-        
-        return {
-            "json_file": self.json_path,
-            "text_file": self.txt_path
-        }
+                "final_entity_id_counter": self.entity_id_counter # Store final value
+            }
+            with open(json_file_path, 'w') as f:
+                json.dump(run_data, f, indent=2)
+
+            # Save the visualizations and metadata
+            with open(txt_file_path, 'w') as f:
+                # Write simulation metadata
+                f.write("=" * 60 + "\n")
+                f.write("A-LIFE simulation ARCHIVE\n")
+                f.write(f"Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                # Note: We don't know the short manager ID yet, will add it later or in manager's entry
+                f.write("=" * 60 + "\n\n")
+
+                # Write configuration information
+                f.write("CONFIGURATION\n")
+                f.write("-" * 60 + "\n")
+                f.write(f"Grid Size: {self.grid_size[0]} x {self.grid_size[1]}\n")
+                f.write(f"Configured Max Ticks: {self.config.get('max_ticks', 'N/A')}\n\n")
+
+                # Write entity type information (still useful for understanding the text file)
+                f.write("ENTITY TYPES\n")
+                f.write("-" * 60 + "\n")
+                f.write(f"Type ID {self.PLANT}: Plant (P on grid)\n")
+                for k, v in self.config.get('entity_config', {}).get('plant', {}).items():
+                    f.write(f"  - {k}: {v}\n")
+                f.write("\n")
+
+                f.write(f"Type ID {self.HERBIVORE}: Herbivore (H on grid)\n")
+                for k, v in self.config.get('entity_config', {}).get('herbivore', {}).items():
+                    f.write(f"  - {k}: {v}\n")
+                f.write(f"  - Energy Gained from eating plants: {self.config.get('interaction_rules', {}).get('herbivore_eat_plant', 'N/A')}\n")
+                f.write("\n")
+
+                f.write(f"Type ID {self.CARNIVORE}: Carnivore (C on grid)\n")
+                for k, v in self.config.get('entity_config', {}).get('carnivore', {}).items():
+                    f.write(f"  - {k}: {v}\n")
+                f.write(f"  - Energy Gained from eating herbivores: {self.config.get('interaction_rules', {}).get('carnivore_eat_herbivore', 'N/A')}\n")
+                f.write("\n")
 
 
-    def create_new_simulation(self):
+                f.write("simulation BEHAVIORS (Based on configuration):\n")
+                f.write("-" * 60 + "\n")
+                f.write("1. Plants grow energy and attempt to spread (P).\n")
+                f.write("2. Herbivores consume energy, move toward and eat plants (H).\n")
+                f.write("3. Carnivores consume energy, move toward and eat herbivores (C).\n")
+                f.write("4. Animals reproduce when energy is high enough.\n")
+                f.write("5. Entities die when energy is zero or less.\n")
+                f.write("6. Entity types are inferred by their behaviors and appearance (P, H, C) on the grid.\n\n") # Hint for AI
+
+
+                # Write visualizations for each tick
+                f.write("simulation VISUALIZATION TIMELINE\n")
+                f.write("-" * 60 + "\n\n")
+
+                # Store the current tick so we can restore it
+                original_tick = self.current_tick
+
+                # Loop through all ticks in the history
+                for tick in range(len(self.history)):
+                    # Temporarily set the tick to generate visualization
+                    # set_current_tick_ALIFE handles loading state and bounds check safely
+                    self.set_current_tick_ALIFE(tick)
+                    visualization = self.get_visualization()
+                    f.write(visualization)
+                    f.write("\n" + "-" * 40 + "\n\n")
+
+                # Restore the original tick index and state
+                self.set_current_tick_ALIFE(original_tick)
+
+
+                # Write summary statistics
+                if self.history:
+                     final_state = self.history[-1]
+                     plants_alive = sum(1 for e in final_state.get("entities", []) if e.get("type_id") == self.PLANT and e.get("state", {}).get("status") == self.ALIVE)
+                     herbivores_alive = sum(1 for e in final_state.get("entities", []) if e.get("type_id") == self.HERBIVORE and e.get("state", {}).get("status") == self.ALIVE)
+                     carnivores_alive = sum(1 for e in final_state.get("entities", []) if e.get("type_id") == self.CARNIVORE and e.get("state", {}).get("status") == self.ALIVE)
+
+                     f.write("\nFINAL STATISTICS\n")
+                     f.write("-" * 60 + "\n")
+                     f.write(f"Total Ticks Simulated: {len(self.history) -1} (from tick 0 to {len(self.history)-1})\n")
+                     f.write(f"Total Entities Generated (ever in this run): {self.entity_id_counter}\n")
+                     f.write(f"Plants Remaining: {plants_alive}\n")
+                     f.write(f"Herbivores Remaining: {herbivores_alive}\n")
+                     f.write(f"Carnivores Remaining: {carnivores_alive}\n")
+                else:
+                     f.write("\nNo history available for final statistics.\n")
+
+
+        except Exception as e:
+             print(f"An error occurred during archiving: {e}")
+             # Clean up potentially half-written files
+             if os.path.exists(json_file_path): os.remove(json_file_path)
+             if os.path.exists(txt_file_path): os.remove(txt_file_path)
+             return f"Error archiving simulation: {e}"
+
+
+        # Delegate registering the archived file to the manager
+        manager_result = self.simulations_manager.create_entry(json_file_path)
+
+        if "Error" in manager_result:
+             print(f"Warning: Archived files created ({json_file_path}, {txt_file_path}), but failed to register with ALifeManager: {manager_result}")
+             return f"Archived files created, but failed to register with manager: {manager_result}"
+        else:
+            # The manager's create_entry returns a message including the new ID
+            # We can try to parse the ID from the message or adjust create_entry to return it.
+            # For now, let's just return the manager's message.
+            return f"Simulation successfully archived correctly. Text visualization also saved"
+
+
+    def load_previous_simulation(self, simulation_id: str) -> str:
         """
-        create a new simulation on the current run-time
-        probably we want to introduce a way to track and save previous runs?
+        Given a simulation ID from the archive, loads its history into the current
+        simulation instance. Sets the current tick to 0 for viewing.
+
+        Args:
+            simulation_id (str): The ID of the simulation to load from the archive.
+
+        Returns:
+            str: A string indicating success or failure.
         """
+        if not self.simulations_manager:
+            return "Error: Archiving is disabled. Cannot load previous simulations."
+
+        if simulation_id not in self.simulations_manager._state:
+            return f"Error: Could not find simulation with ID '{simulation_id}' in the archive."
+
+        try:
+            simulation_data_meta = self.simulations_manager._state[simulation_id]
+            archive_file_path = simulation_data_meta.get("simulation_file_path")
+
+            if not archive_file_path or not os.path.exists(archive_file_path):
+                 return f"Error: Archive file path missing or file not found for simulation ID '{simulation_id}' at expected location '{archive_file_path}'."
+
+            with open(archive_file_path, 'r') as f:
+                archived_data = json.load(f)
+
+            # Validate archived_data structure
+            if not isinstance(archived_data, dict) or "config" not in archived_data or "history" not in archived_data:
+                 return f"Error: Archived data for simulation ID '{simulation_id}' is in an unexpected format."
+
+            # --- Load the archived state into the current instance ---
+            self.config = archived_data["config"] # Load the configuration
+            self.history = archived_data["history"] # Load the full history
+            # Use get with default for safety, entity_id_counter might be missing in older archives
+            self.entity_id_counter = archived_data.get("final_entity_id_counter", 0) # Load the entity counter state
+
+            # Update instance attributes based on loaded data/config
+            # Use .get() with defaults in case config is missing keys (robustness)
+            self.grid_size = self.config.get("grid_size", [5, 5])
+            # max_ticks for *viewing* or *resuming* should be the last tick index in history
+            self.max_ticks = len(self.history) - 1 # Last tick index
+
+            # Set current state to the beginning of the loaded history for viewing
+            if self.history:
+                 self.current_tick = 0
+                 # Load the entity state corresponding to the new current_tick (which is 0)
+                 # Use set_current_tick_ALIFE to ensure state is loaded correctly
+                 load_state_status = self.set_current_tick_ALIFE(self.current_tick) # This updates self.entities and self.grid_size
+                 if "Error" in load_state_status:
+                      # This indicates an issue even loading tick 0, which shouldn't happen if history is valid
+                      return f"Error loading simulation ID '{simulation_id}': Could not load initial state from history. {load_state_status}"
+
+            else:
+                 # Handle case where history is empty (shouldn't happen with proper archiving)
+                 self.current_tick = 0
+                 self.entities = []
+                 self.grid_size = self.config.get("grid_size", [5,5]) # Reset grid size from config
+
+            return f"Successfully loaded simulation with ID '{simulation_id}'. Current tick is set to {self.current_tick} (start of loaded history). Total ticks in history: {len(self.history)-1}."
+
+        except FileNotFoundError:
+            # This case should ideally be caught by the os.path.exists check, but good to have
+            return f"Error: Archive file not found at '{archive_file_path}' for simulation ID '{simulation_id}'."
+        except json.JSONDecodeError:
+             return f"Error: Could not decode JSON from archive file '{archive_file_path}' for simulation ID '{simulation_id}'."
+        except Exception as e:
+            # Catch any other unexpected errors during loading
+            print(f"An unexpected error occurred while loading simulation ID '{simulation_id}': {e}")
+            return f"Error loading simulation ID '{simulation_id}': An internal error occurred."
 
 
-        with open(self.json_path, 'r') as f:
-            data = json.load(f)
-        
-        # Create a new simulation with the archived config
-        self = ALifeSimulation(data["config"], self.archive_path)
-        
-        self.run_simulation()
-        
-        # Set current tick to beginning
-        self.current_tick = 0
-        
-        # Set max_ticks based on history length
-        self.max_ticks = len(self.history) - 1
+    def create_new_simulation(self, config: Dict[str, Any] = None):
+        """
+        Creates, runs, and archives a completely new simulation.
+        Optionally takes a config dictionary to configure the new run.
+        """
+        print("Attempting to create, run, and archive a new simulation...")
 
-        self.archive_simulation_run()
-        
-        return "New simulation created."
+        # If a config is provided, update the instance's config before initializing
+        if config:
+             self._deep_update(self.config, config)
+             # Re-initialize with the potentially new config
+             self._init_simulation()
+             print("Initialized new simulation with provided configuration.")
+        else:
+             # If no config is provided, re-initialize with the current instance's config
+             # (which could be default or from a previously loaded simulation)
+             self._init_simulation()
+             print("Initialized new simulation with current configuration.")
 
+
+        # The run_simulation(new_run=True) call handles the random seed and running
+        # We already called _init_simulation above, so run_simulation can just proceed
+        # from tick 0. We don't strictly need new_run=True on run_simulation if we
+        # just called _init_simulation, but it doesn't hurt and re-seeds random.
+        self.run_simulation(new_run=True)
+
+
+        # After run_simulation finishes, self.history and self.entity_id_counter
+        # contain the results of the new run.
+        # max_ticks should already be correct from the new run's history length - 1.
+        # current_tick is set to the end of the history by run_simulation,
+        # but we often want to view from the beginning after creating/archiving.
+        if self.history:
+             self.current_tick = 0 # Set tick to the start for easy viewing after creation
+             self.set_current_tick_ALIFE(self.current_tick) # Load the state for tick 0
+        else:
+             self.current_tick = 0 # No history, stay at tick 0
+
+
+        # Archive the newly completed run
+        archive_message = self.archive_simulation_run()
+
+        # Return a combined message
+        return f"New simulation run completed and archived. {archive_message}. Ready to view from tick {self.current_tick}."
 
 
 # Example usage
 if __name__ == "__main__":
-    # Create a simulation with default settings
-    self = ALifeSimulation()
-    
-    # Run the full simulation
-    self.run_simulation()
-    self.archive_simulation_run()
-    
-    # Reset to the beginning
-    self.current_tick = 0
-    print("Initial observation")
-    print(self.observe())
+    archive_dir = "alife_archives"
+    os.makedirs(archive_dir, exist_ok=True) # Ensure archive directory exists
 
-  
-    
+    print("--- Running first simulation (default config) ---")
+    sim = ALifeSimulation(archive_path=archive_dir) # Use a single instance 'sim'
 
-    
-    # # Print the visualization of the first tick
-    # print(self.get_visualization())
-    
-    # # Move forward and observe
-    # print(self.forward())
-    # print(self.get_visualization())
+    # Run the first simulation
+    sim.run_simulation()
 
-    for i in range(3):
-        print(self.forward())
-        #print(self.observe())
-        print(self.get_visualization())
-    
-    self.create_new_simulation()
-    print("new observation")
-    print(self.observe())
+    print("\n--- Archiving first simulation ---")
+    archive_info_sim1 = sim.archive_simulation_run()
+    print(archive_info_sim1)
 
 
-# Example of a custom configuration
-example_custom_config = {
-    "grid_size": [6, 6],
-    "max_ticks": 25,
-    "entity_config": {
-        "plant": {
-            "initial_count": 5,
-            "growth_rate": 0.3
+    print("\n--- Listing archived simulations ---")
+    # Use the manager instance from the sim object
+    print(sim.simulations_manager.list_simulations())
+
+
+    print("\n--- Creating and running a NEW simulation (default config) ---")
+    # Use the create_new_simulation method on the existing 'sim' instance
+    create_new_message = sim.create_new_simulation()
+    print(create_new_message)
+
+    # Now 'sim' holds the state of the *second* simulation run, at tick 0
+    print("\n--- Observation after creating new simulation ---")
+    print(sim.observe())
+    print(sim.get_visualization())
+
+    # List simulations again - should have the second one
+    print("\n--- Listing archived simulations again ---")
+    print(sim.simulations_manager.list_simulations())
+
+
+    print("\n--- Creating and running a THIRD simulation (custom config) ---")
+    # Use the create_new_simulation method with a custom config
+    example_custom_config = {
+        "grid_size": [7, 7],
+        "max_ticks": 30,
+        "entity_config": {
+            "plant": { "initial_count": 8, "growth_rate": 0.4 },
+            "herbivore": { "initial_count": 5, "movement_range": 2, "reproduction_threshold": 20 },
+            "carnivore": { "initial_count": 3, "energy_consumption": 3, "reproduction_threshold": 25 }
         },
-        "herbivore": {
-            "initial_count": 3,
-            "movement_range": 2
-        },
-        "carnivore": {
-            "initial_count": 2
+        "interaction_rules": {
+            "herbivore_eat_plant": 6,
+            "carnivore_eat_herbivore": 10
         }
-    },
-    "interaction_rules": {
-        "herbivore_eat_plant": 5
     }
-}
+    create_new_message_custom = sim.create_new_simulation(config=example_custom_config)
+    print(create_new_message_custom)
+
+    # Now 'sim' holds the state of the *third* simulation run, at tick 0
+    print("\n--- Observation after creating third simulation ---")
+    print(sim.observe())
+    print(sim.get_visualization())
+
+
+    print("\n--- Loading the first simulation back ---")
+    # Find the ID of the first simulation from the list
+    manager_sim_list = sim.simulations_manager.list_simulations()
+    print(manager_sim_list) # Print list to help identify IDs
+
+    # Assuming the IDs are printed, manually pick the first one or parse the list
+    # For demo purposes, let's parse the list to get the first ID mentioned
+    first_sim_id = None
+    lines = manager_sim_list.split('\n')
+    if len(lines) > 1 and lines[1].strip().startswith('- ID:'):
+         # Extract ID from the first simulation entry line
+         parts = lines[1].split("'")
+         if len(parts) > 1:
+             first_sim_id = parts[1]
+
+
+    if first_sim_id:
+         print(f"\nAttempting to load simulation with ID: {first_sim_id}")
+         load_message = sim.load_previous_simulation(first_sim_id)
+         print(load_message)
+
+         # Now 'sim' should hold the state of the first run, starting at tick 0
+         print("\n--- Observation after loading first simulation ---")
+         print(sim.observe())
+         print(sim.get_visualization())
+
+         print("\n--- Stepping through loaded simulation history ---")
+         print(sim.forward())
+         print(sim.get_visualization())
+         print(sim.forward())
+         print(sim.get_visualization())
+         print(sim.backward())
+         print(sim.get_visualization())
+         print(sim.set_current_tick_ALIFE(len(sim.history) - 1)) # Jump to end
+         print(sim.get_visualization())
+
+    else:
+         print("\nCould not find a simulation ID to load from the list.")

@@ -6,8 +6,8 @@
 # They are also divided into groups, based on location or item for those conditional tools.
 lab_room_tools=[        {
         "type": "function",
-        "name": "forward",
-        "description": "Move forward the A-Life simulation one step.",
+        "name": "forward_ALIFE",
+        "description": "A-LIFE SIMULATION FUNCTION: Move forward the A-Life simulation one step.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -18,8 +18,8 @@ lab_room_tools=[        {
     },
     {
         "type": "function",
-        "name": "backward",
-        "description": "Move backwards the A-Life simulation one step.",
+        "name": "backward_ALIFE",
+        "description": "A-LIFE SIMULATION FUNCTION: Move backwards the A-Life simulation one step.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -30,8 +30,8 @@ lab_room_tools=[        {
     },  
     {
     "type": "function",
-    "name": "observe",
-    "description": "Get the current observation of the A-life simulation.",
+    "name": "observe_ALIFE",
+    "description": "A-LIFE SIMULATION FUNCTION: The main function to get the current observation of the A-life simulation after every tick.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -42,8 +42,8 @@ lab_room_tools=[        {
     },  
     {
     "type": "function",
-    "name": "set_current_tick",
-    "description": "Sets the current simulation tick to the given int value",
+    "name": "set_current_tick_ALIFE",
+    "description": "A-LIFE SIMULATION FUNCTION: Sets the current simulation tick to the given int value",
     "parameters": {
         "type": "object",
         "properties": {
@@ -58,12 +58,97 @@ lab_room_tools=[        {
     },    {
     "type": "function",
     "name": "create_new_simulation",
-    "description": "Create a whole new simulation run with the previous settings. Will override current simulation.",
+    "description": "A-LIFE SIMULATION FUNCTION: Create a whole new simulation run with the previous settings. Will override current simulation.",
     "parameters": {
         "type": "object",
         "properties": {
         },
         "required": [],
+        "additionalProperties": False
+    }
+    },
+        {
+    "type": "function",
+    "name": "load_previous_simulation",
+    "description": "A-LIFE SIMULATION FUNCTION: Reload a previous ran simulation",
+    "parameters": {
+        "type": "object",
+        "properties": {
+                "simulation_id": {
+                "type": "string",
+                "description": "The ID for the simulation to load."
+            }
+        },
+        "required": ["simulation_id"],
+        "additionalProperties": False
+    }
+    },
+    {
+    "type": "function",
+    "name": "list_simulations",
+    "description": "A-LIFE SIMULATION FUNCTION: Lists all simulation IDs currently in the archive.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+
+        },
+        "required": [],
+        "additionalProperties": False
+    }
+    },  
+    {
+    "type": "function",
+    "name": "details_of_simulation",
+    "description": "A-LIFE SIMULATION FUNCTION: Retrieves a specific simulation's metadata by its ID",
+    "parameters": {
+        "type": "object",
+        "properties": {
+                "simulation_id": {
+                "type": "string",
+                "description": "The ID for the simulation to examine."
+            }
+        },
+        "required": ["simulation_id"],
+        "additionalProperties": False
+    }
+    },  
+    {
+    "type": "function",
+    "name": "update_simulation_name",
+    "description": "A-LIFE SIMULATION FUNCTION: Updates the 'simulation_name' for a specific simulation entry.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+                "simulation_id": {
+                "type": "string",
+                "description": "The ID for the simulation to examine."
+            },
+                "new_name": {
+                "type": "string",
+                "description": "New name to set for the simulation."
+            }
+        },
+        "required": ["simulation_id", "new_name"],
+        "additionalProperties": False
+    }
+    },  
+    {
+    "type": "function",
+    "name": "add_simulation_detail",
+    "description": "A-LIFE SIMULATION FUNCTION: Adds a string detail to the list of simulation details for a given simulation ID.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+                "simulation_id": {
+                "type": "string",
+                "description": "The ID for the simulation to examine."
+            },
+                "detail_string": {
+                "type": "string",
+                "description": "detail_string (str): The string to add to the 'simulation_details' list."
+            }
+        },
+        "required": ["simulation_id", "detail_string"],
         "additionalProperties": False
     }
     },  

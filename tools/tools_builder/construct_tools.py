@@ -126,11 +126,16 @@ class FunctionBuilder:
             },
             "ALIFE_research":{
                 "functions": {
-                    "set_current_tick":self.A_Life.set_current_tick,
-                    "observe":self.A_Life.observe,
-                    "forward": self.A_Life.forward,
-                    "backward": self.A_Life.backward,
-                    "create_new_simulation": self.A_Life.create_new_simulation
+                    "set_current_tick_ALIFE":self.A_Life.set_current_tick_ALIFE,
+                    "observe_ALIFE":self.A_Life.observe_ALIFE,
+                    "forward_ALIFE": self.A_Life.forward_ALIFE,
+                    "backward_ALIFE": self.A_Life.backward_ALIFE,
+                    "create_new_simulation": self.A_Life.create_new_simulation,
+                    "load_previous_simulation": self.A_Life.load_previous_simulation,
+                    "list_simulations": self.A_Life.simulations_manager.list_simulations,
+                    "details_of_simulation": self.A_Life.simulations_manager.details_of_simulation,
+                    "update_simulation_name": self.A_Life.simulations_manager.update_simulation_name,
+                    "add_simulation_detail": self.A_Life.simulations_manager.add_simulation_detail,
 
                 },
                 "definitions": lab_room_tools
@@ -187,43 +192,73 @@ class FunctionBuilder:
         # self.function_map will be constructed dynamically by construct_map
         self.function_map = {} # Initialize as empty; filled by construct_map
 
-
     def _init_alife(self):
-        memory_filepath = os.path.join(self.sub_directory, "simulation/archives")
-        os.makedirs(memory_filepath, exist_ok=True)
+        """
+        Initializes the ALifeSimulation instance.
+        Loads the first existing simulation from the archive if available,
+        otherwise creates a new simulation run and archives it.
+        Leaves the ALifeSimulation instance ready to view at tick 0 of the loaded/new history.
+        """
+        # Define the directory where simulation archives will be stored
+        # This path is passed to ALifeSimulation, which passes it to ALifeManager.
+        archive_dir = os.path.join(self.sub_directory, "simulation_archives") # Using a clear name
+        os.makedirs(archive_dir, exist_ok=True)
+        print(f"Ensured archive directory exists at: {archive_dir}")
 
-        save_name = "current_simulation" # Use a variable for the base name
-        # Construct the full path including the .json extension for loading/checking
-        simulation_json_path = os.path.join(memory_filepath, f"{save_name}.json")
+        # --- Step 1: Initialize ALifeSimulation (which also initializes ALifeManager) ---
+        # We initialize it first so we have the manager instance available to query.
+        # We don't pass a specific config here yet, let it load defaults initially.
+        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir)
+        print("ALifeSimulation instance created, including its manager.")
 
-        # Check if the JSON file exists
-        if os.path.exists(simulation_json_path):
-            print(f"File exists at: {simulation_json_path}, loading simulation")
-            with open(simulation_json_path, 'r') as f:
-                data = json.load(f)
-                # Assuming ALifeSimulation can be initialized with loaded config
-                self.A_Life = simulation.ALifeSimulation(data["config"], memory_filepath)
-                self.A_Life.history = data["history"]
-                self.A_Life.entity_id_counter = data["entity_id_counter"]
-                self.A_Life.current_tick = 0 # Start at the beginning for playback
-                # Max ticks should probably be the number of ticks in the history
-                self.A_Life.max_ticks = len(self.A_Life.history) - 1
+        # --- Step 2: Check the ALifeManager for existing simulations ---
+        # We can directly access the manager instance created within ALifeSimulation
+        manager = self.A_Life.simulations_manager
+
+        if not manager:
+             print("Error: ALifeManager failed to initialize. Cannot proceed.")
+             # Handle this error appropriately, perhaps raise an exception
+             return
+
+        # Get the list of simulation IDs from the manager's state
+        sim_ids = list(manager._state.keys()) # Accessing the internal state is safe here
+
+        if sim_ids:
+            # --- Step 3: Existing simulations found - Load the first one ---
+            first_sim_id = sim_ids[0]
+            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load the first one with ID: '{first_sim_id}'")
+            load_message = self.A_Life.load_previous_simulation(first_sim_id)
+            print(f"Load Status: {load_message}")
+
+            # After load_previous_simulation, self.A_Life instance state (config,
+            # history, entities, current_tick) is updated based on the loaded data.
+            # load_previous_simulation already sets current_tick to 0.
+
         else:
-            print(f"File does not exist at: {simulation_json_path}, creating new simulation")
-            # Create a new simulation with default config
-            self.A_Life = simulation.ALifeSimulation(archive=memory_filepath)
-            # Run the simulation to populate history
-            self.A_Life.run_simulation() # Make sure run_simulation populates self.history
+            # --- Step 4: No existing simulations found - Create, Run, and Archive a new one ---
+            print("No existing simulations found in the archive.")
+            print("Creating, running, and archiving a new simulation with default configuration.")
 
-            # Archive the newly run simulation to the correct location
-            # Pass the desired directory and base name to archive_simulation_run
-            self.A_Life.archive_simulation_run()
+            # The create_new_simulation method handles:
+            # 1. Re-initializing the simulation state based on current config (defaults if none loaded).
+            # 2. Running the simulation fully to populate history.
+            # 3. Archiving the completed run (creating JSON and TXT files, registering with manager).
+            # 4. Setting the instance state (history, current_tick=0, etc.) to the new run.
+            create_message = self.A_Life.create_new_simulation()
+            print(f"New Simulation Status: {create_message}")
 
-            self.A_Life.current_tick = 0
-            # Update max_ticks based on the history created by run_simulation
-            self.A_Life.max_ticks = len(self.A_Life.history) - 1
-
-
+        # --- Step 5: Final Confirmation ---
+        # Regardless of whether we loaded or created, the self.A_Life instance
+        # should now be initialized and positioned at tick 0 of its history.
+        print(f"\nALife initialization complete.")
+        if self.A_Life and self.A_Life.history:
+             # Find the ID of the simulation currently loaded/created (it will be the first in the manager now)
+             current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager and self.A_Life.simulations_manager._state else "N/A (Error)"
+             print(f"Currently loaded Simulation ID: '{current_sim_id}'")
+             print(f"Current Tick: {self.A_Life.current_tick} (start of history)")
+             print(f"Total ticks in loaded history: {len(self.A_Life.history)-1}") # Last tick index is len-1
+        else:
+             print("Warning: ALifeSimulation instance created, but history is empty after initialization.")
 
     def get_current_room_types(self):
         """Retrieves the list of types for the current room."""
