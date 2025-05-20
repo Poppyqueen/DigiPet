@@ -483,9 +483,60 @@ class InventoryHouseManager(GenericJsonTool):
             needs_save = True
         # --- End New Validation ---
 
+# --- NEW: Validate current_sim ID State ---
+        id_value = self._state.get("id_value")
+        default_id_value = "" # Assuming a default of 0 for steps
+
+        if not isinstance(id_value, str):
+            print(f"Validation Warning: 'id_value' missing or not an string ({type(id_value).__name__}). Setting to default ({default_steps_value}).")
+            self._state["id_value"] = default_id_value
+            needs_save = True
+
+
+        sim_current_step = self._state.get("sim_current_step")
+        default_sim_current_step = 0 # Assuming a default of 0 for steps
+        if not isinstance(sim_current_step, int):
+            print(f"Validation Warning: 'sim_current_step' missing or not an integer ({type(sim_current_step).__name__}). Setting to default ({default_sim_current_step}).")
+            self._state["sim_current_step"] = default_sim_current_step
+            needs_save = True
+        elif sim_current_step < 0:
+            print(f"Validation Warning: 'sim_current_step' value ({sim_current_step}) is negative. Resetting to default ({default_sim_current_step}).")
+            self._state["sim_current_step"] = default_sim_current_step
+            needs_save = True
+        # --- End New Validation ---
+
+
         if needs_save:
             print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
             self._write_json(self._state)
+
+    def get_sim_state(self):
+        """
+        Retrieves the current simulation state.
+
+        Returns:
+            dict: The current simulation state.
+        """
+        print(f"Retrieving simulation state: {self._state.get('id_value', '')}, {self._state.get('sim_current_step', 0)}")
+        return {
+            "id_value": self._state.get("id_value", ""),
+            "sim_current_step": self._state.get("sim_current_step", 0)
+        }
+
+    def set_sim_state(self, id_value=None, sim_current_step=None):
+        """
+        Sets the simulation state with the given ID and current step.
+
+        Args:
+            id_value (str): The ID value to set.
+            sim_current_step (int): The current step in the simulation.
+        """
+        if isinstance(id_value, str):
+            self._state["id_value"] = id_value
+        if isinstance(sim_current_step, int):
+            self._state["sim_current_step"] = sim_current_step
+        self._write_json(self._state)
+        print(f"Simulation state updated: id_value={id_value}, sim_current_step={sim_current_step}")
 
 
     # --- Helper Methods (Internal Use - STAY here) ---
@@ -1361,124 +1412,211 @@ class InventoryHouseManager(GenericJsonTool):
         return "Unknown Room"
 
 
-    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict, internal=False):
+    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False):
         """
-        Creates a new item with a generated unique ID and places it in the specified location.
+        Creates new item(s) with generated unique IDs and places them in the specified location.
         This method is used for ALL item types, including books.
-        Respects inventory limit when placing in inventory.
+        Respects inventory limit when placing in inventory for the entire batch.
 
         Args:
-            target_location (str): Where to place the item ('room' or 'inventory'). Case-insensitive.
+            target_location (str): Where to place the item(s) ('room' or 'inventory'). Case-insensitive.
             target_location_id (int or None): The ID of the room if target_location is 'room',
                                             or None if target_location is 'inventory'.
-            item_creation_data (dict): A dictionary containing the item's properties.
-                                    This dict should match the item structure for its type,
-                                    but MUST NOT include the 'id' key (it is generated).
-                                    e.g., for a book: {'name': str, 'descriptions': list[str], 'static': bool, 'type': 'book', 'chapters': list[dict]}
+            item_creation_data (dict | list[dict]): A dictionary for a single item or a list
+                                                   of dictionaries for multiple items.
+                                                   Each dict contains the item's properties and
+                                                   MUST NOT include the 'id' key (it is generated).
+                                                   e.g., for a single book: {'name': str, 'descriptions': list[str], 'static': bool, 'type': 'book', 'chapters': list[dict]}
+                                                   e.g., for multiple: [{}, {}, ...]
 
         Returns:
-            str: A message indicating success or failure (e.g., invalid data, location not found, inventory full).
+            list[int] | bool | str:
+                - If internal is True: A list of IDs (int) of the items successfully created and placed.
+                                      Returns [] if no items were placed, or False if the input
+                                      `item_creation_data` was not a dict or list.
+                - If internal is False: A string message summarizing the success/failure of the operation(s).
         """
-        # Validate input data structure BEFORE adding ID
-        # Use _is_valid_item_data without checking for ID presence yet
-        is_valid, error_msg = self._is_valid_item_data(item_creation_data, check_id=False)
-        if not is_valid:
-            return f"Failed to create item: Invalid input data - {error_msg}"
+        items_to_process = [] # List to hold item data dicts after validation and ID generation
+        failed_items_info = [] # List of tuples: (item_display_name, reason_for_failure)
 
-        # Generate a new unique ID for the item
-        new_item_id = self._generate_next_item_id()
+        # --- 1. Handle input type: Convert single dict to list of one ---
+        if isinstance(item_creation_data, dict):
+            data_list = [item_creation_data]
+        elif isinstance(item_creation_data, list):
+            data_list = item_creation_data
+        else:
+            msg = f"Failed to create item(s): item_creation_data must be a dict or a list of dicts, received {type(item_creation_data).__name__}."
+            if internal: return False # Indicate invalid input *type* specifically for internal
+            return msg
 
-        # Create the full item dictionary including the generated ID
-        # Ensure we use a copy to avoid modifying the input dict
-        new_item_data = item_creation_data.copy()
-        new_item_data["id"] = new_item_id # Add the generated ID
-
-        # Perform a final validation on the *full* item data with ID,
-        # including type-specific checks (like for books).
-        is_valid_final, error_msg_final = self._is_valid_item_data(new_item_data, check_id=True)
-        if not is_valid_final:
-            # This shouldn't happen if initial validation passed and only ID was added,
-            # but good defensive check.
-            print(f"Error: Final validation failed for item data with generated ID {new_item_id}: {error_msg_final}")
-            # Optionally decrement ID counter here if ID was consumed but item is invalid.
-            # self._state["next_item_id"] -= 1 # Be careful with this if multiple threads/calls are possible
-            return f"Failed to create item due to internal validation error after ID generation: {error_msg_final}"
+        if not data_list:
+             msg = "No item data provided."
+             if internal: return [] # No items to create, valid empty list input
+             return msg
 
 
-        item_display = self._format_item_for_display(new_item_data)
+        # --- 2. Validate, generate ID, and prepare each item ---
+        for item_data in data_list:
+            if not isinstance(item_data, dict):
+                 failed_items_info.append((f"Malformed item data (not a dict)", "Invalid item data format"))
+                 continue # Skip this malformed entry
+
+            # Initial validation (no ID check)
+            is_valid, error_msg = self._is_valid_item_data(item_data, check_id=False)
+            if not is_valid:
+                # Attempt to get a display name even if validation fails, if possible
+                display = item_data.get('name', 'Unnamed Item') if isinstance(item_data, dict) else 'Invalid Data'
+                failed_items_info.append((display, f"Invalid input data: {error_msg}"))
+                continue # Skip this item
+
+            # Generate a new unique ID for the item
+            new_item_id = self._generate_next_item_id()
+
+            # Create the full item dictionary including the generated ID
+            # Ensure we use a copy to avoid modifying the input dicts
+            new_item_data = item_data.copy()
+            new_item_data["id"] = new_item_id # Add the generated ID
+
+            # Perform a final validation on the *full* item data with ID,
+            # including type-specific checks.
+            is_valid_final, error_msg_final = self._is_valid_item_data(new_item_data, check_id=True)
+            if not is_valid_final:
+                 # This shouldn't happen if initial validation passed and only ID was added,
+                 # but good defensive check.
+                 # Optionally decrement ID counter here if ID was consumed but item is invalid.
+                 # self._state["next_item_id"] -= 1 # Be careful in multi-threaded envs
+                 print(f"Error: Final validation failed for item data with generated ID {new_item_id}: {error_msg_final}")
+                 display = self._format_item_for_display(new_item_data) # Use formatter now
+                 failed_items_info.append((display, f"Internal validation error after ID generation: {error_msg_final}"))
+                 continue # Skip this item
+
+            # If all validations pass, add the prepared item data to the list for placement
+            items_to_process.append(new_item_data)
+
+        # --- 3. Check if any items are successfully prepared for placement ---
+        if not items_to_process:
+             # If no items made it past the validation stage, return failure based on accumulated errors
+             if not failed_items_info:
+                 # This case should only happen if data_list was empty initially, handled above.
+                 # Or perhaps data_list contained only non-dict items, also handled above.
+                 # Defensive message just in case.
+                 msg = "No valid item data processed."
+             else:
+                 msg = "Failed to create any items due to validation errors:\n" + "\n".join([f"- {name}: {reason}" for name, reason in failed_items_info])
+             if internal: return [] # No items placed
+             return msg
+
+        # --- 4. Placement Logic (Applies to the batch in items_to_process) ---
+        added_count = 0
+        location_desc = "an unknown location"
+        successfully_created_ids = []
+        placement_successful = False # Flag to know if *any* items were placed
+
         target_location_lower = target_location.strip().lower()
-        added = False
-        location_desc = "an unknown location" # Default failure description
 
         if target_location_lower == "inventory":
             # Items created directly into inventory cannot be static (doesn't make sense)
-            if new_item_data.get("static", False):
-                print(f"Warning: Attempted to create static item {item_display} directly into inventory. 'static' attribute ignored.")
-                new_item_data["static"] = False
-            # No check for item name uniqueness; ID is the primary identifier.
+            for item_data in items_to_process:
+                if item_data.get("static", False):
+                    display = self._format_item_for_display(item_data)
+                    print(f"Warning: Attempted to create static item {display} directly into inventory. 'static' attribute ignored.")
+                    item_data["static"] = False # Modify the item in the list
 
-            # Check if inventory is full BEFORE creating the item (NEW)
+            # Check inventory limit BEFORE adding the batch
             current_inventory = self._state.get("inventory", [])
             if not isinstance(current_inventory, list): # Defensive check
-                print("Warning: Inventory state corrupted during item creation into inventory, treating as full for safety.")
-                return f"Error: Cannot create item {item_display}, inventory state is corrupted."
+                print("Warning: Inventory state corrupted during batch item creation into inventory, treating as full for safety.")
+                # All items in items_to_process fail placement due to corrupted state
+                for item_data in items_to_process:
+                     failed_items_info.append((self._format_item_for_display(item_data), "Inventory state corrupted."))
+                items_to_process = [] # Clear the list so nothing is added
 
-            if len(current_inventory) >= self.MAX_INVENTORY_SLOTS:
-                # Optionally decrement ID counter if it was incremented but item wasn't added
-                # For simplicity now, we'll let the counter increase. IDs are cheap.
-                if internal:
-                    return False
-                return f"Failed to create item {item_display}: Your inventory is full! (Max items: {self.MAX_INVENTORY_SLOTS})"
-            # End of NEW check
+            elif (len(current_inventory) + len(items_to_process)) > self.MAX_INVENTORY_SLOTS:
+                 # All items in items_to_process fail placement due to full inventory
+                 for item_data in items_to_process:
+                     failed_items_info.append((self._format_item_for_display(item_data), f"Inventory full (Max {self.MAX_INVENTORY_SLOTS})."))
+                 items_to_process = [] # Clear the list so nothing is added
 
-            # Ensure inventory is a list before appending (re-check after potential corruption check)
-            if not isinstance(self._state.get("inventory"), list):
-                print("Warning: Inventory state corrupted during item creation, resetting to empty list before append.")
-                self._state["inventory"] = [] # Reset inventory if corrupted
+            # If there are still items left to place after checks:
+            if items_to_process:
+                 # Ensure inventory is a list before extending (re-check after potential corruption check)
+                 if not isinstance(self._state.get("inventory"), list):
+                     print("Warning: Inventory state corrupted during item creation, resetting to empty list before extend.")
+                     self._state["inventory"] = [] # Reset inventory if corrupted
 
-            self._state["inventory"].append(new_item_data) # Add the complete item dict
-            added = True
-            location_desc = "your inventory"
+                 self._state["inventory"].extend(items_to_process) # Add the batch
+                 added_count = len(items_to_process)
+                 successfully_created_ids.extend([item["id"] for item in items_to_process]) # Collect IDs of placed items
+                 location_desc = "your inventory"
+                 placement_successful = True
+
 
         elif target_location_lower == "room":
             if not isinstance(target_location_id, int):
-                if internal:
-                    return False
-                return f"Failed to create item {item_display}: Target room ID must be an integer when creating item in a room, received '{target_location_id}' ({type(target_location_id).__name__})."
+                 # All items in items_to_process fail placement due to bad room ID
+                 for item_data in items_to_process:
+                     failed_items_info.append((self._format_item_for_display(item_data), f"Target room ID must be an integer when creating item(s) in a room, received '{target_location_id}' ({type(target_location_id).__name__})."))
+                 items_to_process = [] # Clear the list so nothing is added
 
-            target_room = self._find_room_by_id(target_location_id)
-
-            if target_room and isinstance(target_room.get("items"), list):
-                target_room["items"].append(new_item_data) # Add the complete item dict
-                added = True
-                location_desc = f"the {self._format_room_for_display(target_room)}"
             else:
-                if internal:
-                    return False
-                return f"Failed to create item {item_display}: Target room with ID '{target_location_id}' not found or room data corrupted."
+                 target_room = self._find_room_by_id(target_location_id)
+
+                 if target_room and isinstance(target_room.get("items"), list):
+                     target_room["items"].extend(items_to_process) # Add the batch
+                     added_count = len(items_to_process)
+                     successfully_created_ids.extend([item["id"] for item in items_to_process]) # Collect IDs of placed items
+                     location_desc = f"the {self._format_room_for_display(target_room)}"
+                     placement_successful = True
+                 else:
+                     # All items in items_to_process fail placement due to room not found/corrupted
+                     for item_data in items_to_process:
+                         failed_items_info.append((self._format_item_for_display(item_data), f"Target room with ID '{target_location_id}' not found or room data corrupted."))
+                     items_to_process = [] # Clear the list so nothing is added
 
         else:
-            if internal:
-                return False
-            return f"Failed to create item {item_display}: Invalid target location '{target_location}'. Must be 'room' or 'inventory'."
+            # Invalid location for the whole batch
+            for item_data in items_to_process:
+                 failed_items_info.append((self._format_item_for_display(item_data), f"Invalid target location '{target_location}'. Must be 'room' or 'inventory'."))
+            items_to_process = [] # Clear the list so nothing is added
 
-        if added:
-            self._write_json(self._state) # Save state with the new item and incremented counter
+
+        # --- 5. Post-Placement: Save state and send signals ---
+        if placement_successful: # Only save if at least one item was successfully placed
+            self._write_json(self._state)
+            # Send signals only if something was added to state
             list_room_items_names, list_inventory_item_names = self.list_inventories()
-            # list_inventory_item_names would now be ['old_key', 'Mysteries of the Cozy House']
-            # based on your base_state example
-
-            self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
+            self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
             self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
-            if internal:
-                return new_item_id
-            return f"Item {item_display} created and placed in {location_desc}."
-        else:
-            # Should be covered by specific error messages above
-            if internal:
-                return False
-            return f"Failed to create item {item_display} at location '{target_location}'."
-        
+
+        # --- 6. Return Value ---
+        if internal:
+            # Return the list of IDs that were successfully created and placed
+            return successfully_created_ids
+
+        # Non-internal return message
+        messages = []
+
+        if added_count > 0:
+            item_plural = "item" if added_count == 1 else "items"
+            messages.append(f"Successfully created {added_count} {item_plural} and placed in {location_desc}.")
+
+        if failed_items_info:
+            failure_details = "\n".join([f"- {name}: {reason}" for name, reason in failed_items_info])
+            failed_plural = "item" if len(failed_items_info) == 1 else "items"
+            if added_count > 0:
+                 messages.append(f"{len(failed_items_info)} {failed_plural} failed to be created or placed:")
+            else:
+                 # If no items were added, the main message should indicate failure
+                 messages.append(f"Failed to create any items. {len(failed_items_info)} {failed_plural} failed:")
+            messages.append(failure_details)
+
+        if not messages:
+             # Should only happen if input was an empty list or all items were malformed
+             # which are handled, but as a fallback:
+             return "No item creation attempts were processed."
+
+
+        return "\n".join(messages)
     def trash_item(self, item_id: int, confirm: bool) -> str:
         """
         Removes an item by its ID *only* if it is located in the player's inventory.

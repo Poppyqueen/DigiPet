@@ -650,31 +650,34 @@ def wrap_text(text, max_width, prefix=""):
 
     return lines
 
-
 # --- NEW: Helper to calculate the total wrapped height of a list of strings ---
-def calculate_list_height(item_list, draw_width):
-    """Calculates the total pixel height needed to display a list of strings."""
-    if _font is None or _line_height == 0:
-         # print("Error: calculate_list_height called before gui.init_gui") # Avoid excessive logging
-         return len(item_list) * (20 + config.INVENTORY_PANEL_ITEM_SPACING) # Rough estimate
+# MODIFIED: item_list now expects a list of dictionaries from prepare_inventory_item_data
+def calculate_list_height(item_list): # Removed draw_width, it's pre-calculated
+    """
+    Calculates the total pixel height needed to display a list of inventory item data.
+    Sums the pre-calculated total_height for each item.
+    """
+    # Less critical check here, as pre-calculation should ideally handle errors
+    if _line_height == 0:
+         # print("Error: calculate_list_height called before gui.init_gui or with invalid line height.") # Avoid excessive logging
+         # Fallback: Sum based on items + spacing, without proper wrapping height
+         return sum(item_dict.get('total_height', _line_height + config.INVENTORY_PANEL_ITEM_SPACING) for item_dict in item_list)
+
 
     total_height = 0
-    # Use the pre-calculated usable width for inventory items
-    usable_width = _inventory_item_draw_width
+    # MODIFIED: Sum pre-calculated height
+    for item_dict in item_list:
+         total_height += item_dict.get('total_height', _line_height + config.INVENTORY_PANEL_ITEM_SPACING) # Fallback if total_height is missing
 
-    for item_string in item_list:
-        # No prefix needed for inventory items
-        wrapped_lines = wrap_text(item_string, usable_width, "")
-        # Add line height for each line PLUS spacing AFTER the item
-        total_height += len(wrapped_lines) * _line_height + config.INVENTORY_PANEL_ITEM_SPACING
-    # Add padding at the bottom if needed (handled by the start/end draw checks?)
-    # Let's just add the top padding to the initial Y in the drawing function.
+    # The drawing logic adds vertical padding at the top, and the last item's spacing
+    # acts like bottom padding implicitly. So summing the total_height per item is correct.
     return total_height
 
-
+# Keep the chat history height calculation separate as it uses a different structure
 def calculate_total_history_height(history_list_of_dicts):
-    """Calculates the total pixel height by summing pre-calculated heights."""
+    """Calculates the total pixel height by summing pre-calculated heights from chat history."""
     return sum(msg['total_height'] for msg in history_list_of_dicts)
+
 
 def add_message_to_history(text, msg_type):
     """Adds a message tuple (text, type) to history and auto-scrolls to bottom."""
@@ -774,63 +777,6 @@ def add_message_to_history(text, msg_type):
 
     state.scroll_y = 0 # Auto-scroll to bottom
     # print(f"Added message to history ({msg_type}): {text[:50]}...") # Debugging log
-# --- NEW: Helper to draw a list of strings within a rect with scrolling ---
-def draw_item_list(surface, item_list, draw_rect, scroll_y, item_color):
-    """
-    Draws a list of strings onto a surface within the specified rectangle.
-    Handles text wrapping and vertical scrolling.
-    Uses pre-calculated item drawing width and horizontal offset.
-    """
-    if _font is None or _line_height == 0 or _inventory_item_draw_width <= 0:
-        print("Error: draw_item_list called before gui.init_gui or with invalid width.")
-        return
-
-    # Use the draw_rect as the clipping area for drawing directly onto the surface
-    clip_rect = draw_rect.copy()
-    original_clip = surface.get_clip() # Save original clipping area
-    surface.set_clip(clip_rect) # Set the clipping area
-
-
-    # Calculate current Y position to start drawing the *first* item based on scroll
-    # Start drawing from the top of the draw_rect, offset by:
-    # - scroll_y (subtract, positive scrolls down)
-    # - config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING (add, for padding at the top)
-    current_draw_y_absolute = draw_rect.top + config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING - scroll_y
-
-
-    # Draw each item string
-    for item_string in item_list:
-        # Use the pre-calculated usable width for wrapping
-        # No prefix needed for inventory items
-        wrapped_lines = wrap_text(item_string, _inventory_item_draw_width, "")
-        item_total_line_height = len(wrapped_lines) * _line_height + config.INVENTORY_PANEL_ITEM_SPACING
-
-        # Draw each line of the wrapped item string
-        for i, line in enumerate(wrapped_lines):
-            line_draw_y_absolute = current_draw_y_absolute + i * _line_height
-
-            # Blit relative to the surface passed in. The clip_rect ensures only the correct part is drawn.
-            # Use the pre-calculated horizontal start offset
-            try:
-                line_surface = _font.render(line, True, item_color)
-                surface.blit(line_surface,
-                             (draw_rect.left + _inventory_item_start_x_offset, line_draw_y_absolute))
-            except pygame.error as e:
-                 print(f"Pygame error rendering inventory item line '{line}': {e}")
-
-
-        # After drawing all lines for the current item, move down the absolute drawing position
-        current_draw_y_absolute += item_total_line_height
-
-        # Optimization: If we're drawing below the visible area, stop
-        # If the top of the *next* item would be below the bottom of the clipping rectangle, stop.
-        # Consider vertical padding at the bottom of the list area
-        if current_draw_y_absolute > clip_rect.bottom - config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING:
-             break # Stop drawing remaining items
-
-
-    # Restore original clipping area
-    surface.set_clip(original_clip)
 
 
 # --- NEW: Function to draw the Inventory Panel ---
@@ -1257,6 +1203,113 @@ def draw_filter_overlay(screen):
     # 4. Blit the overlay_surface onto the whole screen
     screen.blit(overlay_surface, (0, 0))
 
+
+# -- Revamp functions to draw inventory strings and scrollable areas --
+
+# Add this helper function within gui.py
+def prepare_inventory_item_data(item_string):
+    """
+    Pre-calculates wrapped lines and total height for a single inventory item string.
+    Returns a dictionary: {'text': original, 'wrapped_lines': [...], 'total_height': H}
+    """
+    if _font is None or _line_height == 0 or _inventory_item_draw_width <= 0:
+        # Error state or not initialized, return minimal data
+        print("Warning: gui not initialized when preparing inventory item data.")
+        return {'text': item_string, 'wrapped_lines': [item_string], 'total_height': _line_height + config.INVENTORY_PANEL_ITEM_SPACING}
+
+    try:
+        # Use the pre-calculated usable width for wrapping, no prefix for items
+        wrapped_lines = wrap_text(item_string, _inventory_item_draw_width, "")
+        item_total_height = len(wrapped_lines) * _line_height + config.INVENTORY_PANEL_ITEM_SPACING
+
+        return {
+            'text': item_string,
+            'wrapped_lines': wrapped_lines,
+            'total_height': item_total_height
+        }
+    except pygame.error as e:
+        print(f"Pygame error during inventory item data preparation for '{item_string}': {e}")
+        # Return fallback data on error
+        return {'text': item_string, 'wrapped_lines': [item_string], 'total_height': _line_height + config.INVENTORY_PANEL_ITEM_SPACING}
+
+# Make sure this function is called *after* init_gui sets _font, _line_height, and _inventory_item_draw_width
+# --- NEW: Helper to draw a list of strings within a rect with scrolling ---
+# MODIFIED: item_list now expects a list of dictionaries from prepare_inventory_item_data
+def draw_item_list(surface, item_list, draw_rect, scroll_y, item_color):
+    """
+    Draws a list of inventory item data (pre-calculated wrapped lines/heights)
+    onto a surface within the specified rectangle.
+    Handles vertical scrolling.
+    Uses pre-calculated item drawing width and horizontal offset.
+    """
+    # Less critical check here, as pre-calculation should ideally handle errors
+    if _font is None or _line_height == 0:
+         # print("Error: draw_item_list called before gui.init_gui") # Avoid excessive logging
+         return
+
+    # Use the draw_rect as the clipping area for drawing directly onto the surface
+    clip_rect = draw_rect.copy()
+    original_clip = surface.get_clip() # Save original clipping area
+    surface.set_clip(clip_rect) # Set the clipping area
+
+
+    # Calculate current Y position to start drawing the *first* item based on scroll
+    # Start drawing from the top of the draw_rect, offset by:
+    # - scroll_y (subtract, positive scrolls down)
+    # - config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING (add, for padding at the top)
+    current_draw_y_absolute = draw_rect.top + config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING - scroll_y
+
+
+    # Draw each item using the pre-calculated data
+    # MODIFIED: Loop iterates through item dictionaries
+    for item_dict in item_list:
+        # Access pre-calculated data
+        wrapped_lines = item_dict.get('wrapped_lines', [item_dict.get('text', 'Error')]) # Fallback if structure is wrong
+        item_total_height = item_dict.get('total_height', _line_height + config.INVENTORY_PANEL_ITEM_SPACING) # Fallback height
+
+        # Optimization: If the entire item (including its space below) is above the top of the clip rect, skip it
+        if current_draw_y_absolute + item_total_height < clip_rect.top:
+             current_draw_y_absolute += item_total_height
+             continue # Skip to the next item
+
+        # Optimization: If the top of the item is below the bottom of the clip rect, stop drawing
+        # Consider vertical padding at the bottom of the list area when checking this
+        # This check can be slightly off if an item starts above but ends below.
+        # A better check is below, inside the line loop.
+        # if current_draw_y_absolute > clip_rect.bottom - config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING:
+        #     break # Stop drawing remaining items - this check is better inside the line loop
+
+        # Draw each line of the wrapped item string
+        for i, line in enumerate(wrapped_lines):
+            line_draw_y_absolute = current_draw_y_absolute + i * _line_height
+
+            # Optimization: Only draw lines that are within the vertical bounds of the clip rect
+            # Add a small buffer just in case
+            if line_draw_y_absolute + _line_height > clip_rect.top and line_draw_y_absolute < clip_rect.bottom:
+                 # Blit relative to the surface passed in. The clip_rect ensures only the correct part is drawn.
+                 # Use the pre-calculated horizontal start offset
+                 try:
+                     # Render the line text - color is passed in
+                     line_surface = _font.render(line, True, item_color)
+                     surface.blit(line_surface,
+                                  (draw_rect.left + _inventory_item_start_x_offset, line_draw_y_absolute))
+                 except pygame.error as e:
+                      print(f"Pygame error rendering inventory item line '{line}': {e}")
+                 except Exception as e:
+                      print(f"Unexpected error rendering inventory item line '{line}': {e}")
+
+
+        # After drawing all lines for the current item, move down the absolute drawing position
+        current_draw_y_absolute += item_total_height
+
+        # Optimization: If the start of the *next* item is below the clip rect, break early
+        # This is a more accurate break point than checking the end of the current item above.
+        if current_draw_y_absolute > clip_rect.bottom:
+             break
+
+
+    # Restore original clipping area
+    surface.set_clip(original_clip)
 
 # --- Function to draw the entire GUI panel ---
 # MODIFIED: Changed parameter name to is_input_locked

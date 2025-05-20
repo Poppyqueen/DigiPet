@@ -210,7 +210,7 @@ class FunctionBuilder:
         # --- Step 1: Initialize ALifeSimulation (which also initializes ALifeManager) ---
         # We initialize it first so we have the manager instance available to query.
         # We don't pass a specific config here yet, let it load defaults initially.
-        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir)
+        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager)
         print("ALifeSimulation instance created, including its manager.")
 
         # --- Step 2: Check the ALifeManager for existing simulations ---
@@ -227,9 +227,18 @@ class FunctionBuilder:
 
         if sim_ids:
             # --- Step 3: Existing simulations found - Load the first one ---
-            first_sim_id = sim_ids[0]
-            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load the first one with ID: '{first_sim_id}'")
-            load_message = self.A_Life.load_previous_simulation(first_sim_id)
+            state_info=self.state_manager.get_sim_state()
+            sim_id=state_info.get("id_value", None)
+            print(f"Simulation ID from state manager: {sim_id}")
+            current_step=state_info.get("sim_current_step", 0)
+            if not sim_id:
+                print("Warning: No simulation ID found in state manager. Loading the first available simulation.")
+                current_sim_id = sim_ids[0]
+            else:
+                current_sim_id = sim_id
+            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load the last open one with ID: '{current_sim_id}'")
+            load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
+
             print(f"Load Status: {load_message}")
 
             # After load_previous_simulation, self.A_Life instance state (config,
@@ -246,8 +255,11 @@ class FunctionBuilder:
             # 2. Running the simulation fully to populate history.
             # 3. Archiving the completed run (creating JSON and TXT files, registering with manager).
             # 4. Setting the instance state (history, current_tick=0, etc.) to the new run.
-            create_message = self.A_Life.create_new_simulation()
-            print(f"New Simulation Status: {create_message}")
+            message = self.A_Life.create_new_simulation()
+            current_step=0
+            current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager and self.A_Life.simulations_manager._state else "N/A (Error)"
+
+            print(f"New Simulation ID: {message}")
 
         # --- Step 5: Final Confirmation ---
         # Regardless of whether we loaded or created, the self.A_Life instance
@@ -255,9 +267,9 @@ class FunctionBuilder:
         print(f"\nALife initialization complete.")
         if self.A_Life and self.A_Life.history:
              # Find the ID of the simulation currently loaded/created (it will be the first in the manager now)
-             current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager and self.A_Life.simulations_manager._state else "N/A (Error)"
+             self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
              print(f"Currently loaded Simulation ID: '{current_sim_id}'")
-             print(f"Current Tick: {self.A_Life.current_tick} (start of history)")
+             print(f"Current Tick: {self.A_Life.current_tick}")
              print(f"Total ticks in loaded history: {len(self.A_Life.history)-1}") # Last tick index is len-1
         else:
              print("Warning: ALifeSimulation instance created, but history is empty after initialization.")

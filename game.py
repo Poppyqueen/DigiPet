@@ -331,41 +331,6 @@ if chatbot_available and chatbot and hasattr(chatbot, 'get_wellness_states'):
 else:
     print("Chatbot instance not available or does not have 'get_wellness_states'. Using default state.")
 
-# Note: state.pet_stats is already initialized with defaults in state.py.
-# The code above updates it *if* the chatbot is available and provides valid data.
-
-# --- Initial Inventory Load ---
-# This part might need adjustment based on how chatbot.get_inventories() works
-# and whether it triggers the ROOM/PLAYER_INVENTORY_EVENT signals itself
-# For now, assume it returns the lists directly and we populate state
-# If get_inventories() triggers signals, this block might be removed or adjusted
-try:
-    # Assuming chatbot.get_inventories() returns (room_list, player_list) tuples
-    if chatbot_available and chatbot and hasattr(chatbot, 'get_inventories') and callable(getattr(chatbot, 'get_inventories', None)):
-         print("Attempting to get initial inventories from chatbot...")
-         list_room_items_names, list_inventory_item_names = chatbot.get_inventories()
-
-         if isinstance(list_room_items_names, list) and isinstance(list_inventory_item_names, list):
-             state.room_inventory_list = list_room_items_names
-             state.player_inventory_list = list_inventory_item_names
-             print(f"Loaded initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
-         else:
-             print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
-             state.room_inventory_list = []
-             state.player_inventory_list = []
-
-    else:
-        print("Chatbot not available or does not have get_inventories method. Initial inventories will be empty.")
-        state.room_inventory_list = []
-        state.player_inventory_list = [] # Ensure lists are initialized even if chatbot fails
-
-except Exception as e:
-    print(f"Error getting initial inventories from chatbot: {e}. Initial inventories will be empty.")
-    state.room_inventory_list = [] # Ensure lists are initialized on error
-    state.player_inventory_list = []
-
-
-
 
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
@@ -382,14 +347,13 @@ def add_items(items_list, room):
     gui.add_message_to_history(f"Adding items to room...", "system")
     try:
         if chatbot_available and chatbot and hasattr(chatbot, 'add_items_room') and callable(chatbot.add_items_room):
-             for item in items_list:
-                chatbot.add_items_room(room, item) # Adds items to the specified room and triggers signals to update the GUI
-                room_name=chatbot.get_room_name_out(room)
-                # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
-                chatbot.add_message_out(f"A package of helpful items has been delivered for you in the room {room_name}. Sent by the user for you!.", "system")
+            chatbot.add_items_room(room, items_list) # Adds items to the specified room and triggers signals to update the GUI
+            room_name=chatbot.get_room_name_out(room)
+            # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
+            chatbot.add_message_out(f"A package of helpful items has been delivered for you in the room {room_name}. Sent by the user for you!.", "system")
 
             # Append the text into GUI chat window
-             gui.add_message_to_history(f"Items added successfully!", "system")
+            gui.add_message_to_history(f"Items added successfully!", "system")
 
         else:
             error_message = "Chatbot not available or does not support adding items."
@@ -422,6 +386,41 @@ gui_rects = {
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
 gui.init_gui(font, line_height, gui_rects)
 
+
+
+# --- Initial Inventory Load ---
+try:
+    if chatbot_available and chatbot and hasattr(chatbot, 'get_inventories') and callable(getattr(chatbot, 'get_inventories', None)):
+         print("Attempting to get initial inventories from chatbot...")
+         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.get_inventories()
+
+         # MODIFIED: Check and pre-calculate initial data
+         if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
+             # Ensure gui is initialized before preparing data
+             # Assuming gui.init_gui is called earlier in setup
+             if gui._font is None: # Check if gui initialization was successful
+                  print("GUI font not initialized. Cannot prepare inventory data. Initial inventories will be empty.")
+                  state.room_inventory_list = []
+                  state.player_inventory_list = []
+             else:
+                 state.room_inventory_list = [gui.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
+                 state.player_inventory_list = [gui.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
+                 print(f"Loaded and prepared initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
+         else:
+             print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
+             state.room_inventory_list = []
+             state.player_inventory_list = []
+
+    else:
+        print("Chatbot not available or does not have get_inventories method. Initial inventories will be empty.")
+        state.room_inventory_list = [] # Ensure lists are initialized even if chatbot fails
+        state.player_inventory_list = [] # Ensure lists are initialized even if chatbot fails
+
+
+except Exception as e:
+    print(f"Error getting initial inventories from chatbot: {e}. Initial inventories will be empty.")
+    state.room_inventory_list = [] # Ensure lists are initialized on error
+    state.player_inventory_list = [] # Ensure lists are initialized on error
 
 
 # Get the calculated rects from gui.py after initialization if needed in game.py
@@ -597,32 +596,39 @@ while running:
                  gui.add_message_to_history(response_text, message_type)
                  # Activity from bot only resets idle timer if it's not a 'system' message
                  # System messages might just be info, not necessarily a bot action response
+                 animation.start_circle_shake() # Shake the circle on bot activity
+
                  if message_type != "system":
                      state.last_activity_time = current_time_ms
                      state.chatbot_is_processing=False # Bot finished processing user/system request
+
                  print(f"Bot response received via event (type: {message_type}). Idle timer reset? {'Yes' if message_type != 'system' else 'No'}. Time: {state.last_activity_time}")
 
              continue
 
-        # --- Handle Inventory Events (Update State) ---
         elif event.type == config.ROOM_INVENTORY_EVENT:
-             item_list_data = getattr(event, 'item_list', None)
-             if isinstance(item_list_data, list):
-                  #print(f"Main loop processing ROOM_INVENTORY_EVENT. Updating room inventory state.")
-                  state.room_inventory_list = item_list_data # Update the state LIST
-                  # Optionally reset scroll to top when new data arrives?
-                  state.room_inventory_scroll_y = 0 # Let's reset for now to easily see new items
-             else: print(f"ROOM_INVENTORY_EVENT received with invalid data.")
-             continue
+            item_list_raw = getattr(event, 'item_list', None) # Get the raw list of strings
+            if isinstance(item_list_raw, list):
+                print(f"Main loop processing ROOM_INVENTORY_EVENT. Updating room inventory state.")
+                # MODIFIED: Pre-calculate data for each item
+                state.room_inventory_list = [gui.prepare_inventory_item_data(item) for item in item_list_raw]
+                print(f"Prepared room inventory data for {len(state.room_inventory_list)} items.")
+                # Reset scroll to top when new data arrives
+                state.room_inventory_scroll_y = 0
+            else: print(f"ROOM_INVENTORY_EVENT received with invalid data.")
+            continue
 
         elif event.type == config.PLAYER_INVENTORY_EVENT:
-             item_list_data = getattr(event, 'item_list', None)
-             if isinstance(item_list_data, list):
-                  #print(f"Main loop processing PLAYER_INVENTORY_EVENT. Updating player inventory state.")
-                  state.player_inventory_list = item_list_data # Update the state LIST
-                  state.player_inventory_scroll_y = 0 # Reset scroll
-             else: print(f"PLAYER_INVENTORY_EVENT received with invalid data.")
-             continue
+            item_list_raw = getattr(event, 'item_list', None) # Get the raw list of strings
+            if isinstance(item_list_raw, list):
+                print(f"Main loop processing PLAYER_INVENTORY_EVENT. Updating player inventory state.")
+                # MODIFIED: Pre-calculate data for each item
+                state.player_inventory_list = [gui.prepare_inventory_item_data(item) for item in item_list_raw]
+                print(f"Prepared player inventory data for {len(state.player_inventory_list)} items.")
+                state.player_inventory_scroll_y = 0 # Reset scroll
+            else: print(f"PLAYER_INVENTORY_EVENT received with invalid data.")
+            continue
+
 
         # --- 1. Fix the START_SLEEP_EVENT handler to properly calculate end time ---
         elif event.type == config.START_SLEEP_EVENT:
@@ -709,28 +715,28 @@ while running:
 
                  # Handle Mouse Wheel Scrolling over the panel list areas
                  if event.button in (4, 5): # 4: up, 5: down
-                      scroll_speed = config.SCROLL_SPEED * (-1 if event.button == 4 else 1) # Negative for up, positive for down
+                    scroll_speed = config.SCROLL_SPEED * (-1 if event.button == 4 else 1) # Negative for up, positive for down
+                    # Check if mouse is over the room list area
+                    if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
+                        state.room_inventory_scroll_y += scroll_speed
+                        # Clamp scroll
+                        # MODIFIED: Removed draw_width argument
+                        room_content_height = gui.calculate_list_height(state.room_inventory_list)
+                        max_room_scroll = max(0, room_content_height - room_list_area_rect.height)
+                        state.room_inventory_scroll_y = max(0, min(state.room_inventory_scroll_y, max_room_scroll))
+                        #print(f"Room list scrolled. Current: {state.room_inventory_scroll_y}, Max: {max_room_scroll}")
+                        continue # Consume event
 
-                      # Check if mouse is over the room list area
-                      if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
-                           state.room_inventory_scroll_y += scroll_speed
-                           # Clamp scroll
-                           # Need to calculate content height dynamically based on current list items
-                           room_content_height = gui.calculate_list_height(state.room_inventory_list, room_list_area_rect.width)
-                           max_room_scroll = max(0, room_content_height - room_list_area_rect.height)
-                           state.room_inventory_scroll_y = max(0, min(state.room_inventory_scroll_y, max_room_scroll))
-                           #print(f"Room list scrolled. Current: {state.room_inventory_scroll_y}, Max: {max_room_scroll}")
-                           continue # Consume event
-
-                      # Check if mouse is over the player list area
-                      elif player_list_area_rect and player_list_area_rect.collidepoint(event.pos):
-                           state.player_inventory_scroll_y += scroll_speed
-                           # Clamp scroll
-                           player_content_height = gui.calculate_list_height(state.player_inventory_list, player_list_area_rect.width)
-                           max_player_scroll = max(0, player_content_height - player_list_area_rect.height)
-                           state.player_inventory_scroll_y = max(0, min(state.player_inventory_scroll_y, max_player_scroll))
-                           #print(f"Player list scrolled. Current: {state.player_inventory_scroll_y}, Max: {max_player_scroll}")
-                           continue # Consume event
+                    # Check if mouse is over the player list area
+                    elif player_list_area_rect and player_list_area_rect.collidepoint(event.pos):
+                        state.player_inventory_scroll_y += scroll_speed
+                        # Clamp scroll
+                        # MODIFIED: Removed draw_width argument
+                        player_content_height = gui.calculate_list_height(state.player_inventory_list)
+                        max_player_scroll = max(0, player_content_height - player_list_area_rect.height)
+                        state.player_inventory_scroll_y = max(0, min(state.player_inventory_scroll_y, max_player_scroll))
+                        #print(f"Player list scrolled. Current: {state.player_inventory_scroll_y}, Max: {max_player_scroll}")
+                        continue # Consume event
 
                  # If the click wasn't on the toggle button or handled by scrolling, ignore it
                  #continue # Simply do nothing for other events inside the panel

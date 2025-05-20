@@ -290,9 +290,10 @@ class ALifeSimulation:
     ALIVE = "alive"
     DEAD = "dead"
 
-    def __init__(self, config: Dict[str, Any] = None, archive_path=None):
+    def __init__(self, config: Dict[str, Any] = None, archive_path=None, state_manager=None):
         """Initialize the ALifeSimulation with optional configuration."""
 
+        self.state_manager = state_manager
         self.current_simulation_ID=""
 
         self.archive_path = archive_path
@@ -893,7 +894,7 @@ class ALifeSimulation:
                  # This should ideally not happen due to the tick > max_valid_tick check
                  return f"Error: Failed to load state for tick {tick}. History length is {len(self.history)}."
 
-
+            self.state_manager.set_sim_state(sim_current_step=self.current_tick)
             return f"Successfully set the current tick to {tick} of {max_valid_tick}."
         
     def observe_ALIFE(self) -> str:
@@ -1215,7 +1216,7 @@ class ALifeSimulation:
             return manager_result
 
 
-    def load_previous_simulation(self, simulation_id: str) -> str:
+    def load_previous_simulation(self, simulation_id: str, tick:int=0)  -> str:
         """
         Given a simulation ID from the archive, loads its history into the current
         simulation instance. Sets the current tick to 0 for viewing.
@@ -1260,7 +1261,7 @@ class ALifeSimulation:
 
             # Set current state to the beginning of the loaded history for viewing
             if self.history:
-                 self.current_tick = 0
+                 self.current_tick = tick # Set to the requested tick (0 for start)
                  # Load the entity state corresponding to the new current_tick (which is 0)
                  # Use set_current_tick_ALIFE to ensure state is loaded correctly
                  load_state_status = self.set_current_tick_ALIFE(self.current_tick) # This updates self.entities and self.grid_size
@@ -1288,7 +1289,7 @@ class ALifeSimulation:
             print(f"An unexpected error occurred while loading simulation ID '{simulation_id}': {e}")
             return f"Error loading simulation ID '{simulation_id}': An internal error occurred."
 
-    def create_new_simulation(self, grid_size=None, max_ticks=None, type_0_init_count=None, type_1_init_count=None, type_2_init_count=None, new_name=None):
+    def create_new_simulation(self, grid_size=None, max_ticks=None, type_0_init_count=None, type_1_init_count=None, type_2_init_count=None, new_name=None, internal=False):
         """
         Creates, runs, and archives a completely new simulation.
         Optionally takes arguments to configure the new run.
@@ -1523,8 +1524,15 @@ class ALifeSimulation:
             config_notes.append("Warning: Archiving simulation failed.") # Note if archiving failed
 
 
+        if archive_data:
+            self.state_manager.set_sim_state(simulation_id, self.current_tick) # Update state manager with the last tick's state
+
         # Return a combined system confirmation message
         # Include all gathered notes in the final message
+        if internal:
+            if archive_data:
+                return archive_data.archive_data.get("simulation_ID", "Unknown ID")
+            return "Error archiving simulation data."
         return f"System confirmation, New simulation run completed and archived with simulation ID: {simulation_id}, Name:{new_name or 'Unnamed Simulation'}, Configuration: {final_config_summary}. Ready to view from tick {self.current_tick}."
 
 # Example usage

@@ -24,7 +24,7 @@ from world_data.care_packages import (
 WIDTH, HEIGHT = 450, 550
 PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
 INPUT_HEIGHT = 40
-PADDING = 2 # Space around elements within the panel
+PADDING = 3 # Space around elements within the panel
 
 
 
@@ -334,8 +334,8 @@ CARE_PACKAGES =   [
         {"package": care_package_2_hydration_refreshment,"color": "hydration"},
         {"package": care_package_6_extreme_hydration,"color": "hydration"},
         {"package": a_bundle_for_hydration_some_misc_items,"color": "hydration"},
-        {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "hydration"},
 
+        {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "ingredient"},
         {"package": care_package_2_cooking_kit,"color": "ingredient"},
         {"package": the_most_epic_and_complete_bundle_for_cooking_raw_,"color": "ingredient"},
         {"package": bread_package_all_kinds_of_food_implements_ingredi,"color": "ingredient"},
