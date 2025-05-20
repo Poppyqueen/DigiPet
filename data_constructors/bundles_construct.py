@@ -3,11 +3,20 @@
 
 import os
 import re
-import json
 from typing import List, Dict, Any, Optional # Import Optional or use | None for optional fields
 
 from openai import OpenAI
 from pydantic import BaseModel, Field, ValidationError # Import ValidationError
+from dotenv import load_dotenv
+
+load_dotenv()  # This loads variables from .env into os.environ
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if api_key is None:
+    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
+    exit(1)
+
 
 """
 we have a py file with packages defined like this:
@@ -79,12 +88,8 @@ class ItemDefinitionListContainer(BaseModel):
     items: List[ItemDefinition] = Field(description="A list of item definition objects.")
 
 class bundles_maker:
-    # Use the specific client configuration you prefer, assuming it's set up correctly
-    # client = OpenAI() # Or use the beta client if specifically needed for .parse
-    # Note: The `parse` method was part of a beta release. Ensure your openai library version supports it.
-    # If it gives errors, the standard `create` with `response_format` and manual parsing is the current stable approach.
-    # However, respecting your request to use your working implementation:
-    client = OpenAI() # Assuming this client object can access the beta features you used
+
+    client=OpenAI(api_key=api_key) 
 
     def __init__(self):
         pass

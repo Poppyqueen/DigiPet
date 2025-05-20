@@ -2,10 +2,19 @@
 from openai import OpenAI
 import time
 from utils.pydantic_models import look_ner_structure, save_ner_structure, entity_dict  # Import from pydantic_models.py
+import os
+from dotenv import load_dotenv
 
+load_dotenv()  # This loads variables from .env into os.environ
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if api_key is None:
+    print("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+    exit(1)
 
 class memory_ai():
-    client=OpenAI()
+    client=OpenAI(api_key=api_key)
 
     def __init__(self, text_capture=None):
         self.text_capture=text_capture

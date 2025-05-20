@@ -12,6 +12,17 @@ from typing import List, Dict, Any
 from utils.pydantic_models import ItemDefinitionListContainer
 
 import configparser
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # This loads variables from .env into os.environ
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if api_key is None:
+    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
+    exit(1)
+
 
 main_config = configparser.ConfigParser()
 main_config.read('main_config.ini')
@@ -59,7 +70,7 @@ config_model = main_config['AI']['cook_model']
 
 
 class cook:
-    client = OpenAI()  # client is correctly set up here at the class level
+    client=OpenAI(api_key=api_key)  # client is correctly set up here at the class level
 
     def __init__(self):
         pass

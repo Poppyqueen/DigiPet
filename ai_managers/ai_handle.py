@@ -14,13 +14,20 @@ import json
 
 # Import utils
 from utils.capture_text import TextCapture
+import os
+from dotenv import load_dotenv
 
+load_dotenv()  # This loads variables from .env into os.environ
 
+api_key = os.getenv("OPENAI_API_KEY")
 
-
+# if not found stop the program
+if api_key is None:
+    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
+    exit(1)
 
 class ai_bot:
-    client = OpenAI()  # client is correctly set up here at the class level
+    client=OpenAI(api_key=api_key)
 
     
 

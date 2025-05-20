@@ -7,7 +7,16 @@ import json # Import the json module
 import os   # Import os to check file existence (optional, try/except is often better)
 import time
 # --- Pydantic Models (Keep these as defined before) ---
+from dotenv import load_dotenv
 
+load_dotenv()  # This loads variables from .env into os.environ
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if api_key is None:
+    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
+    exit(1)
+    
 class individual_tv_show(BaseModel):
     content: str = Field(description="An excerpt, quote or part of the program playing on TV. This has to be content of the TV media in display, not descriptions, but small excerpts or sections of it.")
     time_tag: str = Field(description="The slot of time for this TV show to air. Options: 'early morning', 'morning', 'noon', 'afternoon', 'late afternoon', 'night', 'late night'")
@@ -34,7 +43,7 @@ class ProgramContent(BaseModel):
 
 
 class tv_exec:
-    client = OpenAI()  # client is correctly set up here at the class level
+    client=OpenAI(api_key=api_key)  # client is correctly set up here at the class level
 
     def __init__(self):
         pass
