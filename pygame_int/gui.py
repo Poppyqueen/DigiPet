@@ -4,8 +4,11 @@ from pygame_int import config # Needed for colors, padding, dimensions, max hist
 from pygame_int import state # Needed for accessing/modifying chat_history, input_text, scroll_y, cursor state, background_image, sleep state, AND chatbot_is_processing!
 from pygame_int import animation
 from pygame_int.colors_config import _color_selection_options
-import pygame
 
+
+import pygame
+import pygame.gfxdraw
+import colorsys
 import os
 import random # Add this import
 import math
@@ -22,6 +25,7 @@ _history_display_area = None # Direct reference for convenience
 # --- NEW: Stat Icon State ---
 _stat_icons = {} # Dictionary to hold loaded and scaled stat icon surfaces: {(stat_name, level): surface}
 
+overlay_surface = pygame.Surface((config.WIDTH, config.HEIGHT), pygame.SRCALPHA)
 
 # --- NEW: Popup Message Class ---
 class PopupMessage:
@@ -646,78 +650,108 @@ def wrap_text(text, max_width, prefix=""):
 
     return lines
 
+def calculate_total_history_height(history_list_of_dicts):
+    """Calculates the total pixel height by summing pre-calculated heights."""
+    return sum(msg['total_height'] for msg in history_list_of_dicts)
 
-# --- Helper to calculate the total wrapped height of all messages (Moved) ---
-# --- CHANGE 4: Update the calculate_total_history_height function to use the improved wrap_text ---
-def calculate_total_history_height(history_tuples, max_width):
-    """Calculates the total pixel height needed to display all wrapped messages."""
-    if _font is None or _line_height == 0:
-        return len(history_tuples) * 20  # Rough estimate
-
-    total_height = 0
-    for text, msg_type in history_tuples:
-        # Determine prefix for proper text wrapping calculation
-        display_prefix = ""
-        if msg_type == 'user':
-            display_prefix = "You: "
-        elif msg_type == 'bot':
-            display_prefix = "Bot: "
-        elif msg_type == 'error':
-            display_prefix = "Error: "
-        elif msg_type == 'system':
-            display_prefix = "System: "
-        elif msg_type == 'system_instruction':
-            display_prefix = "Instruction: "
-
-        # Use the prefix-aware wrapping function
-        wrapped_lines = wrap_text(text, max_width, display_prefix)
-        total_height += len(wrapped_lines) * _line_height
-    return total_height
-
-# --- Helper to add message and auto-scroll (Moved) ---
 def add_message_to_history(text, msg_type):
     """Adds a message tuple (text, type) to history and auto-scrolls to bottom."""
-    # Need global to modify module-level state variables imported from state.py
 
     # Prevent adding empty messages if they somehow get here
     if not text or not text.strip():
-        # print(f"Attempted to add empty message of type {msg_type}. Ignoring.") # Debug
         return
 
-    state.chat_history.append((text.strip(), msg_type)) # Add stripped text
+    # Determine prefix and color
+    # Initialize with default values before the if/elif chain
+    display_prefix = ""
+    text_color = config.LIGHT_GREY # Use a neutral default color
 
-    # Limit history size
-    while len(state.chat_history) > config.MAX_MESSAGE_HISTORY:
-         state.chat_history.pop(0) # Remove oldest
+    if msg_type == 'user':
+        display_prefix = "You: "
+        text_color = config.BLUE
+    elif msg_type == 'bot':
+        display_prefix = "Bot: "
+        # --- MODIFIED: Use state.pet_color for bot messages ---
+        text_color = state.pet_color # Ensure state.pet_color is valid here
+    elif msg_type == 'error':
+        display_prefix = "Error: "
+        text_color = config.RED
+    elif msg_type == 'system':
+        display_prefix = "System: "
+        text_color = config.YELLOW
+    elif msg_type == 'system_instruction':
+        display_prefix = "Instruction: "
+        text_color = config.ORANGE
+    else:
+        # Handle unknown message types - set both prefix and color
+        print(f"Warning: Unknown message type '{msg_type}' received. Using default style.") # Optional warning
+        display_prefix = "Info: " # Or "Unknown: ", or keep it ""
+        text_color = config.DARK_GREY # A distinct color for unknown types
 
-    # Automatically scroll to the bottom after adding messages (scroll_y = 0)
-    # This shows the most recent message.
-    state.scroll_y = 0 # Simply set scroll_y to 0 to show the latest message
+    # Now display_prefix is guaranteed to have been assigned a value
+    wrapped_lines_list = wrap_text(text.strip(), _text_width_limit, display_prefix) # Use your existing wrap_text
 
-    # print(f"Added message to history ({msg_type}): {text[:50]}...") # Debugging log
+    rendered_surfaces = []
+    message_total_height = 0
 
-
-# --- NEW: Helper to calculate the total wrapped height of a list of strings ---
-def calculate_list_height(item_list, draw_width):
-    """Calculates the total pixel height needed to display a list of strings."""
+    # Ensure _font and _line_height are initialized before this point
     if _font is None or _line_height == 0:
-         # print("Error: calculate_list_height called before gui.init_gui") # Avoid excessive logging
-         return len(item_list) * (20 + config.INVENTORY_PANEL_ITEM_SPACING) # Rough estimate
+         print("Error: Font not initialized when adding message.")
+         # Add unrendered text as fallback? Or just return? Let's return.
+         # If you need basic text display even without font, handle it here.
+         # For now, just add the text data without rendering surfaces if font fails
+         state.chat_history.append({
+             'original_text': text.strip(),
+             'type': msg_type,
+             'wrapped_lines': [text.strip()], # Simple fallback
+             'rendered_surfaces': [], # No surfaces
+             'total_height': _line_height # Rough guess for height
+         })
+         # Limit history size even if font failed
+         while len(state.chat_history) > config.MAX_MESSAGE_HISTORY:
+              state.chat_history.pop(0)
+         state.scroll_y = 0
+         return
 
-    total_height = 0
-    # Use the pre-calculated usable width for inventory items
-    usable_width = _inventory_item_draw_width
 
-    for item_string in item_list:
-        # No prefix needed for inventory items
-        wrapped_lines = wrap_text(item_string, usable_width, "")
-        # Add line height for each line PLUS spacing AFTER the item
-        total_height += len(wrapped_lines) * _line_height + config.INVENTORY_PANEL_ITEM_SPACING
-    # Add padding at the bottom if needed (handled by the start/end draw checks?)
-    # Let's just add the top padding to the initial Y in the drawing function.
-    return total_height
+    for i, line in enumerate(wrapped_lines_list):
+        # Only add prefix string to the first line.
+        # Subsequent lines are just the wrapped content.
+        rendered_line_text = display_prefix + line if i == 0 else line
+
+        try:
+            # Use the correct color determined above
+            line_surface = _font.render(rendered_line_text, True, text_color)
+            rendered_surfaces.append(line_surface)
+            message_total_height += _line_height
+        except pygame.error as e:
+            print(f"Pygame error rendering message line '{rendered_line_text}': {e}")
+            # Handle error: Add a placeholder surface or skip?
+            # Add a placeholder surface or just log the error and move on?
+            # For now, add None and still account for height
+            rendered_surfaces.append(None) # Add None or a red error surface
+            message_total_height += _line_height # Still account for the line space
 
 
+    # Create the message dictionary
+    message_dict = {
+        'original_text': text.strip(),
+        'type': msg_type,
+        'wrapped_lines': wrapped_lines_list, # Can keep this for debugging or other uses, or remove if not needed
+        'rendered_surfaces': rendered_surfaces,
+        'total_height': message_total_height
+    }
+
+    state.chat_history.append(message_dict) # Append the dictionary
+
+    # Limit history size and cleanup surfaces
+    while len(state.chat_history) > config.MAX_MESSAGE_HISTORY:
+        oldest_message = state.chat_history.pop(0)
+        # Relying on Python's garbage collection for surfaces is fine.
+        # No explicit 'del surface' loop needed here.
+
+    state.scroll_y = 0 # Auto-scroll to bottom
+    # print(f"Added message to history ({msg_type}): {text[:50]}...") # Debugging log
 # --- NEW: Helper to draw a list of strings within a rect with scrolling ---
 def draw_item_list(surface, item_list, draw_rect, scroll_y, item_color):
     """
@@ -835,7 +869,7 @@ def draw_inventory_panel(screen):
 
 
 # --- NEW: Function to trigger a floating pop-up message ---
-def show_popup_message(text, color=config.POPUP_COLOR):
+def show_popup_message(text, color=None):
     """
     Creates a new floating pop-up message and adds it to the active list.
     The message appears centered horizontally above the character's base
@@ -846,6 +880,10 @@ def show_popup_message(text, color=config.POPUP_COLOR):
     Optional:
          Color RGB tuple (100, 255, 100) to display the text in
     """
+    if not color:
+        color=state.pet_color
+
+    print(f"trying to show popup with color: {color}")
     if _font is None:
          print("Error: show_popup_message called before gui.init_gui")
          return # Cannot create message without font
@@ -1044,15 +1082,12 @@ def draw_popups(screen):
             screen.blit(popup.text_surface, popup.current_pos)
 
 
-# --- NEW: Function to draw Care Package Buttons and Scroll Controls ---
-# MODIFIED: Renamed parameter from is_currently_asleep to is_input_locked
 def draw_package_buttons(screen, is_input_locked):
     """
-    Draws the care package buttons and their scroll controls.
+    Draws the care package buttons (as rectangles) and their scroll controls.
     Visually disables them if input is locked.
     """
-    # Assuming these global variables are defined elsewhere (e.g., in gui.py init)
-    global _left_scroll_button_rect, _right_scroll_button_rect, _care_package_area_rect, _buttons_per_page
+    global _left_scroll_button_rect, _right_scroll_button_rect, _care_package_area_rect, _buttons_per_page, _font
 
     if _left_scroll_button_rect is None:
          # gui.init_gui hasn't been called, return empty list
@@ -1064,110 +1099,76 @@ def draw_package_buttons(screen, is_input_locked):
     buttons_per_page = max(1, _buttons_per_page) # Ensure we don't divide by zero or less than 1
     visible_end = min(visible_start + buttons_per_page, total_packages)
 
-
     # Determine if scrolling is possible in each direction *before* considering input lock
     can_scroll_left = visible_start > 0
     can_scroll_right = visible_end < total_packages
-
 
     # Determine scroll button colors based on scroll possibility and lock state
     # Button is colored DISABLED if scrolling is not possible OR if input is locked
     left_scroll_color = config.SCROLL_BUTTON_COLOR_DISABLED if not can_scroll_left or is_input_locked else config.SCROLL_BUTTON_COLOR_ENABLED
     right_scroll_color = config.SCROLL_BUTTON_COLOR_DISABLED if not can_scroll_right or is_input_locked else config.SCROLL_BUTTON_COLOR_ENABLED
 
-
-    # Draw Left Scroll Button (as a filled rectangle or triangle)
+    # Draw Left Scroll Button (as a filled rectangle)
     pygame.draw.rect(screen, left_scroll_color, _left_scroll_button_rect)
-    pygame.draw.rect(screen, config.WHITE, _left_scroll_button_rect, 1) # Border
-
-    # Optional: Draw a triangle shape inside the scroll button rect
-    if _left_scroll_button_rect.width > 4 and _left_scroll_button_rect.height > 4: # Only draw triangle if big enough
-        # Check if the button is in the enabled state (can scroll AND not locked)
-        if not is_input_locked and can_scroll_left:
-            tri_pad_x = _left_scroll_button_rect.width // 4 # Use relative padding
-            tri_pad_y = _left_scroll_button_rect.height // 4
-            # Triangle points left
-            points_left = [
-                 (_left_scroll_button_rect.right - tri_pad_x, _left_scroll_button_rect.centery), # Right point
-                 (_left_scroll_button_rect.left + tri_pad_x, _left_scroll_button_rect.top + tri_pad_y), # Top-left
-                 (_left_scroll_button_rect.left + tri_pad_x, _left_scroll_button_rect.bottom - tri_pad_y) # Bottom-left
-            ]
-            pygame.draw.polygon(screen, config.WHITE, points_left) # Draw white arrow shape
-
+    pygame.draw.rect(screen, state.pet_color, _left_scroll_button_rect, 1) # Border
 
     # Draw Right Scroll Button
     pygame.draw.rect(screen, right_scroll_color, _right_scroll_button_rect)
-    pygame.draw.rect(screen, config.WHITE, _right_scroll_button_rect, 1) # Border
+    pygame.draw.rect(screen, state.pet_color, _right_scroll_button_rect, 1) # Border
 
-    # Optional: Draw a triangle shape inside the scroll button rect
-    if _right_scroll_button_rect.width > 4 and _right_scroll_button_rect.height > 4:
-         # Check if the button is in the enabled state (can scroll AND not locked)
-         if not is_input_locked and can_scroll_right:
-             tri_pad_x = _right_scroll_button_rect.width // 4
-             tri_pad_y = _right_scroll_button_rect.height // 4
-             # Triangle points right
-             points_right = [
-                 (_right_scroll_button_rect.left + tri_pad_x, _right_scroll_button_rect.centery), # Left point
-                 (_right_scroll_button_rect.right - tri_pad_x, _right_scroll_button_rect.top + tri_pad_y), # Top-right
-                 (_right_scroll_button_rect.right - tri_pad_x, _right_scroll_button_rect.bottom - tri_pad_y) # Bottom-right
-             ]
-             pygame.draw.polygon(screen, config.WHITE, points_right) # Draw white arrow shape
-# Draw Package Buttons within the display area
-    button_size = config.PACKAGE_BUTTON_SIZE
-    button_spacing = config.PACKAGE_BUTTON_SPACING_X
-    # Center of the first button position within the care package area
-    start_x_offset = _care_package_area_rect.left + button_size // 2
-    button_y_center = _care_package_area_rect.centery # Vertical center of all buttons
+    # Draw Package Buttons within the display area
+    button_width = config.PACKAGE_BUTTON_SIZE # Renamed for clarity, but still using config.PACKAGE_BUTTON_SIZE
+    button_height = config.PACKAGE_BUTTON_SIZE   #INPUT_HEIGHT # Make buttons fill the height of the area
+    button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
+
+    # The starting X position for the first button, after the left scroll button
+    start_x = _left_scroll_button_rect.right #+ button_spacing_x
+    # The top Y position for all buttons (aligned with the top of the package area)
+    button_y_top = _care_package_area_rect.top
 
     # Draw a background rect for the button area (optional, helps visualize)
-    # pygame.draw.rect(screen, config.DARK_GREY, _care_package_area_rect)
+    # This rectangle will be in the middle, between scroll buttons
+    # pygame.draw.rect(screen, config.DARK_GREY, _care_package_area_rect, 2) # Draw border of the whole area
 
     for i in range(visible_start, visible_end):
         package_info = config.CARE_PACKAGES[i]
         base_color = package_info["color"]
-        # Button color is DISABLED color if input is locked, otherwise use the package's base color
         button_color = config.PACKAGE_BUTTON_COLOR_DISABLED(base_color) if is_input_locked else base_color
 
-        # Calculate the button's center position relative to the screen
-        # Position is based on its index within the *visible* page (i - visible_start)
-        button_center_x = start_x_offset + (i - visible_start) * (button_size + button_spacing)
-        button_center = (button_center_x, button_y_center) # Store center as a tuple
+        # Calculate the button's rectangle
+        button_x = start_x + (i - visible_start) * (button_width + button_spacing_x)
+        button_rect = pygame.Rect(button_x, button_y_top, button_width, button_height)
 
-        # Draw the filled circle
-        pygame.draw.circle(screen, button_color, button_center, button_size // 2)
+        # Draw the filled rectangle
+        pygame.draw.rect(screen, button_color, button_rect)
         # Draw the border
-        pygame.draw.circle(screen, config.PACKAGE_BUTTON_BORDER_COLOR, button_center, button_size // 2, 1)
+        pygame.draw.rect(screen, state.pet_color, button_rect, 1) # Border width of 1 pixels
 
-        # --- ADDED CODE: Draw the number ---
-        # Use the index 'i' (0-based) + 1 for the displayed number
-# --- MODIFIED CODE: Draw the number with outline ---
-        # Use the index 'i' (0-based) + 1 for the displayed number
+        # Draw the number with outline
         number_text = str(i + 1)
 
-        # Assuming 'number_font', 'number_color', and 'outline_color' are defined/available
-
-        # Render the outline text slightly offset
+        # Render the outline text slightly offset (using button_color for outline as before)
+        # This creates a 'debossed' or 'cutout' look
         outline_surface = _font.render(number_text, True, button_color)
-        outline_rect = outline_surface.get_rect(center=button_center)
+        outline_rect = outline_surface.get_rect(center=button_rect.center)
 
-        # Define offsets for the outline
         offsets = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-
-        # Draw the outline by blitting the outline surface at various offsets
         for dx, dy in offsets:
             outline_pos = (outline_rect.x + dx, outline_rect.y + dy)
             screen.blit(outline_surface, outline_pos)
 
-        text_color=(0,0,0)
-        if button_color == (0,0,0):
-            text_color=(255,255,255)
+        # Determine text color based on button color for contrast
+        text_color = (0, 0, 0) # Default to black
+        if button_color == (0, 0, 0) or sum(button_color) < 150: # If button is dark, use white text
+            text_color = (255, 255, 255)
+
         # Render the main text on top
         text_surface = _font.render(number_text, True, text_color)
-        text_rect = text_surface.get_rect(center=button_center) # Center text on the button's center
+        text_rect = text_surface.get_rect(center=button_rect.center) # Center text on the button's center
         screen.blit(text_surface, text_rect)
 
 
-# --- NEW: Function to get clickable regions for Care Package Buttons and Scroll Controls ---
+
 def get_package_button_click_regions():
     """
     Returns a list of tuples (identifier, rect) for clickable package buttons and scroll controls.
@@ -1186,32 +1187,53 @@ def get_package_button_click_regions():
 
     total_packages = len(config.CARE_PACKAGES)
     visible_start = state.package_button_visible_start_index
-    buttons_per_page = max(1, _buttons_per_page) # Ensure correct calculation
+    buttons_per_page = max(1, _buttons_per_page)
     visible_end = min(visible_start + buttons_per_page, total_packages)
 
-
     # Calculate the button positions again to create the click rects
-    button_size = config.PACKAGE_BUTTON_SIZE
-    button_spacing = config.PACKAGE_BUTTON_SPACING_X
-    start_x_offset = _care_package_area_rect.left + button_size // 2 # Center of the first button position
-    button_y_center = _care_package_area_rect.centery # Vertical center of all buttons
+    button_width = config.PACKAGE_BUTTON_SIZE
+    button_height = config.PACKAGE_BUTTON_SIZE # Match height from draw function
+    button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
 
+    # The starting X position for the first button, after the left scroll button
+    start_x = _left_scroll_button_rect.right + button_spacing_x
+    # The top Y position for all buttons (aligned with the top of the package area)
+    button_y_top = _care_package_area_rect.top
 
     # Add regions for the visible package buttons
     for i in range(visible_start, visible_end):
-        # Calculate the button's center position
-        button_center_x = start_x_offset + (i - visible_start) * (button_size + button_spacing)
-        # Create the rect for the button (centered around the calculated position)
-        button_rect = pygame.Rect(
-            button_center_x - button_size // 2,
-            button_y_center - button_size // 2,
-            button_size,
-            button_size
-        )
+        # Calculate the button's rectangle position
+        button_x = start_x + (i - visible_start) * (button_width + button_spacing_x)
+        button_rect = pygame.Rect(button_x, button_y_top, button_width, button_height)
+
         # Add the region identifier and rect to the list
         click_regions.append((f"package_{i}", button_rect))
 
     return click_regions
+
+def draw_filter_overlay(screen):
+
+    # --- Configuration ---
+    # Define this value as your desired absolute brightness level (0.0 to 1.0)
+    
+    # ---- Draw filter overlay above the background image ----
+    # Draw a full screen rectangle with transparency and the pets color
+    alpha_value = 50
+    # Convert RGB to HSV for brightness adjustment
+    r, g, b = [x / 255.0 for x in state.pet_color]  # Normalize to 0-1 range
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    # Apply absolute brightness target
+    v = config.TARGET_BRIGHTNESS # Set the brightness component directly to the target
+    # Convert back to RGB and denormalize to 0-255 range
+    adjusted_r, adjusted_g, adjusted_b = [int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)]
+    
+    state.pets_theme_color = (adjusted_r, adjusted_g, adjusted_b)
+    overlay_color_with_alpha = (adjusted_r, adjusted_g, adjusted_b, alpha_value)
+    # 3. Draw the rectangle onto the overlay_surface
+    pygame.draw.rect(overlay_surface, overlay_color_with_alpha, (0, 0, config.WIDTH, config.HEIGHT), 0)
+
+    # 4. Blit the overlay_surface onto the whole screen
+    screen.blit(overlay_surface, (0, 0))
 
 
 # --- Function to draw the entire GUI panel ---
@@ -1227,13 +1249,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
          print("Error: draw_gui called before gui.init_gui")
          return # Cannot draw without initialization
 
-    # --- Always Draw Base Game UI Elements ---
-
-
-
-        # Draw background image or fallback color
-
-
 
     # --- Draw the Dimming Background Surface (if visible) ---
     # Draw this *before* the popup image, *after* the background
@@ -1248,7 +1263,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         else:
             screen.fill(config.fallback_bg_color)
 
-        #if not state.inventory_panel_visible:
+    # ---- Draw filter overlay above the background image ----
+        draw_filter_overlay(screen)
+
 
 # ------- draw pet ----------
 
@@ -1263,10 +1280,10 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
 
         # Draw the Circle (Ensure positions are integers)
-        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius)
+        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius)
         # Example: Draw a border around the circle
     # --- MODIFIED: Use state.pet_color for the circle outline ---
-        pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius, 5)
+        pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius, 5)
 
 # ----------------------
         # Unpack rects for easier access (always needed)
@@ -1278,9 +1295,8 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         # Use the stored _text_width_limit from init
         text_width_limit = _text_width_limit
 
-
         # Draw the panel and history area backgrounds (always)
-        pygame.draw.rect(screen, config.GREY, panel_rect)
+        pygame.draw.rect(screen, state.pet_color, panel_rect)
         pygame.draw.rect(screen, config.DARK_GREY, history_rect)
 
 
@@ -1304,76 +1320,70 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         pygame.draw.rect(screen, config.DARK_GREY, input_rect)
 
 
-        # --- Draw Wrapped & Scrollable Chat History --- (always)
-        # --- CHANGE 3: Update the chat history drawing code to use the improved wrap_text function ---
-        # Calculate total height using the text_width_limit (with padding)
-        total_history_height = calculate_total_history_height(state.chat_history, text_width_limit)
+                # --- Draw Wrapped & Scrollable Chat History --- (always)
+        # Use the stored _history_display_area rect from init
+        history_display_area = _history_display_area
+        # Use the stored _text_width_limit from init
+        text_width_limit = _text_width_limit # This is now mainly needed for the INITIAL wrap in add_message_to_history
+
+        # Calculate total height using the PRE-CALCULATED heights from the history objects
+        # Assuming state.chat_history now holds the dictionaries
+        total_history_height = calculate_total_history_height(state.chat_history) # This function sums up message['total_height']
+
         max_scroll = max(0, total_history_height - history_display_area.height)
-        state.scroll_y = max(0, min(state.scroll_y, max_scroll))  # Clamp state scroll_y
+        state.scroll_y = max(0, min(state.scroll_y, max_scroll))
 
         # Current draw Y calculation with bottom-up drawing relative to history area's bottom
         # Adjusted by config.PADDING at the bottom of the history area itself
-        current_draw_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
+        # This calculation represents the Y coordinate of the TOP of the entire chat history content area
+        current_content_top_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
 
-        # Set clipping area for history display - make sure it's the right size
+        # Set clipping area for history display
         history_clip_rect = history_display_area.copy()
         original_clip = screen.get_clip()
         screen.set_clip(history_clip_rect)
 
-        for text, msg_type in state.chat_history:
-            # Determine the prefix based on message type
-            display_prefix = ""
-            if msg_type == 'user':
-                display_prefix = "You: "
-                text_color = config.BLUE
-            elif msg_type == 'bot':
-                display_prefix = "Bot: "
-                # --- MODIFIED: Use state.pet_color for bot messages ---
-                text_color = state.pet_color
-            elif msg_type == 'error':
-                display_prefix = "Error: "
-                text_color = config.RED
-            elif msg_type == 'system':
-                display_prefix = "System: "
-                text_color = config.YELLOW
-            elif msg_type == 'system_instruction':
-                display_prefix = "Instruction: "
-                text_color = config.ORANGE
-            else:
-                text_color = config.BLUE  # Default
+        # Starting Y for the current message we are drawing
+        message_draw_y = current_content_top_y
 
+        # Iterate through the history (list of dictionaries)
+        for message_dict in state.chat_history:
+            msg_total_height = message_dict.get('total_height', 0)
+            rendered_surfaces = message_dict.get('rendered_surfaces', [])
 
+            # Optimization: Check if the entire message is outside the visible area
+            msg_bottom_y = message_draw_y + msg_total_height
+            if msg_bottom_y < history_display_area.top or message_draw_y > history_display_area.bottom:
+                # Message is completely off-screen, skip drawing its lines
+                message_draw_y += msg_total_height
+                continue # Move to the next message
 
+            # Message is potentially visible (at least partially)
+            line_draw_y = message_draw_y # Starting Y for lines within this message
 
+            for line_surface in rendered_surfaces:
+                if line_surface is None: # Handle potential rendering errors
+                    line_draw_y += _line_height
+                    continue
 
-            # Wrap text considering the prefix for the first line
-            # Use the global _text_width_limit which includes padding
-            wrapped_lines = wrap_text(text, _text_width_limit, display_prefix)
-            message_total_line_height = len(wrapped_lines) * _line_height
+                # Optimization: Check if the current line is outside the visible area
+                line_bottom_y = line_draw_y + _line_height
+                if line_bottom_y < history_display_area.top or line_draw_y > history_display_area.bottom:
+                    # Line is completely off-screen, skip blitting
+                    line_draw_y += _line_height
+                    continue # Move to the next line
 
-            # Draw each line of the current message
-            for i, line in enumerate(wrapped_lines):
-                line_draw_y = current_draw_y + i * _line_height
+                # Line is potentially visible (at least partially)
+                # Blit the pre-rendered surface
+                # The x position is constant for all lines within the history area
+                blit_x = history_display_area.left + config.HISTORY_HORIZONTAL_PADDING
+                screen.blit(line_surface, (blit_x, line_draw_y))
 
-                # Only add prefix string to the first line.
-                # Subsequent lines are just the wrapped content.
-                # The wrapping function ensures the first line has room for the prefix,
-                # and the drawing position handles the overall left padding.
-                rendered_line_text = display_prefix + line if i == 0 else line
-
-                # Apply proper left padding.
-                # The x position starts at the history_display_area's left edge,
-                # and we add the horizontal padding.
-                left_pad = config.HISTORY_HORIZONTAL_PADDING
-                try:
-                    line_surface = _font.render(rendered_line_text, True, text_color) # <-- Use text_color here
-                    screen.blit(line_surface, (history_display_area.left + left_pad, line_draw_y))
-                except pygame.error as e:
-                    print(f"Pygame error rendering history line '{rendered_line_text}': {e}")
-
+                line_draw_y += _line_height # Move down for the next line
 
             # Move the drawing position DOWN for the next message
-            current_draw_y += message_total_line_height
+            message_draw_y += msg_total_height
+
 
         # Restore original clipping area after drawing history
         screen.set_clip(original_clip)
@@ -1381,7 +1391,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         # --- Draw Input Box Content (Handles Locked State) --- (always)
         input_border_color = config.ORANGE if is_input_locked else config.WHITE
-        pygame.draw.rect(screen, input_border_color, input_rect, 1) # Draw border
+
+        # Draw the input box border
+        pygame.draw.rect(screen, config.GREY, input_rect, 1) # Draw border
 
 
         # Calculate the drawing area for the input text within the input_rect
@@ -1459,26 +1471,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         # Pass the is_input_locked flag
         draw_package_buttons(screen, is_input_locked)
 
-        # if not state.inventory_panel_visible:
-
-        #     # draw cricle pet
-        #     # Calculate current circle position
-        #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-        #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-        #     time_in_seconds = current_time_ms / 1000.0
-        #     animation.update_animation_state(current_time_ms) # Update animation state variables
-        #     animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms) # Calculate position based on state
-
-        #     current_circle_center_x = config.BASE_CIRCLE_CENTER_X + animation_offset_x
-        #     current_circle_center_y = config.BASE_CIRCLE_CENTER_Y + animation_offset_y
-
-        #     # Draw the Circle (Ensure positions are integers)
-        #     pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius)
-        #     # Example: Draw a border around the circle
-        # # --- MODIFIED: Use state.pet_color for the circle outline ---
-        #     pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.pet_radius, 5)
-
-
     # --- Draw NEW Image Popup (This is OUTSIDE the conditional block) ---
     # Draw this on top of the background/dimming, regardless of initial phase
     if _image_popup_visible and _image_popup_image:
@@ -1512,7 +1504,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     if not state.is_initial_popup_phase:
          draw_popups(screen)
 
-
     # --- Draw Inventory Panel (Conditional - Draws on top) ---
     # This should also be inside the conditional block, UNLESS you want the inventory
     # panel to be instantly available even during the initial popup phase.
@@ -1527,8 +1518,26 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     # Let's put it inside the conditional block too.
     if not state.is_initial_popup_phase and _inventory_toggle_button_rect:
         pygame.draw.circle(screen, config.INVENTORY_BUTTON_COLOR, _inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
-        pygame.draw.circle(screen, config.WHITE, _inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+        pygame.draw.circle(screen, state.pet_color, _inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
 
+
+    if not state.is_initial_popup_phase:
+        # --- Draw the Main Window Border ---
+        # Get screen dimensions
+        screen_width = screen.get_width()
+        screen_height = screen.get_height()
+
+
+        # It starts at (padding, padding) and its size is screen_dim - 2*padding
+        border_rect = pygame.Rect(
+        0,
+        0,
+        screen_width,
+        screen_height
+        )
+
+        # Draw the rectangle outline
+        pygame.draw.rect(screen, state.pet_color, border_rect, config.PADDING)
 
 # --- Helper function to load and set background image (Moved) ---
 # Kept this function here as it directly affects the GUI (drawing the background)

@@ -20,19 +20,22 @@ from world_data.care_packages import (
 
 # --- General Configuration ---
 # Window and Layout Dimensions
-# slightly taller design?
+# # slightly taller design?
 WIDTH, HEIGHT = 450, 550
 PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
 INPUT_HEIGHT = 40
-PADDING = 5 # Space around elements within the panel
+PADDING = 2 # Space around elements within the panel
 
 
-# Window and Layout Dimensions
-# square window?
+
+TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
+
+# # Window and Layout Dimensions
+# # square window?
 # WIDTH, HEIGHT = 550, 550
 # PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
 # INPUT_HEIGHT = 40
-# PADDING = 5 # Space around elements within the panel
+# PADDING = 2 # Space around elements within the panel
 
 
 # # Window and Layout Dimensions 
@@ -45,7 +48,7 @@ PADDING = 5 # Space around elements within the panel
 
 # Interaction & Timing
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick
-MAX_MESSAGE_HISTORY = 10  # Max number of chat messages to display
+MAX_MESSAGE_HISTORY = 100  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
 IDLE_TIMEOUT_MINUTES = 3 # Minutes until pet is considered idle
 IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
@@ -90,11 +93,15 @@ CIRCLE_RADIUS = 20 # Radius of the pet circle
 BASE_CIRCLE_CENTER_X = (WIDTH - PANEL_WIDTH) // 2
 BASE_CIRCLE_CENTER_Y = HEIGHT // 2
 
+
+
+STEP_SIZE_LIMIT = 250 # Determines how big the pet grows per step of interaction
+
 # Stat Thresholds (for determining pet state based on stats)
 STAT_THRESHOLDS = {
     'full': 120, # Value at or above this is 'full'
     'half': 60   # Value below 'full' but at or above this is 'half' (default/neutral)
-    # Values below 'half' are 'low'/'sad' etc.
+    # Values below 'half' are 'low' etc.
 }
 
 
@@ -188,8 +195,10 @@ CONFUSED_SIZE_PULSE_FREQUENCY_HZ = .5 # Frequency of the size pulsing (Hz)
 
 # --- UI Configuration ---
 
+MAX_ACTIVE_POPUPS = 5
+
 # Chat Panel Display
-HISTORY_HORIZONTAL_PADDING = 5 # Padding inside history display area (left and right)
+HISTORY_HORIZONTAL_PADDING = 1 # Padding inside history display area (left and right)
 
 
 # Inventory Toggle Button
@@ -220,11 +229,11 @@ INVENTORY_PANEL_ITEM_VERTICAL_PADDING = 10 # Vertical padding for item text
 
 
 # Care Package GUI Buttons
-PACKAGE_BUTTON_SIZE = 12 # Diameter of the circular package buttons
-PACKAGE_BUTTON_SPACING_X = 5 # Horizontal space between package buttons
+PACKAGE_BUTTON_SIZE = 21 # Diameter of the circular package buttons
+PACKAGE_BUTTON_SPACING_X = 1 # Horizontal space between package buttons
 PACKAGE_BUTTON_BORDER_COLOR = WHITE # Border color for package buttons
 
-SCROLL_BUTTON_SIZE = 12 # Size (width/height) of the scroll control buttons
+SCROLL_BUTTON_SIZE = 15 # Size (width/height) of the scroll control buttons
 SCROLL_BUTTON_COLOR_ENABLED = WHITE
 SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
 
@@ -234,9 +243,13 @@ SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
 # BUTTON_ROW_Y is the Y coordinate for the *center* of the buttons/scroll controls
 BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_SIZE // 2 # Vertical center alignment (assuming same size as toggle)
 
-# Let's assume a fixed width for the button area that can comfortably fit a few buttons (e.g., 4).
+
+# Calculate how many buttons can fit in the available width
+
+BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - SCROLL_BUTTON_SIZE * 2) // (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X)
+
 # Width = (ButtonSize + Spacing) * N - Spacing
-BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X) * 4 - PACKAGE_BUTTON_SPACING_X
+BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
 BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_SIZE) # Ensure minimal width for at least one button
 
 # Define the rects for the scroll buttons and the package button display area
@@ -248,7 +261,7 @@ BUTTON_RECT_TOP_Y = BUTTON_ROW_Y - PACKAGE_BUTTON_SIZE // 2 # Assuming button si
 
 # Calculate the rect for the RIGHT scroll button
 # Its right edge should be PADDING pixels from the right edge of the game area
-RIGHT_SCROLL_BUTTON_X = (WIDTH - PANEL_WIDTH) - PADDING - SCROLL_BUTTON_SIZE
+RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + SCROLL_BUTTON_SIZE
 RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
     RIGHT_SCROLL_BUTTON_X,
     BUTTON_RECT_TOP_Y,
@@ -258,7 +271,7 @@ RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
 
 # Calculate the rect for the button display area (where package buttons are drawn)
 # Its right edge should be PADDING pixels to the left of the RIGHT scroll button's left edge
-CARE_PACKAGE_AREA_X = RIGHT_SCROLL_BUTTON_RECT.left - PADDING - BUTTON_AREA_DISPLAY_WIDTH
+CARE_PACKAGE_AREA_X = PADDING - BUTTON_AREA_DISPLAY_WIDTH
 CARE_PACKAGE_AREA_RECT = pygame.Rect(
     CARE_PACKAGE_AREA_X,
     BUTTON_RECT_TOP_Y,
@@ -268,7 +281,7 @@ CARE_PACKAGE_AREA_RECT = pygame.Rect(
 
 # Calculate the rect for the LEFT scroll button
 # Its right edge should be PADDING pixels to the left of the button display area's left edge
-LEFT_SCROLL_BUTTON_X = CARE_PACKAGE_AREA_RECT.left - PADDING - SCROLL_BUTTON_SIZE
+LEFT_SCROLL_BUTTON_X =  INVENTORY_TOGGLE_BUTTON_SIZE + INVENTORY_TOGGLE_BUTTON_SIZE // 2 + PADDING
 LEFT_SCROLL_BUTTON_RECT = pygame.Rect(
     LEFT_SCROLL_BUTTON_X,
     BUTTON_RECT_TOP_Y,

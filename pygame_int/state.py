@@ -36,6 +36,7 @@ pet_stats = {
 }
 
 pet_color = (100, 255, 100) # Default RGB tuple for drawing the pet.
+pets_theme_color = ((100, 255, 100),(100, 255, 100)) # Default theme color for the pet.
 # This value will be updated by game.py based on loaded config or user selection.
 
 pet_radius = 0 # The current drawing radius of the pet.

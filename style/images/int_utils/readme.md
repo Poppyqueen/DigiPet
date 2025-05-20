@@ -1,0 +1,1 @@
+An image with transparency, can be used as an stencil on your prefered graphic design application to draw your own backgrounds, probably we would want to somehow make this a feature on run-time, the ability to quclky "draw" a new room in for the pet

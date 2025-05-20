@@ -24,10 +24,10 @@ class ai_bot:
 
     
 
-    def __init__(self, data_filepath="captured_text.txt", act_model="gpt-4.1-mini", memory_model="gpt-4.1-mini", functions_builder=None, state_manager=None, signal=None):
+    def __init__(self, data_filepath="captured_text.txt", act_model="gpt-4.1-mini", functions_builder=None, state_manager=None, signal=None, memory_manager=None):
         self._signal_callback=signal
         self.action_model = act_model
-        self.memory_model= memory_model
+        self.memory_manager = memory_manager
         self.text_capture = TextCapture(filepath=data_filepath)  # Initialize text capture
         self.functions_builder = functions_builder
         self.state_manager = state_manager
@@ -39,50 +39,6 @@ class ai_bot:
         else:
             print(f"House attempted to signal, but no callback registered: {signal_data}")
 
-    def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled"):
-        """
-        Constructs the data to be sent to the OpenAI API for processing in a multi-turn format. It expects a memory structure and a system prompt.
-        """
-        messages = []
-        
-        current_time_unix = int(time.time())
-        formatted_time = time.ctime(current_time_unix)
-
-        system_message_content = f"The current time is: {formatted_time} \n\n"
-
-        # Construct System Message from long_term and base_memory
-        system_message_content += f"{sys_prompt}\n\n"
-
-        
-        base_memory = memory_structure.get("base_memory", "No base memory available.")
-        system_message_content += "Base Memory:\n"
-        system_message_content += base_memory + "\n\n"
-
-        long_term_memory = memory_structure.get("long_term", [])
-        if long_term_memory:
-            system_message_content += "Long-Term Memory:\n"
-            for i, entry in enumerate(long_term_memory, 1):
-                system_message_content += f"{i}. {entry}\n"
-        else:
-            system_message_content += "No long-term memory entries available.\n"
-
-        system_message = {
-            "role": "developer",
-            "content": system_message_content
-        }
-        messages.append(system_message) # Prepend the system message
-
-
-        short_term_memory = memory_structure.get("short_term", {}) # Safely get short_term, default to empty dict if missing
-
-        for key, text in short_term_memory.items():
-            role = key.split('_')[0] # Extract role from key like "user_12" -> "user"
-            message_entry = {
-                "role": role,
-                "content": text
-            }
-            messages.append(message_entry)
-        return messages
 
         
     def call_function(self, name, args):
@@ -103,7 +59,7 @@ class ai_bot:
             #print(f"📌 Final prompt for OpenAI API: {final_prompt}")
 
 
-            messages_data = self.construct_data(mem_structure, final_prompt)
+            messages_data = self.memory_manager.construct_data(mem_structure, final_prompt)
             tools = self.functions_builder.construct_tools() # Get the tools for the current room
             try:
                 response = self.client.responses.create(
@@ -166,10 +122,10 @@ class ai_bot:
                                 muted_functions=["forward_ALIFE", "backward_ALIFE", "observe_ALIFE"]
                                 
                                 signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}"}
-                                if str(item.name) in muted_functions:
-                                    #print("📌📌📌📌📌 DEBUG FUNCTION MUTE 📌📌📌📌📌")
-                                    #print(str(item.name))
-                                    signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}", "muted": True}
+                                # if str(item.name) in muted_functions:
+                                #     #print("📌📌📌📌📌 DEBUG FUNCTION MUTE 📌📌📌📌📌")
+                                #     #print(str(item.name))
+                                #     signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}", "muted": True}
 
 
                                 self._send_signal(signal_message)

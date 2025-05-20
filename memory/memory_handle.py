@@ -17,7 +17,12 @@ from typing import Optional, Dict, Any, List # Import typing helpers
 from memory.deep_memory import DeepMemory # <--- Import DeepMemory here
 
 from utils.memory_ai_helper import memory_ai
+from utils.tokens_handle import token_manager
+import configparser
 
+config = configparser.ConfigParser()
+config.read('main_config.ini')
+system_prompt = config['AI']['sys_prompt']
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
@@ -40,6 +45,7 @@ class memory_manager:
             filepath (str): Path to the main JSON database file for short/long/base memory.
             deep_memory_filepath (str): Path to the JSON database file for deep memory (NER).
         """
+        self.token_manager = token_manager()
         self.text_capture=text_capture
         self.filepath = filepath
         self.deep_memory_filepath = deep_memory_filepath
@@ -66,6 +72,36 @@ class memory_manager:
         else:
             print("DeepMemory not initialized because ai_bot_instance is not available.")
             self.deep_memory = None # Ensure deep_memory attribute exists
+
+    def current_memory_tokens(self)-> int:
+        memory_structure=self.get_memory_structure()
+        constructed_data=self.construct_data(memory_structure, system_prompt)
+        def extract_content_to_string(messages):
+            """
+            Extracts the content from a list of message dictionaries into a single string.
+
+            Args:
+                messages: A list of dictionaries, where each dictionary is expected
+                        to have a 'content' key.
+
+            Returns:
+                A single string containing all the 'content' values concatenated,
+                separated by newlines.
+            """
+            all_content = []
+            for message in messages:
+                # Check if the 'content' key exists in the dictionary
+                if 'content' in message:
+                    all_content.append(message['content'])
+                # Optional: Handle cases where 'content' key is missing
+                # else:
+                #     print(f"Warning: Message dictionary missing 'content' key: {message}")
+
+            # Join all the collected content strings with a newline separator
+            return "\n".join(all_content)
+        string_memory=extract_content_to_string(constructed_data)
+        return self.token_manager.num_tokens_from_string(string_memory)
+
 
     def _check_and_create_db(self):
         """
@@ -114,6 +150,104 @@ class memory_manager:
                 json.dump(memory_data, f, indent=4)
         except Exception as e:
             print(f"Error saving to main memory database file: {e}")
+
+    def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled"):
+        """
+        Constructs the data to be sent to the OpenAI API for processing in a multi-turn format.
+        It expects a memory structure and a system prompt.
+
+        Creates an initial 'developer' message containing time, base prompt, base memory,
+        and long-term memory. Then, processes short-term memory entries:
+        'system_' and '0_system_' keys become separate 'system' messages.
+        Other keys ('user_', 'assistant_', etc.) become messages with their corresponding roles.
+        Messages are added in chronological order based on short-term keys.
+
+        Args:
+            memory_structure (dict): The dictionary representing the memory structure.
+                                     Expected keys: 'base_memory', 'long_term', 'short_term'.
+            sys_prompt (str): The base system prompt to include in the developer message.
+
+        Returns:
+            list: A list of message dictionaries formatted for the OpenAI API.
+        """
+        messages = []
+
+        # --- Construct the initial 'developer' message (keeping original structure) ---
+        current_time_unix = int(time.time())
+        formatted_time = time.ctime(current_time_unix)
+
+        system_message_content = f"The current time is: {formatted_time} \n\n"
+        system_message_content += f"{sys_prompt}\n\n"
+
+        base_memory = memory_structure.get("base_memory", "No base memory available.")
+        system_message_content += "Base Memory:\n"
+        system_message_content += base_memory + "\n\n"
+
+        long_term_memory = memory_structure.get("long_term", [])
+        if long_term_memory:
+            system_message_content += "Long-Term Memory:\n"
+            for i, entry in enumerate(long_term_memory, 1):
+                system_message_content += f"{i}. {entry}\n"
+        else:
+            system_message_content += "No long-term memory entries available.\n"
+
+        developer_message = {
+            "role": "developer",
+            "content": system_message_content
+        }
+        messages.append(developer_message) # Add the initial developer message
+
+        # --- Process Short-Term Memory entries ---
+        short_term_memory = memory_structure.get("short_term", {})
+
+        # Sort keys to maintain chronological order for conversation turns
+        # Assumes keys like "user_timestamp", "assistant_timestamp", "0_system_timestamp", etc.
+        # Sort keys based on the numeric timestamp part
+        sorted_short_term_keys = sorted(short_term_memory.keys(), key=lambda k: int(k.split('_')[-1]))
+
+        for key in sorted_short_term_keys:
+            text = short_term_memory[key]
+            message_entry = None # Initialize message entry
+
+            # Check if the key is a system variant
+            if key.startswith("0_system_") or key.startswith("system_"):
+                 # Create a system message from this entry
+                 message_entry = {
+                     "role": "system",
+                     "content": text
+                 }
+                 # Note: The '0_' or 'system_' prefix is implicitly handled
+                 # by just assigning the "system" role and using the value as content.
+
+            else:
+                 # Process non-system keys (user, assistant, etc.)
+                 # Extract the role from the key (e.g., "user_123" -> "user")
+                 # Use split('_', 1) to handle potential underscores within the identifier part
+                 parts = key.split('_', 1)
+                 if len(parts) > 0:
+                    role = parts[0]
+                    # Basic validation for common API roles, excluding 'system' which is handled above
+                    valid_roles = ["user", "assistant", "tool"]
+                    if role in valid_roles:
+                         message_entry = {"role": role, "content": text}
+                    else:
+                         # Handle unexpected roles - maybe default to user?
+                         print(f"Warning: Unexpected role '{role}' extracted from key '{key}'. Treating as 'user'.")
+                         # Include original role and key for context if defaulting
+                         message_entry = {"role": "user", "content": f"[{role} - {key}]: {text}"}
+                 else:
+                    # Handle keys with no underscore - unexpected, treat as user?
+                    print(f"Warning: Key '{key}' in short_term has no underscore. Treating as 'user'.")
+                    message_entry = {"role": "user", "content": f"[Key: {key}]: {text}"}
+
+            # Append the created message entry if one was generated
+            if message_entry:
+                messages.append(message_entry)
+
+
+        # print("👾👾 👾👾 THESE ARE THE MESSAGES WE ARE SENDING INTO THE AI 👾👾 👾👾")
+        # print(messages)
+        return messages
 
     def random_memory(self):
         random_data=self.deep_memory.random_access()
@@ -197,59 +331,89 @@ class memory_manager:
         else:
             return memory_data
         
-    def remove_system_short_term_memories(self) -> int:
+    def process_short_term_system(self) -> int:
         """
-        Removes entries tagged as 'system' from the short_term memory section.
+        Processes system-tagged entries in the short_term memory section.
 
-        Identifies keys starting with 'system_' in the short_term dictionary
-        and removes them, then saves the updated memory structure.
+        First, removes entries tagged as '0_system_'.
+        Second, finds entries tagged as 'system_' and renames them
+        by prepending '0_' (e.g., 'system_foo' becomes '0_system_foo').
+
+        Finally, saves the updated memory structure if any changes occurred.
 
         Returns:
-            int: The number of system memories removed.
+            int: The total number of entries that were removed (0_system_)
+                 or processed (system_ renamed to 0_system_).
         """
         memory_data = self._load_memory()
         if memory_data is None:
-            print("Error: Could not load memory data. Cannot remove system messages.")
-            return 0 # Indicate nothing removed due to error
+            print("Error: Could not load memory data. Cannot process system messages.")
+            return 0 # Indicate nothing affected due to error
 
         # Access the short_term section, default to an empty dict if it doesn't exist
         # or is not a dict (defensive coding)
         short_term_memory = memory_data.get("short_term", {})
         if not isinstance(short_term_memory, dict):
-            print("Warning: short_term memory structure is not a dictionary. Cannot remove system messages.")
+            print("Warning: short_term memory structure is not a dictionary. Cannot process system messages.")
             return 0
 
-        keys_to_remove = []
-        removed_count = 0
+        removed_0_count = 0
+        processed_count = 0 # Count of system_ keys that were renamed
+        total_affected = 0
 
-        # Iterate through keys and identify those starting with "system_"
-        # Store them in a list because we can't modify the dict during iteration
+        # --- Step 1: Remove existing '0_system_' entries ---
+        keys_to_remove_0 = []
+        # Collect keys to remove because we can't modify the dict during iteration
         for key in short_term_memory.keys():
-            if key.startswith("system_"):
-                keys_to_remove.append(key)
+            if key.startswith("0_system_"):
+                keys_to_remove_0.append(key)
 
         # Remove the identified entries
-        for key in keys_to_remove:
+        for key in keys_to_remove_0:
             try:
                 del short_term_memory[key]
-                removed_count += 1
-                # print(f"Removed system short-term memory with key: {key}") # Optional logging
+                removed_0_count += 1
+                # print(f"Removed old system short-term memory with key: {key}") # Optional logging
             except KeyError:
-                # This should ideally not happen if keys_to_remove comes directly from the dict keys
-                print(f"Warning: Key {key} not found during removal.")
-                pass # Key was already removed or didn't exist
+                # Should not happen if list is built from current keys
+                pass # Key was already removed
+
+        # --- Step 2: Find and process 'system_' entries (rename to '0_system_') ---
+        # Collect keys to process *after* removal in case a key was just removed
+        keys_to_process = []
+        for key in short_term_memory.keys():
+             if key.startswith("system_"):
+                 keys_to_process.append(key)
+
+        # Process the identified entries by renaming
+        for old_key in keys_to_process:
+            # Ensure the key still exists before trying to access/delete
+            if old_key in short_term_memory:
+                new_key = "0_" + old_key
+                try:
+                    # Copy the value to the new key
+                    short_term_memory[new_key] = short_term_memory[old_key]
+                    # Delete the old key
+                    del short_term_memory[old_key]
+                    processed_count += 1
+                    # print(f"Processed system short-term memory: Renamed '{old_key}' to '{new_key}'") # Optional logging
+                except KeyError:
+                    # Should not happen if key existence is checked, but defensive
+                    pass # Key was unexpectedly modified or removed during processing
+
+        total_affected = removed_0_count + processed_count
 
         # Update the memory_data dictionary with the modified short_term section
         memory_data["short_term"] = short_term_memory
 
-        # Save the updated memory data if any items were removed
-        if removed_count > 0:
+        # Save the updated memory data if any items were affected
+        if total_affected > 0:
             self._save_memory(memory_data)
-            print(f"Successfully removed {removed_count} system messages from short-term memory.")
+            print(f"Processed short-term system messages: Removed {removed_0_count} old entries and processed {processed_count} new entries.")
         else:
-            print("No system short-term messages found to remove.")
+            print("No short-term system messages found to process or remove.")
 
-        return removed_count
+        return total_affected
 
     def _archive_memory(self, memory_data, trigger_type):
         """
@@ -311,9 +475,21 @@ class memory_manager:
 
         # --- Short-Term Memory Check ---
         short_term_memory = memory_data.get("short_term", {})
-        if isinstance(short_term_memory, dict) and len(short_term_memory) >= self.SHORT_TERM_THRESHOLD:
-            print(f"\n--- Short-Term Memory Check Triggered ({len(short_term_memory)} >= {self.SHORT_TERM_THRESHOLD}) ---")
+
+        non_system_entry_count = 0
+        total_entry_count = 0 # Keep track of total count for logging
+
+        if isinstance(short_term_memory, dict):
+            total_entry_count = len(short_term_memory)
+            # Count entries where the key does NOT start with '_system_'
+            non_system_entry_count = len([key for key in short_term_memory.keys() if not key.startswith('_system_')])
+
+        # Check if the threshold is reached based on non-system entries count
+        if non_system_entry_count >= self.SHORT_TERM_THRESHOLD:
+                
+
             self._archive_memory(self._load_memory(), "short_term")
+
             if self.deep_memory_flag:
                 self.create_deep_memory()
 
@@ -323,8 +499,8 @@ class memory_manager:
                 valid_keys = [k for k in short_term_memory.keys() if '_' in k and k.split('_')[-1].isdigit()]
                 sorted_short_term_keys = sorted(valid_keys, key=lambda k: int(k.split('_')[-1]))
             except ValueError as e:
-                 print(f"Error sorting short-term keys (check key format 'tag_timestamp'): {e}")
-                 sorted_short_term_keys = list(short_term_memory.keys()) # Fallback to unsorted
+                print(f"Error sorting short-term keys (check key format 'tag_timestamp'): {e}")
+                sorted_short_term_keys = list(short_term_memory.keys()) # Fallback to unsorted
 
             structured_short_term = ""
             for key in sorted_short_term_keys:
@@ -341,7 +517,7 @@ class memory_manager:
                         #print(f"DEBUG: Short-term summary created: {summary_short_term[:100]}...")
                         # Add summary to long-term memory (will be saved later)
                         if "long_term" not in memory_data or not isinstance(memory_data["long_term"], list):
-                             memory_data["long_term"] = []
+                            memory_data["long_term"] = []
                         timestamp_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         memory_data["long_term"].append(f"[{timestamp_str}] [Summary of recent conversation]: {summary_short_term}")
                         #print("DEBUG: Summary added to long-term memory queue.")
@@ -359,7 +535,7 @@ class memory_manager:
                 except Exception as e:
                     print(f"Error during short-term summarization: {e}")
             else:
-                 print("DEBUG: No structured short-term memory to summarize.")
+                print("DEBUG: No structured short-term memory to summarize.")
 
         # --- Long-Term Memory Check ---
         # Use potentially updated memory_data (if short-term summary was added)

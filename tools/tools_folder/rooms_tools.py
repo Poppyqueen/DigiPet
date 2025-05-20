@@ -14,6 +14,8 @@ from utils import open_meteo_handle, tv_handle, wiki_handle, random_object, simu
 from utils.ai_cook import cook
 
 import random
+from utils.wiki_handle import Wikipedia_handle
+
 
 
 def check_one_in(number: int):
@@ -520,8 +522,9 @@ class room_living_room:
 
 
 class room_computer:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, wiki=None):
         self._signal_callback=signal
+        self.wiki=wiki
         # Store the state_manager reference
         self.state = state_manager
         #print("Computer room initialized.")
@@ -543,7 +546,24 @@ class room_computer:
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
-        return wiki_handle.fetch_random_wiki_article()
+        return self.wiki.fetch_random_wiki_article()
+    
+    def search_wikipedia_articles(self, query):
+        "Delegated, returns a structured string with title and body for a random wikipedia article"
+        # --- Add signal call ---
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
+        # ------------------------
+        return self.wiki.search_wikipedia(query)
+
+    def get_wikipedia_article_content(self, title):
+        "Delegated, returns a structured string with title and body for a random wikipedia article"
+        # --- Add signal call ---
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
+        # ------------------------
+        return self.wiki.get_wikipedia_content_by_title(title)
+    
+    
+    
 
 
 
@@ -568,7 +588,9 @@ class room_white:
 
 # Define the main handler class
 class main_tools_handle:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, memory_manager=None):
+        self.memory=memory_manager
+        self.wiki=Wikipedia_handle(self.memory)
         print("Main tools handler initialized.")
         self._signal_callback=signal # Store the main signal callback here
         # Store the state_manager reference
@@ -579,7 +601,7 @@ class main_tools_handle:
         self.bathroom = room_bathroom(self.state, self._signal_callback)
         self.bedroom = room_bedroom(self.state, self._signal_callback)
         self.living_room= room_living_room(self.state, self._signal_callback)
-        self.computer = room_computer(self.state, self._signal_callback)
+        self.computer = room_computer(self.state, self._signal_callback, self.wiki)
         self.garden = room_garden(self.state, self._signal_callback)
         # --- Fix: Removed the extra 'self' argument here ---
         self.white_room = room_white(self.state, self._signal_callback)

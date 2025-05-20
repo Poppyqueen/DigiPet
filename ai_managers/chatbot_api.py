@@ -13,7 +13,6 @@ from inventory_items.inventory_manager import InventoryHouseManager
 from memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
 from ai_managers.ai_handle import ai_bot # Assuming this is the correct import for your AI class
 from tools.tools_builder.construct_tools import FunctionBuilder
-
 # Import Utils
 from utils.capture_text import TextCapture # Import the text capture class
 
@@ -69,9 +68,9 @@ class CLIChatbot:
 
             #self.blsk=bluesky_bot()
 
-            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory)  # Initialize the function builder
+            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory)  # Initialize the function builder
 
-            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, memory_model=select_memory_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback) # 4.1-nano is the newest widely available model
+            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory) # 4.1-nano is the newest widely available model
             self.tts = tts_flag # Set to True if you want to enable text-to-speech output
 
             self._current_tts_process = None
@@ -241,7 +240,10 @@ class CLIChatbot:
 
 
                 # Clean up tool context from memory after generating last response
-                self.memory.remove_system_short_term_memories() # Remove system messages from memories after tool process is done 
+                self.memory.process_short_term_system() # This now gives the system message a time-life to system messages of 1 tick in 'global' memory
+                
+                
+                # Remove system messages from memories after tool process is done 
 
                 # This creates an interesting effect, while it does help reduce tokenage usage, the information in system context is a lot
                 # of the times lost and does not get into regular system processing. 
@@ -433,6 +435,7 @@ class CLIChatbot:
             mem_structure if isinstance(mem_structure, dict) else {},
             full_prompt
         )
+
         self.add_steps(1) # add a step to the counter
 
 

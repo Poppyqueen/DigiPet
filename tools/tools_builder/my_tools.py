@@ -4,14 +4,14 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
-lab_room_tools=[        {
+lab_room_tools=[
+    {
         "type": "function",
         "name": "forward_ALIFE",
-        "description": "A-LIFE SIMULATION FUNCTION: Move forward the A-Life simulation one step.",
+        "description": "Advances the A-Life simulation by one time step (tick). Use this to progress the simulation forward.",
         "parameters": {
             "type": "object",
-            "properties": {
-            },
+            "properties": {},
             "required": [],
             "additionalProperties": False
         }
@@ -19,140 +19,161 @@ lab_room_tools=[        {
     {
         "type": "function",
         "name": "backward_ALIFE",
-        "description": "A-LIFE SIMULATION FUNCTION: Move backwards the A-Life simulation one step.",
+        "description": "Rewinds the A-Life simulation by one time step (tick). Use this to step backward in the simulation history.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "observe_ALIFE",
+        "description": "Retrieves the current state or observation of the A-Life simulation at the current tick. This is typically called after advancing or rewinding the simulation.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "set_current_tick_ALIFE",
+        "description": "Sets the A-Life simulation to a specific time step (tick). This allows jumping to any point in the recorded simulation history.",
         "parameters": {
             "type": "object",
             "properties": {
+                "tick": {
+                    "type": "number",
+                    "description": "The specific tick number (time step) to set the simulation to. Must be a valid tick within the simulation's history."
+                }
+            },
+            "required": ["tick"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "create_new_simulation",
+        "description": "Starts a completely new A-Life simulation run using the previous configuration settings. It will archive it and load it into state.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "new_name": {
+                    "type": "string",
+                    "description": "An optional human-readable name to assign to the new simulation upon creation. This name is used for easier identification in simulation listings and details. If not provided, a unique identifier or default name will be automatically generated."
+                },
+                    "grid_size": {
+                    "type": "string",
+                    "description": "The grid size of the simulation. It should be a string with the format 'width,height'."
+                },                
+                "max_ticks": {
+                    "type": "number",
+                    "description": "The maximum number of ticks for the simulation. It should be a positive integer."
+                },                
+                "type_0_init_count": {
+                    "type": "number",
+                    "description": "The number of type 0 agents to initialize in the simulation. It should be a positive or neutral (0) integer."
+                },                
+                "type_1_init_count": {
+                    "type": "number",
+                    "description": "The number of type 1 agents to initialize in the simulation. It should be a positive or neutral (0) integer."
+                },                
+                "type_2_init_count": {
+                    "type": "number",
+                    "description": "The number of type 2 agents to initialize in the simulation. It should be a positive or neutral (0) integer."
+                }
             },
             "required": [],
             "additionalProperties": False
         }
-    },  
-    {
-    "type": "function",
-    "name": "observe_ALIFE",
-    "description": "A-LIFE SIMULATION FUNCTION: The main function to get the current observation of the A-life simulation after every tick.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        },
-        "required": [],
-        "additionalProperties": False
-    }
-    },  
-    {
-    "type": "function",
-    "name": "set_current_tick_ALIFE",
-    "description": "A-LIFE SIMULATION FUNCTION: Sets the current simulation tick to the given int value",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "tick": {
-                "type": "number",
-                "description": "A number to set the current A-life simulation tick to."
-            }
-        },
-        "required": ["tick"],
-        "additionalProperties": False
-    }
-    },    {
-    "type": "function",
-    "name": "create_new_simulation",
-    "description": "A-LIFE SIMULATION FUNCTION: Create a whole new simulation run with the previous settings. Will override current simulation.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        },
-        "required": [],
-        "additionalProperties": False
-    }
-    },
-        {
-    "type": "function",
-    "name": "load_previous_simulation",
-    "description": "A-LIFE SIMULATION FUNCTION: Reload a previous ran simulation",
-    "parameters": {
-        "type": "object",
-        "properties": {
-                "simulation_id": {
-                "type": "string",
-                "description": "The ID for the simulation to load."
-            }
-        },
-        "required": ["simulation_id"],
-        "additionalProperties": False
-    }
     },
     {
-    "type": "function",
-    "name": "list_simulations",
-    "description": "A-LIFE SIMULATION FUNCTION: Lists all simulation IDs currently in the archive.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-
-        },
-        "required": [],
-        "additionalProperties": False
-    }
-    },  
-    {
-    "type": "function",
-    "name": "details_of_simulation",
-    "description": "A-LIFE SIMULATION FUNCTION: Retrieves a specific simulation's metadata by its ID",
-    "parameters": {
-        "type": "object",
-        "properties": {
+        "type": "function",
+        "name": "load_previous_simulation",
+        "description": "Loads a previously saved A-Life simulation from the archive using its unique identifier.",
+        "parameters": {
+            "type": "object",
+            "properties": {
                 "simulation_id": {
-                "type": "string",
-                "description": "The ID for the simulation to examine."
-            }
-        },
-        "required": ["simulation_id"],
-        "additionalProperties": False
-    }
-    },  
-    {
-    "type": "function",
-    "name": "update_simulation_name",
-    "description": "A-LIFE SIMULATION FUNCTION: Updates the 'simulation_name' for a specific simulation entry.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-                "simulation_id": {
-                "type": "string",
-                "description": "The ID for the simulation to examine."
+                    "type": "string",
+                    "description": "The unique identifier (ID) of the simulation to be loaded from the archive."
+                }
             },
+            "required": ["simulation_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "list_simulations",
+        "description": "Retrieves a list of all available A-Life simulation IDs that are currently stored in the archive.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "details_of_simulation",
+        "description": "Fetches detailed metadata and information for a specific A-Life simulation from the archive, identified by its ID.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "simulation_id": {
+                    "type": "string",
+                    "description": "The unique identifier (ID) of the simulation whose details are being requested."
+                }
+            },
+            "required": ["simulation_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "update_simulation_name",
+        "description": "Changes the display name of a specific A-Life simulation stored in the archive.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "simulation_id": {
+                    "type": "string",
+                    "description": "The unique identifier (ID) of the simulation whose name will be updated."
+                },
                 "new_name": {
-                "type": "string",
-                "description": "New name to set for the simulation."
-            }
-        },
-        "required": ["simulation_id", "new_name"],
-        "additionalProperties": False
-    }
-    },  
-    {
-    "type": "function",
-    "name": "add_simulation_detail",
-    "description": "A-LIFE SIMULATION FUNCTION: Adds a string detail to the list of simulation details for a given simulation ID.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-                "simulation_id": {
-                "type": "string",
-                "description": "The ID for the simulation to examine."
+                    "type": "string",
+                    "description": "The new name to assign to the specified simulation."
+                }
             },
+            "required": ["simulation_id", "new_name"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "add_simulation_detail",
+        "description": "Appends a descriptive string to the list of details associated with a specific A-Life simulation entry in the archive.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "simulation_id": {
+                    "type": "string",
+                    "description": "The unique identifier (ID) of the simulation to which the detail will be added."
+                },
                 "detail_string": {
-                "type": "string",
-                "description": "detail_string (str): The string to add to the 'simulation_details' list."
-            }
-        },
-        "required": ["simulation_id", "detail_string"],
-        "additionalProperties": False
+                    "type": "string",
+                    "description": "The text string containing the detail to be added to the simulation's details list."
+                }
+            },
+            "required": ["simulation_id", "detail_string"],
+            "additionalProperties": False
+        }
     }
-    },  
-    ]
+]
 kitchen_room_tools=[
         {
         "type": "function",
@@ -248,12 +269,11 @@ living_room_tools= [
     },
 
 ]
-
 computer_room_tools=[
     {
         "type": "function",
         "name": "random_wikipedia",
-        "description": "Get a random wikipedia article, it is cached for 10 minutes at a time.",
+        "description": "Fetches a random Wikipedia article's title and main content extract. Useful for Browse or discovering random topics.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -263,9 +283,44 @@ computer_room_tools=[
             "additionalProperties": False
         }
     },
-
-
+    {
+        "type": "function",
+        "name": "search_wikipedia_articles",
+        "description": "Searches Wikipedia based on a keyword query and returns a list of potential matching article titles, page IDs, and brief snippets. Use this to find relevant article titles before retrieving content. It does NOT return the full article content.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search term or keywords to look for on Wikipedia."
+                }
+            },
+            "required": [
+                "query"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_wikipedia_article_content",
+        "description": "Retrieves the main content extract of a specific Wikipedia article given its exact title. Use this after getting a title from 'search_wikipedia_articles' or if you already know the exact title.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "The exact title of the Wikipedia article to retrieve content for. This should ideally come from the output of a 'search_wikipedia_articles' call."
+                }
+            },
+            "required": [
+                "title"
+            ],
+            "additionalProperties": False
+        }
+    }
 ]
+
 
 bedroom_tools=[
 
@@ -344,89 +399,26 @@ bathroom_tools=[
         }
     },
 ]
-base_tools = [
-    # {  # Start of the first dictionary
-    #     "type": "function",
-    #     "name": "get_weather",
-    #     "description": "Get current temperature for a given location.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "location": {
-    #                 "type": "string",
-    #                 "description": "City and country e.g. Bogotá, Colombia"
-    #             }
-    #         },
-    #         "required": [
-    #             "location"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # }, # End of the first dictionary, comma separates elements in the list
-    # {  # Start of the second dictionary - THIS WAS MISSING
-    #     "type": "function",
-    #     "name": "get_time",
-    #     "description": "Get current time for a given location.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "location": {
-    #                 "type": "string",
-    #                 "description": "City and country e.g. Bogotá, Colombia"
-    #             }
-    #         },
-    #         "required": [
-    #             "location"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },  # End of the second dictionary
-    # {
-    #     "type": "function",
-    #     "name": "send_email",
-    #     "description": "Send an email to a recipient.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "recipient": {
-    #                 "type": "string",
-    #                 "description": "Email address of the recipient."
-    #             },
-    #             "subject": {
-    #                 "type": "string",
-    #                 "description": "Subject of the email."
-    #             },
-    #             "body": {
-    #                 "type": "string",
-    #                 "description": "Body of the email."
-    #             }
-    #         },
-    #         "required": [
-    #             "recipient",
-    #             "subject",
-    #             "body"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
+base_tools=[
     {
         "type": "function",
         "name": "add_item_description",
-        "description": "Add your own description to an specified item currently in your inventory",
+        "description": "Appends a custom description to a specific item currently in your inventory.",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "ID for the item to add a new description to."
+                    "description": "The unique ID of the item in your inventory to which the description will be added."
                 },
-                    "new_description": {
+                "new_description": {
                     "type": "string",
-                    "description": "The description to append to the current object."
+                    "description": "The text description to append to the item's existing description."
                 }
             },
             "required": [
-                "item_id"
+                "item_id",
+                "new_description"
             ],
             "additionalProperties": False
         }
@@ -434,13 +426,13 @@ base_tools = [
     {
         "type": "function",
         "name": "move_to_room",
-        "description": "Move to a specified room.",
+        "description": "Changes your current location to a specified room.",
         "parameters": {
             "type": "object",
             "properties": {
                 "room_id": {
                     "type": "number",
-                    "description": "ID for the room to move to."
+                    "description": "The unique ID of the room to move to."
                 }
             },
             "required": [
@@ -449,30 +441,13 @@ base_tools = [
             "additionalProperties": False
         }
     },
-    # {
-    #     "type": "function",
-    #     "name": "get_current_room",
-    #     "description": "Get the current room.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "check": {
-    #                 "type": "boolean",
-    #                 "description": "Flag to get the current room."
-    #             }
-    #         },
-    #         "required": ["check"],
-    #         "additionalProperties": False
-    #     }
-    # },
     {
         "type": "function",
         "name": "get_all_rooms",
-        "description": "Get a list of all existing rooms.",
+        "description": "Retrieves a list of all available rooms in the environment.",
         "parameters": {
             "type": "object",
-            "properties": {
-            },
+            "properties": {},
             "required": [],
             "additionalProperties": False
         }
@@ -480,13 +455,13 @@ base_tools = [
     {
         "type": "function",
         "name": "drop_item",
-        "description": "Place an item from the inventory into the current room.",
+        "description": "Moves a specific item from your inventory to the current room.",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "Item name to drop from inventory to current room."
+                    "description": "The unique ID of the item in your inventory to drop into the current room."
                 }
             },
             "required": ["item_id"],
@@ -496,133 +471,56 @@ base_tools = [
     {
         "type": "function",
         "name": "pickup_item",
-        "description": "Take an item from the current room into the inventory.",
+        "description": "Moves a specific item from the current room into your inventory.",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "Item ID to take from the current room."
+                    "description": "The unique ID of the item in the current room to pick up."
                 }
             },
             "required": ["item_id"],
             "additionalProperties": False
         }
     },
-    # {
-    #     "type": "function",
-    #     "name": "list_inventory",
-    #     "description": "List all items in the inventory.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "check": {
-    #                 "type": "boolean",
-    #                 "description": "Check if inventory is available."
-    #             }
-    #         },
-    #         "required": ["check"],
-    #         "additionalProperties": False
-    #     }
-    # },
     {
         "type": "function",
         "name": "get_items_in_current_room",
-        "description": "List all items in the current room.",
+        "description": "Lists all items currently present in your current location.",
         "parameters": {
             "type": "object",
-            "properties": {
-            },
+            "properties": {},
             "required": [],
             "additionalProperties": False
         }
     },
-    # {
-    #     "type": "function",
-    #     "name": "process",
-    #     "description": "Process items using any process one can imagine.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "items": {
-    #                 "type": "string",
-    #                 "description": "A list of items to process, separated by commas."
-    #             },
-    #             "process": {
-    #                 "type": "string",
-    #                 "description": "The process to apply to the items."
-    #             }
-    #         },
-    #         "required": ["items", "process"],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "get_current_emote",
-    #     "description": "Get the current emote in your expression.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #         },
-    #         "required": [],
-    #         "additionalProperties": False
-    #     }
-    # },
     {
         "type": "function",
         "name": "set_current_emote",
-        "description": "Set the current emote to express yourself.",
+        "description": "Sets your current emotional expression or stance.",
         "parameters": {
             "type": "object",
             "properties": {
                 "emote_name": {
                     "type": "string",
-                    "description": "The name of the emote to set."
+                    "description": "The name of the emote to set for yourself."
                 }
             },
             "required": ["emote_name"],
             "additionalProperties": False
         }
     },
-    # {
-    #     "type": "function",
-    #     "name": "get_possible_emotes",
-    #     "description": "Get a list of possible emotes.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #         },
-    #         "required": ["act"],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    # "type": "function",
-    # "name": "thinking",
-    # "description": "This function is a tool to use as a temporal notepad, to think about anything internally before acting. Helpful for you to 'think' before you act.",
-    # "parameters": {
-    #     "type": "object",
-    #     "properties": {
-    #         "input": {
-    #             "type": "string",
-    #             "description": "The idea, concept, planing or internal monologue, it will be returned back without modifications, but it is helpful for you to 'think' before you act."
-    #         }
-    #     },
-    #     "required": ["input"],
-    #     "additionalProperties": False
-    # }
-    # },
     {
         "type": "function",
         "name": "examine_item",
-        "description": "Examine an item closely.",
+        "description": "Provides a detailed description or information about a specific item.",
         "parameters": {
-            "type":"object",
+            "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "The ID of the item to examine closely."
+                    "description": "The unique ID of the item to examine."
                 }
             },
             "required": ["item_id"],
@@ -632,56 +530,55 @@ base_tools = [
     {
         "type": "function",
         "name": "consume_item",
-        "description": "Consume an item in your inventory.",
+        "description": "Uses up or applies the effect of a specific item from your inventory.",
         "parameters": {
-            "type":"object",
+            "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "The ID of the item from your inventory to consume."
+                    "description": "The unique ID of the item in your inventory to consume."
                 }
             },
             "required": ["item_id"],
             "additionalProperties": False
         }
     },
-    {  # Start of the first dictionary
+    {
         "type": "function",
         "name": "post_bluesky",
-        "description": "Post online to the social media 'Bluesky'.",
+        "description": "Publishes a message to the Bluesky social media platform.",
         "parameters": {
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string",
-                    "description": "A message to post online, less than 250 characters. 2 short sentences."
+                    "description": "The text content of the post. Consider keeping it concise (e.g., under 250 characters)."
                 },
-                    "image_post": {
+                "image_post": {
                     "type": "boolean",
-                    "description": "If true, the post will include an image of the current room."
+                    "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
                 }
             },
             "required": [
-                "message",
-                "image_post"
+                "message"
             ],
             "additionalProperties": False
         }
     },
-    {  # Start of the first dictionary
+    {
         "type": "function",
         "name": "trash_item",
-        "description": "This will trash and item, it will make an item completely disappear irreversibly.",
+        "description": "Permanently and irreversibly deletes a specified item from your inventory.",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "The number ID of the item to delete."
+                    "description": "The unique ID of the item in your inventory to be permanently deleted."
                 },
-                    "confirm": {
+                "confirm": {
                     "type": "boolean",
-                    "description": "If true, confirmation to TRASH the item, (this is irreversible). If set to false, it will cancel the process."
+                    "description": "Set to true to confirm the irreversible deletion of the item. Set to False or omit to cancel the operation."
                 }
             },
             "required": [
@@ -690,13 +587,14 @@ base_tools = [
             ],
             "additionalProperties": False
         }
-    },
-
+    }
 ]
+
+
 library_tools = [    {
         "type": "function",
         "name": "create_book_item",
-        "description": "Given a title, content and a shelve name, save the note in the shelve.",
+        "description": "Given a title, and description, create a book item for you to write in.",
         "parameters": {
             "type": "object",
             "properties": {

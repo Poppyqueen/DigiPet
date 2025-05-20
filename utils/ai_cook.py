@@ -11,7 +11,11 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 from utils.pydantic_models import ItemDefinitionListContainer
 
+import configparser
 
+main_config = configparser.ConfigParser()
+main_config.read('main_config.ini')
+config_model = main_config['AI']['cook_model']
 
 
 # # --- Structure for the fixed stats_edit dictionary ---
@@ -55,7 +59,7 @@ from utils.pydantic_models import ItemDefinitionListContainer
 
 
 class cook:
-    #client = OpenAI()  # client is correctly set up here at the class level
+    client = OpenAI()  # client is correctly set up here at the class level
 
     def __init__(self):
         pass
@@ -68,7 +72,7 @@ class cook:
         """
         try:
             completion = self.client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model=config_model,
                 messages=[
                     {"role": "system", "content": system},
                     {
@@ -101,7 +105,7 @@ class cook:
             completion = self.client.beta.chat.completions.parse( # Functional 'parse' method from the most recent API
                  # Note: gpt-4.1-nano is now a standard OpenAI model name.
 
-                model="gpt-4.1-mini",
+                model=config_model,
                 messages=[
                     {"role": "system", "content": system},
                     {

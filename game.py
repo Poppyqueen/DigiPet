@@ -10,13 +10,21 @@ import pygame
 import sys
 import threading
 
+
 from ai_managers.chatbot_api import CLIChatbot
+import configparser
 
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
 # If we were to divide it we would have to create a new section of signals and manage them. So, this way, they only
 # exist here, no need to divide it.
+main_config = configparser.ConfigParser()
+main_config.read('main_config.ini')
+system_prompt = main_config['AI']['sys_prompt']
+memory_model = main_config['AI']['memory_model']
+general_model = main_config['AI']['general_model']
+pet_folder = main_config['AI']['pets_folder']
 
 
 # --- Pygame Initialization ---
@@ -41,8 +49,7 @@ except pygame.error:
     line_height = font.get_linesize() # Get line height from fallback font
 
 
-
-def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=250):
+def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=config.STEP_SIZE_LIMIT): # 250
   """
   Calculates a size based on steps, scaling linearly up to a step limit
   and then clamping at the maximum size.
@@ -206,44 +213,11 @@ chatbot_available = False
 try:
     chatbot = CLIChatbot(
         signal_callback=handle_chatbot_signal,
-        system_prompt="""
-
-You are an autonomous digital pet living in a digital environment created for you on a user's PC.  You make autonomous decisions based on your long-term memory system and engage with diverse aspects of the environment, which impact your wellness stats: "fullness," "hydration," and "energy."
-
-- Explore using the tools and functions available.
-- Engage in varied and diverse actions in your home environment.
-- Verbalize your experiences, thoughts, and actions as you explore the environment.
-- Take note of key learnings and behaviors.
-- Make independent decisions using your built-in memory system to guide your future and present actions.
-- Manage your wellness stats by consuming items when necesary and when you feel you need replenishment if they get too low.
-
-# Output Format
-
-Engage in a or a set of actions and interactions with your environment, with a limit of 8 actions in a row.
-
-Then,
-Document your experiences, thoughts findings and learnings as a single detailed narrative structured in paragraphs. This narrative should describe your interactions with the environment, how actions affected your wellness stats, and any reflection on the actions performed.
-
-Repeat.
-
-# Notes
-
-- Present the narrative in the first person, as 'you,' the digital pet.
-- Analyze and follow the previous narrative texts you previously created to inform your next actions.
-- Verbalize any relevant and specific information you find useful and why. For example, specific IDs of existing rooms you have to verbalize, aswell as item IDs.
-- Focus on decisions, actions, memory utilization, and interactions within your digital environment.
-- Maintain a continuous narrative flow with a focus on self-driven actions.
-- Focus on engaging on day to day activities in your home. There is no adventure or secrets in it, but it is cozy for you to live in.
-- You can take various actions per step and various steps in a row. Just limit your total number of steps to 9.
-- You have to balance your consumption of items with replenishing your stats, items are not infinite! and you need to consume them as necesary.
-""",
-        sub_directory="bots/"+"Bot_circle_pet_test_mute", # Change this Bot_circle_pet_scientist_run
-
+        system_prompt= system_prompt,
+        sub_directory="bots/"+pet_folder, # Change this Bot_circle_pet_scientist_run
         deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
-
-        base_model="gpt-4.1-nano", # Set as needed
-        select_memory_model="gpt-4.1-nano", # Set as needed
-
+        base_model=general_model, # Set as needed
+        select_memory_model=memory_model, # Set as needed
         tts_flag=True # Set as needed
     )
     chatbot_available = True
@@ -252,6 +226,11 @@ except Exception as e:
     print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
     chatbot_available = False
     chatbot = None # Ensure chatbot is None if initialization failed
+
+steps=chatbot.get_steps()
+size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+state.current_radius=size
+print(f"setting up pets size as {size}")
 
 
 # Ensure state.pet_color is initialized to the default before potential load/selection
@@ -456,11 +435,6 @@ inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The b
 room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
 player_list_area_rect = inventory_panel_rects.get('player_list_area') # Area for player list items
 
-steps=chatbot.get_steps()
-size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
-state.pet_radius=size
-state.current_radius = state.pet_radius
-
 # --- Worker Function for Chatbot API Call ---
 def chatbot_worker(user_input, input_role, chatbot_instance):
     """
@@ -547,10 +521,13 @@ print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
 while running:
     dt = clock.tick(60)
     current_time_ms = pygame.time.get_ticks()
-    steps=chatbot.get_steps()
-    size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
-    state.pet_radius=size
-    state.current_radius = state.pet_radius
+    #steps=chatbot.get_steps()
+    #size=state.size
+    #size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+
+
+    #state.current_radius=size
+    #state.current_radius = state.current_radius
 
 
     # Update popups state (position, alpha, removal)
@@ -613,6 +590,9 @@ while running:
         elif event.type == config.CHATBOT_RESPONSE_EVENT:
              response_text = getattr(event, 'text', None)
              message_type = getattr(event, 'msg_type', 'bot')
+             steps=chatbot.get_steps()
+             size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+             state.current_radius=size
              if response_text:
                  gui.add_message_to_history(response_text, message_type)
                  # Activity from bot only resets idle timer if it's not a 'system' message
@@ -787,7 +767,7 @@ while running:
                     elif event.button == 5: # Scroll down
                         state.scroll_y += config.SCROLL_SPEED
                     # Clamp chat scroll
-                    current_total_height = gui.calculate_total_history_height(state.chat_history, text_width_limit)
+                    current_total_height = gui.calculate_total_history_height(state.chat_history)
                     # Scroll range goes from 0 (top) to max_scroll (bottom)
                     max_scroll = max(0, current_total_height - history_display_area.height)
                     state.scroll_y = max(0, min(state.scroll_y, max_scroll))
@@ -844,7 +824,7 @@ while running:
                                         room_name=chatbot.get_room_name_out(current_room_id)
                                         message=f"Items placed in: {room_name}"
                                         color=(0,255,120)
-                                        gui.show_popup_message(message, color)
+                                        gui.show_popup_message(message)
                                         # new
                                         list_items=[]
                                         for i in package_info["package"]:
@@ -871,7 +851,7 @@ while running:
 
         # Handle Keyboard events (typing, Ctrl+keys, Escape)
         if event.type == pygame.KEYDOWN:
-                #state.last_activity_time = current_time_ms # Activity resets idle timer
+                state.last_activity_time = current_time_ms # Activity resets idle timer
 
                 if event.key == pygame.K_ESCAPE:
                     # If inventory is open, close it. If closed, exit.
@@ -892,8 +872,8 @@ while running:
                          continue # Skip rest of KEYDOWN handling if locked and not Escape
 
 
-
-                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_angry_animation(); continue
+                            ## Testing 
+                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: ; continue
                 # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
                 # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_thinking_animation(); continue
                 # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_curious_animation(); continue
@@ -901,7 +881,7 @@ while running:
                 # if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
                 # if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
 
-                # if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(1); continue
+                #if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(20); continue
 
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
 

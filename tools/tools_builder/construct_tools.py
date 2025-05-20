@@ -50,13 +50,13 @@ from tools.tools_folder.bluesky_handle import bluesky_bot
 from tools.tools_folder.rooms_tools import main_tools_handle
 
 
-
 class FunctionBuilder:
-    def __init__(self, state_manager=None, signal=None, subdirectory=None):
+    def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None):
+        self.memory = memory_manager
         self.sub_directory=subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
-        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback)
+        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory)
         self.A_Life = None
         self._init_alife()
 
@@ -100,7 +100,10 @@ class FunctionBuilder:
             },
              "computer_room": {
                 "functions": {
+                     "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
+                     "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
                      "random_wikipedia": self.room_tools.computer.random_wikipedia
+
                 },
                 "definitions": computer_room_tools
             },
@@ -114,7 +117,6 @@ class FunctionBuilder:
              "white_room": {
                 "functions": {
                      "meditate": self.room_tools.white_room.meditate
-                     # e.g., "create_room": self.room_handler.create_room # If this was type-specific
                 },
                 "definitions": white_room_tools
             },
@@ -162,7 +164,7 @@ class FunctionBuilder:
             "pickup_item": self.state_manager.pickup_item,
             "drop_item": self.state_manager.drop_item,
             "consume_item": self.state_manager.consume_item,
-            "trash_item": self.state_manager.trash_item,
+            #"trash_item": self.state_manager.trash_item,
             "add_item_description": self.state_manager.add_item_description,
 
             # Other base functions (if needed)
