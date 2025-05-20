@@ -731,7 +731,7 @@ class InventoryHouseManager(GenericJsonTool):
     # get_current_room_name (STAY)
     # set_current_room (STAY, includes signal for background change)
     # get_current_room_description (STAY)
-    # get_items_in_current_room (STAY)
+    # list_items_in_current_room (STAY)
     # get_inventory_items (STAY)
     # get_all_rooms (STAY)
     # get_item_details (STAY)
@@ -931,7 +931,7 @@ class InventoryHouseManager(GenericJsonTool):
             return f"Error: Could not find description for current room (ID: {current_room_id}). State might be corrupted."
 
 
-    def get_items_in_current_room(self, internal=False):
+    def list_items_in_current_room(self, internal=False):
         """
         Lists the names and IDs of items currently in the player's current room.
 

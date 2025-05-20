@@ -486,7 +486,7 @@ base_tools=[
     },
     {
         "type": "function",
-        "name": "get_items_in_current_room",
+        "name": "list_items_in_current_room",
         "description": "Lists all items currently present in your current location.",
         "parameters": {
             "type": "object",
