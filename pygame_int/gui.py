@@ -650,6 +650,28 @@ def wrap_text(text, max_width, prefix=""):
 
     return lines
 
+
+# --- NEW: Helper to calculate the total wrapped height of a list of strings ---
+def calculate_list_height(item_list, draw_width):
+    """Calculates the total pixel height needed to display a list of strings."""
+    if _font is None or _line_height == 0:
+         # print("Error: calculate_list_height called before gui.init_gui") # Avoid excessive logging
+         return len(item_list) * (20 + config.INVENTORY_PANEL_ITEM_SPACING) # Rough estimate
+
+    total_height = 0
+    # Use the pre-calculated usable width for inventory items
+    usable_width = _inventory_item_draw_width
+
+    for item_string in item_list:
+        # No prefix needed for inventory items
+        wrapped_lines = wrap_text(item_string, usable_width, "")
+        # Add line height for each line PLUS spacing AFTER the item
+        total_height += len(wrapped_lines) * _line_height + config.INVENTORY_PANEL_ITEM_SPACING
+    # Add padding at the bottom if needed (handled by the start/end draw checks?)
+    # Let's just add the top padding to the initial Y in the drawing function.
+    return total_height
+
+
 def calculate_total_history_height(history_list_of_dicts):
     """Calculates the total pixel height by summing pre-calculated heights."""
     return sum(msg['total_height'] for msg in history_list_of_dicts)
