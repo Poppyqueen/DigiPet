@@ -11,11 +11,21 @@ import sys
 import threading
 
 
-from ai_managers.chatbot_api import CLIChatbot
 import configparser
 
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
+
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+
+
+if mock_running:
+    from ai_managers.mock_chatbot import MockChatbot
+else:
+    from ai_managers.chatbot_api import CLIChatbot
+
+# This will allow us to test the game interface and graphics, runtime without external dependencies
+# and without needing to run the actual chatbot.
 
 # If we were to divide it we would have to create a new section of signals and manage them. So, this way, they only
 # exist here, no need to divide it.
@@ -207,25 +217,49 @@ def handle_chatbot_signal(signal_data):
         print(f"Received signal data in unexpected format (not a dict): {signal_data}")
 
 
-# --- Chatbot Initialization ---
-chatbot = None
-chatbot_available = False
-try:
-    chatbot = CLIChatbot(
-        signal_callback=handle_chatbot_signal,
-        system_prompt= system_prompt,
-        sub_directory="bots/"+pet_folder, # Change this Bot_circle_pet_scientist_run
-        deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
-        base_model=general_model, # Set as needed
-        select_memory_model=memory_model, # Set as needed
-        tts_flag=True # Set as needed
-    )
-    chatbot_available = True
-    print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-except Exception as e:
-    print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
+if mock_running: # Mock configuration, leave as is
+    # --- Mock Chatbot Initialization ---
+    chatbot = None
     chatbot_available = False
-    chatbot = None # Ensure chatbot is None if initialization failed
+    try:
+        chatbot = MockChatbot( # Use the mock class
+            signal_callback=handle_chatbot_signal,
+            system_prompt= system_prompt,
+            sub_directory="bots/"+pet_folder, # These will be passed but ignored by mock
+            deep_memory=False,
+            base_model=general_model,
+            select_memory_model=memory_model,
+            tts_flag=True
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+    except Exception as e:
+        # Error handling is still useful in case the mock itself has an issue
+        print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None
+else:
+    # Actual chatbot initialization
+    # --- Chatbot Initialization ---
+    chatbot = None
+    chatbot_available = False
+    try:
+        chatbot = CLIChatbot(
+            signal_callback=handle_chatbot_signal,
+            system_prompt= system_prompt,
+            sub_directory="bots/"+pet_folder, # Change this Bot_circle_pet_scientist_run
+            deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
+            base_model=general_model, # Set as needed
+            select_memory_model=memory_model, # Set as needed
+            tts_flag=True # Set as needed
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+    except Exception as e:
+        print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None # Ensure chatbot is None if initialization failed
+
 
 steps=chatbot.get_steps()
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
