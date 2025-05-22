@@ -89,84 +89,104 @@ def calculate_total_history_height(history_list_of_dicts):
 
 
 # --- Add Message to History ---
+
 def add_message_to_history(text, msg_type):
-    """Adds a message tuple (text, type) to history and auto-scrolls to bottom."""
-    # Uses gui_core._font, gui_core._line_height, gui_core._text_width_limit
-    # Calls local wrap_text.
-    # Accesses config for colors and MAX_MESSAGE_HISTORY.
-    # Accesses state for chat_history, scroll_y, and pet_color.
+    """Adds a message tuple (text, type) to history and auto-scrolls to bottom.
+    
+    msg_type can be 'user', 'bot', 'error', 'system', or 'system_instruction'.
+    """
 
     # Prevent adding empty messages if they somehow get here
     if not text or not text.strip():
         return
 
     # Determine prefix and color
+    # Initialize with default values before the if/elif chain
     display_prefix = ""
-    text_color = config.LIGHT_GREY 
+    text_color = config.LIGHT_GREY # Use a neutral default color
 
     if msg_type == 'user':
         display_prefix = "You: "
-        text_color = config.BLUE
+        text_color = state.game_theme_colors["user_message_color"]
     elif msg_type == 'bot':
         display_prefix = "Bot: "
-        text_color = state.pet_color 
+        text_color = state.game_theme_colors["original_pet_color"] # 
     elif msg_type == 'error':
         display_prefix = "Error: "
-        text_color = config.RED
+        text_color = state.game_theme_colors["error_color"]
     elif msg_type == 'system':
         display_prefix = "System: "
-        text_color = config.YELLOW
+        text_color = state.game_theme_colors["system_messages"]
     elif msg_type == 'system_instruction':
         display_prefix = "Instruction: "
         text_color = config.ORANGE
     else:
-        print(f"Warning: Unknown message type '{msg_type}' received. Using default style.") 
-        display_prefix = "Info: " 
-        text_color = config.DARK_GREY 
+        # Handle unknown message types - set both prefix and color
+        print(f"Warning: Unknown message type '{msg_type}' received. Using default style.") # Optional warning
+        display_prefix = "Info: " # Or "Unknown: ", or keep it ""
+        text_color = config.DARK_GREY # A distinct color for unknown types
 
     # Now display_prefix is guaranteed to have been assigned a value
-    wrapped_lines_list = wrap_text(text.strip(), gui_core._text_width_limit, display_prefix) 
+    wrapped_lines_list = wrap_text(text.strip(), gui_core._text_width_limit, display_prefix) # Use your existing wrap_text
 
     rendered_surfaces = []
     message_total_height = 0
 
+    # Ensure _font and _line_height are initialized before this point
     if gui_core._font is None or gui_core._line_height == 0:
          print("Error: Font not initialized when adding message.")
+         # Add unrendered text as fallback? Or just return? Let's return.
+         # If you need basic text display even without font, handle it here.
+         # For now, just add the text data without rendering surfaces if font fails
          state.chat_history.append({
              'original_text': text.strip(),
              'type': msg_type,
-             'wrapped_lines': [text.strip()], 
-             'rendered_surfaces': [], 
-             'total_height': gui_core._line_height 
+             'wrapped_lines': [text.strip()], # Simple fallback
+             'rendered_surfaces': [], # No surfaces
+             'total_height': gui_core._line_height # Rough guess for height
          })
+         # Limit history size even if font failed
          while len(state.chat_history) > config.MAX_MESSAGE_HISTORY:
               state.chat_history.pop(0)
          state.scroll_y = 0
          return
 
+
     for i, line in enumerate(wrapped_lines_list):
+        # Only add prefix string to the first line.
+        # Subsequent lines are just the wrapped content.
         rendered_line_text = display_prefix + line if i == 0 else line
+
         try:
+            # Use the correct color determined above
             line_surface = gui_core._font.render(rendered_line_text, True, text_color)
             rendered_surfaces.append(line_surface)
             message_total_height += gui_core._line_height
         except pygame.error as e:
             print(f"Pygame error rendering message line '{rendered_line_text}': {e}")
-            rendered_surfaces.append(None) 
-            message_total_height += gui_core._line_height 
+            # Handle error: Add a placeholder surface or skip?
+            # Add a placeholder surface or just log the error and move on?
+            # For now, add None and still account for height
+            rendered_surfaces.append(None) # Add None or a red error surface
+            message_total_height += gui_core._line_height # Still account for the line space
 
+
+    # Create the message dictionary
     message_dict = {
         'original_text': text.strip(),
         'type': msg_type,
-        'wrapped_lines': wrapped_lines_list, 
+        'wrapped_lines': wrapped_lines_list, # Can keep this for debugging or other uses, or remove if not needed
         'rendered_surfaces': rendered_surfaces,
         'total_height': message_total_height
     }
 
-    state.chat_history.append(message_dict) 
+    state.chat_history.append(message_dict) # Append the dictionary
 
+    # Limit history size and cleanup surfaces
     while len(state.chat_history) > config.MAX_MESSAGE_HISTORY:
-        state.chat_history.pop(0)
-        
-    state.scroll_y = 0 
-    # print(f"Added message to history ({msg_type}): {text[:50]}...")
+        oldest_message = state.chat_history.pop(0)
+        # Relying on Python's garbage collection for surfaces is fine.
+        # No explicit 'del surface' loop needed here.
+
+    state.scroll_y = 0 # Auto-scroll to bottom
+    # print(f"Added message to history ({msg_type}): {text[:50]}...") # Debugging log
