@@ -181,7 +181,7 @@ def draw_image_popup_if_visible(screen):
 
     if _image_popup_visible:
         # Draw dimming background first, only if it exists (it might not for non-type 0 popups if not explicitly created)
-        if _image_popup_background_surface: 
+        if _image_popup_background_surface and state.is_initial_popup_phase: 
             screen.blit(_image_popup_background_surface, (0, 0))
         
         if _image_popup_image and _image_popup_display_area:
