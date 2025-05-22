@@ -7,6 +7,7 @@ from pygame_int import config # Needed for colors, padding, dimensions, max hist
 from pygame_int import state # Needed for accessing/modifying chat_history, input_text, etc.
 from pygame_int import animation # If init_gui uses it
 from pygame_int import gui_config # For constants used in init_gui
+from pygame_int import gui_construct_colors
 
 # --- Internal Module State (Initialized by init_gui) ---
 _font = None
@@ -169,6 +170,8 @@ def init_gui(font, line_height, gui_rects):
             print(f"Could not play sound: {e}")
     else:
         print("Pygame mixer not initialized. Cannot play sound.")
+
+    gui_construct_colors.set_color_theme()
 
 
     print("GUI Core module initialized.") # Modified print statement

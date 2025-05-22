@@ -917,11 +917,11 @@ while running:
 
 
                             ## Testing 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="error"; gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="bot";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="user";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system_instruction";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="error"; gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="bot";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="user";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system_instruction";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
 
 
                 # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
@@ -937,11 +937,11 @@ while running:
 
 
 
-                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
-                # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
-                # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
-                # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui_popups.show_popup_message("testing!!!!!!") ; continue
-                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
+                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_popup_message("testing!!!!!!") ; continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
 
                 # if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
                 #     music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
