@@ -5,7 +5,6 @@ from pygame_int import gui
 from pygame_int import animation
 from pygame_int.juke_box import jukebox 
 
-import pygame_int
 
 import pygame
 import sys
@@ -242,7 +241,7 @@ if chatbot_available and chatbot and hasattr(chatbot, 'is_color_configured') and
         # --- Run Color Selection UI ---
         print("Color not configured. Starting color selection UI...")
         # Call the blocking UI function
-        selected_color = pygame_int.gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font
+        selected_color = gui.gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font
 
         if selected_color is not None:
             # Color was selected, save it via the chatbot
@@ -300,7 +299,7 @@ else:
     print("Chatbot instance not available or does not have 'get_current_location'. Using default 'bedroom'.")
 
 
-pygame_int.gui_core.load_and_set_background(f"{starting_location_name}.jpg")
+gui.gui_core.load_and_set_background(f"{starting_location_name}.jpg")
 
 
 # --- NEW: Initial Wellness State Load ---
@@ -342,10 +341,10 @@ def add_items(items_list, room):
     if current_time_ms < state.autonomous_action_paused_until_ms or state.inventory_panel_visible:
         block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
         print(f"Input locked - {block_reason}. Ignoring add items command.")
-        pygame_int.gui_text_utils.add_message_to_history(f"Cannot add items while {block_reason}", 'system')
+        gui.gui_text_utils.add_message_to_history(f"Cannot add items while {block_reason}", 'system')
         return
 
-    pygame_int.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
+    gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
     try:
         if chatbot_available and chatbot and hasattr(chatbot, 'add_items_room') and callable(chatbot.add_items_room):
             chatbot.add_items_room(room, items_list) # Adds items to the specified room and triggers signals to update the GUI
@@ -354,17 +353,17 @@ def add_items(items_list, room):
             chatbot.add_message_out(f"A package of helpful items has been delivered for you in the room {room_name}. Sent by the user for you!.", "system")
 
             # Append the text into GUI chat window
-            pygame_int.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
+            gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
 
         else:
             error_message = "Chatbot not available or does not support adding items."
             print(error_message)
-            pygame_int.gui_text_utils.add_message_to_history(error_message, 'error')
+            gui.gui_text_utils.add_message_to_history(error_message, 'error')
 
     except Exception as e:
         error_message = f"System Error preparing add items instruction: {type(e).__name__}: {e}"
         print(error_message)
-        pygame_int.gui_text_utils.add_message_to_history(error_message, 'error')
+        gui.gui_text_utils.add_message_to_history(error_message, 'error')
 
 
 
@@ -385,10 +384,10 @@ gui_rects = {
 
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
-pygame_int.gui_core.init_gui(font, line_height, gui_rects)
+gui.gui_core.init_gui(font, line_height, gui_rects)
 
 # Initial popup, splash screen.
-pygame_int.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
+gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
 
 
 
@@ -402,13 +401,13 @@ try:
          if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
              # Ensure gui is initialized before preparing data
              # Assuming gui.init_gui is called earlier in setup
-             if pygame_int.gui_core._font is None: # Check if gui initialization was successful
+             if gui.gui_core._font is None: # Check if gui initialization was successful
                   print("GUI font not initialized. Cannot prepare inventory data. Initial inventories will be empty.")
                   state.room_inventory_list = []
                   state.player_inventory_list = []
              else:
-                 state.room_inventory_list = [pygame_int.gui_inventory.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
-                 state.player_inventory_list = [pygame_int.gui_inventory.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
+                 state.room_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
+                 state.player_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
                  print(f"Loaded and prepared initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
          else:
              print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
@@ -431,8 +430,8 @@ except Exception as e:
 # Note: We *can* get them here, but we don't strictly *need* them for click detection
 # if we use gui.get_package_button_click_regions() and gui.get_button_rects().
 # Let's continue using the gui functions to access rects where possible for cleaner separation.
-inventory_button_rects = pygame_int.gui_core.get_button_rects()
-inventory_panel_rects = pygame_int.gui_core.get_panel_rects()
+inventory_button_rects = gui.gui_core.get_button_rects()
+inventory_panel_rects = gui.gui_core.get_panel_rects()
 inventory_toggle_button_rect = inventory_button_rects.get('inventory_toggle')
 inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The big panel rect
 room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
@@ -492,7 +491,7 @@ def start_chatbot_request(user_input, input_role='user'):
     if input_role == 'user' and (current_time_ms < state.autonomous_action_paused_until_ms):
          block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
          print(f"Input locked - {block_reason}. Cannot process user input request.")
-         pygame_int.gui_text_utils.add_message_to_history(f"Cannot send input while {block_reason}", 'system')
+         gui.gui_text_utils.add_message_to_history(f"Cannot send input while {block_reason}", 'system')
          return False
 
     if chatbot_available and chatbot:
@@ -534,7 +533,7 @@ while running:
 
 
     # Update popups state (position, alpha, removal)
-    pygame_int.gui_popups.update_popups(current_time_ms)
+    gui.gui_popups.update_popups(current_time_ms)
 
     state.cursor_timer += dt
     if state.cursor_timer >= CURSOR_INTERVAL:
@@ -597,7 +596,7 @@ while running:
              size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
              state.current_radius=size
              if response_text:
-                 pygame_int.gui_text_utils.add_message_to_history(response_text, message_type)
+                 gui.gui_text_utils.add_message_to_history(response_text, message_type)
                  # Activity from bot only resets idle timer if it's not a 'system' message
                  # System messages might just be info, not necessarily a bot action response
                  animation.start_circle_shake() # Shake the circle on bot activity
@@ -650,7 +649,7 @@ while running:
                 state.last_activity_time = sleep_end_time_ms
 
                 print(f"Sleep signal processed in main loop. Locking input until {state.autonomous_action_paused_until_ms} ms (for {sleep_duration_ms} ms).")
-                pygame_int.gui_text_utils.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
+                gui.gui_text_utils.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
             else:
                 print(f"Received START_SLEEP_EVENT with zero or negative duration.")
             continue
@@ -678,7 +677,7 @@ while running:
                      else:
                          color=(255, 0, 0) # Red for negative
 
-                     pygame_int.gui_popups.show_popup_message(popup_text, color)
+                     gui.gui_popups.show_popup_message(popup_text, color)
                  # else:
                  #     print(f"Stat change for {stat_name} was negligible ({change:.3f}), not showing popup.") # Debug negligible changes
 
@@ -693,7 +692,7 @@ while running:
             duration_ms = getattr(event, 'duration_ms', 2000) # Default duration from config/signal
             if icon_path:
                  print(f"Main loop processing SHOW_ICON_POPUP_EVENT for icon: {icon_path}")
-                 pygame_int.gui_popups.show_image_popup(icon_path, duration_ms) # Call the new GUI function
+                 gui.gui_popups.show_image_popup(icon_path, duration_ms) # Call the new GUI function
             else:
                  print("SHOW_ICON_POPUP_EVENT received but no 'icon_path' attribute.")
             continue # Consume event
@@ -788,7 +787,7 @@ while running:
                 # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
                 # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
                 if not is_input_locked_by_state:
-                    package_click_regions = pygame_int.gui_care_package.get_package_button_click_regions()
+                    package_click_regions = gui.gui_care_package.get_package_button_click_regions()
                     clicked_package_button = False # Flag to consume event
 
                     for identifier, rect in package_click_regions:
@@ -808,7 +807,7 @@ while running:
                             elif identifier == "scroll_right":
                                 # Check if we can scroll right
                                 total_packages = len(config.CARE_PACKAGES)
-                                buttons_per_page = pygame_int.gui_care_package.buttons_per_page # Access the calculated value from gui
+                                buttons_per_page = gui.gui_care_package.buttons_per_page # Access the calculated value from gui
                                 if state.package_button_visible_start_index + buttons_per_page < total_packages:
                                     state.package_button_visible_start_index += 1
                                     #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
@@ -834,7 +833,7 @@ while running:
                                         room_name=chatbot.get_room_name_out(current_room_id)
                                         message=f"Items placed in: {room_name}"
                                         color=(0,255,120)
-                                        pygame_int.gui_popups.show_popup_message(message)
+                                        gui.gui_popups.show_popup_message(message)
                                         # new
                                         list_items=[]
                                         for i in package_info["package"]:
@@ -842,7 +841,7 @@ while running:
                                             list_items.append(item_name)
                                         delimiter = ", "
                                         str_list = delimiter.join(list_items)
-                                        pygame_int.gui_text_utils.add_message_to_history(f"{message}. Items: {str_list}", 'system')
+                                        gui.gui_text_utils.add_message_to_history(f"{message}. Items: {str_list}", 'system')
 
                                     else:
                                         print(f"Error: Clicked package button with invalid index: {package_index}")
@@ -912,10 +911,10 @@ while running:
                         music_player.toggle_mute()
                         # Optional: Add a system message or popup to confirm state
                         mute_status = "muted" if music_player.get_is_muted() else "unmuted"
-                        pygame_int.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
+                        gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
                     else:
                         print("Jukebox not initialized, cannot toggle mute.")
-                        pygame_int.gui_text_utils.add_message_to_history("Cannot toggle music: Jukebox not ready.", 'system')
+                        gui.gui_text_utils.add_message_to_history("Cannot toggle music: Jukebox not ready.", 'system')
                     continue # Consume M key event
 
                 # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
@@ -928,7 +927,7 @@ while running:
                     elif event.key == pygame.K_RETURN:
                         user_message = state.input_text.strip()
                         if user_message:
-                            pygame_int.gui_text_utils.add_message_to_history(f"{user_message}", 'user')
+                            gui.gui_text_utils.add_message_to_history(f"{user_message}", 'user')
                             state.input_text = ""
                             state.cursor_timer = 0
                             state.cursor_visible = True
@@ -971,7 +970,7 @@ while running:
        not state.chatbot_is_processing:
 
         print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
-        pygame_int.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
+        gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
 
         # Start the autonomous action request. This sets state.chatbot_is_processing = True
         # The response event CHATBOT_RESPONSE_EVENT will set it back to False later.
@@ -999,7 +998,7 @@ while running:
     # This needs to happen *after* update_popups in gui.update_popups
     # which is where _image_popup_visible state is managed.
     # The initial popup phase is true, and no image popups are currently visible.
-    if state.is_initial_popup_phase and not pygame_int.gui_popups._image_popup_visible:
+    if state.is_initial_popup_phase and not gui.gui_popups._image_popup_visible:
         print("Initial popup phase detected as ending.") # Debug
         state.is_initial_popup_phase = False # This is the transition point
 
