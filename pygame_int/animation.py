@@ -282,7 +282,6 @@ def start_curious_animation():
     else:
         pass # print("Curious animation signal received, but already curious or higher priority active. Ignoring.")
 # --- Function to start the confused animation ---
-# --- Function to start the confused animation ---
 def start_confused_animation():
     """Starts the confused animation (e.g., subtle wobble)."""
     current_time_ms = pygame.time.get_ticks()

@@ -35,7 +35,7 @@ main_config.read('main_config.ini')
 system_prompt = main_config['AI']['sys_prompt']
 memory_model = main_config['AI']['memory_model']
 general_model = main_config['AI']['general_model']
-pet_folder = main_config['AI']['pets_folder']
+pet_name = main_config['AI']['pets_folder'] # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
 
 
 # --- Pygame Initialization ---
@@ -226,7 +226,7 @@ if mock_running: # Mock configuration, leave as is
         chatbot = MockChatbot( # Use the mock class
             signal_callback=handle_chatbot_signal,
             system_prompt= system_prompt,
-            sub_directory="bots/"+pet_folder, # These will be passed but ignored by mock
+            sub_directory="bots/"+pet_name, # 
             deep_memory=False,
             base_model=general_model,
             select_memory_model=memory_model,
@@ -248,7 +248,7 @@ else:
         chatbot = CLIChatbot(
             signal_callback=handle_chatbot_signal,
             system_prompt= system_prompt,
-            sub_directory="bots/"+pet_folder, # Change this Bot_circle_pet_scientist_run
+            sub_directory="bots/"+pet_name, # Change this Bot_circle_pet_scientist_run
             deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
             base_model=general_model, # Set as needed
             select_memory_model=memory_model, # Set as needed
