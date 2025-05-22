@@ -71,11 +71,11 @@ def set_color_theme():
     
     # Convert RGB to HSV for brightness adjustment
     # Normalize RGB to 0-1 range for colorsys
-    print(f"--- Original Pet Color: {state.pet_color} ---")
+    #print(f"--- Original Pet Color: {state.pet_color} ---")
     r, g, b = [x / 255.0 for x in state.pet_color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
-    print(f"Original RGB (normalized): ({r:.2f}, {g:.2f}, {b:.2f})")
-    print(f"Original HSV (normalized): H={h:.2f}, S={s:.2f}, V={v:.2f}")
+    #print(f"Original RGB (normalized): ({r:.2f}, {g:.2f}, {b:.2f})")
+#print(f"Original HSV (normalized): H={h:.2f}, S={s:.2f}, V={v:.2f}")
 
 
     # Apply absolute brightness target for the overlay color
@@ -92,7 +92,7 @@ def set_color_theme():
     # These decisions will influence contrast_color, user_message_color, system_messages,
     # error_color, AND the new package colors.
     if v < 0.6: # If the original color is dark (low brightness)
-        print(f"Original color is dark (V={v:.2f} < 0.6). Aiming for LIGHT contrast elements.")
+        #print(f"Original color is dark (V={v:.2f} < 0.6). Aiming for LIGHT contrast elements.")
         contrast_v = 0.85  # Push brightness very high (close to white)
         contrast_s = 0.15  # Reduce saturation significantly (almost grayscale tint)
         user_message_color = (0, 0, 0) # Black for user messages
@@ -112,7 +112,7 @@ def set_color_theme():
         combo_target_v = 0.05 # Very dark for combo (closer to black)
 
     else: # If the original color is light (high brightness)
-        print(f"Original color is light (V={v:.2f} >= 0.6). Aiming for DARK contrast elements.")
+        #print(f"Original color is light (V={v:.2f} >= 0.6). Aiming for DARK contrast elements.")
         contrast_v = 0.15  # Push brightness very low (close to black)
         contrast_s = 0.45  # Reduce saturation significantly (almost grayscale tint)
         user_message_color = (255, 255, 255) # White for user messages
@@ -156,12 +156,12 @@ def set_color_theme():
     i_h, i_s, i_v = invert_hsv_for_messages(h, inverted_target_s, inverted_target_v)
     inverted_r_norm, inverted_g_norm, inverted_b_norm = colorsys.hsv_to_rgb(i_h, i_s, i_v)
     inverted_color = (int(inverted_r_norm * 255), int(inverted_g_norm * 255), int(inverted_b_norm * 255))
-    print(f"  Calculated System Message Color: {inverted_color}")
+    #print(f"  Calculated System Message Color: {inverted_color}")
     
     # Calculate Contrast Color
     contrast_r, contrast_g, contrast_b = [int(x * 255) for x in colorsys.hsv_to_rgb(h, contrast_s, contrast_v)]
     contrast_color = (contrast_r, contrast_g, contrast_b)
-    print(f"  Calculated Contrast Color: {contrast_color}")
+    #print(f"  Calculated Contrast Color: {contrast_color}")
 
 
     def is_red(h_norm, s_norm, v_norm):
@@ -176,20 +176,20 @@ def set_color_theme():
         return is_red_hue and is_saturated and is_bright_enough
 
     # --- Calculate Error Color ---
-    print("\n--- Calculating Error Color ---")
+    #print("\n--- Calculating Error Color ---")
     if is_red(h, s, v):
         error_hue = 120 / 360.0 # Pure green hue
-        print(f"  Original pet is RED. Error hue set to GREEN (H={error_hue:.2f})")
+        #print(f"  Original pet is RED. Error hue set to GREEN (H={error_hue:.2f})")
     else:
         error_hue = 0 / 360.0 # Pure red hue
-        print(f"  Original pet is NOT RED. Error hue set to RED (H={error_hue:.2f})")
+        #print(f"  Original pet is NOT RED. Error hue set to RED (H={error_hue:.2f})")
 
     error_r_norm, error_g_norm, error_b_norm = colorsys.hsv_to_rgb(error_hue, error_target_s, error_target_v)
     error_color = (int(error_r_norm * 255), int(error_g_norm * 255), int(error_b_norm * 255))
-    print(f"  Calculated Error Color: {error_color}")
+    #print(f"  Calculated Error Color: {error_color}")
 
     # --- Calculate Dynamic Package Colors ---
-    print("\n--- Calculating Dynamic Package Colors ---")
+    #print("\n--- Calculating Dynamic Package Colors ---")
     dynamic_package_colors = {}
     
     # Define base hues for each package type
@@ -206,12 +206,12 @@ def set_color_theme():
         # Use the dynamically determined target S and V
         r_norm, g_norm, b_norm = colorsys.hsv_to_rgb(base_h, package_target_s, package_target_v)
         dynamic_package_colors[key] = (int(r_norm * 255), int(g_norm * 255), int(b_norm * 255))
-        print(f"  {key.capitalize()} Color: {dynamic_package_colors[key]}")
+        #print(f"  {key.capitalize()} Color: {dynamic_package_colors[key]}")
 
     # Handle "combo" color (always dark, but with a slight variation based on theme)
     r_norm, g_norm, b_norm = colorsys.hsv_to_rgb(0, 0, combo_target_v) # Hue and Saturation don't matter for V=0.0-0.15
     dynamic_package_colors["combo"] = (int(r_norm * 255), int(g_norm * 255), int(b_norm * 255))
-    print(f"  Combo Color: {dynamic_package_colors['combo']}")
+    #print(f"  Combo Color: {dynamic_package_colors['combo']}")
 
 
     # Store the generated theme colors in a dictionary

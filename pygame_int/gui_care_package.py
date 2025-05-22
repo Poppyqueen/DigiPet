@@ -39,7 +39,7 @@ def draw_package_buttons(screen, is_input_locked):
 
     total_packages = len(config.CARE_PACKAGES)
     visible_start = state.package_button_visible_start_index
-    buttons_per_page = max(1, buttons_per_page) # Ensure we don't divide by zero or less than 1
+    buttons_per_page = max(1, gui_core._buttons_per_page) # Ensure we don't divide by zero or less than 1
     visible_end = min(visible_start + buttons_per_page, total_packages)
 
     # Determine if scrolling is possible in each direction *before* considering input lock
@@ -129,7 +129,7 @@ def get_package_button_click_regions():
 
     total_packages = len(config.CARE_PACKAGES)
     visible_start = state.package_button_visible_start_index
-    buttons_per_page = max(1, buttons_per_page)
+    buttons_per_page = max(1, gui_core._buttons_per_page)
     visible_end = min(visible_start + buttons_per_page, total_packages)
 
     # Calculate the button positions again to create the click rects
