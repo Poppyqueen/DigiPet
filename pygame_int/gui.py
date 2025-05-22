@@ -285,8 +285,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         history_rect = gui_core._gui_rects['history_rect']
         history_display_area = gui_core._history_display_area
         
-        pygame.draw.rect(screen, state.pet_color, panel_rect)
-        pygame.draw.rect(screen, config.DARK_GREY, history_rect)
+        # Draw the panel and history area backgrounds (always)
+        pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_rect)
+        pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], history_rect)
 
         # --- Draw Stat Icons ---
         stats_to_draw_order = ["fullness", "hydration", "energy"]
@@ -303,7 +304,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
                 screen.blit(icon_surface, (icon_start_x, icon_draw_y))
 
-        pygame.draw.rect(screen, config.DARK_GREY, input_rect)
+        # --- Draw Input Box Area Background and Border --- (always)
+        pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], input_rect)
+
 
         # --- Draw Wrapped & Scrollable Chat History ---
         total_history_height = gui_text_utils.calculate_total_history_height(state.chat_history)
@@ -348,7 +351,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         original_clip = screen.get_clip()
         screen.set_clip(input_clip_rect)
 
-        text_color = config.LIGHT_GREY
+        text_color = state.game_theme_colors["user_message_color"] #  # Default text color for input
         if is_input_locked:
             display_text = "Waiting for bot..."
             try:
@@ -397,7 +400,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
     if not state.is_initial_popup_phase and gui_core._inventory_toggle_button_rect:
         pygame.draw.circle(screen, config.INVENTORY_BUTTON_COLOR, gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
-        pygame.draw.circle(screen, state.pet_color, gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+        pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
 
     if not state.is_initial_popup_phase:
         screen_width = screen.get_width()

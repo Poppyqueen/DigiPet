@@ -841,7 +841,7 @@ while running:
                             elif identifier == "scroll_right":
                                 # Check if we can scroll right
                                 total_packages = len(config.CARE_PACKAGES)
-                                buttons_per_page = gui.gui_care_package.buttons_per_page # Access the calculated value from gui
+                                buttons_per_page = gui.gui_core._buttons_per_page # Access the calculated value from gui
                                 if state.package_button_visible_start_index + buttons_per_page < total_packages:
                                     state.package_button_visible_start_index += 1
                                     #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
@@ -916,11 +916,11 @@ while running:
 
 
                             ## Testing 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="error"; gui.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system";gui.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="bot";gui.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="user";gui.add_message_to_history(f"testing {value}!!!", value); continue
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system_instruction";gui.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="error"; gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="bot";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="user";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system_instruction";gui.gui_text_utils.add_message_to_history(f"testing {value}!!!", value); continue
 
 
                 # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
