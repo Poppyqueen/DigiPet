@@ -3,6 +3,7 @@ from pygame_int import config
 from pygame_int import state
 from pygame_int import gui_core # For _font, _left_scroll_button_rect, etc.
 
+buttons_per_page = 5 #  Placeholder number of buttons to show per page
 def draw_package_buttons(screen, is_input_locked):
     """
     Draws the care package buttons (as rectangles) and their scroll controls.

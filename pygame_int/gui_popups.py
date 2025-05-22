@@ -118,7 +118,7 @@ def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=5
         _image_popup_visible = True
         _image_popup_start_time = pygame.time.get_ticks()
         _image_popup_duration = duration_ms
-        # print(f"Attempting to show image popup: {image_path} (Total: {duration_ms}ms, FadeIn: {_image_popup_fade_in_duration}ms, FadeOut: {_image_popup_fade_out_duration}ms)") # Debug
+        print(f"Attempting to show image popup: {image_path} (Total: {duration_ms}ms, FadeIn: {_image_popup_fade_in_duration}ms, FadeOut: {_image_popup_fade_out_duration}ms)") # Debug
     except FileNotFoundError:
         print(f"Error loading image for popup: File not found at '{image_path}'")
         _image_popup_visible = False
