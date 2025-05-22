@@ -1064,6 +1064,27 @@ def draw_package_buttons(screen, is_input_locked):
          # gui.init_gui hasn't been called, return empty list
          # print("Error: draw_package_buttons called before gui.init_gui") # Avoid excessive logging
          return
+    
+    backdrop_width=config.WIDTH - config.PANEL_WIDTH
+    #print(f"width {config.PANEL_WIDTH} height {config.HEIGHT}")
+    backdrop_height=config.INPUT_HEIGHT
+
+    inner_padding = 3 # Padding for the inner area
+
+    # Make rect for the care package area
+    _backdrop_area_rect = pygame.Rect(
+        config.PADDING, # Left position
+        config.HEIGHT-backdrop_height-config.PADDING-inner_padding, # Bottom position
+        backdrop_width, # Width
+        backdrop_height+inner_padding # Height
+    )
+
+    # Draw the backdrop area
+    pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], _backdrop_area_rect)
+        # Draw border for the backdrop area
+    pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], _backdrop_area_rect, 2) # Border width of 2 pixels
+
+
 
     total_packages = len(config.CARE_PACKAGES)
     visible_start = state.package_button_visible_start_index
@@ -1081,21 +1102,21 @@ def draw_package_buttons(screen, is_input_locked):
 
     # Draw Left Scroll Button (as a filled rectangle)
     pygame.draw.rect(screen, left_scroll_color, _left_scroll_button_rect)
-    pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], _left_scroll_button_rect, 1) # Border
+    pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], _left_scroll_button_rect, 2) # Border
 
     # Draw Right Scroll Button
     pygame.draw.rect(screen, right_scroll_color, _right_scroll_button_rect)
-    pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], _right_scroll_button_rect, 1) # Border
+    pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], _right_scroll_button_rect, 2) # Border
 
     # Draw Package Buttons within the display area
     button_width = config.PACKAGE_BUTTON_SIZE # Renamed for clarity, but still using config.PACKAGE_BUTTON_SIZE
-    button_height = config.PACKAGE_BUTTON_SIZE   #INPUT_HEIGHT # Make buttons fill the height of the area
+    button_height = config.PACKAGE_BUTTON_SIZE *2   #INPUT_HEIGHT # Make buttons fill the height of the area
     button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
 
     # The starting X position for the first button, after the left scroll button
-    start_x = _left_scroll_button_rect.right #+ button_spacing_x
+    start_x = _left_scroll_button_rect.right + button_spacing_x
     # The top Y position for all buttons (aligned with the top of the package area)
-    button_y_top = _care_package_area_rect.top
+    button_y_top = _care_package_area_rect.top #- button_height // 2 # Centered vertically in the area
 
     # Draw a background rect for the button area (optional, helps visualize)
     # This rectangle will be in the middle, between scroll buttons
@@ -1113,7 +1134,7 @@ def draw_package_buttons(screen, is_input_locked):
         # Draw the filled rectangle
         pygame.draw.rect(screen, button_color, button_rect)
         # Draw the border
-        pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], button_rect, 1) # Border width of 1 pixels
+        pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect, 2) # Border width of 1 pixels
 
         # Draw the number with outline
         number_text = str(i + 1)
@@ -1163,13 +1184,13 @@ def get_package_button_click_regions():
 
     # Calculate the button positions again to create the click rects
     button_width = config.PACKAGE_BUTTON_SIZE
-    button_height = config.PACKAGE_BUTTON_SIZE # Match height from draw function
+    button_height = config.PACKAGE_BUTTON_SIZE*2 # Match height from draw function
     button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
 
     # The starting X position for the first button, after the left scroll button
     start_x = _left_scroll_button_rect.right + button_spacing_x
     # The top Y position for all buttons (aligned with the top of the package area)
-    button_y_top = _care_package_area_rect.top
+    button_y_top = _care_package_area_rect.top #- button_height // 2
 
     # Add regions for the visible package buttons
     for i in range(visible_start, visible_end):
@@ -1515,6 +1536,11 @@ def draw_gui(screen, current_time_ms, is_input_locked):
             screen.fill(config.fallback_bg_color)
 
     # ---- Draw filter overlay above the background image ----
+
+
+        # Maybe add the flter to the package buttons too?
+        #draw_package_buttons(screen, is_input_locked)
+
         draw_filter_overlay(screen)
 
 

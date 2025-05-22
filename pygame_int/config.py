@@ -21,10 +21,10 @@ from world_data.care_packages import (
 # --- General Configuration ---
 # Window and Layout Dimensions
 # # slightly taller design?
-WIDTH, HEIGHT = 450, 550
-PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
-INPUT_HEIGHT = 40
-PADDING = 3 # Space around elements within the panel
+# WIDTH, HEIGHT = 450, 550
+# PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
+# INPUT_HEIGHT = 40
+# PADDING = 3 # Space around elements within the panel
 
 
 
@@ -32,10 +32,10 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 
 # # Window and Layout Dimensions
 # # square window?
-# WIDTH, HEIGHT = 550, 550
-# PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
-# INPUT_HEIGHT = 40
-# PADDING = 2 # Space around elements within the panel
+WIDTH, HEIGHT = 550, 550
+PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
+INPUT_HEIGHT = 40
+PADDING = 2 # Space around elements within the panel
 
 
 # # Window and Layout Dimensions 
@@ -229,11 +229,12 @@ INVENTORY_PANEL_ITEM_VERTICAL_PADDING = 10 # Vertical padding for item text
 
 
 # Care Package GUI Buttons
-PACKAGE_BUTTON_SIZE = 21 # Diameter of the circular package buttons
+PACKAGE_BUTTON_SIZE = 20 # Diameter of the circular package buttons
 PACKAGE_BUTTON_SPACING_X = 1 # Horizontal space between package buttons
 PACKAGE_BUTTON_BORDER_COLOR = WHITE # Border color for package buttons
 
-SCROLL_BUTTON_SIZE = 15 # Size (width/height) of the scroll control buttons
+SCROLL_BUTTON_HEIGHT = (INPUT_HEIGHT-PADDING) # Height of the scroll control buttons
+SCROLL_BUTTON_WIDTH = SCROLL_BUTTON_HEIGHT/2 # Size (width/height) of the scroll control buttons
 SCROLL_BUTTON_COLOR_ENABLED = WHITE
 SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
 
@@ -245,8 +246,7 @@ BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_SIZE // 2 # Vertical center ali
 
 
 # Calculate how many buttons can fit in the available width
-
-BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - SCROLL_BUTTON_SIZE * 2) // (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X)
+BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X)
 
 # Width = (ButtonSize + Spacing) * N - Spacing
 BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
@@ -257,16 +257,17 @@ BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_SIZE) 
 # Calculated working backwards from the right edge of the game area (WIDTH - PANEL_WIDTH).
 
 # Y position for the *top* edge of the rects (centered around BUTTON_ROW_Y)
-BUTTON_RECT_TOP_Y = BUTTON_ROW_Y - PACKAGE_BUTTON_SIZE // 2 # Assuming button size is same as scroll size
+#BUTTON_RECT_TOP_Y = BUTTON_ROW_Y - SCROLL_BUTTON_SIZE // 2 # Assuming button size is same as scroll size
+BUTTON_RECT_TOP_Y = HEIGHT - PADDING - INPUT_HEIGHT
 
 # Calculate the rect for the RIGHT scroll button
 # Its right edge should be PADDING pixels from the right edge of the game area
-RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + SCROLL_BUTTON_SIZE
+RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + (SCROLL_BUTTON_WIDTH)
 RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
     RIGHT_SCROLL_BUTTON_X,
     BUTTON_RECT_TOP_Y,
-    SCROLL_BUTTON_SIZE,
-    SCROLL_BUTTON_SIZE
+    SCROLL_BUTTON_WIDTH,
+    SCROLL_BUTTON_HEIGHT
 )
 
 # Calculate the rect for the button display area (where package buttons are drawn)
@@ -285,8 +286,8 @@ LEFT_SCROLL_BUTTON_X =  INVENTORY_TOGGLE_BUTTON_SIZE + INVENTORY_TOGGLE_BUTTON_S
 LEFT_SCROLL_BUTTON_RECT = pygame.Rect(
     LEFT_SCROLL_BUTTON_X,
     BUTTON_RECT_TOP_Y,
-    SCROLL_BUTTON_SIZE,
-    SCROLL_BUTTON_SIZE
+    SCROLL_BUTTON_WIDTH,
+    SCROLL_BUTTON_HEIGHT
 )
 
 
