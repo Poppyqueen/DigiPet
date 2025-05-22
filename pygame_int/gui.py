@@ -67,7 +67,7 @@ def set_color_theme():
     
     # ---- Draw filter overlay above the background image ----
     # Define the alpha value for the overlay (0-255, where 255 is opaque)
-    alpha_value = 50
+    alpha_value = 80
     
     # Convert RGB to HSV for brightness adjustment
     # Normalize RGB to 0-1 range for colorsys
@@ -91,7 +91,7 @@ def set_color_theme():
     # --- Generate Better Contrast Color & Determine Dynamic Color Targets ---
     # These decisions will influence contrast_color, user_message_color, system_messages,
     # error_color, AND the new package colors.
-    if v < 0.6: # If the original color is dark (low brightness)
+    if v < 0.60: # If the original color is dark (low brightness)
         #print(f"Original color is dark (V={v:.2f} < 0.6). Aiming for LIGHT contrast elements.")
         contrast_v = 0.85  # Push brightness very high (close to white)
         contrast_s = 0.15  # Reduce saturation significantly (almost grayscale tint)

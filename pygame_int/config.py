@@ -21,10 +21,10 @@ from world_data.care_packages import (
 # --- General Configuration ---
 # Window and Layout Dimensions
 # # slightly taller design?
-# WIDTH, HEIGHT = 450, 550
-# PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
-# INPUT_HEIGHT = 40
-# PADDING = 3 # Space around elements within the panel
+WIDTH, HEIGHT = 450, 550
+PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
+INPUT_HEIGHT = 40
+PADDING = 3 # Space around elements within the panel
 
 
 
@@ -32,10 +32,10 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 
 # # Window and Layout Dimensions
 # # square window?
-WIDTH, HEIGHT = 550, 550
-PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
-INPUT_HEIGHT = 40
-PADDING = 2 # Space around elements within the panel
+# WIDTH, HEIGHT = 550, 550
+# PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
+# INPUT_HEIGHT = 40
+# PADDING = 2 # Space around elements within the panel
 
 
 # # Window and Layout Dimensions 
@@ -346,16 +346,6 @@ CARE_PACKAGES =   [
 
         {"package": cheat_bundles_items_that_replenish_stats_by_150_co, "color": "cheat"},
     ]
-
-
-# The code to load the color based on the dictionary remains the same:
-for package in CARE_PACKAGES:
-    color_identifier = package["color"]
-
-    # Check if the current color value is a string AND matches a key in color_code
-    if isinstance(color_identifier, str) and color_identifier in color_code:
-        # If it is, replace the string key with the actual color value from the dictionary
-        package["color"] = color_code[color_identifier]
 
 # --- Event Configuration ---
 # Use pygame.event.custom_type() for unique event IDs

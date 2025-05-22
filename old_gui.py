@@ -1134,7 +1134,7 @@ def draw_package_buttons(screen, is_input_locked):
         # Draw the filled rectangle
         pygame.draw.rect(screen, button_color, button_rect)
         # Draw the border
-        pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect, 2) # Border width of 1 pixels
+        pygame.draw.rect(screen, state.game_theme_colors[""], button_rect, 2) # Border width of 1 pixels
 
         # Draw the number with outline
         number_text = str(i + 1)
