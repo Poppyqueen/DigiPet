@@ -898,6 +898,18 @@ custom_state = {
                     "type": "misc"
                 }
             ]
+        },
+        {
+            "name": "lab_room",
+            "id": 0,
+            "image": "lab_room",
+            "room_types": ["ALIFE_research"],
+            "music": "white_room",
+            "descriptions": [
+                "A modern laboratory dedicated to A-Life research.",
+                "The light in here is of a deep blue tone"
+            ],
+            "items": []
         }
     ],
     "inventory": [],

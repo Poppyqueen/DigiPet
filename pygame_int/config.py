@@ -14,7 +14,7 @@ from world_data.care_packages import (
     the_most_epic_and_complete_bundle_for_cooking_raw_, a_bundle_for_energy_and_snacks,
     a_bundle_for_outdoor_survival, kitchen_pantry_bottled_goods_spices_etc_all_consum,
     salty_and_hardy_foods, fresh_vegetables, bread_package_all_kinds_of_food_implements_ingredi,
-    raw_protein_package, more_raw_protein_package
+    raw_protein_package, more_raw_protein_package, cheat_bundles_items_that_replenish_stats_by_150_co
 )
 
 
@@ -311,8 +311,9 @@ color_code={
     "hydration": BLUE,
     "fullness": RED,
     "misc": PURPLE,
-    "ingredient": YELLOW,
-    "combo": BLACK
+    "ingredient": ORANGE,
+    "combo": BLACK,
+    "cheat": GREEN
 
 }
 
@@ -342,7 +343,7 @@ CARE_PACKAGES =   [
         {"package": raw_protein_package,"color": "ingredient"},
         {"package": more_raw_protein_package,"color": "ingredient"},
 
-        {"package": care_package_9_basic_hygiene, "color": "misc"},
+        {"package": cheat_bundles_items_that_replenish_stats_by_150_co, "color": "cheat"},
     ]
 
 

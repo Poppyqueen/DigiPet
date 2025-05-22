@@ -443,8 +443,8 @@ base_tools=[
     },
     {
         "type": "function",
-        "name": "get_all_rooms",
-        "description": "Retrieves a list of all available rooms in the environment.",
+        "name": "list_all_rooms",
+        "description": "Retrieves a list of all available rooms in the environment alongside their ID for exploration and movement across environments.",
         "parameters": {
             "type": "object",
             "properties": {},

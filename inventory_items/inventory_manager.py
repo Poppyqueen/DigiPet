@@ -59,7 +59,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
         # Define the default state structure, now moved to items_init
-        self._default_state = simple_lab # custom_state
+        self._default_state = custom_state # custom_state
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state

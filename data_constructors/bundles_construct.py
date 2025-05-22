@@ -295,7 +295,7 @@ if __name__ == "__main__":
     target_output_file = "care_packages.py" # Using a distinct name for generated file
 
     bundle_concepts = [
-"spaceship items"
+"cheat bundles, items that replenish stats by 150, consumables, 3 items, 1 for each stat"
 
         # Add more concepts as needed
     ]

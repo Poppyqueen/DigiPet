@@ -16,7 +16,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -913,7 +913,13 @@ while running:
 
 
                             ## Testing 
-                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: ; continue
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="error"; gui.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system";gui.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="bot";gui.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="user";gui.add_message_to_history(f"testing {value}!!!", value); continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: value="system_instruction";gui.add_message_to_history(f"testing {value}!!!", value); continue
+
+
                 # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_excited_animation(); continue
                 # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_thinking_animation(); continue
                 # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_curious_animation(); continue

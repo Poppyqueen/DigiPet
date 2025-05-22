@@ -159,7 +159,7 @@ class FunctionBuilder:
             "list_items_in_current_room": self.state_manager.list_items_in_current_room,
             "set_current_emote": self.state_manager.set_current_emote,
             "move_to_room": self.state_manager.set_current_room,
-            "get_all_rooms": self.state_manager.get_all_rooms,
+            "list_all_rooms": self.state_manager.get_all_rooms,
             "examine_item": self.state_manager.get_item_details,
             "pickup_item": self.state_manager.pickup_item,
             "drop_item": self.state_manager.drop_item,

@@ -944,7 +944,9 @@ class ALifeSimulation:
                 "type_id": entity.get("type_id", -1), # Use -1 for unknown type
                 "pos": entity.get("pos", [None, None]),
                 # Include status as it's critical for knowing if an entity is active
-                "status": entity.get("state", {}).get("status", "unknown")
+                "energy": entity.get("state", {}).get("energy", 0),
+                "status": entity.get("state", {}).get("status", "unknown"),
+
             }
             filtered_entities.append(filtered_entity)
 
