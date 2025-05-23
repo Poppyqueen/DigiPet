@@ -92,6 +92,9 @@ thinking_start_time = 0 # Timestamp (ms) when the thinking animation started.
 # --- UI and Overlay States ---
 # Variables controlling visibility and state of UI elements like popups and modals.
 
+panel_width = 200 # Width of the side panel in pixels.
+panel_visible = True # Boolean to control the visibility of the side panel.
+
 active_popups = [] # List to hold active PopupMessage objects currently displayed.
 
 # Inventory Modal Panel State

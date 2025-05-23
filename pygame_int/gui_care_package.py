@@ -11,27 +11,31 @@ def draw_package_buttons(screen, is_input_locked):
     Visually disables them if input is locked.
     """
 
-    if gui_core._left_scroll_button_rect is None:
-         # gui.init_gui hasn't been called, return empty list
-         # print("Error: draw_package_buttons called before gui.init_gui") # Avoid excessive logging
+    if gui_core._left_scroll_button_rect is None or \
+       gui_core._right_scroll_button_rect is None or \
+       gui_core._care_package_area_rect is None:
+         # gui_core.init_gui_elements or update_gui_rects hasn't properly initialized these.
+         # print("Error: draw_package_buttons called before critical gui_core rects are initialized.")
          return
-    
-    backdrop_width=config.WIDTH - config.PANEL_WIDTH
-    #print(f"width {config.PANEL_WIDTH} height {config.HEIGHT}")
-    backdrop_height=config.INPUT_HEIGHT
 
+    # Calculate backdrop width to span from the start of the left scroll button
+    # to the end of the right scroll button.
+    backdrop_left = gui_core._left_scroll_button_rect.left
+    backdrop_right = gui_core._right_scroll_button_rect.right
+    backdrop_width = backdrop_right - backdrop_left
+    backdrop_height = config.INPUT_HEIGHT # Same as before
 
-    # Make rect for the care package area
+    # Define the backdrop rect
     _backdrop_area_rect = pygame.Rect(
-        config.PADDING, # Left position
-        config.HEIGHT-backdrop_height-config.PADDING, # Bottom position
-        backdrop_width, # Width
-        backdrop_height # Height
+        backdrop_left,
+        config.HEIGHT - backdrop_height - config.PADDING, # Bottom position
+        backdrop_width,
+        backdrop_height
     )
 
     # Draw the backdrop area
     pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], _backdrop_area_rect)
-        # Draw border for the backdrop area
+    # Draw border for the backdrop area
     pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], _backdrop_area_rect, 2) # Border width of 2 pixels
 
 

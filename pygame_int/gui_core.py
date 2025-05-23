@@ -14,11 +14,14 @@ from pygame_int import gui_construct_colors
 # --- Internal Module State (Initialized by init_gui) ---
 _font = None
 _line_height = 0
-_gui_rects = {} # Dictionary to hold the calculated Rects
-_text_width_limit = 0 # <--- This will be updated to include padding
-_history_display_area = None # Direct reference for convenience
+_gui_rects = {} # Dictionary to hold the calculated Rects for chat panel elements
+_panel_rect = None # Rect for the main side panel
+_history_rect = None # Rect for the chat history area within the panel
+_input_rect = None # Rect for the text input area within the panel
+_history_display_area = None # Rect for the actual text rendering area in history (takes padding into account)
+_text_width_limit = 0 # Max width for a single line of text in history
 _stat_icons = {} # Dictionary to hold loaded and scaled stat icon surfaces: {(stat_name, level): surface}
-overlay_surface = None # Will be initialized in init_gui
+overlay_surface = None # Will be initialized in init_gui_elements
 
 # --- NEW: Inventory GUI Rects (These are initialized in init_gui, so they belong here) ---
 _inventory_toggle_button_rect = None
@@ -41,11 +44,16 @@ _buttons_per_page = 0
 # --- NEW: Mute Button Rect ---
 _mute_button_rect = None # Declare the global variable for the mute button
 
+# --- NEW: Panel Toggle Button Rect ---
+_panel_toggle_button_rect = None
+
 
 # --- Initialization Function ---
-def init_gui(font, line_height, gui_rects):
+def init_gui_elements(font, line_height, current_panel_width):
     """Initializes GUI module with necessary objects and dimensions."""
-    global _font, _line_height, _gui_rects, _text_width_limit, _history_display_area
+    global _font, _line_height, _text_width_limit, _history_display_area
+    # Panel rects are now global within this module, not passed in _gui_rects dict
+    global _panel_rect, _history_rect, _input_rect
     global _inventory_toggle_button_rect, _inventory_panel_rect, \
            _room_list_area_rect, _player_list_area_rect, \
            _room_title_rect, _player_title_rect, \
@@ -54,17 +62,39 @@ def init_gui(font, line_height, gui_rects):
     global _care_package_area_rect, _left_scroll_button_rect, _right_scroll_button_rect, _buttons_per_page
     global overlay_surface # Added for overlay_surface initialization
     global _mute_button_rect # Add the new global for the mute button
+    global _panel_toggle_button_rect # Add new global for panel toggle button
 
     # Removed globals for _image_popup_display_area and _image_popup_background_surface as they are managed in gui_popups
 
 
     _font = font
     _line_height = line_height
-    _gui_rects = gui_rects # Pass in chat/input/history rects
+
+    # Calculate panel-related rects using current_panel_width
+    _panel_rect = pygame.Rect(config.WIDTH - current_panel_width, 0, current_panel_width, config.HEIGHT)
+    _input_rect = pygame.Rect(
+        config.WIDTH - current_panel_width + config.PADDING,
+        config.HEIGHT - config.INPUT_HEIGHT - config.PADDING,
+        current_panel_width - 2 * config.PADDING,
+        config.INPUT_HEIGHT
+    )
+    _history_rect = pygame.Rect(
+        config.WIDTH - current_panel_width + config.PADDING,
+        config.PADDING,
+        current_panel_width - 2 * config.PADDING,
+        config.HEIGHT - config.INPUT_HEIGHT - 3 * config.PADDING
+    )
+    # _history_display_area is the inner part of _history_rect for actual text.
+    _history_display_area = pygame.Rect(
+        _history_rect.left + config.HISTORY_HORIZONTAL_PADDING,
+        _history_rect.top + config.PADDING, # Assuming PADDING is used vertically inside history_rect
+        _history_rect.width - 2 * config.HISTORY_HORIZONTAL_PADDING,
+        _history_rect.height - 2 * config.PADDING # Assuming PADDING is used vertically
+    )
+
     # --- MODIFIED: Calculate text_width_limit based on history_display_area and padding ---
-    _history_display_area = gui_rects['history_display_area']
     # Use HISTORY_HORIZONTAL_PADDING for text width limit
-    _text_width_limit = _history_display_area.width - 2 * config.HISTORY_HORIZONTAL_PADDING
+    _text_width_limit = _history_display_area.width # Already accounts for horizontal padding
     # Ensure the width limit is at least a small positive number
     _text_width_limit = max(1, _text_width_limit)
     # print(f"History display area width: {_history_display_area.width}, Text width limit (with padding): {_text_width_limit}")
@@ -90,7 +120,18 @@ def init_gui(font, line_height, gui_rects):
     )
 
     # --- Calculate Inventory Panel and Internal Rects ---
-    _inventory_panel_rect = config.INVENTORY_PANEL_RECT # Defined directly in config now
+    # _inventory_panel_rect is now a function call using state.panel_width,
+    # but it's for the *modal* inventory, not the side panel.
+    # For now, it's using the config function which depends on a panel_width argument.
+    # This might need to be state.panel_width if the modal should also adjust, or 0 if it's always full game area.
+    # The subtask implies INVENTORY_PANEL_RECT in config.py was made into a function.
+    # Let's assume it refers to the main game area (WIDTH - panel_width_when_inventory_is_shown)
+    # However, the inventory panel is a modal, typically covering the game area,
+    # so it should use the panel_width that was active when it was opened, or a fixed portion.
+    # The config function get_inventory_panel_rect(current_panel_width) implies it's dynamic.
+    # For now, let's pass 0, assuming the inventory modal covers the *entire* game area,
+    # irrespective of the chat panel's current width. This might need refinement.
+    _inventory_panel_rect = config.get_inventory_panel_rect(0) # Default to full game area if panel is hidden
 
     # Calculate the inner area after panel padding
     inner_panel_x = _inventory_panel_rect.left + config.INVENTORY_PANEL_PADDING
@@ -140,23 +181,54 @@ def init_gui(font, line_height, gui_rects):
 
 
     # --- NEW: Store Care Package GUI Rects and Calculate Buttons Per Page ---
-    _left_scroll_button_rect = config.LEFT_SCROLL_BUTTON_RECT
-    _right_scroll_button_rect = config.RIGHT_SCROLL_BUTTON_RECT
-    _care_package_area_rect = config.CARE_PACKAGE_AREA_RECT
+    game_area_width = config.WIDTH - (current_panel_width if state.panel_visible else 0)
+    
+    BUTTON_RECT_TOP_Y = config.HEIGHT - config.PADDING - config.INPUT_HEIGHT
 
-    # Calculate how many buttons fit horizontally in the display area
-    button_width_with_spacing = config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X
-    if button_width_with_spacing > 0:
-        _buttons_per_page = _care_package_area_rect.width // button_width_with_spacing
-        # Ensure at least 1 button fits if the area is big enough for one button's width
-        if _care_package_area_rect.width >= config.PACKAGE_BUTTON_WIDTH:
-             _buttons_per_page = max(1, _buttons_per_page)
-        else:
-            _buttons_per_page = 0 # Area too small for even one button
+    max_buttons_area_width = game_area_width - (config.SCROLL_BUTTON_WIDTH * 2) - (config.PADDING * 3) - config.INVENTORY_TOGGLE_BUTTON_SIZE # Added more padding and inv toggle size
+    
+    if config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X > 0:
+        _buttons_per_page = max_buttons_area_width // (config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X)
     else:
-        _buttons_per_page = 0 # Avoid division by zero if spacing is weird
+        _buttons_per_page = 0
+    _buttons_per_page = max(1, _buttons_per_page) # Ensure at least 1 button if possible, or it becomes 0 if area is too small
 
+    actual_button_area_display_width = (_buttons_per_page * config.PACKAGE_BUTTON_WIDTH) + (max(0, _buttons_per_page - 1) * config.PACKAGE_BUTTON_SPACING_X)
+    
+    # Ensure actual_button_area_display_width is not negative if _buttons_per_page becomes 0
+    actual_button_area_display_width = max(0, actual_button_area_display_width)
+
+
+    _left_scroll_button_rect = pygame.Rect(
+        config.PADDING + config.INVENTORY_TOGGLE_BUTTON_SIZE + config.PADDING,
+        BUTTON_RECT_TOP_Y,
+        config.SCROLL_BUTTON_WIDTH,
+        config.SCROLL_BUTTON_HEIGHT
+    )
+
+    _care_package_area_rect = pygame.Rect(
+        _left_scroll_button_rect.right + config.PACKAGE_BUTTON_SPACING_X,
+        BUTTON_RECT_TOP_Y,
+        actual_button_area_display_width,
+        config.PACKAGE_BUTTON_HEIGHT
+    )
+
+    _right_scroll_button_rect = pygame.Rect(
+        _care_package_area_rect.right + config.PACKAGE_BUTTON_SPACING_X,
+        BUTTON_RECT_TOP_Y,
+        config.SCROLL_BUTTON_WIDTH,
+        config.SCROLL_BUTTON_HEIGHT
+    )
     # print(f"Initialized GUI. Buttons per page in Care Package area: {_buttons_per_page}")
+
+    # --- Panel Toggle Button Calculation ---
+    toggle_btn_width, toggle_btn_height = config.PANEL_TOGGLE_BUTTON_SIZE
+    if state.panel_visible:
+        toggle_x = config.WIDTH - current_panel_width - toggle_btn_width
+    else:
+        toggle_x = config.WIDTH - toggle_btn_width - config.PADDING
+    toggle_y = config.HEIGHT // 2 - toggle_btn_height // 2
+    _panel_toggle_button_rect = pygame.Rect(toggle_x, toggle_y, toggle_btn_width, toggle_btn_height)
 
     # Initialize overlay_surface
     screen_width = pygame.display.get_surface().get_width() if pygame.display.get_surface() else config.WIDTH
@@ -192,6 +264,96 @@ def init_gui(font, line_height, gui_rects):
 
 
     print("GUI Core module initialized.") # Modified print statement
+
+
+# --- Function to update GUI rects based on panel width ---
+def update_gui_rects(current_panel_width):
+    """Recalculates panel-related GUI rects based on the current panel width."""
+    global _panel_rect, _history_rect, _input_rect, _history_display_area, _text_width_limit
+    global _left_scroll_button_rect, _care_package_area_rect, _right_scroll_button_rect, _buttons_per_page
+    global _panel_toggle_button_rect # Add panel toggle button rect
+    
+    _panel_rect = pygame.Rect(config.WIDTH - current_panel_width, 0, current_panel_width, config.HEIGHT)
+    _input_rect = pygame.Rect(
+        config.WIDTH - current_panel_width + config.PADDING,
+        config.HEIGHT - config.INPUT_HEIGHT - config.PADDING,
+        current_panel_width - 2 * config.PADDING,
+        config.INPUT_HEIGHT
+    )
+    _history_rect = pygame.Rect(
+        config.WIDTH - current_panel_width + config.PADDING,
+        config.PADDING,
+        current_panel_width - 2 * config.PADDING,
+        config.HEIGHT - config.INPUT_HEIGHT - 3 * config.PADDING
+    )
+    _history_display_area = pygame.Rect(
+        _history_rect.left + config.HISTORY_HORIZONTAL_PADDING,
+        _history_rect.top + config.PADDING,
+        _history_rect.width - 2 * config.HISTORY_HORIZONTAL_PADDING,
+        _history_rect.height - 2 * config.PADDING
+    )
+    _text_width_limit = _history_display_area.width
+    _text_width_limit = max(1, _text_width_limit)
+
+    # Recalculate Care Package related rects
+    game_area_width = config.WIDTH - (current_panel_width if state.panel_visible else 0)
+
+    BUTTON_RECT_TOP_Y = config.HEIGHT - config.PADDING - config.INPUT_HEIGHT
+
+    max_buttons_area_width = game_area_width - (config.SCROLL_BUTTON_WIDTH * 2) - (config.PADDING * 3) - config.INVENTORY_TOGGLE_BUTTON_SIZE
+    
+    if config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X > 0:
+        _buttons_per_page = max_buttons_area_width // (config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X)
+    else:
+        _buttons_per_page = 0
+    _buttons_per_page = max(1, _buttons_per_page)
+    
+    actual_button_area_display_width = (_buttons_per_page * config.PACKAGE_BUTTON_WIDTH) + (max(0, _buttons_per_page - 1) * config.PACKAGE_BUTTON_SPACING_X)
+    actual_button_area_display_width = max(0, actual_button_area_display_width)
+
+    _left_scroll_button_rect = pygame.Rect(
+        config.PADDING + config.INVENTORY_TOGGLE_BUTTON_SIZE + config.PADDING,
+        BUTTON_RECT_TOP_Y,
+        config.SCROLL_BUTTON_WIDTH,
+        config.SCROLL_BUTTON_HEIGHT
+    )
+
+    _care_package_area_rect = pygame.Rect(
+        _left_scroll_button_rect.right + config.PACKAGE_BUTTON_SPACING_X,
+        BUTTON_RECT_TOP_Y,
+        actual_button_area_display_width,
+        config.PACKAGE_BUTTON_HEIGHT
+    )
+
+    _right_scroll_button_rect = pygame.Rect(
+        _care_package_area_rect.right + config.PACKAGE_BUTTON_SPACING_X,
+        BUTTON_RECT_TOP_Y,
+        config.SCROLL_BUTTON_WIDTH,
+        config.SCROLL_BUTTON_HEIGHT
+    )
+
+    # --- Panel Toggle Button Calculation ---
+    toggle_btn_width, toggle_btn_height = config.PANEL_TOGGLE_BUTTON_SIZE
+    if state.panel_visible:
+        # If panel is visible, button is to its left
+        toggle_x = config.WIDTH - current_panel_width - toggle_btn_width
+    else:
+        # If panel is hidden, button is on the far right of the screen
+        toggle_x = config.WIDTH - toggle_btn_width - config.PADDING
+    toggle_y = config.HEIGHT // 2 - toggle_btn_height // 2
+    _panel_toggle_button_rect = pygame.Rect(toggle_x, toggle_y, toggle_btn_width, toggle_btn_height)
+
+    # Update inventory panel rect if it's meant to be dynamic with the chat panel
+    # The config.get_inventory_panel_rect(current_panel_width) suggests it could be.
+    # If inventory is modal over game area, it should use current_panel_width if visible, or 0 if panel hidden.
+    # This was set to use `0` in init. If it should change, update it here.
+    # For now, assuming it's initialized once and covers the game area based on initial panel state.
+    # global _inventory_panel_rect
+    # _inventory_panel_rect = config.get_inventory_panel_rect(current_panel_width if state.panel_visible else 0)
+    # The above line requires `state` access here, which is not ideal for gui_core.
+    # Better to pass panel_visible status or let gui.py handle this specific rect if needed.
+    # For now, _inventory_panel_rect (the modal) is NOT updated by panel width changes here.
+
 
 # --- Helper function to load stat icons ---
 def _load_stat_icons():
@@ -271,23 +433,38 @@ def load_and_set_background(image_path):
 # --- Getter functions for rects ---
 def get_button_rects():
      """Returns a dictionary of button rects."""
-     global _inventory_toggle_button_rect, _mute_button_rect # Ensure both are global
+     global _inventory_toggle_button_rect, _mute_button_rect, _panel_toggle_button_rect # Add panel_toggle_button_rect
      rects = {}
      if _inventory_toggle_button_rect is not None:
          rects['inventory_toggle'] = _inventory_toggle_button_rect
      if _mute_button_rect is not None: # Add mute button to the dictionary
          rects['mute_button'] = _mute_button_rect
+     if _panel_toggle_button_rect is not None: # Add panel toggle button to the dictionary
+         rects['panel_toggle'] = _panel_toggle_button_rect
      return rects
 
 
 def get_panel_rects():
-     """Returns a dictionary of panel rects."""
+     """Returns a dictionary of panel rects. Now returns directly managed rects."""
      # These are globals in gui_core.py
      global _inventory_panel_rect, _room_list_area_rect, _player_list_area_rect
-     if _inventory_panel_rect is None:
+     # The main panel rects are now _panel_rect, _history_rect, _input_rect
+     # This function was originally for the MODAL inventory panel.
+     # Keeping its original purpose for now.
+     if _inventory_panel_rect is None: # This is the modal inventory panel rect
          return {}
      return {
-         'inventory_panel': _inventory_panel_rect,
+         'inventory_panel': _inventory_panel_rect, # Modal inventory
          'room_list_area': _room_list_area_rect, 
          'player_list_area': _player_list_area_rect 
      }
+
+# --- NEW: Getter for the main UI panel rects ---
+def get_gui_rects():
+    """Returns a dictionary of the main GUI panel rects."""
+    return {
+        'panel_rect': _panel_rect,
+        'history_rect': _history_rect,
+        'input_rect': _input_rect,
+        'history_display_area': _history_display_area
+    }

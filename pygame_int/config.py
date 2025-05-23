@@ -22,7 +22,8 @@ from world_data.care_packages import (
 # Window and Layout Dimensions
 # # slightly taller design?
 WIDTH, HEIGHT = 450, 550
-PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
+DEFAULT_PANEL_WIDTH = 200
+#PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
 INPUT_HEIGHT = 40
 PADDING = 3 # Space around elements within the panel
 
@@ -33,7 +34,7 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 # # Window and Layout Dimensions
 # # square window?
 # WIDTH, HEIGHT = 550, 550
-# PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
+# #PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
 # INPUT_HEIGHT = 40
 # PADDING = 2 # Space around elements within the panel
 
@@ -41,13 +42,13 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 # # Window and Layout Dimensions 
 # Smaller design?
 # WIDTH, HEIGHT = 350, 550
-# PANEL_WIDTH = 160  # Width of the chat/info panel on the RIGHT
+# #PANEL_WIDTH = 160  # Width of the chat/info panel on the RIGHT
 # INPUT_HEIGHT = 40  # Height of the input box at the bottom of the panel
 # PADDING = 5  # General padding/space around elements
 
 # Smaller design?
 # WIDTH, HEIGHT = 350, 350
-# PANEL_WIDTH = 130  # Width of the chat/info panel on the RIGHT
+# #PANEL_WIDTH = 130  # Width of the chat/info panel on the RIGHT
 # INPUT_HEIGHT = 25  # Height of the input box at the bottom of the panel
 # PADDING = 5  # General padding/space around elements
 
@@ -96,7 +97,8 @@ PACKAGE_BUTTON_COLOR_DISABLED = get_disabled_color # Store the function referenc
 # Core Appearance & Positioning
 CIRCLE_RADIUS = 20 # Radius of the pet circle
 # Calculate the base center coordinates: middle horizontally (outside panel), middle vertically
-BASE_CIRCLE_CENTER_X = (WIDTH - PANEL_WIDTH) // 2
+def get_base_circle_center_x(current_panel_width):
+    return (WIDTH - current_panel_width) // 2
 BASE_CIRCLE_CENTER_Y = HEIGHT // 2
 
 
@@ -201,6 +203,9 @@ CONFUSED_SIZE_PULSE_FREQUENCY_HZ = .5 # Frequency of the size pulsing (Hz)
 
 # --- UI Configuration ---
 
+# Panel Toggle Button
+PANEL_TOGGLE_BUTTON_SIZE = (20, 40) # width, height
+PANEL_TOGGLE_BUTTON_COLOR = (100, 100, 200) # A distinct color
 
 # --- Mute Button Settings ---
 MUTE_BUTTON_SIZE = 15  # Diameter for a circular button
@@ -226,7 +231,8 @@ INVENTORY_TOGGLE_BUTTON_POS_Y = HEIGHT - PADDING - INVENTORY_TOGGLE_BUTTON_SIZE 
 
 # Inventory Panel (Full-Screen Modal Overlay)
 # Rect covers the main game area, NOT the chat panel
-INVENTORY_PANEL_RECT = pygame.Rect(0, 0, WIDTH - PANEL_WIDTH, HEIGHT)
+def get_inventory_panel_rect(current_panel_width):
+    return pygame.Rect(0, 0, WIDTH - current_panel_width, HEIGHT)
 # Panel Visuals
 INVENTORY_PANEL_BG_COLOR = (20, 20, 20, 200) # Very dark grey with some transparency
 INVENTORY_PANEL_BORDER_COLOR = WHITE # Optional border
@@ -262,10 +268,11 @@ BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_HEIGHT // 2 # Vertical center a
 
 
 # Calculate how many buttons can fit in the available width
-BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X)
+# TODO: Recalculate these in GUI modules
+# BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X)
 
 # Width = (ButtonSize + Spacing) * N - Spacing
-BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
+# BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
 
 
 #BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_WIDTH) # Ensure minimal width for at least one button
@@ -280,33 +287,33 @@ BUTTON_RECT_TOP_Y = HEIGHT - PADDING - INPUT_HEIGHT
 
 # Calculate the rect for the RIGHT scroll button
 # Its right edge should be PADDING pixels from the right edge of the game area
-RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + (SCROLL_BUTTON_WIDTH)
-RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
-    RIGHT_SCROLL_BUTTON_X,
-    BUTTON_RECT_TOP_Y,
-    SCROLL_BUTTON_WIDTH,
-    SCROLL_BUTTON_HEIGHT
-)
+# RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + (SCROLL_BUTTON_WIDTH)
+# RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
+#     RIGHT_SCROLL_BUTTON_X,
+#     BUTTON_RECT_TOP_Y,
+#     SCROLL_BUTTON_WIDTH,
+#     SCROLL_BUTTON_HEIGHT
+# )
 
 # Calculate the rect for the button display area (where package buttons are drawn)
 # Its right edge should be PADDING pixels to the left of the RIGHT scroll button's left edge
-CARE_PACKAGE_AREA_X = PADDING - BUTTON_AREA_DISPLAY_WIDTH
-CARE_PACKAGE_AREA_RECT = pygame.Rect(
-    CARE_PACKAGE_AREA_X,
-    BUTTON_RECT_TOP_Y,
-    BUTTON_AREA_DISPLAY_WIDTH,
-    PACKAGE_BUTTON_HEIGHT
-)
+# CARE_PACKAGE_AREA_X = PADDING - BUTTON_AREA_DISPLAY_WIDTH
+# CARE_PACKAGE_AREA_RECT = pygame.Rect(
+#     CARE_PACKAGE_AREA_X,
+#     BUTTON_RECT_TOP_Y,
+#     BUTTON_AREA_DISPLAY_WIDTH,
+#     PACKAGE_BUTTON_HEIGHT
+# )
 
 # Calculate the rect for the LEFT scroll button
 # Its right edge should be PADDING pixels to the left of the button display area's left edge
-LEFT_SCROLL_BUTTON_X =  INVENTORY_TOGGLE_BUTTON_SIZE + INVENTORY_TOGGLE_BUTTON_SIZE // 2 + PADDING
-LEFT_SCROLL_BUTTON_RECT = pygame.Rect(
-    LEFT_SCROLL_BUTTON_X,
-    BUTTON_RECT_TOP_Y,
-    SCROLL_BUTTON_WIDTH,
-    SCROLL_BUTTON_HEIGHT
-)
+# LEFT_SCROLL_BUTTON_X =  INVENTORY_TOGGLE_BUTTON_SIZE + INVENTORY_TOGGLE_BUTTON_SIZE // 2 + PADDING
+# LEFT_SCROLL_BUTTON_RECT = pygame.Rect(
+#     LEFT_SCROLL_BUTTON_X,
+#     BUTTON_RECT_TOP_Y,
+#     SCROLL_BUTTON_WIDTH,
+#     SCROLL_BUTTON_HEIGHT
+# )
 
 
 # Stat Icons Display

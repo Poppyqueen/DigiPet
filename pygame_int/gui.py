@@ -72,21 +72,29 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     Draws the background, panel, chat history, input box, stats,
     care package buttons, and conditionally the inventory panel.
     """
-    if gui_core._font is None or gui_core._line_height == 0 or not gui_core._gui_rects:
-         print("Error: draw_gui called before gui_core components are initialized.")
+    # Update GUI rects based on the current panel_width from state
+    gui_core.update_gui_rects(state.panel_width)
+
+    # Retrieve potentially updated rects
+    # _gui_rects in gui_core now holds the dynamic panel rects via get_gui_rects()
+    current_gui_rects = gui_core.get_gui_rects() 
+
+    if gui_core._font is None or gui_core._line_height == 0: # Removed check for gui_core._gui_rects as it's always populated now
+         print("Error: draw_gui called before gui_core font/line_height are initialized.")
          return
 
     if not state.is_initial_popup_phase:
         if state.background_image:
-            screen.blit(state.background_image, (0, 0))
+            screen.blit(state.background_image, (0, 0)) # Background covers full screen
         else:
             screen.fill(config.fallback_bg_color)
 
         draw_filter_overlay(screen) # Assuming draw_filter_overlay is defined or imported
 
         # ------- draw pet ----------
-        current_circle_center_x = config.BASE_CIRCLE_CENTER_X
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
+        # Pet is centered in the game area (full width if panel hidden, game area if panel visible)
+        current_circle_center_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0)
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y # Y position doesn't change with panel
         animation.update_animation_state(current_time_ms)
         animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms)
 
@@ -96,17 +104,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius)
         pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius, 5)
 
-        # ----------------------
-        panel_rect = gui_core._gui_rects['panel_rect']
-        input_rect = gui_core._gui_rects['input_rect']
-        history_rect = gui_core._gui_rects['history_rect']
-        history_display_area = gui_core._history_display_area
-
-        # Draw the panel and history area backgrounds (always)
-        pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_rect)
-        pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], history_rect)
-
-        # --- Draw Stat Icons ---
+        # --- Draw Stat Icons (always visible in the game area) ---
         stats_to_draw_order = ["fullness", "hydration", "energy"]
         icon_start_x = config.STAT_ICON_START_X_SCREEN
         icon_start_y = config.STAT_ICON_START_Y_SCREEN
@@ -121,91 +119,107 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
                 screen.blit(icon_surface, (icon_start_x, icon_draw_y))
 
-        # --- Draw Input Box Area Background and Border --- (always)
-        pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], input_rect)
+        # --- Draw Panel related elements only if panel is visible ---
+        if state.panel_visible:
+            panel_rect = current_gui_rects['panel_rect']
+            input_rect = current_gui_rects['input_rect']
+            history_rect = current_gui_rects['history_rect']
+            history_display_area = current_gui_rects['history_display_area']
 
-        # --- Draw Wrapped & Scrollable Chat History ---
-        total_history_height = gui_text_utils.calculate_total_history_height(state.chat_history)
-        max_scroll = max(0, total_history_height - history_display_area.height)
-        state.scroll_y = max(0, min(state.scroll_y, max_scroll))
-        current_content_top_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
+            # Draw the panel and history area backgrounds
+            pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_rect)
+            pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], history_rect)
 
-        history_clip_rect = history_display_area.copy()
-        original_clip = screen.get_clip()
-        screen.set_clip(history_clip_rect)
+            # --- Draw Input Box Area Background and Border ---
+            pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], input_rect)
 
-        message_draw_y = current_content_top_y
-        for message_dict in state.chat_history:
-            msg_total_height = message_dict.get('total_height', 0)
-            rendered_surfaces = message_dict.get('rendered_surfaces', [])
-            msg_bottom_y = message_draw_y + msg_total_height
-            if msg_bottom_y < history_display_area.top or message_draw_y > history_display_area.bottom:
-                message_draw_y += msg_total_height
-                continue
+            # --- Draw Wrapped & Scrollable Chat History ---
+            if history_display_area and history_display_area.height > 0: # Check if history_display_area is valid
+                total_history_height = gui_text_utils.calculate_total_history_height(state.chat_history)
+                max_scroll = max(0, total_history_height - history_display_area.height)
+                state.scroll_y = max(0, min(state.scroll_y, max_scroll))
+                current_content_top_y = history_display_area.bottom - total_history_height + state.scroll_y - config.PADDING
 
-            line_draw_y = message_draw_y
-            for line_surface in rendered_surfaces:
-                if line_surface is None:
-                    line_draw_y += gui_core._line_height
-                    continue
-                line_bottom_y = line_draw_y + gui_core._line_height
-                if not (line_bottom_y < history_display_area.top or line_draw_y > history_display_area.bottom):
-                    blit_x = history_display_area.left + config.HISTORY_HORIZONTAL_PADDING
-                    screen.blit(line_surface, (blit_x, line_draw_y))
-                line_draw_y += gui_core._line_height
-            message_draw_y += msg_total_height
-        screen.set_clip(original_clip)
+                history_clip_rect = history_display_area.copy()
+                original_clip = screen.get_clip()
+                screen.set_clip(history_clip_rect)
 
-        # --- Draw Input Box Content ---
-        input_text_draw_area = pygame.Rect(
-            input_rect.left + config.PADDING,
-            input_rect.top + config.PADDING,
-            input_rect.width - 2 * config.PADDING,
-            input_rect.height - 2 * config.PADDING
-        )
-        input_clip_rect = input_text_draw_area.copy()
-        original_clip = screen.get_clip()
-        screen.set_clip(input_clip_rect)
+                message_draw_y = current_content_top_y
+                for message_dict in state.chat_history:
+                    msg_total_height = message_dict.get('total_height', 0)
+                    rendered_surfaces = message_dict.get('rendered_surfaces', [])
+                    msg_bottom_y = message_draw_y + msg_total_height
+                    if msg_bottom_y < history_display_area.top or message_draw_y > history_display_area.bottom:
+                        message_draw_y += msg_total_height
+                        continue
 
-        text_color = state.game_theme_colors["user_message_color"]
-        if is_input_locked:
-            display_text = "Waiting for bot..."
-            try:
-                text_surface = gui_core._font.render(display_text, True, config.GREY)
-                text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2
-                text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
-                screen.blit(text_surface, (text_x, text_y))
-            except pygame.error as e:
-                print(f"Pygame error rendering locked input text: {e}")
-            state.cursor_visible = False
-        else:
-            display_text = state.input_text
-            input_text_width_limit = input_text_draw_area.width
-            clipped_display_text = display_text
-            try:
-                text_width = gui_core._font.size(clipped_display_text)[0]
-                while text_width > input_text_width_limit and len(clipped_display_text) > 0:
-                    clipped_display_text = clipped_display_text[1:]
-                    text_width = gui_core._font.size(clipped_display_text)[0]
-                text_surface = gui_core._font.render(clipped_display_text, True, text_color)
-                text_x = input_text_draw_area.left
-                text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
-                screen.blit(text_surface, (text_x, text_y))
+                    line_draw_y = message_draw_y
+                    for line_surface in rendered_surfaces:
+                        if line_surface is None:
+                            line_draw_y += gui_core._line_height
+                            continue
+                        line_bottom_y = line_draw_y + gui_core._line_height
+                        if not (line_bottom_y < history_display_area.top or line_draw_y > history_display_area.bottom):
+                            blit_x = history_display_area.left + config.HISTORY_HORIZONTAL_PADDING
+                            screen.blit(line_surface, (blit_x, line_draw_y))
+                        line_draw_y += gui_core._line_height
+                    message_draw_y += msg_total_height
+                screen.set_clip(original_clip)
 
-                if state.cursor_visible:
-                        cursor_pos_in_input_clipped = gui_core._font.size(clipped_display_text)[0]
-                        cursor_x = text_x + cursor_pos_in_input_clipped
-                        cursor_y_start = text_y
-                        cursor_y_end = text_y + text_surface.get_height()
-                        cursor_x = max(input_text_draw_area.left, min(cursor_x, input_text_draw_area.right - 1))
-                        pygame.draw.line(screen, config.WHITE, (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
-            except pygame.error as e:
-                print(f"Pygame error rendering user input or cursor: {e}")
-        screen.set_clip(original_clip)
-        pygame.draw.rect(screen, config.GREY, input_rect, 1)
+            # --- Draw Input Box Content ---
+            if input_rect: # Check if input_rect is valid
+                input_text_draw_area = pygame.Rect(
+                    input_rect.left + config.PADDING,
+                    input_rect.top + config.PADDING,
+                    input_rect.width - 2 * config.PADDING,
+                    input_rect.height - 2 * config.PADDING
+                )
+                input_clip_rect = input_text_draw_area.copy()
+                original_clip = screen.get_clip()
+                screen.set_clip(input_clip_rect)
 
+                text_color = state.game_theme_colors["user_message_color"]
+                if is_input_locked:
+                    display_text = "Waiting for bot..."
+                    try:
+                        text_surface = gui_core._font.render(display_text, True, config.GREY)
+                        text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2
+                        text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
+                        screen.blit(text_surface, (text_x, text_y))
+                    except pygame.error as e:
+                        print(f"Pygame error rendering locked input text: {e}")
+                    state.cursor_visible = False
+                else:
+                    display_text = state.input_text
+                    input_text_width_limit = input_text_draw_area.width
+                    clipped_display_text = display_text
+                    try:
+                        text_width = gui_core._font.size(clipped_display_text)[0]
+                        while text_width > input_text_width_limit and len(clipped_display_text) > 0:
+                            clipped_display_text = clipped_display_text[1:]
+                            text_width = gui_core._font.size(clipped_display_text)[0]
+                        text_surface = gui_core._font.render(clipped_display_text, True, text_color)
+                        text_x = input_text_draw_area.left
+                        text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
+                        screen.blit(text_surface, (text_x, text_y))
+
+                        if state.cursor_visible:
+                                cursor_pos_in_input_clipped = gui_core._font.size(clipped_display_text)[0]
+                                cursor_x = text_x + cursor_pos_in_input_clipped
+                                cursor_y_start = text_y
+                                cursor_y_end = text_y + text_surface.get_height()
+                                cursor_x = max(input_text_draw_area.left, min(cursor_x, input_text_draw_area.right - 1))
+                                pygame.draw.line(screen, config.WHITE, (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
+                    except pygame.error as e:
+                        print(f"Pygame error rendering user input or cursor: {e}")
+                screen.set_clip(original_clip)
+                pygame.draw.rect(screen, config.GREY, input_rect, 1) # Border for input box
+
+        # --- Care Package buttons are drawn outside the panel visibility check for now ---
+        # Their positioning might need to be adjusted based on panel visibility in gui_care_package.py
         gui_care_package.draw_package_buttons(screen, is_input_locked)
 
+    # Popups and inventory are drawn on top of everything, managed by their own visibility flags
     gui_popups.draw_active_image_popups(screen)
 
     if not state.is_initial_popup_phase:
@@ -254,6 +268,20 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
 
     if not state.is_initial_popup_phase:
+        # --- Draw Panel Toggle Button ---
+        if not state.is_initial_popup_phase and gui_core._panel_toggle_button_rect:
+            button_rect = gui_core._panel_toggle_button_rect
+            pygame.draw.rect(screen, config.PANEL_TOGGLE_BUTTON_COLOR, button_rect)
+
+            arrow_char = ">" if state.panel_visible else "<"
+            try:
+                arrow_surface = gui_core._font.render(arrow_char, True, config.WHITE)
+                arrow_rect = arrow_surface.get_rect(center=button_rect.center)
+                screen.blit(arrow_surface, arrow_rect)
+            except pygame.error as e:
+                print(f"Pygame error rendering panel toggle arrow: {e}")
+
+
         screen_width = screen.get_width()
         screen_height = screen.get_height()
         border_rect = pygame.Rect(0, 0, screen_width, screen_height)

@@ -821,6 +821,23 @@ while running:
 
                 # Handle Mouse Wheel Scrolling for Chat History
                 # Ensure mouse is over the history display area, not just the larger history_rect
+                
+                # --- Panel Toggle Button Click Check ---
+                all_button_rects = gui.gui_core.get_button_rects()
+                panel_toggle_rect = all_button_rects.get('panel_toggle')
+
+                if panel_toggle_rect and panel_toggle_rect.collidepoint(event.pos):
+                    state.panel_visible = not state.panel_visible
+                    if state.panel_visible:
+                        state.panel_width = config.DEFAULT_PANEL_WIDTH
+                    # If panel is hidden, its width is effectively 0 for layout purposes,
+                    # but we don't change state.panel_width to 0 here.
+                    # update_gui_rects will use state.panel_width if visible, or handle appropriately if hidden.
+                    # The actual drawing of the panel is skipped in gui.py if state.panel_visible is False.
+                    # The pet's centering logic in gui.py already uses `state.panel_width if state.panel_visible else 0`.
+                    gui.gui_core.update_gui_rects(state.panel_width)
+                    continue # Consume event, no further MOUSEBUTTONDOWN processing for this click
+
                 if history_display_area.collidepoint(event.pos): # Use history_display_area for scroll detection
                     if event.button == 4: # Scroll up
                         state.scroll_y -= config.SCROLL_SPEED
