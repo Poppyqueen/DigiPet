@@ -335,7 +335,6 @@ else:
     print("Chatbot instance not available or does not have 'get_current_location'. Using default 'bedroom'.")
 
 
-gui.gui_core.load_and_set_background(f"{starting_location_name}.jpg")
 
 
 # --- NEW: Initial Wellness State Load ---
@@ -403,29 +402,33 @@ def add_items(items_list, room):
 
 
 
-# --- Calculate GUI Rects and Initialize GUI Module ---
-panel_rect = pygame.Rect(config.WIDTH - config.PANEL_WIDTH, 0, config.PANEL_WIDTH, config.HEIGHT)
-input_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.bottom - config.INPUT_HEIGHT - config.PADDING, panel_rect.width - 2 * config.PADDING, config.INPUT_HEIGHT )
-history_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.top + config.PADDING, panel_rect.width - 2 * config.PADDING, input_rect.top - (panel_rect.top + config.PADDING) - config.PADDING )
-history_display_area = pygame.Rect( history_rect.left + config.PADDING, history_rect.top + config.PADDING, history_rect.width - 2 * config.PADDING, history_rect.height - 2 * config.PADDING )
-text_width_limit = history_display_area.width
+# # --- Calculate GUI Rects and Initialize GUI Module ---
+# panel_rect = pygame.Rect(config.WIDTH - config.PANEL_WIDTH, 0, config.PANEL_WIDTH, config.HEIGHT)
+# input_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.bottom - config.INPUT_HEIGHT - config.PADDING, panel_rect.width - 2 * config.PADDING, config.INPUT_HEIGHT )
+# history_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.top + config.PADDING, panel_rect.width - 2 * config.PADDING, input_rect.top - (panel_rect.top + config.PADDING) - config.PADDING )
+# history_display_area = pygame.Rect( history_rect.left + config.PADDING, history_rect.top + config.PADDING, history_rect.width - 2 * config.PADDING, history_rect.height - 2 * config.PADDING )
+# text_width_limit = history_display_area.width
 
-gui_rects = {
-    'panel_rect': panel_rect,
-    'input_rect': input_rect,
-    'history_rect': history_rect,
-    'history_display_area': history_display_area,
-    'text_width_limit': text_width_limit
-}
+# gui_rects = {
+#     'panel_rect': panel_rect,
+#     'input_rect': input_rect,
+#     'history_rect': history_rect,
+#     'history_display_area': history_display_area,
+#     'text_width_limit': text_width_limit
+# }
 
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
-gui.gui_core.init_gui(font, line_height, gui_rects)
+gui.gui_core.init_gui_elements(font, line_height, 200)
+gui.gui_core.load_and_set_background(f"{starting_location_name}.jpg")
 
 # Initial popup, splash screen.
 gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 
+current_gui_rects=gui.gui_core.get_gui_rects()
 
+
+history_display_area = current_gui_rects['history_display_area']
 
 # --- Initial Inventory Load ---
 try:

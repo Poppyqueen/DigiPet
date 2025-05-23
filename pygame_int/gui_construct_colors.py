@@ -69,7 +69,7 @@ def set_color_theme():
 
     else: # If the original color is light (high brightness)
         #print(f"Original color is light (V={v:.2f} >= 0.6). Aiming for DARK contrast elements.")
-        contrast_v = 0.15  # Push brightness very low (close to black)
+        contrast_v = 0.25  # Push brightness very low (close to black)
         contrast_s = 0.45  # Reduce saturation significantly (almost grayscale tint)
         user_message_color = (255, 255, 255) # White for user messages
 

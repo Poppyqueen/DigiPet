@@ -76,7 +76,7 @@ def draw_package_buttons(screen, is_input_locked):
     # This rectangle will be in the middle, between scroll buttons
     # pygame.draw.rect(screen, config.DARK_GREY, _care_package_area_rect, 2) # Draw border of the whole area
 
-    for i in range(visible_start, visible_end):
+    for i in range(int(visible_start), int(visible_end)):
         package_info = config.CARE_PACKAGES[i]
         color_name = package_info["color"]
         base_color = state.game_theme_colors["package_colors"][color_name]
@@ -147,7 +147,7 @@ def get_package_button_click_regions():
     button_y_top = gui_core._care_package_area_rect.top #- button_height // 2
 
     # Add regions for the visible package buttons
-    for i in range(visible_start, visible_end):
+    for i in range(int(visible_start), int(visible_end)):
         # Calculate the button's rectangle position
         button_x = start_x + (i - visible_start) * (button_width + button_spacing_x)
         button_rect = pygame.Rect(button_x, button_y_top, button_width, button_height)

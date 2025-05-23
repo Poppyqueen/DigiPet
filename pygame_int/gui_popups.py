@@ -1,3 +1,5 @@
+#gui_popups.py
+
 import pygame
 import random
 import os
@@ -97,7 +99,7 @@ def show_popup_message(text, color=None):
         print(f"Pygame error rendering popup text '{text}': {e}")
         return
 
-    base_x = config.BASE_CIRCLE_CENTER_X - text_surface.get_width() // 2
+    base_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0) - text_surface.get_width() // 2
     base_y = config.BASE_CIRCLE_CENTER_Y + config.POPUP_INITIAL_OFFSET_Y
 
     rand_offset_x = random.uniform(-config.POPUP_RANDOM_SPREAD_X, config.POPUP_RANDOM_SPREAD_X)
@@ -151,9 +153,8 @@ def show_image_popup(image_path, duration_ms=2000, fade_in_ms=500, fade_out_ms=5
 
     screen_width = current_surface.get_width()
     screen_height = current_surface.get_height()
-    # Ensure gui_core._gui_rects exists and 'panel_rect' is available
-    panel_rect = gui_core._gui_rects.get('panel_rect') if hasattr(gui_core, '_gui_rects') else None
-    panel_width = panel_rect.width if panel_rect else 0
+    
+    panel_width = state.panel_width if state.panel_visible else 0
 
 
     new_image_popup = ImagePopup(

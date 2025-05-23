@@ -48,7 +48,7 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 
 # Smaller design?
 # WIDTH, HEIGHT = 350, 350
-# #PANEL_WIDTH = 130  # Width of the chat/info panel on the RIGHT
+## PANEL_WIDTH = 130  # Width of the chat/info panel on the RIGHT
 # INPUT_HEIGHT = 25  # Height of the input box at the bottom of the panel
 # PADDING = 5  # General padding/space around elements
 

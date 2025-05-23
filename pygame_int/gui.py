@@ -236,7 +236,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     # --- NEW: Draw Mute Button ---
     if not state.is_initial_popup_phase and gui_core._mute_button_rect:
         button_rect = gui_core._mute_button_rect
-        button_color = state.game_theme_colors["original_pet_color"] if state.is_muted else config.MUTE_BUTTON_UNMUTED_COLOR
+        button_color = state.game_theme_colors["system_messages"] if state.is_muted else state.game_theme_colors["original_pet_color"]
         border_color = config.MUTE_BUTTON_BORDER_COLOR
 
         pygame.draw.circle(screen, button_color, button_rect.center, button_rect.width // 2)
@@ -271,11 +271,11 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         # --- Draw Panel Toggle Button ---
         if not state.is_initial_popup_phase and gui_core._panel_toggle_button_rect:
             button_rect = gui_core._panel_toggle_button_rect
-            pygame.draw.rect(screen, config.PANEL_TOGGLE_BUTTON_COLOR, button_rect)
+            pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect)
 
             arrow_char = ">" if state.panel_visible else "<"
             try:
-                arrow_surface = gui_core._font.render(arrow_char, True, config.WHITE)
+                arrow_surface = gui_core._font.render(arrow_char, True, state.game_theme_colors["contrast_color"])
                 arrow_rect = arrow_surface.get_rect(center=button_rect.center)
                 screen.blit(arrow_surface, arrow_rect)
             except pygame.error as e:
