@@ -115,3 +115,6 @@ background_image = None # Variable to hold the currently loaded background image
 # --- Conceptual References (Not actual state instances) ---
 # These are placeholders or reminders for objects managed elsewhere.
 # chatbot = None # Not defining the instance here, reference only.
+
+
+is_muted = False # Boolean flag for muting/unmuting sounds.

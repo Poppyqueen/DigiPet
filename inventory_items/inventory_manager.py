@@ -1961,9 +1961,11 @@ class InventoryHouseManager(GenericJsonTool):
             'chapters': [] # New books start with no chapters
         }
         # Delegate to the generic create_item method, placing in inventory
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+        message=self.create_item("inventory", None, book_data)
+        message =+"\nBook name: "+book_name
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png", "popup_type": 2}) 
 
-        return self.create_item("inventory", None, book_data)
+        return message
 
 
     def list_inventory_books(self, internal=False) -> str | list[dict]:
@@ -2108,7 +2110,7 @@ class InventoryHouseManager(GenericJsonTool):
             self._write_json(self._state) # Save the state changes
             # Optional: Send a signal about the book content change
             # self._send_signal({"type": "book_updated", "item_id": book_item_id})
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"}) 
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png", "popup_type": 2}) 
 
         return result
 
@@ -2381,7 +2383,7 @@ class InventoryHouseManager(GenericJsonTool):
 
         self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
         self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png"}) 
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png", "popup_type": 2}) 
 
         return message
     

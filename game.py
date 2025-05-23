@@ -206,9 +206,11 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "show_icon_popup":
             icon_path = signal_data.get("icon_path")
             duration_ms = signal_data.get("duration_ms", 2000) # Default duration 2 seconds
+            popup_type = signal_data.get('popup_type', 1) # Default popup type
+
             if icon_path:
                  print(f"Signal type 'show_icon_popup' received with path: {icon_path}. Posting SHOW_ICON_POPUP_EVENT.")
-                 pygame.event.post(pygame.event.Event(config.SHOW_ICON_POPUP_EVENT, icon_path=icon_path, duration_ms=duration_ms))
+                 pygame.event.post(pygame.event.Event(config.SHOW_ICON_POPUP_EVENT, icon_path=icon_path, duration_ms=duration_ms, popup_type=popup_type))
             else:
                  print("Signal 'show_icon_popup' received but no 'icon_path' in data.")
 
@@ -216,7 +218,6 @@ def handle_chatbot_signal(signal_data):
              print(f"Unknown signal type received: {action_type}")
     else:
         print(f"Received signal data in unexpected format (not a dict): {signal_data}")
-
 
 if mock_running: # Mock configuration, leave as is
     # --- Mock Chatbot Initialization ---
@@ -422,7 +423,7 @@ gui_rects = {
 gui.gui_core.init_gui(font, line_height, gui_rects)
 
 # Initial popup, splash screen.
-gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
+gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 
 
 
@@ -471,6 +472,8 @@ inventory_toggle_button_rect = inventory_button_rects.get('inventory_toggle')
 inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The big panel rect
 room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
 player_list_area_rect = inventory_panel_rects.get('player_list_area') # Area for player list items
+
+mute_button_rect = inventory_button_rects.get('mute_button')
 
 # --- Worker Function for Chatbot API Call ---
 def chatbot_worker(user_input, input_role, chatbot_instance):
@@ -725,9 +728,12 @@ while running:
         elif event.type == config.SHOW_ICON_POPUP_EVENT:
             icon_path = getattr(event, 'icon_path', None)
             duration_ms = getattr(event, 'duration_ms', 2000) # Default duration from config/signal
+            popup_type = getattr(event, 'popup_type', 1) # Default popup type
+
+            print(f"🔺🔺🔺🔺🔺 Main loop processing SHOW_ICON_POPUP_EVENT for icon: {icon_path}, duration: {duration_ms} ms, type: {popup_type}")
             if icon_path:
                  print(f"Main loop processing SHOW_ICON_POPUP_EVENT for icon: {icon_path}")
-                 gui.gui_popups.show_image_popup(icon_path, duration_ms) # Call the new GUI function
+                 gui.gui_popups.show_image_popup(icon_path, duration_ms, popup_type=popup_type) # Call the new GUI function
             else:
                  print("SHOW_ICON_POPUP_EVENT received but no 'icon_path' attribute.")
             continue # Consume event
@@ -802,6 +808,16 @@ while running:
                     state.room_inventory_scroll_y = 0
                     state.player_inventory_scroll_y = 0
                     continue # Consume event
+
+                # Check if the click is within the history display are
+                if mute_button_rect and mute_button_rect.collidepoint(event.pos):
+                    if music_player is not None:
+                        music_player.toggle_mute()
+                        mute_status = "muted" if music_player.get_is_muted() else "unmuted"
+                        state.is_muted=music_player.get_is_muted()
+                        gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
+
+                        continue
 
                 # Handle Mouse Wheel Scrolling for Chat History
                 # Ensure mouse is over the history display area, not just the larger history_rect
@@ -937,9 +953,9 @@ while running:
 
 
 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=0); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=1); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, type=2); continue
+                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=0); continue
+                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=1); continue
+                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=2); continue
                 if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_popup_message("testing!!!!!!") ; continue
                 if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
 
@@ -1039,7 +1055,7 @@ while running:
     # This needs to happen *after* update_popups in gui.update_popups
     # which is where _image_popup_visible state is managed.
     # The initial popup phase is true, and no image popups are currently visible.
-    if state.is_initial_popup_phase and not gui.gui_popups._image_popup_visible:
+    if state.is_initial_popup_phase and not gui.gui_popups.is_any_image_popup_currently_active():
         print("Initial popup phase detected as ending.") # Debug
         state.is_initial_popup_phase = False # This is the transition point
 

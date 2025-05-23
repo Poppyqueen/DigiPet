@@ -1,3 +1,5 @@
+# gui_core.py
+
 import pygame
 import pygame.gfxdraw
 import os
@@ -36,6 +38,10 @@ _left_scroll_button_rect = None
 _right_scroll_button_rect = None
 _buttons_per_page = 0
 
+# --- NEW: Mute Button Rect ---
+_mute_button_rect = None # Declare the global variable for the mute button
+
+
 # --- Initialization Function ---
 def init_gui(font, line_height, gui_rects):
     """Initializes GUI module with necessary objects and dimensions."""
@@ -47,6 +53,8 @@ def init_gui(font, line_height, gui_rects):
     # ADD NEW GLOBALS
     global _care_package_area_rect, _left_scroll_button_rect, _right_scroll_button_rect, _buttons_per_page
     global overlay_surface # Added for overlay_surface initialization
+    global _mute_button_rect # Add the new global for the mute button
+
     # Removed globals for _image_popup_display_area and _image_popup_background_surface as they are managed in gui_popups
 
 
@@ -61,6 +69,15 @@ def init_gui(font, line_height, gui_rects):
     _text_width_limit = max(1, _text_width_limit)
     # print(f"History display area width: {_history_display_area.width}, Text width limit (with padding): {_text_width_limit}")
 
+
+    # --- NEW: Calculate Mute Button Rect ---
+    mute_button_size = config.MUTE_BUTTON_SIZE
+    _mute_button_rect = pygame.Rect(
+        config.MUTE_BUTTON_POS_X - mute_button_size // 2,
+        config.MUTE_BUTTON_POS_Y - mute_button_size // 2,
+        mute_button_size,
+        mute_button_size
+    )
 
     # --- Calculate Inventory Button Rect ---
     button_size = config.INVENTORY_TOGGLE_BUTTON_SIZE
@@ -128,11 +145,11 @@ def init_gui(font, line_height, gui_rects):
     _care_package_area_rect = config.CARE_PACKAGE_AREA_RECT
 
     # Calculate how many buttons fit horizontally in the display area
-    button_width_with_spacing = config.PACKAGE_BUTTON_SIZE + config.PACKAGE_BUTTON_SPACING_X
+    button_width_with_spacing = config.PACKAGE_BUTTON_WIDTH + config.PACKAGE_BUTTON_SPACING_X
     if button_width_with_spacing > 0:
         _buttons_per_page = _care_package_area_rect.width // button_width_with_spacing
         # Ensure at least 1 button fits if the area is big enough for one button's width
-        if _care_package_area_rect.width >= config.PACKAGE_BUTTON_SIZE:
+        if _care_package_area_rect.width >= config.PACKAGE_BUTTON_WIDTH:
              _buttons_per_page = max(1, _buttons_per_page)
         else:
             _buttons_per_page = 0 # Area too small for even one button
@@ -250,15 +267,18 @@ def load_and_set_background(image_path):
          print(f"An unexpected error occurred while loading background image '{full_image_path}': {e}")
          state.background_image = None
 
+
 # --- Getter functions for rects ---
 def get_button_rects():
      """Returns a dictionary of button rects."""
-     global _inventory_toggle_button_rect # This is a global in gui_core.py
-     if _inventory_toggle_button_rect is None:
-         return {}
-     return {
-         'inventory_toggle': _inventory_toggle_button_rect
-     }
+     global _inventory_toggle_button_rect, _mute_button_rect # Ensure both are global
+     rects = {}
+     if _inventory_toggle_button_rect is not None:
+         rects['inventory_toggle'] = _inventory_toggle_button_rect
+     if _mute_button_rect is not None: # Add mute button to the dictionary
+         rects['mute_button'] = _mute_button_rect
+     return rects
+
 
 def get_panel_rects():
      """Returns a dictionary of panel rects."""

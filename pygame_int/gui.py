@@ -66,14 +66,12 @@ def draw_filter_overlay(screen):
     screen.blit(gui_core.overlay_surface, (0, 0))
 
 
-
 # --- Function to draw the entire GUI panel ---
 def draw_gui(screen, current_time_ms, is_input_locked):
     """
     Draws the background, panel, chat history, input box, stats,
     care package buttons, and conditionally the inventory panel.
     """
-    #set_color_theme()
     if gui_core._font is None or gui_core._line_height == 0 or not gui_core._gui_rects:
          print("Error: draw_gui called before gui_core components are initialized.")
          return
@@ -84,12 +82,12 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         else:
             screen.fill(config.fallback_bg_color)
 
-        draw_filter_overlay(screen)
+        draw_filter_overlay(screen) # Assuming draw_filter_overlay is defined or imported
 
         # ------- draw pet ----------
         current_circle_center_x = config.BASE_CIRCLE_CENTER_X
         current_circle_center_y = config.BASE_CIRCLE_CENTER_Y
-        animation.update_animation_state(current_time_ms) 
+        animation.update_animation_state(current_time_ms)
         animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms)
 
         current_circle_center_x += animation_offset_x
@@ -103,7 +101,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         input_rect = gui_core._gui_rects['input_rect']
         history_rect = gui_core._gui_rects['history_rect']
         history_display_area = gui_core._history_display_area
-        
+
         # Draw the panel and history area backgrounds (always)
         pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_rect)
         pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], history_rect)
@@ -117,7 +115,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         for i, stat_name in enumerate(stats_to_draw_order):
             stat_value = state.pet_stats.get(stat_name, 0)
-            stat_level = _get_stat_level(stat_value) 
+            stat_level = _get_stat_level(stat_value) # Assuming _get_stat_level is defined or imported
             icon_surface = gui_core._stat_icons.get((stat_name, stat_level))
             if icon_surface:
                 icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
@@ -125,7 +123,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         # --- Draw Input Box Area Background and Border --- (always)
         pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], input_rect)
-
 
         # --- Draw Wrapped & Scrollable Chat History ---
         total_history_height = gui_text_utils.calculate_total_history_height(state.chat_history)
@@ -145,10 +142,10 @@ def draw_gui(screen, current_time_ms, is_input_locked):
             if msg_bottom_y < history_display_area.top or message_draw_y > history_display_area.bottom:
                 message_draw_y += msg_total_height
                 continue
-            
+
             line_draw_y = message_draw_y
             for line_surface in rendered_surfaces:
-                if line_surface is None: 
+                if line_surface is None:
                     line_draw_y += gui_core._line_height
                     continue
                 line_bottom_y = line_draw_y + gui_core._line_height
@@ -170,7 +167,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         original_clip = screen.get_clip()
         screen.set_clip(input_clip_rect)
 
-        text_color = state.game_theme_colors["user_message_color"] #  # Default text color for input
+        text_color = state.game_theme_colors["user_message_color"]
         if is_input_locked:
             display_text = "Waiting for bot..."
             try:
@@ -205,14 +202,14 @@ def draw_gui(screen, current_time_ms, is_input_locked):
             except pygame.error as e:
                 print(f"Pygame error rendering user input or cursor: {e}")
         screen.set_clip(original_clip)
-        pygame.draw.rect(screen, config.GREY, input_rect, 1) # Border for input_rect
+        pygame.draw.rect(screen, config.GREY, input_rect, 1)
 
         gui_care_package.draw_package_buttons(screen, is_input_locked)
 
-    gui_popups.draw_image_popup_if_visible(screen)
-    
+    gui_popups.draw_active_image_popups(screen)
+
     if not state.is_initial_popup_phase:
-         gui_popups.draw_popups(screen) 
+         gui_popups.draw_popups(screen)
 
     if not state.is_initial_popup_phase and state.inventory_panel_visible:
         gui_inventory.draw_inventory_panel(screen)
@@ -220,6 +217,41 @@ def draw_gui(screen, current_time_ms, is_input_locked):
     if not state.is_initial_popup_phase and gui_core._inventory_toggle_button_rect:
         pygame.draw.circle(screen, config.INVENTORY_BUTTON_COLOR, gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
         pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+
+
+    # --- NEW: Draw Mute Button ---
+    if not state.is_initial_popup_phase and gui_core._mute_button_rect:
+        button_rect = gui_core._mute_button_rect
+        button_color = state.game_theme_colors["original_pet_color"] if state.is_muted else config.MUTE_BUTTON_UNMUTED_COLOR
+        border_color = config.MUTE_BUTTON_BORDER_COLOR
+
+        pygame.draw.circle(screen, button_color, button_rect.center, button_rect.width // 2)
+        pygame.draw.circle(screen, border_color, button_rect.center, button_rect.width // 2, 1)
+
+        # Draw a simple speaker icon (or speaker with a cross if muted)
+        icon_color = config.WHITE if state.is_muted else config.BLACK # Icon color changes based on mute state
+
+        # Speaker body
+        speaker_width = button_rect.width // 4
+        speaker_height = button_rect.height // 3
+        speaker_x = button_rect.centerx - speaker_width // 2 - button_rect.width // 8
+        speaker_y = button_rect.centery - speaker_height // 2
+        pygame.draw.rect(screen, icon_color, (speaker_x, speaker_y, speaker_width, speaker_height))
+
+        # Speaker "horn" (triangle)
+        horn_points = [
+            (speaker_x + speaker_width, speaker_y),
+            (speaker_x + speaker_width + speaker_width // 2, button_rect.centery),
+            (speaker_x + speaker_width, speaker_y + speaker_height)
+        ]
+        pygame.draw.polygon(screen, icon_color, horn_points)
+
+        if state.is_muted:
+            # Draw a diagonal line through the speaker
+            line_start = (button_rect.left + button_rect.width // 4, button_rect.top + button_rect.height // 4)
+            line_end = (button_rect.right - button_rect.width // 4, button_rect.bottom - button_rect.height // 4)
+            pygame.draw.line(screen, icon_color, line_start, line_end, 2)
+
 
     if not state.is_initial_popup_phase:
         screen_width = screen.get_width()

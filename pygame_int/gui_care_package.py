@@ -59,8 +59,8 @@ def draw_package_buttons(screen, is_input_locked):
     pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], gui_core._right_scroll_button_rect, 2) # Border
 
     # Draw Package Buttons within the display area
-    button_width = config.PACKAGE_BUTTON_SIZE # Renamed for clarity, but still using config.PACKAGE_BUTTON_SIZE
-    button_height = config.PACKAGE_BUTTON_SIZE *2   #INPUT_HEIGHT # Make buttons fill the height of the area
+    button_width = config.PACKAGE_BUTTON_WIDTH #/ 2 # Renamed for clarity, but still using config.PACKAGE_BUTTON_SIZE
+    button_height = config.PACKAGE_BUTTON_HEIGHT #*2   #INPUT_HEIGHT # Make buttons fill the height of the area
     button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
 
     # The starting X position for the first button, after the left scroll button
@@ -133,8 +133,8 @@ def get_package_button_click_regions():
     visible_end = min(visible_start + buttons_per_page, total_packages)
 
     # Calculate the button positions again to create the click rects
-    button_width = config.PACKAGE_BUTTON_SIZE
-    button_height = config.PACKAGE_BUTTON_SIZE*2 # Match height from draw function
+    button_width = config.PACKAGE_BUTTON_WIDTH #/ 2
+    button_height = config.PACKAGE_BUTTON_HEIGHT#*2 # Match height from draw function
     button_spacing_x = config.PACKAGE_BUTTON_SPACING_X
 
     # The starting X position for the first button, after the left scroll button

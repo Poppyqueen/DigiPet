@@ -45,6 +45,12 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 # INPUT_HEIGHT = 40  # Height of the input box at the bottom of the panel
 # PADDING = 5  # General padding/space around elements
 
+# Smaller design?
+# WIDTH, HEIGHT = 350, 350
+# PANEL_WIDTH = 130  # Width of the chat/info panel on the RIGHT
+# INPUT_HEIGHT = 25  # Height of the input box at the bottom of the panel
+# PADDING = 5  # General padding/space around elements
+
 
 # Interaction & Timing
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick
@@ -195,6 +201,15 @@ CONFUSED_SIZE_PULSE_FREQUENCY_HZ = .5 # Frequency of the size pulsing (Hz)
 
 # --- UI Configuration ---
 
+
+# --- Mute Button Settings ---
+MUTE_BUTTON_SIZE = 15  # Diameter for a circular button
+MUTE_BUTTON_POS_X = WIDTH - MUTE_BUTTON_SIZE # X-coordinate (e.g., near top-right)
+MUTE_BUTTON_POS_Y = MUTE_BUTTON_SIZE  # Y-coordinate (e.g., near top-right)
+MUTE_BUTTON_COLOR = (100, 100, 100) # Dark grey when active (muted)
+MUTE_BUTTON_UNMUTED_COLOR = (50, 200, 50) # Green when unmuted
+MUTE_BUTTON_BORDER_COLOR = (200, 200, 200) # Light grey border
+
 MAX_ACTIVE_POPUPS = 5
 
 # Chat Panel Display
@@ -229,11 +244,12 @@ INVENTORY_PANEL_ITEM_VERTICAL_PADDING = 10 # Vertical padding for item text
 
 
 # Care Package GUI Buttons
-PACKAGE_BUTTON_SIZE = 20 # Diameter of the circular package buttons
+PACKAGE_BUTTON_HEIGHT = (INPUT_HEIGHT)#-PADDING # Same as width for circular buttons
+PACKAGE_BUTTON_WIDTH = int(PACKAGE_BUTTON_HEIGHT/2)# Diameter of the circular package buttons
 PACKAGE_BUTTON_SPACING_X = 1 # Horizontal space between package buttons
 PACKAGE_BUTTON_BORDER_COLOR = WHITE # Border color for package buttons
 
-SCROLL_BUTTON_HEIGHT = (INPUT_HEIGHT-PADDING) # Height of the scroll control buttons
+SCROLL_BUTTON_HEIGHT = (INPUT_HEIGHT)#-PADDING # Height of the scroll control buttons
 SCROLL_BUTTON_WIDTH = SCROLL_BUTTON_HEIGHT/2 # Size (width/height) of the scroll control buttons
 SCROLL_BUTTON_COLOR_ENABLED = WHITE
 SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
@@ -242,15 +258,17 @@ SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
 # Position them horizontally starting near the inventory toggle button, extending right
 # Vertical position will match the inventory toggle button's vertical center
 # BUTTON_ROW_Y is the Y coordinate for the *center* of the buttons/scroll controls
-BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_SIZE // 2 # Vertical center alignment (assuming same size as toggle)
+BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_HEIGHT // 2 # Vertical center alignment (assuming same size as toggle)
 
 
 # Calculate how many buttons can fit in the available width
-BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X)
+BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X)
 
 # Width = (ButtonSize + Spacing) * N - Spacing
-BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_SIZE + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
-BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_SIZE) # Ensure minimal width for at least one button
+BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
+
+
+#BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_WIDTH) # Ensure minimal width for at least one button
 
 # Define the rects for the scroll buttons and the package button display area
 # They are placed to the right of the game area, before the chat panel.
@@ -277,7 +295,7 @@ CARE_PACKAGE_AREA_RECT = pygame.Rect(
     CARE_PACKAGE_AREA_X,
     BUTTON_RECT_TOP_Y,
     BUTTON_AREA_DISPLAY_WIDTH,
-    PACKAGE_BUTTON_SIZE
+    PACKAGE_BUTTON_HEIGHT
 )
 
 # Calculate the rect for the LEFT scroll button
