@@ -396,23 +396,26 @@ class FunctionBuilder:
         # Format the current room name and types
         current_room_name = self.state_manager.get_current_room_name()
         current_room_types = self.get_current_room_types()
-        format_room = f"Currently, you are in: {current_room_name}"
+        format_room = f"Currently, you are in: {current_room_name}\n"
+        descriptions = self.state_manager.get_current_room_description()
+        print(f"‼️‼️‼️‼️‼️DEBUG: Current room types ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️: {current_room_types}, descriptions: {descriptions}")
         # if current_room_types:
         #     format_room += f" (Types: {', '.join(current_room_types)})"
         context.append(format_room)
+        context.append(descriptions)
 
         # Append already formatted context
-        context.append("#############")
+        context.append("\n#############\n")
         context.append(self.state_manager.get_current_emote())
-        context.append("#############")
+        context.append("\n#############\n")
         context.append(self.state_manager.get_possible_emotes())
-        context.append("#############")
+        context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
         # context.append("#############")
         # context.append("In the current room the items are:")
         # context.append(self.state_manager.list_items_in_current_room()) Keep it lean
-        context.append("#############")
+        context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())
 

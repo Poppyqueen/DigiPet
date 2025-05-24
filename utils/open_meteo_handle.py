@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import sys
 
+from utils.time_manager import get_time_tag_from_now
 
 load_dotenv()
 
@@ -38,6 +39,7 @@ params = {
 }
 
 def get_full_weather():
+    time_tag=get_time_tag_from_now()
     responses = openmeteo.weather_api(url, params=params)
     
     # Process the first location in the response
@@ -56,7 +58,8 @@ def get_full_weather():
     stringed_response = f"""
 Current apparent temperature: {current_apparent_temperature}°C
 Current relative humidity (2m): {current_relative_humidity_2m}%
-Is it daytime? {is_day}
+Is it daytime?: {is_day}, 
+It is: {time_tag}
 Current wind speed (10m): {current_wind_speed_10m} m/s
 Current precipitation: {current_precipitation} mm
 Current cloud cover: {current_cloud_cover}%

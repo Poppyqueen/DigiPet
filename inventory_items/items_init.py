@@ -1,23 +1,136 @@
 
 # Define starting IDs for generation.
 ITEM_ID_START_COUNTER = 0
-ROOM_ID_START_COUNTER = 1
+ROOM_ID_START_COUNTER = 1 
 
-custom_state = {
-    "next_item_id": 0,
-    "next_room_id": 1,
-    "current_room_id": 0, # Set the ID key to 0 for the room you want for it to be initialized in, currently in the bedroom
-    "rooms": [
-        {
-            "name": "living_room",
-            "image": "living_room",
-            "room_types": ["living_room"],
-            "music": "living_room",
-            "descriptions": [
-                "A cozy living room, the heart of the house.",
-                "A comfortable space with soft lighting and the scent of old books and dust motes dancing in the air."
+
+
+
+empty_lab={
+            # --- Inventory/House State ---
+            "next_item_id": ITEM_ID_START_COUNTER,
+            "next_room_id": ROOM_ID_START_COUNTER,
+            "current_room_id": 0, # Default starting room ID (must match one below)
+            "rooms": [
+                {
+                    "name": "lab_room",
+                    "id": 0,
+                    "image": "lab_room",
+                    "room_types": ["ALIFE_research"],
+                    "music": "white_room",
+                    "descriptions": {
+    "late night": [
+        "A modern laboratory dedicated to A-Life research. The lab is quiet at this late hour.",
+        "The light in here is of a deep blue tone, casting long shadows."
+    ],
+    "early morning": [
+        "The lab is just beginning to stir, with a faint hum of machinery.",
+        "A cool, crisp light filters through the blinds."
+    ],
+    "morning": [
+        "Activity in the lab is picking up, researchers are at their stations.",
+        "Bright, natural light fills the room."
+    ],
+    "noon": [
+        "The lab is bustling with activity.",
+        "The overhead lights are at their brightest."
+    ],
+    "afternoon": [
+        "The afternoon slump seems to have hit, some researchers are taking a break.",
+        "The blue light feels a bit softer now."
+    ],
+    "late afternoon": [
+        "The lab is starting to wind down, but experiments are still running.",
+        "The light outside is beginning to dim, contrasting with the lab's blue glow."
+    ],
+    "night": [
+        "Only a few dedicated researchers remain, the lab is peaceful.",
+        "The deep blue light dominates, creating an atmospheric calm."
+    ]
+},
+                    "items": []
+                }
             ],
-            "items": [
+            "inventory": [],
+            # --- Emote State (NEW) ---
+            "current_emote": "neutral",
+            "possible_emotes": {
+                "neutral": "I'm feeling calm and attentive.",
+                "happy": "I'm feeling cheerful and optimistic.",
+                "sad": "I'm feeling down.",
+                "confused": "I'm unsure or puzzled.",
+                "excited": "I'm enthusiastic and eager.",
+                "thinking": "I'm processing information or contemplating.",
+                "angry": "I'm feeling frustrated or upset."
+            },
+            # --- End Emote State ---
+
+            ## -- health state -- ##
+                "stats": {
+                "fullness": 200.0,
+                "hydration": 200.0,
+                "energy": 200.0
+            },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
+    "steps": 0
+    # --- End Pet Theme Color ---
+            # --- End Stats State -
+        }
+        # --- End of override ---
+
+
+
+
+
+
+base_state={
+            # --- Inventory/House State ---
+            "next_item_id": ITEM_ID_START_COUNTER,
+            "next_room_id": ROOM_ID_START_COUNTER,
+            "current_room_id": 0, # Default starting room ID (must match one below)
+            "rooms": [
+    {
+        "name": "living_room",
+        "image": "living_room",
+        "room_types": [
+            "living_room"
+        ],
+        "music": "living_room",
+        "descriptions": {
+            "late night": [
+                "The living room is wrapped in darkness, save for the faint flicker of a dying fire casting soft shadows across plush cushions.",
+                "A quiet stillness pervades, the room beneath the moonlight filtering through the curtains."
+            ],
+            "early morning": [
+                "Pale dawn light streams through sheer curtains, gently illuminating the worn fabric of the cozy armchairs.",
+                "The scent of fresh coffee mingles with soft morning quiet, promising a peaceful start to the day in the comforting space."
+            ],
+            "morning": [
+                "Sunlight pours into the room, warming the overstuffed sofa and highlighting scattered blankets.",
+                "Birdsong drifts through an open window as the living room awakens, full of gentle light and welcoming warmth."
+            ],
+            "noon": [
+                "Bright midday light floods the space, enlivening the rich wood tones and plush textures with vivid clarity.",
+                "The room hums softly with midday energy, bathed in sunshine and alive with a subtle bustle."
+            ],
+            "afternoon": [
+                "Soft shadows lengthen as the afternoon sun filters through leafy branches outside, draping the living room in a golden glow.",
+                "A comfortable nook beckons for rest, where warm light dances across cushions and carpets."
+            ],
+            "late afternoon": [
+                "The setting sun casts a warm amber hue, deepening the rich colors of the cozy furnishings.",
+                "A peaceful calm settles as the day wanes, the room cocooned in fading light and gentle quiet."
+            ],
+            "night": [
+                "The living room glows warmly under the soft light of a table lamp, a sanctuary against the dark outside.",
+                "Firelight flickers, casting comforting shadows as the room embraces stillness and the hush of night."
+            ]
+        },
+                    "items": [
                 {
                     "name": "sofa",
                     "descriptions": [
@@ -128,17 +241,45 @@ custom_state = {
                     "type": "misc"
                 }
             ]
-        },
-        {
-            "name": "kitchen",
-            "image": "kitchen",
-            "room_types": ["kitchen"],
-            "music": "kitchen",
-            "descriptions": [
-                "A modern kitchen, gleaming with stainless steel appliances.",
-                "The air smells faintly of spices and cleanliness. Wind streams through the window over the sink."
+    },
+    {
+        "name": "kitchen",
+        "image": "kitchen",
+        "room_types": [
+            "kitchen"
+        ],
+        "music": "kitchen",
+        "descriptions": {
+            "late night": [
+                "The kitchen is hushed under the moonlight, stainless steel surfaces reflecting faint city lights through the window.",
+                "A soft breeze stirs the curtains, carrying faint whispers of spices left from dinner."
             ],
-            "items": [
+            "early morning": [
+                "First light filters softly through the window, casting a gentle glow on gleaming appliances.",
+                "The cool morning air brings a fresh spice scent, mingling with the crisp cleanliness of the kitchen."
+            ],
+            "morning": [
+                "Sunlight pours in warmly, igniting sparkle on stainless steel and brightening the cozy kitchen nook.",
+                "The air feels fresh, with a lingering hint of spices from breakfast preparations."
+            ],
+            "noon": [
+                "Bright midday rays flood the kitchen, turning every surface into shining metal and glass.",
+                "A gentle wind drifts through the open window, melding the spicy aroma with fresh daytime air."
+            ],
+            "afternoon": [
+                "The kitchen is lively with soft ambient light, the clean gleaming surfaces.",
+                "A faint spice scent lingers as the breeze dances through the window over the sink."
+            ],
+            "late afternoon": [
+                "Golden light bathes the kitchen, warming the stainless steel to a gentle glow.",
+                "The air feels cozy, with drifting scents of spices and fresh breeze mixing in the quiet room."
+            ],
+            "night": [
+                "Dimmed lights create a calm ambiance, reflecting subtly on polished steel appliances.",
+                "The window frames the dark outdoors as a soft wind carries faint spice aromas inside."
+            ]
+        },
+                    "items": [
                 {
                     "name": "apple",
                     "descriptions": [
@@ -296,17 +437,45 @@ custom_state = {
                     ]
                 }
             ]
-        },
-        {
-            "name": "library",
-            "image": "library",
-            "room_types": ["library"],
-            "music": "library",
-            "descriptions": [
-                "A magnificent library, shelves stretching high towards the ceiling.",
-                "The air is thick with the smell of aged paper and leather bindings. A quiet hush permeates the room."
+    },
+    {
+        "name": "library",
+        "image": "library",
+        "room_types": [
+            "library"
+        ],
+        "music": "library",
+        "descriptions": {
+            "late night": [
+                "The library lies in profound silence, bathed in the gentle glow of a single reading lamp, shadows dancing across towering shelves.",
+                "The scent of aged paper deepens as moonlight filters through the high windows, wrapping the room in a quiet, contemplative hush."
             ],
-            "items": [
+            "early morning": [
+                "Soft dawn light spills softly over rows of leather-bound tomes, the air fresh yet rich with the musk of history.",
+                "A gentle hush lingers, broken only by the faint rustle of pages as the library begins to stir from slumber."
+            ],
+            "morning": [
+                "Sunlight floods the room, illuminating the golden spinesbeneath the soaring shelves.",
+                "Warm rays coax a cozy ambiance, where the comforting scent of old books welcomes early visitors."
+            ],
+            "noon": [
+                "Bright midday light fills the library, revealing every crease and dust mote in the air, alive and welcoming.",
+                "The peaceful room hums gently with the subtle movements of readers, wrapped in the comforting aroma of aged parchment."
+            ],
+            "afternoon": [
+                "Late afternoon sun casts elongated shadows between the aisles, adding depth to the hushed, cozy space.",
+                "The warmth from the sinking sun complements the rich leather and paper scents."
+            ],
+            "late afternoon": [
+                "Golden light intensifies as day wanes, highlighting the intricate textures of bindings and polished wood.",
+                "A serene calm envelops the library, bathed in a soft amber glow, perfect for quiet reflection."
+            ],
+            "night": [
+                "Darkness outside deepens the library\u2019s glow, where lamps emit a warm, intimate light amid endless stories.",
+                "The quiet hush is profound, every whispered turn of a page echoing softly beneath the high ceiling."
+            ]
+        },
+        "items": [
                 {
                     "name": "ancient_tome",
                     "descriptions": [
@@ -487,17 +656,45 @@ custom_state = {
                     ]
                 }
             ]
-        },
-        {
-            "name": "bathroom",
-            "image": "bathroom",
-            "room_types": ["bathroom"],
-            "music": "bathroom",
-            "descriptions": [
-                "A clean, tiled bathroom with a large mirror.",
-                "The air is slightly humid, smelling faintly of floral soap and toothpaste."
+    },
+    {
+        "name": "bathroom",
+        "image": "bathroom",
+        "room_types": [
+            "bathroom"
+        ],
+        "music": "bathroom",
+        "descriptions": {
+            "late night": [
+                "The bathroom is bathed in soft, muted moonlight reflecting off the large mirror, with faint floral scents lingering in the still air.",
+                "A quiet, serene space where the humid warmth embraces the calm of the late night."
             ],
-            "items": [
+            "early morning": [
+                "Morning light filters gently through a nearby window, illuminating the tiles as the air carries fresh hints of soap and toothpaste.",
+                "The bathroom feels crisp and renewing, the mirror fogged slightly from an early rinse, welcoming the new day."
+            ],
+            "morning": [
+                "Bright sunlight pours in, sparkling on the clean tiles and making the mirror gleam.",
+                "The floral scent is fresh and uplifting, blending with the warm, humid air of a busy morning routine."
+            ],
+            "noon": [
+                "The bathroom is filled with clear, natural light that makes the glossy tiles and mirror shine vibrantly.",
+                "A moment of calm midday, the air still lightly scented and warmth settling softly around the space."
+            ],
+            "afternoon": [
+                "Sunlight softens, casting gentle shadows on the tiled walls, while the aromatic soap scent lingers pleasantly.",
+                "The humid air feels less intense now, the mirror reflecting a cozy, quiet afternoon atmosphere."
+            ],
+            "late afternoon": [
+                "Golden light floods the room, warming the tiles and intensifying the floral aroma amid the fading humidity.",
+                "The large mirror glows under the amber hues."
+            ],
+            "night": [
+                "Dim lighting casts subtle reflections in the mirror, mingling with the floral scent in the cool, humid air.",
+                "A tranquil retreat where shadows soften the tiled surfaces, wrapping the room in soothing coziness."
+            ]
+        },
+        "items": [
                 {
                     "name": "soap_bar",
                     "descriptions": [
@@ -574,18 +771,46 @@ custom_state = {
                     ]
                 }
             ]
-        },
-        {
-            "name": "bedroom",
-            "id": 0, # Set the ID for your initial room
-            "image": "bedroom",
-            "room_types": ["bedrooom"],
-            "music": "bedroom",
-            "descriptions": [
-                "A peaceful bedroom, dominated by a large, inviting bed.",
-                "Soft wind sways the curtains, there is low light."
+    },
+    {
+        "name": "bedroom",
+        "image": "bedroom",
+        "id": 0,
+        "room_types": [
+            "bedroom"
+        ],
+        "music": "bedroom",
+        "descriptions": {
+            "late night": [
+                "The bedroom is cloaked in shadows, the large bed a silent sanctuary beneath the pale moonlight filtering through swaying curtains.",
+                "A soft breeze whispers through the curtains, the room wrapped in quiet stillness."
             ],
-            "items": [
+            "early morning": [
+                "A gentle dawn light warms the room, curtains fluttering softly as fresh air drifts in, promising a tranquil start.",
+                "First rays peek through the curtains, caressing the cozy bed as the quiet morning breeze stirs the air."
+            ],
+            "morning": [
+                "Sunlight floods the peaceful bedroom, casting playful shadows while the curtains dance softly in the breeze.",
+                "The bed basks in warm morning light, the curtains swaying gently, filling the room with calm energy."
+            ],
+            "noon": [
+                "Bright daylight fills the room, warm air moving the curtains lazily as the bed rests in serene quiet.",
+                "The bedroom glows with midday sun, the soft breeze gently stirring lightweight curtains around the bed."
+            ],
+            "afternoon": [
+                "The room bathes in a mellow glow, curtains waving gently in the soft afternoon wind, the bed awaiting repose.",
+                "Golden afternoon light filters through billowing curtains, settling on the plush bed in peaceful stillness."
+            ],
+            "late afternoon": [
+                "Shadows grow longer as the sun dips, the curtains swaying slowly with a cooling breeze over the cozy bed.",
+                "The fading light casts a serene haze, curtains stirring gently, the bed an unchanging haven of calm."
+            ],
+            "night": [
+                "Moonlight spills softly through the curtains, the room hushed and the large bed.",
+                "The peaceful bedroom rests under a blanket of night, curtains swaying gently, wrapped in quiet comfort."
+            ]
+        },
+        "items": [
                 {
                     "name": "pillow",
                     "descriptions": [
@@ -690,17 +915,45 @@ custom_state = {
                     ]
                 }
             ]
-        },
-        {
-            "name": "computer_room",
-            "image": "computer_room",
-            "room_types": ["computer_room", "ALIFE_research"],
-            "music": "computer_room",
-            "descriptions": [
-                "A room filled with the quiet hum of electronic machines.",
-                "Desks are covered in wires and monitors. The air smells faintly of ozone."
+    },
+    {
+        "name": "computer_room",
+        "image": "computer_room",
+        "room_types": [
+            "computer_room"
+        ],
+        "music": "computer_room",
+        "descriptions": {
+            "late night": [
+                "The room is bathed in the cool glow of monitors, the hum of machines soothing in the stillness of night.",
+                "Wires cast tangled shadows as a faint ozone scent lingers, the cozy space alive with quiet electronic murmurs."
             ],
-            "items": [
+            "early morning": [
+                "Soft dawn light filters through blinds onto the cluttered desks, machines buzzing gently as the day begins.",
+                "A faint smell of ozone mixes with morning air, the room\u2019s electronics waking up in soft harmony."
+            ],
+            "morning": [
+                "Sunlight streams across tangled wires and screens, lending warmth to the room\u2019s persistent electronic hum.",
+                "Monitors flicker with fresh data, the cozy nook alive with the promise of a productive day."
+            ],
+            "noon": [
+                "Bright midday light floods the room, illuminating every wire and screen amidst the steady electronic chorus.",
+                "The ozone scent sharpens slightly as machines work steadily under the sunlit windows."
+            ],
+            "afternoon": [
+                "The room holds a comfortable buzz, monitors displaying shifting data under mellow afternoon light.",
+                "Wires glint softly while the ozone perfume mingles with the warmth of the fading sun."
+            ],
+            "late afternoon": [
+                "Golden light spills over desks tangled in cables, enhancing the cozy yet industrious atmosphere.",
+                "The hum of machines grows steadier, the ozone tang hanging lightly as day turns toward dusk."
+            ],
+            "night": [
+                "Dimmed monitors cast cool blues across the wired desks, the ozone scent deepening in the quiet night.",
+                "The room feels both alive and intimate, a world of electronic whispers beneath the cover of darkness."
+            ]
+        },
+        "items": [
                 {
                     "name": "usb_drive",
                     "descriptions": [
@@ -759,17 +1012,45 @@ custom_state = {
                     "type": "misc"
                 }
             ]
-        },
-        {
-            "name": "garden",
-            "image": "garden",
-            "room_types": ["garden"],
-            "music": "garden",
-            "descriptions": [
-                "A lush garden, bursting with greenery and color.",
-                "Bees hum among the flowers. The air is fresh and earthy."
+    },
+    {
+        "name": "garden",
+        "image": "garden",
+        "room_types": [
+            "garden"
+        ],
+        "music": "garden",
+        "descriptions": {
+            "late night": [
+                "The garden is enveloped in velvety darkness, with moonlight casting silver shadows on the dense leaves.",
+                "A gentle breeze stirs the fragrant blossoms as the nocturnal hum of insects fills the air."
             ],
-            "items": [
+            "early morning": [
+                "Soft dawn light filters through dew-soaked leaves, making the garden glisten with fresh promise.",
+                "Birdsong gently awakens the vibrant blooms, and the air smells cool and earthy."
+            ],
+            "morning": [
+                "Sunlight streams warmly into the garden, highlighting bursts of colorful flowers and lush greenery.",
+                "The cozy nook invites quiet reflection amid the lively rustle of morning activity."
+            ],
+            "noon": [
+                "Bright midday sun bathes the garden in golden light, intensifying the vivid hues of leaves and petals.",
+                "A soothing shade offers respite within the dense foliage, where blooms sway lazily."
+            ],
+            "afternoon": [
+                "The garden thrives under soft, warm light as shadows lengthen and colors deepen.",
+                "A comforting hum of bees and the subtle fragrance of blossoms create a serene retreat."
+            ],
+            "late afternoon": [
+                "Golden hour sunlight filters through the leaves, casting dappled patterns across the cozy garden.",
+                "The air is rich with floral scents as the greenery glows softly before dusk."
+            ],
+            "night": [
+                "Twinkling stars peek above the silhouette of leaves, while the garden rests in cool, gentle darkness.",
+                "Quiet and intimate, the cozy garden feels like a secret haven under the night sky."
+            ]
+        },
+        "items": [
                 {
                     "name": "watering_can",
                     "descriptions": [
@@ -870,17 +1151,45 @@ custom_state = {
                     ]
                 }
             ]
-        },
-        {
-            "name": "white_room",
-            "image": "white_room",
-            "room_types": ["white_room"],
-            "music": "white_room",
-            "descriptions": [
-                "An unsettlingly empty white room.",
-                "The walls, floor, and ceiling are seamless and pure white. There are no windows or doors visible initially, just a uniform, featureless space."
+    },
+    {
+        "name": "white_room",
+        "image": "white_room",
+        "room_types": [
+            "white_room"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "The room pulses with an eerie stillness, its white surfaces glowing faintly under an unseen, ghostly light.",
+                "Shadows barely form in the seamless white, the silence thick and unsettling in the deep night."
             ],
-            "items": [
+            "early morning": [
+                "A pale, diffused light creeps invisibly, lending the whiteness a cold, clinical chill.",
+                "The room's emptiness feels sharper as faint light hints at the hollow space without revealing its boundaries."
+            ],
+            "morning": [
+                "Soft, neutral light pervades the space, making the seamless whiteness almost blinding in its emptiness.",
+                "The stark white room feels vast and hollow, empty but strangely expectant under morning\u2019s glow."
+            ],
+            "noon": [
+                "Bright, unyielding whiteness envelopes the space, erasing any sense of depth or formality.",
+                "The room\u2019s seamless whiteness blazes with midday light, sterile and disorienting without any features."
+            ],
+            "afternoon": [
+                "The uniform white continues to dominate, now softer with the slight warmth of afternoon, but no less vacant.",
+                "Diffuse light washes the room, the walls seemingly swallowing any sound or movement in the eerie quiet."
+            ],
+            "late afternoon": [
+                "The light fades subtly, casting no shadows yet thickening the room\u2019s oppressive sterility.",
+                "A faint yellowish tint seeps into the white, deepening the unsettling emptiness as day wanes."
+            ],
+            "night": [
+                "The white emptiness dims to a spectral pale glow, as if bioluminescent, amplifying the room\u2019s ghostly silence.",
+                "Darkness encroaches invisibly, leaving the room an endless void wrapped in an unsettling, muted light."
+            ]
+        },
+        "items": [
                 {
                     "name": "stark_white_pedestal",
                     "descriptions": [
@@ -898,209 +1207,45 @@ custom_state = {
                     "type": "misc"
                 }
             ]
-        },
-        {
-            "name": "lab_room",
-            "id": 0,
-            "image": "lab_room",
-            "room_types": ["ALIFE_research"],
-            "music": "white_room",
-            "descriptions": [
-                "A modern laboratory dedicated to A-Life research.",
-                "The light in here is of a deep blue tone"
-            ],
-            "items": []
-        }
-    ],
-    "inventory": [],
-    "current_emote": "neutral",
-    "possible_emotes": {
-        "neutral": "I'm feeling calm and attentive.",
-        "happy": "I'm feeling cheerful and optimistic.",
-        "sad": "I'm feeling down.",
-        "confused": "I'm unsure or puzzled.",
-        "excited": "I'm enthusiastic and eager.",
-        "thinking": "I'm processing information or contemplating.",
-        "angry": "I'm feeling frustrated or upset."
     },
-    "stats": {
-        "fullness": 200.0,
-        "hydration": 200.0,
-        "energy": 200.0
-    },
-    "is_color_configured": False,
-    "pet_theme_color": [
-        100,
-        255,
-        100
-    ],
-    "steps": 0
-}
-
-
-
-base_state={
-            # --- Inventory/House State ---
-            "next_item_id": ITEM_ID_START_COUNTER,
-            "next_room_id": ROOM_ID_START_COUNTER,
-            "current_room_id": 0, # Default starting room ID (must match one below)
-            "rooms": [
-                {
-                    "name": "living_room",
-                    "image": "living_room",
-                    "room_types": ["living_room"],
-                    "music": "living_room",
-                    "descriptions": [
-                        "A comfortable living room with a fireplace.",
-                        "Sunlight streams through the large window."
-                    ],
-                    "items": [
-                        {
-                            "name": "sofa",
-                            "descriptions": ["A large, comfy sofa.", "It looks well-worn."],
-                            "static": True,
-                            "type": "furniture"
-                        },
-                         {
-                            "name": "remote_control",
-                            "descriptions": ["A universal remote control.", "It has many buttons."],
-                            "static": False,
-                            "type": "tool"
-                        },
-                         {
-                            "name": "pizza_slice",
-                            "descriptions": ["A cold pepperoni pizza slice", "It got here yesterday"],
-                            "static": False,
-                            "type": "consumable",
-                            "stats_edit": {"fullness":20,
-                                        "hydration": -10,
-                                        "energy": 10},
-                            "effects": ["Even tho it is cold, it is tasty", "The spices it has make you feel a bit energized, and thirsty"]
-                        }
-                    ]
-                },
-                {
-                    "name": "kitchen",
-                    "image": "kitchen",
-                    "room_types": ["kitchen"],
-                    "music": "kitchen",
-                    "descriptions": [
-                        "A clean, modern kitchen.",
-                        "The smell of fresh coffee lingers."
-                    ],
-                    "items": []
-                },
-                {
-                    "name": "library",
-                    "image": "library",
-                    "room_types": ["library", "computer_room"],
-                    "music": "library",
-                    "descriptions": [
-                        "A clean, modern library.",
-                        "It looks quite dark"
-                    ],
-                    "items": []
-                }
-            ],
-            "inventory": [
-                {
-                    "name": "old_key",
-                    "descriptions": ["A small, rusty key.", "It might open something."],
-                    "static": False,
-                    "type": "key"
-                },
-                 # Default Book Item with ID and Chapters
-                 {
-                     "name": "Mysteries of the Cozy House",
-                     "descriptions": ["A worn leather-bound book.", "Seems to be a personal journal."],
-                     "static": False,
-                     "type": "book",
-                     "chapters": [
-                         {
-                             "title": "The Creaking Floorboard",
-                             "content": "It was a dark and stormy night..."
-                         },
-                         {
-                             "title": "Whispers in the Walls",
-                             "content": "They say the house has secrets..."
-                         }
-                     ]
-                 }
-            ],
-            # --- Emote State (NEW) ---
-            "current_emote": "neutral",
-            "possible_emotes": {
-                "neutral": "I'm feeling calm and attentive.",
-                "happy": "I'm feeling cheerful and optimistic.",
-                "sad": "I'm feeling down.",
-                "confused": "I'm unsure or puzzled.",
-                "excited": "I'm enthusiastic and eager.",
-                "thinking": "I'm processing information or contemplating.",
-                "angry": "I'm feeling frustrated or upset."
-            },
-            # --- End Emote State ---
-
-            ## -- health state -- ##
-                "stats": {
-                "fullness": 200.0,
-                "hydration": 200.0,
-                "energy": 200.0
-            },
-    # --- End Stats State -
-
-    # --- NEW: Pet Theme Color Configuration ---
-    "is_color_configured": False, # Flag to indicate if the one-time setup is done
-    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
-    "steps": 0
-    # --- End Pet Theme Color ---
-            # --- End Stats State -
-        }
-        # --- End of override ---
-
-
-
-simple_lab={
-            # --- Inventory/House State ---
-            "next_item_id": ITEM_ID_START_COUNTER,
-            "next_room_id": ROOM_ID_START_COUNTER,
-            "current_room_id": 0, # Default starting room ID (must match one below)
-            "rooms": [
-                
-                {
-                    "name": "kitchen",
-                    "image": "kitchen",
-                    "room_types": ["kitchen"],
-                    "music": "kitchen",
-                    "descriptions": [
-                        "A clean, modern kitchen.",
-                        "The smell of fresh coffee lingers."
-                    ],
-                    "items": []
-                },
-                {
-                    "name": "library",
-                    "image": "library",
-                    "room_types": ["library", "computer_room"],
-                    "music": "library",
-                    "descriptions": [
-                        "A clean, modern library.",
-                        "It looks quite dark"
-                    ],
-                    "items": []
-                },
                 {
                     "name": "lab_room",
-                    "id": 0,
                     "image": "lab_room",
                     "room_types": ["ALIFE_research"],
                     "music": "white_room",
-                    "descriptions": [
-                        "A modern laboratory dedicated to A-Life research.",
-                        "The light in here is of a deep blue tone"
-                    ],
+                    "descriptions": {
+    "late night": [
+        "A modern laboratory dedicated to A-Life research. The lab is quiet at this late hour.",
+        "The light in here is of a deep blue tone, casting long shadows."
+    ],
+    "early morning": [
+        "The lab is just beginning to stir, with a faint hum of machinery.",
+        "A cool, crisp light filters through the blinds."
+    ],
+    "morning": [
+        "Activity in the lab is picking up, researchers are at their stations.",
+        "Bright, natural light fills the room."
+    ],
+    "noon": [
+        "The lab is bustling with activity.",
+        "The overhead lights are at their brightest."
+    ],
+    "afternoon": [
+        "The afternoon slump seems to have hit, some researchers are taking a break.",
+        "The blue light feels a bit softer now."
+    ],
+    "late afternoon": [
+        "The lab is starting to wind down, but experiments are still running.",
+        "The light outside is beginning to dim, contrasting with the lab's blue glow."
+    ],
+    "night": [
+        "Only a few dedicated researchers remain, the lab is peaceful.",
+        "The deep blue light dominates, creating an atmospheric calm."
+    ]
+},
                     "items": []
                 }
-            ],
+],
             "inventory": [],
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
@@ -1131,3 +1276,4 @@ simple_lab={
             # --- End Stats State -
         }
         # --- End of override ---
+

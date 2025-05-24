@@ -8,8 +8,9 @@ import random
 import math
 import datetime # Import datetime for timestamping
 
+from utils.time_manager import get_time_tag_from_now
 
-from inventory_items.items_init import custom_state, base_state, simple_lab
+from inventory_items.items_init import base_state
 # Assuming generic_json_tool.py is in the same directory or accessible in the path
 try:
     from utils.generic_json_tool import GenericJsonTool
@@ -59,7 +60,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
         # Define the default state structure, now moved to items_init
-        self._default_state = custom_state # custom_state
+        self._default_state = base_state # custom_state
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state
@@ -332,9 +333,9 @@ class InventoryHouseManager(GenericJsonTool):
                 print(f"Validation Warning: Room ID {room['id']} has invalid or empty name. Setting to 'Unnamed Room'.")
                 room["name"] = "Unnamed Room"
                 needs_save = True
-            if not isinstance(room.get("descriptions"), list) or not all(isinstance(d, str) for d in room.get("descriptions", [])):
-                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid descriptions (not list of strings). Correcting to empty list.")
-                room["descriptions"] = []
+            if not isinstance(room.get("descriptions"), dict):
+                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid descriptions (not dictionary). Correcting to empty dict.")
+                room["descriptions"] = {}
                 needs_save = True
             # Ensure items is a list before processing
             if not isinstance(room.get("items"), list):
@@ -917,38 +918,43 @@ class InventoryHouseManager(GenericJsonTool):
         if not isinstance(room_id, int):
             return f"Failed to move: Room ID must be an integer, received '{room_id}' ({type(room_id).__name__})."
 
+        time_tag = get_time_tag_from_now()
         target_room = self._find_room_by_id(room_id)
 
         if target_room:
-            if self._state.get("current_room_id") == room_id: # Use .get() for safety
+            if self._state.get("current_room_id") == room_id:  # Use .get() for safety
                 return f"You are already in the {self._format_room_for_display(target_room)}."
             else:
                 self._state["current_room_id"] = room_id
                 self._write_json(self._state)
                 # Retrieve updated current room info for signal
-                current_room = self._find_room_by_id(self._state.get("current_room_id")) # Use .get()
+                current_room = self._find_room_by_id(self._state.get("current_room_id"))  # Use .get()
                 if current_room:
-                    c_name = current_room.get("image", "unnamed_image") # Use .get(), lowercase for path convention
+                    c_name = current_room.get("image", "unnamed_image")  # Use .get(), lowercase for path convention
                     # Send signal for background change
-                    self._send_signal({"type": "change_background", "image_path": f"{c_name}"}) # Assuming .png extension
+                    self._send_signal({"type": "change_background", "image_path": f"{c_name}"})  # Assuming .png extension
 
-                descriptions = target_room.get("descriptions", []) # Use .get(), default to empty list
+                # --- MODIFICATION START ---
+                room_descriptions_by_time = target_room.get("descriptions", {})  # Get the descriptions dictionary
+                descriptions = room_descriptions_by_time.get(time_tag, []) if time_tag else [] # Get description for current time_tag
+                # --- MODIFICATION END ---
+
                 # Ensure descriptions is a list of strings before joining
                 if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
-                    descriptions = [] # Reset if invalid type
-                    desc_str = "(No description available.)"
-                else:
+                    descriptions = []  # Reset if invalid type
+                desc_str = "(No description available.)"
+                if descriptions:
                     desc_str = ", ".join(descriptions)
-                    if not desc_str: # If list was empty
-                        desc_str = "(No description available.)"
+                if not desc_str:  # If list was empty
+                    desc_str = "(No description available.)"
 
                 list_room_items_names, list_inventory_item_names = self.list_inventories()
                 # list_inventory_item_names would now be ['old_key', 'Mysteries of the Cozy House']
                 # based on your base_state example
 
-                self._send_signal({f"type": "room_inventory", "item_list":list_room_items_names})
+                self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
 
-                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pointer_icon.png"}) 
+                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pointer_icon.png"})
 
                 return f"You move to the {self._format_room_for_display(target_room)}. {desc_str}"
         else:
@@ -957,26 +963,30 @@ class InventoryHouseManager(GenericJsonTool):
 
     def get_current_room_description(self):
         """
-        Gets the description(s) of the current room.
+        Gets the description(s) of the current room based on the current time tag.
 
         Returns:
             str: A combined string of the room descriptions, or an error message.
         """
-        current_room_id = self._state.get("current_room_id") # Use .get()
+        current_room_id = self._state.get("current_room_id")  # Use .get()
         room_data = self._find_room_by_id(current_room_id)
+        time_tag = get_time_tag_from_now() # Get the current time tag
 
-        if room_data: # Check if room_data is not None
+        if room_data:  # Check if room_data is not None
             room_display = self._format_room_for_display(room_data)
-            descriptions = room_data.get("descriptions", []) # Use .get(), default to empty list
+            # --- MODIFICATION START ---
+            room_descriptions_by_time = room_data.get("descriptions", {}) # Get the descriptions dictionary
+            descriptions = room_descriptions_by_time.get(time_tag, []) if time_tag else [] # Get description for current time_tag
+            # --- MODIFICATION END ---
 
             if isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
                 if descriptions:
-                    return f"Description for {room_display}:\n" + "\n".join(descriptions)
+                    return f"Description for {room_display} ({time_tag}):\n" + "\n".join(descriptions)
                 else:
-                    return f"The {room_display} has no specific description."
+                    return f"The {room_display} has no specific description for '{time_tag}'."
             else:
                 # This case should ideally be caught by validation, but defensive
-                return f"Error: Descriptions for {room_display} are corrupted."
+                return f"Error: Descriptions for {room_display} are corrupted for time tag '{time_tag}'."
         else:
             # This case means _find_room_by_id returned None, current_room_id is invalid
             return f"Error: Could not find description for current room (ID: {current_room_id}). State might be corrupted."
