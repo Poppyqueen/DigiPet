@@ -20,10 +20,9 @@ from world_data.care_packages import (
 
 # --- General Configuration ---
 # Window and Layout Dimensions
-# # slightly taller design?
+# slightly taller design?
 WIDTH, HEIGHT = 450, 550
 DEFAULT_PANEL_WIDTH = 200
-#PANEL_WIDTH = 200 # This is for the chat panel on the RIGHT
 INPUT_HEIGHT = 40
 PADDING = 3 # Space around elements within the panel
 
@@ -34,7 +33,7 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 # # Window and Layout Dimensions
 # # square window?
 # WIDTH, HEIGHT = 550, 550
-# #PANEL_WIDTH = 225 # This is for the chat panel on the RIGHT
+# DEFAULT_PANEL_WIDTH = 225
 # INPUT_HEIGHT = 40
 # PADDING = 2 # Space around elements within the panel
 

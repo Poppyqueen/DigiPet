@@ -209,7 +209,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                                 cursor_y_start = text_y
                                 cursor_y_end = text_y + text_surface.get_height()
                                 cursor_x = max(input_text_draw_area.left, min(cursor_x, input_text_draw_area.right - 1))
-                                pygame.draw.line(screen, config.WHITE, (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
+                                pygame.draw.line(screen, state.game_theme_colors["user_message_color"], (cursor_x, cursor_y_start), (cursor_x, cursor_y_end), 1)
                     except pygame.error as e:
                         print(f"Pygame error rendering user input or cursor: {e}")
                 screen.set_clip(original_clip)
