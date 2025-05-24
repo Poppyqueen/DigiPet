@@ -22,14 +22,14 @@ def draw_package_buttons(screen, is_input_locked):
     # to the end of the right scroll button.
     backdrop_left = gui_core._left_scroll_button_rect.left
     backdrop_right = gui_core._right_scroll_button_rect.right
-    backdrop_width = backdrop_right - backdrop_left
-    backdrop_height = config.INPUT_HEIGHT # Same as before
+    backdrop_width = backdrop_right - backdrop_left + 10
+    backdrop_height = config.INPUT_HEIGHT + 3 # Same as before
 
     # Define the backdrop rect
     _backdrop_area_rect = pygame.Rect(
-        backdrop_left,
+        backdrop_left- 3,
         config.HEIGHT - backdrop_height - config.PADDING, # Bottom position
-        backdrop_width,
+        backdrop_width-3,
         backdrop_height
     )
 
@@ -96,7 +96,7 @@ def draw_package_buttons(screen, is_input_locked):
 
         # Render the outline text slightly offset (using button_color for outline as before)
         # This creates a 'debossed' or 'cutout' look
-        outline_surface = gui_core._font.render(number_text, True, button_color)
+        outline_surface = gui_core._font.render(number_text, True, state.game_theme_colors["contrast_color"])
         outline_rect = outline_surface.get_rect(center=button_rect.center)
 
         offsets = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -110,7 +110,7 @@ def draw_package_buttons(screen, is_input_locked):
             text_color = (255, 255, 255)
 
         # Render the main text on top
-        text_surface =gui_core._font.render(number_text, True, text_color)
+        text_surface =gui_core._font.render(number_text, True, state.game_theme_colors["original_pet_color"])
         text_rect = text_surface.get_rect(center=button_rect.center) # Center text on the button's center
         screen.blit(text_surface, text_rect)
 

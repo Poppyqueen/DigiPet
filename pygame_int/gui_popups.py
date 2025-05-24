@@ -11,7 +11,8 @@ from pygame_int import gui_core # For _font, _gui_rects, etc.
 class PopupMessage:
     """Represents a single floating pop-up message."""
     def __init__(self, text_surface, initial_pos, start_time):
-        self.text_surface = text_surface # Pygame surface of the rendered text
+        # text_surface now includes the pre-rendered border
+        self.text_surface = text_surface
         self.initial_pos = initial_pos   # Starting (x, y) tuple for the message
         self.start_time = start_time     # Milliseconds since the message started
         self.current_pos = list(initial_pos)   # Use a list so we can update it in place
@@ -81,10 +82,16 @@ _active_image_popups = {} # Key: int (type), Value: ImagePopup instance
 # --- Function to trigger a floating pop-up message ---
 def show_popup_message(text, color=None):
     """
-    Creates a new floating pop-up message and adds it to the active list.
+    Creates a new floating pop-up message with a border and adds it to the active list.
     """
     if not color:
-        color = state.pet_color
+        color = state.game_theme_colors["contrast_color"]
+    
+    # Define border color and offset
+    # Choose border color based on main text color for better contrast
+    border_color =  state.game_theme_colors["original_pet_color"] # Default black border
+
+    border_offset_px = 1 # 1 pixel offset for the border outline
 
     if gui_core._font is None:
          print("Error: show_popup_message called before gui_core._font is initialized.")
@@ -94,34 +101,66 @@ def show_popup_message(text, color=None):
          return
 
     try:
-        text_surface = gui_core._font.render(text.strip(), True, color)
+        # Render main text surface
+        text_surface_main = gui_core._font.render(text.strip(), True, color)
+        
+        # Render border text surface
+        text_surface_border = gui_core._font.render(text.strip(), True, border_color)
+
+        # Calculate the size of the combined surface, adding space for the border
+        combined_width = text_surface_main.get_width() + 2 * border_offset_px
+        combined_height = text_surface_main.get_height() + 2 * border_offset_px
+        
+        # Create a new surface with SRCALPHA for transparency
+        combined_text_surface = pygame.Surface((combined_width, combined_height), pygame.SRCALPHA)
+        
+        # Blit the border text at offset positions (8 directions for a full outline)
+        offsets = [
+            (-border_offset_px, -border_offset_px), (0, -border_offset_px), (border_offset_px, -border_offset_px),
+            (-border_offset_px, 0),                                         (border_offset_px, 0),
+            (-border_offset_px, border_offset_px), (0, border_offset_px), (border_offset_px, border_offset_px)
+        ]
+        
+        for dx, dy in offsets:
+            combined_text_surface.blit(text_surface_border, (border_offset_px + dx, border_offset_px + dy))
+        
+        # Blit the main text on top, centered within the border space
+        combined_text_surface.blit(text_surface_main, (border_offset_px, border_offset_px))
+
     except pygame.error as e:
         print(f"Pygame error rendering popup text '{text}': {e}")
         return
+    except Exception as e:
+        print(f"An unexpected error occurred while preparing popup text '{text}': {e}")
+        return
 
-    base_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0) - text_surface.get_width() // 2
-    base_y = config.BASE_CIRCLE_CENTER_Y + config.POPUP_INITIAL_OFFSET_Y
+    # Calculate the initial position for the *combined* text surface.
+    # We want the visual center/top of the *original* text to align as before.
+    # The `combined_text_surface` is `2 * border_offset_px` wider and taller.
+    
+    # Horizontal centering: Center the entire combined surface.
+    final_pos_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0) - combined_text_surface.get_width() // 2
+    
+    # Vertical positioning: Adjust so the top of the *main text* (after border) is at the original `POPUP_INITIAL_OFFSET_Y`.
+    # This means the top of the `combined_text_surface` must be `border_offset_px` higher.
+    final_pos_y = config.BASE_CIRCLE_CENTER_Y + config.POPUP_INITIAL_OFFSET_Y - border_offset_px
 
+    # Apply random spread as before
     rand_offset_x = random.uniform(-config.POPUP_RANDOM_SPREAD_X, config.POPUP_RANDOM_SPREAD_X)
     rand_offset_y = random.uniform(-config.POPUP_RANDOM_SPREAD_Y, config.POPUP_RANDOM_SPREAD_Y)
 
-    initial_x = base_x + rand_offset_x
-    initial_y = base_y + rand_offset_y
+    initial_x = final_pos_x + rand_offset_x
+    initial_y = final_pos_y + rand_offset_y
 
     start_time = pygame.time.get_ticks()
-    new_popup = PopupMessage(text_surface, (initial_x, initial_y), start_time)
+    new_popup = PopupMessage(combined_text_surface, (initial_x, initial_y), start_time)
     state.active_popups.append(new_popup)
-
-# Add this function to your popups module (gui_popups.py)
 
 def is_any_image_popup_currently_active():
     """Checks if any image popup is currently active (visible and not expired)."""
     global _active_image_popups
     for popup in _active_image_popups.values():
         if popup.visible:
-            # You might also want to check if it's actually drawing (alpha > 0)
-            # For that, you'd need the current time to calculate alpha,
-            # but popup.visible generally means it's "supposed to be shown or fading".
             current_time = pygame.time.get_ticks()
             elapsed_time = current_time - popup.start_time
             remaining_time = (popup.start_time + popup.duration) - current_time
@@ -191,22 +230,12 @@ def update_popups(current_time_ms):
         popup.text_surface.set_alpha(int(alpha))
 
     # Update image popups
-    # Iterate over a list of keys to allow modification of the dictionary
     for popup_type in list(_active_image_popups.keys()):
         image_popup = _active_image_popups[popup_type]
+        # Only set visible to False once the full duration has passed
         if image_popup.visible:
             if current_time_ms >= image_popup.start_time + image_popup.duration:
-                image_popup.visible = False # Mark as not visible
-                # Optionally, remove from dictionary if no longer needed
-                # print(f"Image popup type {image_popup.type} duration ended.")
-        # If not visible and we want to clean up, we could remove it here:
-        # if not image_popup.visible:
-        #     del _active_image_popups[popup_type]
-        # However, keeping it until replaced or explicitly cleared might be simpler for fade-out logic.
-        # The current drawing function handles non-visible popups correctly by not drawing them.
-        # If fade-out is entirely handled by alpha calculation during draw,
-        # then just setting visible = False when duration is over is enough.
-        # The drawing function will show 0 alpha if past duration + fade_out.
+                image_popup.visible = False
 
 # --- Function to draw active pop-up messages (text popups) ---
 def draw_popups(screen):
@@ -226,49 +255,33 @@ def draw_active_image_popups(screen): # Renamed function
     global _active_image_popups
     current_time = pygame.time.get_ticks()
 
-    # Sort by type to control draw order if necessary (e.g., type 0 background first)
-    # For now, dictionary iteration order is generally fine for a few items.
-    # If specific layering is critical (e.g. type 0 always behind others),
-    # you might draw type 0 first, then others.
-
-    # Optional: Draw type 0 first if it has a background
+    # Draw type 0 (full screen splash) background first, if applicable
     if 0 in _active_image_popups:
         popup = _active_image_popups[0]
+        # Ensure the background is only drawn when the type 0 popup is visible
+        # AND when the initial popup phase flag is active, to prevent persistent dimming.
         if popup.visible and popup.background_surface and state.is_initial_popup_phase:
-            # Alpha for background dimming itself is not currently time-based, it's fixed.
-            # If fade-in/out should apply to the dimming, that's an additional logic layer.
-            # For now, assuming the background_surface has its own alpha set at creation.
             screen.blit(popup.background_surface, (0, 0))
 
 
-    for popup_type, popup in _active_image_popups.items():
+    for popup_type, popup in list(_active_image_popups.items()): # Iterate over copy to allow deletion if needed (though not currently implemented here)
         if popup.visible and popup.image_surface and popup.display_area:
             elapsed_time = current_time - popup.start_time
-            # remaining_time relative to this specific popup's life
             remaining_time = (popup.start_time + popup.duration) - current_time
 
             alpha = 255
             # Fade-in phase
             if popup.fade_in_duration > 0 and elapsed_time < popup.fade_in_duration:
                 alpha = int((elapsed_time / popup.fade_in_duration) * 255)
-            # Fade-out phase: only if fade_out_duration is set AND we are within that window before the *actual* end
-            # The end of visibility is start_time + duration.
-            # Fade out starts at (start_time + duration - fade_out_duration).
+            # Fade-out phase: starts `fade_out_duration` before the end of the total duration
             elif popup.fade_out_duration > 0 and remaining_time <= popup.fade_out_duration and remaining_time > 0:
                 alpha = int((remaining_time / popup.fade_out_duration) * 255)
-            # If past the full duration (including any implicit fade-out time if fade_out_duration is 0)
+            # If past the full duration, should be invisible
             elif remaining_time <= 0:
-                alpha = 0 # Should be invisible
+                alpha = 0 
 
-            alpha = max(0, min(255, alpha)) # Clamp alpha
+            alpha = max(0, min(255, alpha)) # Clamp alpha between 0 and 255
 
             if alpha > 0: # Only blit if it's going to be visible
                 popup.image_surface.set_alpha(alpha)
                 screen.blit(popup.image_surface, popup.display_area.topleft)
-        elif not popup.visible and popup_type in _active_image_popups and (current_time > popup.start_time + popup.duration):
-            # Optional: Clean up popups that have fully expired and are no longer visible
-            # This check is a bit redundant if update_popups simply marks them not visible
-            # and we don't need to reclaim memory aggressively.
-            # If we were to clean up:
-            # del _active_image_popups[popup_type] # This would need list(_active_image_popups.keys()) for iteration
-            pass

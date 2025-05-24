@@ -988,6 +988,7 @@ while running:
                         music_player.toggle_mute()
                         # Optional: Add a system message or popup to confirm state
                         mute_status = "muted" if music_player.get_is_muted() else "unmuted"
+                        state.is_muted=music_player.get_is_muted()
                         gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
                     else:
                         print("Jukebox not initialized, cannot toggle mute.")
