@@ -58,7 +58,6 @@ MAX_MESSAGE_HISTORY = 50  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
 IDLE_TIMEOUT_MINUTES = 3 # Minutes until pet is considered idle
 IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
-
 # Background
 fallback_bg_color = (50, 50, 70) # Default background color
 
@@ -390,3 +389,9 @@ STAT_CHANGED_EVENT = pygame.event.custom_type() # Signal that a pet stat has cha
 ROOM_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current room inventory LIST
 PLAYER_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current player inventory LIST
 SHOW_ICON_POPUP_EVENT = pygame.event.custom_type() # Signal to show a stat/item change pop-up
+
+
+
+MESSAGE_PADDING = 3 # Example: 10 pixels of padding between messages
+
+

@@ -42,7 +42,7 @@ class InventoryHouseManager(GenericJsonTool):
 
     # Define starting IDs for generation.
     ITEM_ID_START_COUNTER = 0
-    ROOM_ID_START_COUNTER = 0
+    ROOM_ID_START_COUNTER = 1
     MAX_INVENTORY_SLOTS = 20 # You can set this number to whatever you like
 
     def __init__(self, base_path, signal=None, memory=None):
@@ -1598,7 +1598,7 @@ class InventoryHouseManager(GenericJsonTool):
 
         if added_count > 0:
             item_plural = "item" if added_count == 1 else "items"
-            messages.append(f"Successfully created {added_count} {item_plural} and placed in {location_desc}.")
+            messages.append(f"Successfully created {added_count} {item_plural} and placed in {location_desc} with IDs {', '.join(map(str, successfully_created_ids))}.")
 
         if failed_items_info:
             failure_details = "\n".join([f"- {name}: {reason}" for name, reason in failed_items_info])
@@ -1962,7 +1962,7 @@ class InventoryHouseManager(GenericJsonTool):
         }
         # Delegate to the generic create_item method, placing in inventory
         message=self.create_item("inventory", None, book_data)
-        message =+"\nBook name: "+book_name
+        message += "\nBook name: " + book_name
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png", "popup_type": 2}) 
 
         return message

@@ -66,6 +66,52 @@ def draw_filter_overlay(screen):
     screen.blit(gui_core.overlay_surface, (0, 0))
 
 
+# --- NEW: Function to handle GUI-related events ---
+def handle_gui_event(event):
+    """
+    Handles Pygame events related to the GUI, specifically for managing input box focus.
+    This function should be called from your main event loop for each event.
+    """
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        mouse_pos = event.pos
+
+        # Retrieve the current GUI rects.
+        # It's assumed that gui_core.update_gui_rects() has been called
+        # at the start of the frame to ensure these rects are up-to-date.
+        current_gui_rects = gui_core.get_gui_rects()
+        input_rect = current_gui_rects.get('input_rect')
+
+        # Check if the panel is visible and the input_rect exists (i.e., the input box is drawn)
+        if event.button == 1 and not state.chatbot_is_processing: # was it a left click and not a scroll or other button? is the bot free?
+
+            if state.panel_visible and input_rect:
+                if not input_rect.collidepoint(mouse_pos):
+                    # If the click was outside the input box, set cursor_visible to Fals
+                    if state.cursor_active:
+                        gui_text_utils.add_message_to_history(
+                            "Input box inactive, now the bot is not listening and will act autonomously.", "system")
+                    state.cursor_active = False
+                    state.cursor_visible = False
+ 
+                    # Optional: If you manage an 'active_input_box' state, you might set it to None here:
+                    # state.active_input_box = None
+                else:
+                    # If the click was inside the input box, set cursor_visible to True.
+                    # (Note: draw_gui's 'is_input_locked' logic will still override this to False if locked).
+                    if not state.cursor_active:
+                        gui_text_utils.add_message_to_history(
+                            "Input box active, the bot is listening to you and will not act until it is freed.", "system")
+                    state.cursor_active = True
+                    # Optional: If you manage an 'active_input_box' state, you might set it here:
+                    # state.active_input_box = 'main_input_box' # Or some identifier for this specific input box
+            else:
+                # If the panel is not visible or input_rect is not available (no input box to focus on),
+                # ensure the cursor is hidden.
+                state.cursor_active = False
+                state.cursor_visible = False
+
+                # Optional: state.active_input_box = None
+
 # --- Function to draw the entire GUI panel ---
 def draw_gui(screen, current_time_ms, is_input_locked):
     """

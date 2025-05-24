@@ -21,9 +21,9 @@ chat_history = [] # Stores tuples: (text, type) for display.
 scroll_y = 0 # Pixels scrolled from the bottom of chat history. 0 means scrolled to the very bottom.
 
 # Cursor State (tied to input)
-cursor_visible = True # Controls the blinking visibility of the input cursor.
+cursor_visible = False # Controls the blinking visibility of the input cursor.
 cursor_timer = 0 # Timer for cursor blinking animation.
-
+cursor_active = False
 
 # --- Pet Core Properties ---
 # Fundamental attributes of the pet itself.

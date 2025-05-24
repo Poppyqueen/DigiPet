@@ -17,7 +17,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -577,9 +577,13 @@ while running:
     gui.gui_popups.update_popups(current_time_ms)
 
     state.cursor_timer += dt
-    if state.cursor_timer >= CURSOR_INTERVAL:
+    if state.cursor_timer >= CURSOR_INTERVAL and state.cursor_active:
         state.cursor_visible = not state.cursor_visible
         state.cursor_timer = 0
+
+    if state.cursor_active:
+        state.last_activity_time = current_time_ms # Cursor activity resets the autonomous action timer
+
 
     is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
 
@@ -588,6 +592,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             break
+
+        gui.handle_gui_event(event)
+
 
         # --- Always Handle Custom Events (like signals from chatbot) ---
         # These events should process regardless of the inventory panel state
@@ -931,7 +938,7 @@ while running:
 
         # Handle Keyboard events (typing, Ctrl+keys, Escape)
         if event.type == pygame.KEYDOWN:
-                state.last_activity_time = current_time_ms # Activity resets idle timer
+#                state.last_activity_time = current_time_ms # Activity resets idle timer
 
                 if event.key == pygame.K_ESCAPE:
                     # If inventory is open, close it. If closed, exit.
@@ -973,34 +980,21 @@ while running:
 
 
 
-                if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=0); continue
-                if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=1); continue
-                if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=2); continue
-                if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_popup_message("testing!!!!!!") ; continue
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
+                # if event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=0); continue
+                # if event.key == pygame.K_2 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=1); continue
+                # if event.key == pygame.K_3 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_image_popup("style/images/stat_icons/fullness_empty.png", 3000, 900, 900, popup_type=2); continue
+                # if event.key == pygame.K_4 and pygame.key.get_mods() & pygame.KMOD_CTRL: gui.gui_popups.show_popup_message("testing!!!!!!") ; continue
+                # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: music_player.play_new_song(f"style/sounds/music/rooms/garden.mp3"); continue
 
                 # if event.key == pygame.K_6 and pygame.key.get_mods() & pygame.KMOD_CTRL:
                 #     music_player.play_new_song(f"style/sounds/music/rooms/living_room.mp3")
                 #     continue
 
-                if event.key == pygame.K_m and pygame.key.get_mods() & pygame.KMOD_CTRL: # Use 'm' for mute
-                    if music_player is not None:
-                        music_player.toggle_mute()
-                        # Optional: Add a system message or popup to confirm state
-                        mute_status = "muted" if music_player.get_is_muted() else "unmuted"
-                        state.is_muted=music_player.get_is_muted()
-                        gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
-                    else:
-                        print("Jukebox not initialized, cannot toggle mute.")
-                        gui.gui_text_utils.add_message_to_history("Cannot toggle music: Jukebox not ready.", 'system')
-                    continue # Consume M key event
 
-                # if event.key == pygame.K_i and pygame.key.get_mods() & pygame.KMOD_CTRL: state.last_activity_time = current_time_ms - config.IDLE_TIMEOUT_MS - 1000; continue
-#                    loc = chatbot.get_current_location()
-#                    music_player = jukebox(f"style/sounds/music/rooms/{loc}.mp3") # Initialize ONLY ONCE
+                # Handle regular text input (only if cursor is active)
+                if state.cursor_active and not state.chatbot_is_processing:
+                    state.last_activity_time = current_time_ms # User typing resets idle timer
 
-                # Handle regular text input (only if inventory panel is NOT visible)
-                if not state.inventory_panel_visible:
                     if event.key == pygame.K_BACKSPACE: state.input_text = state.input_text[:-1]; state.cursor_timer = 0; state.cursor_visible = True; continue
                     elif event.key == pygame.K_RETURN:
                         user_message = state.input_text.strip()
@@ -1022,8 +1016,32 @@ while running:
                             state.cursor_timer = 0
                             state.cursor_visible = True
                             continue
-                # else: # If inventory panel IS visible, text input is ignored here
+
+                else: # If cursor is inactive, text input is ignored here
+                    if event.key == pygame.K_i:
+                        if state.inventory_panel_visible:
+                            state.inventory_panel_visible = False
+                        else:
+                            state.inventory_panel_visible = True
+                        continue
+                    if event.key == pygame.K_c:
+                        if state.panel_visible:
+                            state.panel_visible = False
+                        else:
+                            state.panel_visible = True
+                        continue
                 #     pass
+                    if event.key == pygame.K_m: # Use 'm' for mute
+                        if music_player is not None:
+                            music_player.toggle_mute()
+                            # Optional: Add a system message or popup to confirm state
+                            mute_status = "muted" if music_player.get_is_muted() else "unmuted"
+                            state.is_muted=music_player.get_is_muted()
+                            gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
+                        else:
+                            print("Jukebox not initialized, cannot toggle mute.")
+                            gui.gui_text_utils.add_message_to_history("Cannot toggle music: Jukebox not ready.", 'system')
+                        continue # Consume M key event
 
 
         # If event wasn't handled by specific checks above, continue to next event

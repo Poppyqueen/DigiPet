@@ -470,7 +470,7 @@ class room_garden:
             creation_message=self.state.create_item("inventory", None, found_item)
             message=f"While digging on the garden you found something! {creation_message}. All your stats have been lowered by {abs(edit)} for digging around."
              # --- Add signal call for finding something while digging ---
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"}) # Example icon
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2}) # Example icon
             # ---------------------------------------------------------
 
         return message

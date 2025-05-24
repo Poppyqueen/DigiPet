@@ -118,8 +118,8 @@ def add_message_to_history(text, msg_type):
         display_prefix = "System: "
         text_color = state.game_theme_colors["system_messages"]
     elif msg_type == 'system_instruction':
-        display_prefix = "Instruction: "
-        text_color = config.ORANGE
+        display_prefix = "State: "
+        text_color = config.GREY # This needs a better color
     else:
         # Handle unknown message types - set both prefix and color
         print(f"Warning: Unknown message type '{msg_type}' received. Using default style.") # Optional warning
@@ -170,6 +170,8 @@ def add_message_to_history(text, msg_type):
             rendered_surfaces.append(None) # Add None or a red error surface
             message_total_height += gui_core._line_height # Still account for the line space
 
+    # Add padding at the end of the message's total height
+    message_total_height += config.MESSAGE_PADDING 
 
     # Create the message dictionary
     message_dict = {
