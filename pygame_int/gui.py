@@ -229,8 +229,8 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         gui_inventory.draw_inventory_panel(screen)
 
     if not state.is_initial_popup_phase and gui_core._inventory_toggle_button_rect:
-        pygame.draw.circle(screen, config.INVENTORY_BUTTON_COLOR, gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
-        pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+        pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
+        pygame.draw.circle(screen, state.game_theme_colors["original_pet_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
 
 
     # --- NEW: Draw Mute Button ---

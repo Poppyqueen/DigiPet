@@ -349,7 +349,7 @@ def update_gui_rects(current_panel_width):
     # This was set to use `0` in init. If it should change, update it here.
     # For now, assuming it's initialized once and covers the game area based on initial panel state.
     # global _inventory_panel_rect
-    # _inventory_panel_rect = config.get_inventory_panel_rect(current_panel_width if state.panel_visible else 0)
+    _inventory_panel_rect = config.get_inventory_panel_rect(current_panel_width if state.panel_visible else 0)
     # The above line requires `state` access here, which is not ideal for gui_core.
     # Better to pass panel_visible status or let gui.py handle this specific rect if needed.
     # For now, _inventory_panel_rect (the modal) is NOT updated by panel width changes here.
