@@ -343,17 +343,52 @@ def update_gui_rects(current_panel_width):
     toggle_y = config.HEIGHT // 2 - toggle_btn_height // 2
     _panel_toggle_button_rect = pygame.Rect(toggle_x, toggle_y, toggle_btn_width, toggle_btn_height)
 
-    # Update inventory panel rect if it's meant to be dynamic with the chat panel
-    # The config.get_inventory_panel_rect(current_panel_width) suggests it could be.
-    # If inventory is modal over game area, it should use current_panel_width if visible, or 0 if panel hidden.
-    # This was set to use `0` in init. If it should change, update it here.
-    # For now, assuming it's initialized once and covers the game area based on initial panel state.
-    # global _inventory_panel_rect
-    _inventory_panel_rect = config.get_inventory_panel_rect(current_panel_width if state.panel_visible else 0)
-    # The above line requires `state` access here, which is not ideal for gui_core.
-    # Better to pass panel_visible status or let gui.py handle this specific rect if needed.
-    # For now, _inventory_panel_rect (the modal) is NOT updated by panel width changes here.
+    # Update inventory panel rects as it is meant to be dinamic
 
+    global _inventory_panel_rect, _room_title_rect, _player_title_rect, _room_list_area_rect, _player_list_area_rect
+    _inventory_panel_rect = config.get_inventory_panel_rect(current_panel_width if state.panel_visible else 0)
+
+
+    # Calculate the inner area after panel padding
+    inner_panel_x = _inventory_panel_rect.left + config.INVENTORY_PANEL_PADDING
+    inner_panel_y = _inventory_panel_rect.top + config.INVENTORY_PANEL_PADDING
+    inner_panel_width = _inventory_panel_rect.width - 2 * config.INVENTORY_PANEL_PADDING
+    inner_panel_height = _inventory_panel_rect.height - 2 * config.INVENTORY_PANEL_PADDING
+
+    # Calculate rects for titles
+    title_height = config.INVENTORY_PANEL_TITLE_HEIGHT
+    half_inner_width = (inner_panel_width - config.INVENTORY_PANEL_DIVIDER_WIDTH) // 2
+
+    _room_title_rect = pygame.Rect(
+        inner_panel_x,
+        inner_panel_y,
+        half_inner_width,
+        title_height
+    )
+    _player_title_rect = pygame.Rect(
+        inner_panel_x + half_inner_width + config.INVENTORY_PANEL_DIVIDER_WIDTH,
+        inner_panel_y,
+        half_inner_width,
+        title_height
+    )
+
+
+    # Calculate rects for item lists (below titles)
+    list_area_y = inner_panel_y + title_height
+    list_area_height = inner_panel_height - title_height # Remaining height for the list
+
+    _room_list_area_rect = pygame.Rect(
+        inner_panel_x,
+        list_area_y,
+        half_inner_width,
+        list_area_height
+    )
+    _player_list_area_rect = pygame.Rect(
+        inner_panel_x + half_inner_width + config.INVENTORY_PANEL_DIVIDER_WIDTH,
+        list_area_y,
+        half_inner_width,
+        list_area_height
+    )
 
 # --- Helper function to load stat icons ---
 def _load_stat_icons():

@@ -103,6 +103,7 @@ def draw_inventory_panel(screen):
         print("Error: draw_inventory_panel called before gui_core components are initialized.")
         return
 
+    
     inventory_overlay_surface = pygame.Surface((gui_core._inventory_panel_rect.width, gui_core._inventory_panel_rect.height), pygame.SRCALPHA)
     inventory_overlay_surface.fill(config.INVENTORY_PANEL_BG_COLOR)
     screen.blit(inventory_overlay_surface, (gui_core._inventory_panel_rect.left, gui_core._inventory_panel_rect.top))
