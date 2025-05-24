@@ -10,6 +10,7 @@ from pygame_int import gui_color_selector
 import pygame
 import sys
 import threading
+import asyncio
 
 
 import configparser
@@ -492,7 +493,7 @@ def chatbot_worker(user_input, input_role, chatbot_instance):
 
     try:
         # This is the blocking call that now runs in this separate thread
-        response_text = chatbot_instance.process_input(user_input, role=input_role)
+        response_text = asyncio.run(chatbot_instance.process_input(user_input, role=input_role))
 
         # process_input might return None or empty if it only triggered signals
         # In this case, we don't need to post a text response event.

@@ -25,6 +25,7 @@
 from datetime import datetime
 import os.path
 import json
+import inspect
 
 # Import the tool definitions lists
 # We still need to import these lists, but they will be organized differently below
@@ -436,10 +437,11 @@ class FunctionBuilder:
         return string_context
 
 
-    def call_function(self, name, args):
+    async def call_function(self, name, args):
         """
         Calls the function mapped to the given name.
         The function map is constructed dynamically BEFORE the call.
+        Supports both synchronous and asynchronous functions.
         """
         # Ensure the function_map is up-to-date based on the current state BEFORE attempting to call.
         # We no longer pass current_room explicitly here; construct_map gets it from state_manager
@@ -451,14 +453,19 @@ class FunctionBuilder:
         if func:
             try:
                 print(f"Calling {name} with args: {args}")
-                # Call the function using the retrieved object and unpack args
                 # Ensure args is a dictionary for **args
                 if not isinstance(args, dict):
-                     print(f"Warning: Arguments for {name} were not a dictionary. Attempting direct pass.")
-                     # Handle cases where args might not be a dict, though tool calls usually provide dicts
-                     result = func(args) if args else func() # Basic handling, might need refinement
+                    print(f"Warning: Arguments for {name} were not a dictionary. Attempting direct pass.")
+                    # Handle cases where args might not be a dict, though tool calls usually provide dicts
+                    if inspect.iscoroutinefunction(func):
+                        result = await func(args) if args else await func()
+                    else:
+                        result = func(args) if args else func() # Basic handling, might need refinement
                 else:
-                     result = func(**args) # func is either a global function or a method object
+                    if inspect.iscoroutinefunction(func):
+                        result = await func(**args)
+                    else:
+                        result = func(**args) # func is either a global function or a method object
                 print(f"{name} returned: {result}")
                 return result
             except TypeError as e:

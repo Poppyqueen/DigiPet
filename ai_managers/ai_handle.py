@@ -48,12 +48,12 @@ class ai_bot:
 
 
         
-    def call_function(self, name, args):
-        result = self.functions_builder.call_function(name, args) # Call the function using the function builder
+    async def call_function(self, name, args):
+        result = await self.functions_builder.call_function(name, args) # Call the function using the function builder
         return result # Return the result of the function call
 
     
-    def adventure_response(self, mem_structure, prompt):
+    async def adventure_response(self, mem_structure, prompt):
             our_room= self.state_manager.get_current_room_name()
 
             # Here we will implement a function to get a "current state", this will be 
@@ -118,7 +118,7 @@ class ai_bot:
 
                                 # Attempt to call the function
                                 # Pass parsed_args (which could be {} or the parsed dict)
-                                function_result = self.call_function(item.name, parsed_args)
+                                function_result = await self.call_function(item.name, parsed_args)
                                 function_array["result"] = function_result # Store successful result
                                 #print(f"Function call '{item.name}' executed successfully.")
 

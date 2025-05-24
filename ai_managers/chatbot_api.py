@@ -113,7 +113,7 @@ class CLIChatbot:
         os.system('cls' if os.name == 'nt' else 'clear')
 
 
-    def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str, depth: int = 0) -> str:
+    async def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str, depth: int = 0) -> str:
         """
         Recursively gets responses from the AI, handling function calls until a text response is received.
 
@@ -147,7 +147,7 @@ class CLIChatbot:
 
             # This function is the main API call, it sends the information necesary, returns a stringed response for any tool calls if any were made
             # Returns a function_flag if any message was a tool call, for us to process here
-            function_flag, response_content = self.ai.adventure_response(
+            function_flag, response_content = await self.ai.adventure_response(
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
                 current_full_prompt
             )
@@ -226,7 +226,7 @@ class CLIChatbot:
                      updated_mem_structure = {} # Provide default empty fallback
 
                 # Recursively call self to get the next response in the chain
-                return self._get_ai_response_sequence(updated_mem_structure, current_full_prompt, depth + 1)
+                return await self._get_ai_response_sequence(updated_mem_structure, current_full_prompt, depth + 1)
 
             else:
 
@@ -341,7 +341,7 @@ class CLIChatbot:
                 except Exception as e:
                      print(f"An error occurred while running 'say': {e}")
 
-    def process_input(self, message, role="user"):
+    async def process_input(self, message, role="user"):
         """Process user input and generate AI response."""
         # Prepare random deep memory context if enabled
 
@@ -431,7 +431,7 @@ class CLIChatbot:
         # and saves all intermediate function results and the final response to memory.
 
 
-        final_ai_response = self._get_ai_response_sequence(
+        final_ai_response = await self._get_ai_response_sequence(
             mem_structure if isinstance(mem_structure, dict) else {},
             full_prompt
         )
