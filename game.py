@@ -215,6 +215,17 @@ def handle_chatbot_signal(signal_data):
             else:
                  print("Signal 'show_icon_popup' received but no 'icon_path' in data.")
 
+        # --- NEW: Handle Show Icon Popup Signal ---
+        elif action_type == "show_message_popup":
+            message = signal_data.get("message")
+            color = signal_data.get("color", None) # Defaults to a set color if not given
+
+            if message:
+                 print(f"Signal type 'show_message_popup' received with path: {message}. Posting MESSAGE_POPUP.")
+                 pygame.event.post(pygame.event.Event(config.MESSAGE_POPUP, message=message, color=color))
+            else:
+                 print("Signal 'show_message_popup' received but no 'message' in data.")
+
         else:
              print(f"Unknown signal type received: {action_type}")
     else:
@@ -421,7 +432,19 @@ def add_items(items_list, room):
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
 gui.gui_core.init_gui_elements(font, line_height, 200)
-gui.gui_core.load_and_set_background(f"{starting_location_name}.jpg")
+
+def get_current_room_image():
+    """Retrieves the list of types for the current room."""
+    current_id = chatbot.state_manager.get_current_room_id()
+    room = chatbot.state_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
+    if room and "image" in room:
+        print(f"DEBUG: Current room image: {room['image']}")
+        return room["image"]
+    print("DEBUG: No room types found or room not found.")
+    return "" # Return empty list if no types found
+current_image=get_current_room_image()
+
+gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 
 # Initial popup, splash screen.
 gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
@@ -701,6 +724,12 @@ while running:
                 gui.gui_text_utils.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
             else:
                 print(f"Received START_SLEEP_EVENT with zero or negative duration.")
+            continue
+
+        elif event.type == config.MESSAGE_POPUP:
+            message = getattr(event, 'message', "")
+            color = getattr(event, 'color', None)
+            gui.gui_popups.show_popup_message(message, color)
             continue
 
         elif event.type == config.STAT_CHANGED_EVENT:

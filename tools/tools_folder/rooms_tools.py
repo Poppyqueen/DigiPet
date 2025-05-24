@@ -8,6 +8,8 @@
 
 # the state manager has access to inventory and wellness stats access
 
+import asyncio
+import math
 
 from utils import open_meteo_handle, tv_handle, wiki_handle, random_object, simulation
 
@@ -406,14 +408,22 @@ class room_bedroom:
     _send_signal = _send_signal # Assign the common helper function
 
     # Add instance methods here
-    def sleep(self, seconds):
+    async def sleep(self, seconds):
         #print("Going to sleep in the bedroom...")
-        message=self.state.sleep(seconds)
+        #message=self.state.sleep(seconds)
+        constant = 1
+        # Using square root:
+        energy_gain = constant * math.sqrt(seconds)
+        self._send_signal({"type": "show_message_popup", "message": "Entering sleep!"})
+        #int_gain=int(energy_gain)
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
+        await asyncio.sleep(seconds)
+        self.state.adjust_stat("energy", energy_gain)
+
         # completely delegated to the state manager
         # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
         # ------------------------
-        return message
+        return f"You rested for {seconds} seconds, recovering {energy_gain} energy points. You feel refreshed."
 
     def hug_pillow(self):
         # --- Add signal call ---

@@ -967,3 +967,30 @@ white_room_tools = [
         }
     }
 ]   
+
+
+# --- NEW: Tool Definition for simulate_data_fetch ---
+# This matches the OpenAI-like function calling schema your agent expects
+dev_room_tools = [
+{
+        "type": "function",
+        "name": "simulate_data_fetch",
+    "description": "Simulates fetching data from an external API or database asynchronously. Useful for demonstrating non-blocking I/O.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query or identifier for the data to fetch."
+                },
+                "delay": {
+                    "type": "integer",
+                    "description": "Optional. The number of seconds to simulate the data fetch delay. Defaults to 2 seconds."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    }
+
+]

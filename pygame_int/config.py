@@ -390,7 +390,7 @@ ROOM_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current room inv
 PLAYER_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current player inventory LIST
 SHOW_ICON_POPUP_EVENT = pygame.event.custom_type() # Signal to show a stat/item change pop-up
 
-
+MESSAGE_POPUP = pygame.event.custom_type()
 
 MESSAGE_PADDING = 3 # Example: 10 pixels of padding between messages
 

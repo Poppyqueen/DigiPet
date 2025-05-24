@@ -1277,3 +1277,84 @@ base_state={
         }
         # --- End of override ---
 
+
+
+
+
+
+dev_room={
+            # --- Inventory/House State ---
+            "next_item_id": ITEM_ID_START_COUNTER,
+            "next_room_id": ROOM_ID_START_COUNTER,
+            "current_room_id": 0, # Default starting room ID (must match one below)
+            "rooms": [
+                {
+                    "name": "dev_room",
+                    "id": 0,
+                    "image": "lab_room",
+                    "room_types": ["dev_room", "bedroom"],
+                    "music": "white_room",
+                    "descriptions": {
+    "late night": [
+        "A modern computer room, full with servers, cables and screens.",
+        "The light in here is of a deep blue tone, casting long shadows."
+    ],
+    "early morning": [
+        "The lab is just beginning to stir, with a faint hum of machinery.",
+        "A cool, crisp light filters through the blinds."
+    ],
+    "morning": [
+        "Activity in the lab is picking up, researchers are at their stations.",
+        "Bright, natural light fills the room."
+    ],
+    "noon": [
+        "The lab is bustling with activity.",
+        "The overhead lights are at their brightest."
+    ],
+    "afternoon": [
+        "The afternoon slump seems to have hit, some researchers are taking a break.",
+        "The blue light feels a bit softer now."
+    ],
+    "late afternoon": [
+        "The lab is starting to wind down, but experiments are still running.",
+        "The light outside is beginning to dim, contrasting with the lab's blue glow."
+    ],
+    "night": [
+        "Only a few dedicated researchers remain, the lab is peaceful.",
+        "The deep blue light dominates, creating an atmospheric calm."
+    ]
+},
+                    "items": []
+                }
+            ],
+            "inventory": [],
+            # --- Emote State (NEW) ---
+            "current_emote": "neutral",
+            "possible_emotes": {
+                "neutral": "I'm feeling calm and attentive.",
+                "happy": "I'm feeling cheerful and optimistic.",
+                "sad": "I'm feeling down.",
+                "confused": "I'm unsure or puzzled.",
+                "excited": "I'm enthusiastic and eager.",
+                "thinking": "I'm processing information or contemplating.",
+                "angry": "I'm feeling frustrated or upset."
+            },
+            # --- End Emote State ---
+
+            ## -- health state -- ##
+                "stats": {
+                "fullness": 200.0,
+                "hydration": 200.0,
+                "energy": 200.0
+            },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON
+    "steps": 0
+    # --- End Pet Theme Color ---
+            # --- End Stats State -
+        }
+        # --- End of override ---
+

@@ -633,7 +633,8 @@ class CLIChatbot:
             print("\nThank you for using the Memory-Enabled AI Chatbot!")
 
     def shutdown(self):
-        self._current_tts_process.kill()
+        #self._current_tts_process.kill()
+        pass
 
 
 def main():

@@ -40,7 +40,8 @@ from .my_tools import (
     computer_room_tools,
     garden_room_tools,
     kitchen_room_tools,
-    lab_room_tools
+    lab_room_tools,
+    dev_room_tools,
 )
 
 from utils import open_meteo_handle, simulation
@@ -50,6 +51,7 @@ from utils import open_meteo_handle, simulation
 from tools.tools_folder.bluesky_handle import bluesky_bot
 from tools.tools_folder.rooms_tools import main_tools_handle
 
+from tools.tools_folder.async_test_tool import simulate_data_fetch
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None):
@@ -68,6 +70,13 @@ class FunctionBuilder:
         # Values are dictionaries with keys "functions" (dict of function name -> callable)
         # and "definitions" (list of tool definition dicts).
         self._room_type_data = {
+            "dev_room": {
+                "functions": {
+                    "simulate_data_fetch": simulate_data_fetch
+
+                },
+                "definitions": dev_room_tools # Use the imported definition list
+            },
             "library": {
                 "functions": {
                     "create_book_item": self.state_manager.create_book_item
