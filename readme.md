@@ -1,3 +1,5 @@
+![Multiple screens displaying a 'Digital Pet' application with various interfaces and color themes.](style/images/int_utils/digipet_designs_transparent.png)
+
 # AI Digital Pet Simulation
 
 This project implements a simulation environment for a digital pet, controlled by an AI agent, within a house setting. It features environment state management, AI interaction capabilities through predefined tools, and a multi-layered memory system.
