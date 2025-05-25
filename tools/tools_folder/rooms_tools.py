@@ -398,7 +398,8 @@ class room_bathroom:
 
 # Define Bedroom Class - similarly, accept state_manager
 class room_bedroom:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, memory=None):
+        self.memory=memory
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
@@ -414,6 +415,7 @@ class room_bedroom:
         constant = 1
         # Using square root:
         energy_gain = constant * math.sqrt(seconds)
+        self.memory.save_to_memory("You beggin your sleep process.", "short_term", "system")
         self._send_signal({"type": "show_message_popup", "message": "Entering sleep!"})
         #int_gain=int(energy_gain)
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
@@ -609,7 +611,7 @@ class main_tools_handle:
         # Instantiate the room classes and store them as attributes
         # Pass the state_manager AND the signal callback to the room instances
         self.bathroom = room_bathroom(self.state, self._signal_callback)
-        self.bedroom = room_bedroom(self.state, self._signal_callback)
+        self.bedroom = room_bedroom(self.state, self._signal_callback, self.memory)
         self.living_room= room_living_room(self.state, self._signal_callback)
         self.computer = room_computer(self.state, self._signal_callback, self.wiki)
         self.garden = room_garden(self.state, self._signal_callback)

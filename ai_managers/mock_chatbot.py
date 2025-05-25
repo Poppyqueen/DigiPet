@@ -74,11 +74,11 @@ class MockChatbot:
 
         # Mock room data for name lookups, music, and inventory keys
         self._mock_room_data = {
-            "bedroom": {"name": "Bedroom", "music": "bedroom"},
-            "living_room": {"name": "Living Room", "music": "living_room"},
-            "kitchen": {"name": "Kitchen", "music": "kitchen"},
-            "garden": {"name": "Garden", "music": "garden"},
-            "bathroom": {"name": "Bathroom", "music": "bathroom"},
+            "bedroom": {"name": "Bedroom", "music": "bedroom", "image": "bedroom"},
+            "living_room": {"name": "Living Room", "music": "living_room", "image": "living_room"},
+            "kitchen": {"name": "Kitchen", "music": "kitchen", "image": "kitchen"},
+            "garden": {"name": "Garden", "music": "garden", "image": "garden"},
+            "bathroom": {"name": "Bathroom", "music": "bathroom", "image": "bathroom"},
         }
         # Mock inventory data - mapping location_id to list of item names
         self._mock_inventories = {
@@ -326,7 +326,7 @@ class MockChatbot:
                     new_room_name = self._mock_room_data[self._current_location_id]["name"]
                     response_text = f"Okay, let's go to the {new_room_name}!"
                     # Signal background change (corrected path to match typical Pygame image loading)
-                    self._signal_callback({"type": "change_background", "image_path": f"style/images/backgrounds/{self._current_location_id}.jpg"})
+                    self._signal_callback({"type": "change_background", "image_path": f"{self._current_location_id}.jpg"})
                     # Signal inventory update for the new room
                     self._signal_callback({"type": "room_inventory", "item_list": self._mock_inventories.get(self._current_location_id, [])})
                     signal_sent = True
