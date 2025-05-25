@@ -10,7 +10,7 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **Core Game:** The main game logic and Pygame initialization are handled in `game.py`.
 *   **AI Agent & Interface:** An AI chatbot module, `CLIChatbot`, acts as an endpoint for the AI agent and is integrated into `game.py`. It manages signals and interactions.
-*   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types include tool, consumable, misc, key, weapon, armor, furniture, book, and plant.
+*   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types include tool, consumable, misc, key, weapon, armor, furniture, book, and plant. The only items that contain unique functions for now are `books` abd `consumable`.
 *   **AI Interaction (Tools):** The AI interacts by calling predefined "tools" or "functions". These tools are defined in JSON structures and linked to Python functions. Tools can be **room-specific** (e.g., `dig_hole` in the garden, `prepare_food` in the kitchen), **base tools** (always available, e.g., `move_to_room`, `examine_item`), or **item-specific** (e.g., book functions). The availability of tools is dynamically determined based on the AI's current room and inventory.
 *   **Memory System:** The system includes a comprehensive memory manager (`memory_manager`) and a deep memory system (`DeepMemory`). It handles short-term, long-term, and base memory, often stored in JSON files. Memory checks can trigger summarization, and deep memory uses Named Entity Recognition (NER) extraction. Relevant deep memory context is included in the AI's prompt. Deep memory initialization requires instances of `memory_manager` and an AI bot. Note that using deep memory is cautioned against currently as it "will eat tokens" and "depends heavily on the AI's ability to extract NER correctly".
 *   **Content Generation:** AI models are used in separate scripts (`bundles_construct.py`, `tv_data_construct.py`) to dynamically generate game data like item definitions for bundles or care packages and TV channel names and program content. This generation typically happens **outside the main runtime**.
@@ -22,6 +22,8 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 To set up the project, you will typically follow these steps:
 
 1.  **Clone the Repository:** Obtain the project files. (This step is not explicitly described in the sources but is a standard prerequisite).
+
+   
 2.  **Create a Virtual Environment:** It is highly recommended to use a virtual environment to manage dependencies.
     ```bash
     python -m venv .venv
@@ -40,7 +42,6 @@ To set up the project, you will typically follow these steps:
     ```bash
     pip install -r requirements.txt
     ```
-    *(The structure of `requirements.txt` and the exact list of dependencies are not explicitly provided in the sources, but the need for dependencies is clear from the code examples)*.
 
 ## Configuration
 
@@ -66,7 +67,8 @@ To set up the project, you will typically follow these steps:
 The main entry point for the Pygame version of the game is `game.py`. The `CLIChatbot` also appears to have a command-line interface mode.
 
 1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
-2.  **Run the Game:** Navigate to the project's root directory in your terminal (with the virtual environment activated) and run:
+2.  **Modify main_config.ini** Make sure to configure your models desired and name for the folder the current pet states will be saved, `pets_folder`.
+3.  **Run the Game:** Navigate to the project's root directory in your terminal (with the virtual environment activated) and run:
     ```bash
     python game.py
     ```
@@ -76,14 +78,13 @@ The main entry point for the Pygame version of the game is `game.py`. The `CLICh
 When running the project, you can expect:
 
 *   A Pygame window displaying the digital pet and its environment.
-*   Interaction with an AI agent representing the pet, likely via a text interface, responding to inputs and performing actions.
+*   An autonomous AI agent that can take actions every set amount of time if you don't interact with it directly.
+*   Interaction with an AI agent representing the pet, responding to inputs and performing actions.
 *   The AI agent will use available tools to interact with the environment (move between rooms, use items).
 *   The AI's memory (short-term conversation, long-term notes, base knowledge, and optionally deep memory) will influence its responses and actions.
 *   Item interactions, such as consuming items to change stats, or using specific item functions like reading or writing books.
-*   Changes in the environment state (items appearing/disappearing, AI stats changing) will be managed and potentially signaled.
-*   Messages related to memory archiving and processing may appear in the console.
-*   If the AI accesses features like the A-Life simulation in the lab, you might see output related to its state or history.
-*   The AI might mention content generated offline, such as care packages or TV programs.
+*   Changes in the environment state (items appearing/disappearing, AI stats changing) will be managed and signaled.
+*   Messages related to memory archiving and processing appears in the console and are logged into a text file.
 
 
 
