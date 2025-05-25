@@ -1358,3 +1358,134 @@ dev_room={
         }
         # --- End of override ---
 
+
+
+how_to_rooms={
+            # --- Inventory/House State ---
+            "next_item_id": ITEM_ID_START_COUNTER, # Leave this as is
+            "next_room_id": ROOM_ID_START_COUNTER, # Leave this as is
+            "current_room_id": 0, # You only need to set the ID for the room you want the agent to start the very first time. Set it as 0 for the room you want.
+            "rooms": [
+                {
+                    "name": "dev_room", # A name for the room will be nothing but context
+                    "id": 0, # Here we set the ID, and to 0 as we want this to be the very first room on the world.
+                    "image": "lab_room", # This is the name of an image inside the folder style/images, add jpg images to this and based on their name change this
+                    "room_types": ["dev_room", "bedroom"], # This is tied to the tools the room will have. Tools constructor (tools/tools_builder/construct_tools.py) will use these keys to add the relevant tools to this room. I.E, You could have a room named "Airport" and have it be a kitchen, a lab room and an "airport" type (if any of those tools existed...)
+                    "music": "white_room", # Music to be looping while on the room, searches for an mp3 filed named like this inside the folder style/sounds/music/rooms
+                    "descriptions": { # Descriptions need to contain all these specific keys for them to be used at different times of the day. Can be manually made or using an AI helper to write them in: data_constructors/room_generator.py 
+    "late night": [
+        "A modern computer room, full with servers, cables and screens.",
+        "The light in here is of a deep blue tone, casting long shadows."
+    ],
+    "early morning": [
+        "The lab is just beginning to stir, with a faint hum of machinery.",
+        "A cool, crisp light filters through the blinds."
+    ],
+    "morning": [
+        "Activity in the lab is picking up, researchers are at their stations.",
+        "Bright, natural light fills the room."
+    ],
+    "noon": [
+        "The lab is bustling with activity.",
+        "The overhead lights are at their brightest."
+    ],
+    "afternoon": [
+        "The afternoon slump seems to have hit, some researchers are taking a break.",
+        "The blue light feels a bit softer now."
+    ],
+    "late afternoon": [
+        "The lab is starting to wind down, but experiments are still running.",
+        "The light outside is beginning to dim, contrasting with the lab's blue glow."
+    ],
+    "night": [
+        "Only a few dedicated researchers remain, the lab is peaceful.",
+        "The deep blue light dominates, creating an atmospheric calm."
+    ]
+},
+                    "items": [      # Here one can populate this with items, Some items need specific data,           
+                        {
+                    "name": "gardening_gloves", # This is an example of a basic item, all items need at least this information
+                    "descriptions": [
+                        "A pair of soil-stained gardening gloves."
+                    ],
+                    "static": False,
+                    "type": "misc"
+                },                {
+                    "name": "mystery_novel", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
+                    "descriptions": [
+                        "A paperback novel with a intriguing cover."
+                    ],
+                    "static": False,
+                    "type": "book",
+                    "chapters": [
+                        {
+                            "title": "The Gathering Storm",
+                            "content": "The rain lashed against the windows as Detective Miles received the anonymous call, the voice on the other end ragged with fear. \"He's gone... they took him,\" the caller choked out before the line went dead, leaving only the sound of distant thunder and Miles's own racing heart. This wasn't the typical petty crime; this felt darker, colder, like the storm brewing outside."
+                        },
+                        {
+                            "title": "A Cryptic Clue",
+                            "content": "Beneath the overturned vase, a small, folded piece of paper lay hidden, damp but the ink still legible. It wasn't a name or an address, but a series of symbols and numbers that meant nothing to Miles initially. Yet, there was a deliberate quality to its placement, a message clearly intended to be found, if only by the right eyes."
+                        },
+                        {
+                            "title": "Whispers in the Alley",
+                            "content": "Miles followed the breadcrumbs from the cryptic note to a grimy alley behind the old docks, the air thick with the smell of salt and decay. A shadowy figure lingered near overflowing bins, startled by Miles's approach. \"You askin' 'bout the professor?\" the figure rasped, eyes darting nervously. \"Saw him with a couple of rough types, headed towards the abandoned warehouse last night. Looked like they weren't goin' for tea.\"\n\nThe figure, a dockworker named Silas with a reputation for seeing things he shouldn't, reluctantly shared more details. He mentioned a distinctive symbol one of the men wore \u2013 a coiled serpent \u2013 and the specific time they'd passed by. Silas's fear was palpable, whispering that these weren't local thugs, but 'outsiders' who didn't ask questions, they just took what they wanted. His information, though sparse, gave Miles a concrete direction and a chilling confirmation that the professor's disappearance was no accident."
+                        },
+                        {
+                            "title": "The Warehouse's Secret",
+                            "content": "The abandoned warehouse loomed by the water, its broken windows like vacant eyes staring out at the choppy sea. Inside, dust motes danced in the few shafts of light filtering through the gaps in the roof. The air was cold, stagnant, and heavy with the scent of mildew and something else... something metallic and faint. Careful footsteps echoed in the vast space as Miles searched, finding scattered crates and forgotten machinery, but no immediate sign of the professor.\n\nHowever, a section of the concrete floor near the back wall seemed newer, less stained than the rest. Prying at a small crack revealed that it wasn't solid concrete, but a cleverly disguised hatch. Beneath it lay not a storage space, but a narrow, descending stairwell leading into absolute darkness, the metallic scent much stronger now. The warehouse wasn't just a drop-off point; it was a gateway to somewhere hidden beneath."
+                        }
+                    ]
+                },
+                {
+                    "name": "bowl_of_nuts", # This is a consumable item, the extra info it contains is stats_edit and effects
+                    "descriptions": [
+                        "A small ceramic bowl filled with mixed nuts."
+                    ],
+                    "static": False,
+                    "type": "consumable",
+                    "stats_edit": {
+                        "fullness": 5,
+                        "hydration": -2,
+                        "energy": 8
+                    },
+                    "effects": [
+                        "A satisfying crunch.",
+                        "You feel a slight energy boost."
+                    ]
+                },
+                
+                ] # For now, there are no other items that need extra structures, only worry about consumables and books.
+                }
+            ],
+            "inventory": [], # One can populate this with other items if we want to start with them.
+            # --- Emote State (NEW) ---
+            "current_emote": "neutral", # From the possible emotes, they don't change, each has an animation we need to make if you want to add more
+            "possible_emotes": {
+                "neutral": "I'm feeling calm and attentive.",
+                "happy": "I'm feeling cheerful and optimistic.",
+                "sad": "I'm feeling down.",
+                "confused": "I'm unsure or puzzled.",
+                "excited": "I'm enthusiastic and eager.",
+                "thinking": "I'm processing information or contemplating.",
+                "angry": "I'm feeling frustrated or upset."
+            },
+            # --- End Emote State ---
+
+            ## -- health state -- ##
+                "stats": { # Consumables and other actions can affect these
+                "fullness": 200.0,
+                "hydration": 200.0,
+                "energy": 200.0
+            },
+    # --- End Stats State -
+
+    # --- NEW: Pet Theme Color Configuration ---
+    "is_color_configured": False, # Flag to indicate if the one-time setup is done, keep as false
+    "pet_theme_color": [100, 255, 100], # Default color (green), stored as list for JSON, this color will be overwritten
+    "steps": 0 # Starts at 0
+    # --- End Pet Theme Color ---
+            # --- End Stats State -
+        }
+        # --- End of override ---
+
+

@@ -86,7 +86,9 @@ When running the project, you can expect:
 *   Changes in the environment state (items appearing/disappearing, AI stats changing) will be managed and signaled.
 *   Messages related to memory archiving and processing appears in the console and are logged into a text file.
 
+## Modify your agent
 
+* Inside the folder how_to there are two newly included tutorials that explain the process of adding new tools and rooms for the agent during the first initialization. 
 
 ## To-do: 
 

@@ -1,4 +1,4 @@
-# ai_cook.py
+# tv_data_construct.py
 
 from openai import OpenAI
 from pydantic import BaseModel, Field
