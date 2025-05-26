@@ -487,7 +487,7 @@ class Garden_Mananger(GenericJsonTool):
         # If successfully planted, remove the seed item from inventory
         self.state_manager.remove_item(item_id)
 
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/seed.png"})
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/seed.png", "popup_type": 2})
 
         return f"Successfully planted {plant_type} with UID {new_plant_uid} in plot {plot_id} of garden {current_room_id}. It is currently in the '{initial_stage_name}' stage. Seed consumed."
 
@@ -683,7 +683,7 @@ class Garden_Mananger(GenericJsonTool):
 
             # Plant remains in plot, no removal needed from the list
             self._write_json(self._state)
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png"})
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png", "popup_type": 2})
 
             return (f"{harvest_message_prefix} {harvest_yield_message} "
                     f"The plant is now in the 'mature' stage and will regrow for future harvests.")
@@ -691,7 +691,7 @@ class Garden_Mananger(GenericJsonTool):
             # For annual or biennial plants, or if life_cycle is not recognized, remove the plant from the plot
             self._state[current_room_id]["plots"][plot_index]["plants"] = []
             self._write_json(self._state)
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png"})
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png", "popup_type": 2})
 
             return (f"{harvest_message_prefix} {harvest_yield_message} "
                     f"The plant has completed its life cycle. The plot is now empty.")
