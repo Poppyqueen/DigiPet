@@ -326,24 +326,16 @@ class FunctionBuilder:
 
 
         # Add item-specific functions based on inventory
-        # Iterate through item types that have specific functions defined
-        for type, functions in self._item_specific_functions.items():
-            # You'll need a way to check if the *type* of item is in the inventory.
-            # Assuming state_manager has a method like `has_item_of_type(item_type)`
-            # Or, more robustly, iterate inventory and check item types/properties.
-            # For simplicity, let's check if the inventory contains ANY item associated with this type.
-            # A better approach might be to check specific items or item properties.
-            # Example: Check if any book is in inventory
-            if type == "book" and self.state_manager.list_inventory_books(True):
-                 self.function_map.update(functions)
-                 print(f"DEBUG: Added functions for item type: {type} (book)")
-
-            # Add checks for other item types similarly
-            # if item_type == "mirror" and self.state_manager.verify_item_in_inventory("mirror"):
-            #      self.function_map.update(functions)
-            #      print(f"DEBUG: Added functions for item type: {item_type} (mirror)")
-
-
+        inventory_items = self.state_manager.get_inventory_items(internal=True)
+        if isinstance(inventory_items, list): # Ensure it's a list
+            for item_in_inventory in inventory_items:
+                if isinstance(item_in_inventory, dict): # Ensure item is a dict
+                    item_types_list = item_in_inventory.get("type", [])
+                    if isinstance(item_types_list, list): # Ensure types is a list
+                        for individual_type_str in item_types_list:
+                            if individual_type_str in self._item_specific_functions:
+                                self.function_map.update(self._item_specific_functions[individual_type_str])
+                                print(f"DEBUG: Added functions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
         # print(f"DEBUG: Final constructed function map keys: {list(self.function_map.keys())}")
 
 
@@ -372,18 +364,16 @@ class FunctionBuilder:
                 # print(f"DEBUG: Added definitions for room type: {room_type}")
 
         # Add item-specific definitions based on inventory
-        # Iterate through item types that have specific definitions defined
-        for type, definitions in self._item_specific_definitions.items():
-             # Check if the inventory contains items of this type
-             # Example: Check if any book is in inventory
-             if type == "book" and self.state_manager.list_inventory_books(True):
-                  all_potential_definitions.extend(definitions)
-                 # print(f"DEBUG: Added definitions for item type: {item_type} (book)")
-
-             # Add checks for other item types similarly
-             # if item_type == "mirror" and self.state_manager.verify_item_in_inventory("mirror"):
-             #      all_potential_definitions.extend(definitions)
-             #      print(f"DEBUG: Added definitions for item type: {item_type} (mirror)")
+        inventory_items = self.state_manager.get_inventory_items(internal=True)
+        if isinstance(inventory_items, list): # Ensure it's a list
+            for item_in_inventory in inventory_items:
+                if isinstance(item_in_inventory, dict): # Ensure item is a dict
+                    item_types_list = item_in_inventory.get("type", [])
+                    if isinstance(item_types_list, list): # Ensure types is a list
+                        for individual_type_str in item_types_list:
+                            if individual_type_str in self._item_specific_definitions:
+                                all_potential_definitions.extend(self._item_specific_definitions[individual_type_str])
+                                # print(f"DEBUG: Added definitions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
 
 
         # Now, filter the potential definitions based on which function names

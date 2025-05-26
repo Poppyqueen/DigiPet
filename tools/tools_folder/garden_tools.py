@@ -348,11 +348,11 @@ class Garden_Mananger(GenericJsonTool):
         # *** FIX STARTS HERE ***
         item_details = attempt_item.get("item_data", {}) # Get the nested item_data dictionary
         
-        item_type = item_details.get("type") # Access 'type' from item_details
         item_name = item_details.get('name', 'unknown item') # Access 'name' from item_details
+        item_types_list = item_details.get("type", []) # Get the list of types
 
-        if item_type != "seed":
-            return f"Item {item_id} ({item_name}) is not a seed, cannot use it to plant."
+        if "seed" not in item_types_list:
+            return f"Item {item_id} ({item_name}) is not of 'seed' type (found types: {item_types_list}), cannot use it to plant."
         
         plant_type = item_details.get("plant_type") # Access 'plant_type' from item_details
         if not plant_type:

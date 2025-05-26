@@ -670,15 +670,23 @@ class InventoryHouseManager(GenericJsonTool):
             item_id_for_log = item_data.get('id', 'unknown')
             return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'static' must be a boolean."
 
-        item_type = item_data.get("type")
-        if item_type not in self.ALLOWED_ITEM_TYPES:
-            item_id_for_log = item_data.get('id', 'unknown')
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' '{item_type}' is not allowed. Allowed types: {self.ALLOWED_ITEM_TYPES}"
+        item_type = item_data.get("type", []) # Expect a list now
+        item_id_for_log = item_data.get('id', 'unknown') # Get ID for logging
+
+        if not isinstance(item_type, list):
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' must be a list, got {type(item_type).__name__}."
+        
+        if not item_type: # Check if the list is empty
+            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' list cannot be empty."
+
+        for t_val in item_type: # Renamed 't' to 't_val' to avoid conflict if 't' is used elsewhere
+            if t_val not in self.ALLOWED_ITEM_TYPES:
+                return False, f"Item '{item_name}' (ID:{item_id_for_log}) has an invalid type '{t_val}' in its type list. Allowed types: {self.ALLOWED_ITEM_TYPES}"
 
         # --- Type-specific validation ---
 
         # --- Book-specific validation ---
-        if item_type == "book":
+        if "book" in item_type:
             # Use .get() for 'chapters' key
             chapters_list = item_data.get("chapters")
             if not isinstance(chapters_list, list):
@@ -701,7 +709,7 @@ class InventoryHouseManager(GenericJsonTool):
             # Note: We don't enforce chapter title uniqueness here, could add if needed.
 
         # --- Consumable-specific validation (NEW/UPDATED) ---
-        elif item_type == "consumable":
+        if "consumable" in item_type: # Changed from elif to if
             # Validate stats_edit
             stats_edit_data = item_data.get("stats_edit")
             item_id_for_log = item_data.get('id', 'unknown') # Get ID for logging
@@ -731,9 +739,10 @@ class InventoryHouseManager(GenericJsonTool):
 
 
 # -------- Seed validation (NEW)
-        elif item_type == "seed":
+        if "seed" in item_type: # Changed from elif to if
             seed_type = item_data.get("plant_type")
             if not isinstance(seed_type, str):
+                item_id_for_log = item_data.get('id', 'unknown') # Ensure item_id_for_log is defined here
                 return False, f"Seed item '{item_name}' (ID:{item_id_for_log}) 'plant_type' key is not a string"
     
         return True, "" # Item is valid
@@ -2049,12 +2058,12 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid_book or item_data.get("type") != "book":
-            # Even if _is_valid_item_data passed, check the type explicitly
-            if item_data.get("type") != "book":
-                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+        # Even if _is_valid_item_data passed, check the type explicitly
+        if not is_valid_book or "book" not in item_data.get("type", []):
+            if "book" not in item_data.get("type", []): # This inner check is redundant if the outer check already confirmed "book" is not in type
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
             else:
-                # This shouldn't happen if validation passed, but handle defensively
+                # This branch means "book" is in item_data.get("type", []) but is_valid_book is False
                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
 
@@ -2091,10 +2100,12 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid_book or item_data.get("type") != "book":
-            if item_data.get("type") != "book":
-                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-            else:
+        if not is_valid_book or "book" not in item_data.get("type", []):
+            # If "book" is not in the type list, it's not a book.
+            # If is_valid_book is False, it means some other validation failed.
+            if "book" not in item_data.get("type", []):
+                 return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
+            else: # This means "book" is in type list, but is_valid_book is False (other corruption)
                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Check if the book is accessible
@@ -2132,10 +2143,10 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid_book or item_data.get("type") != "book":
-            if item_data.get("type") != "book":
-                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
-            else:
+        if not is_valid_book or "book" not in item_data.get("type", []):
+            if "book" not in item_data.get("type", []):
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
+            else: # "book" is in type list, but is_valid_book is False
                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
         # Delegate to the BookComponent, passing the item data and new chapter details
@@ -2175,9 +2186,9 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid_book or item_data.get("type") != "book":
-            if item_data.get("type") != "book":
-                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+        if not is_valid_book or "book" not in item_data.get("type", []):
+            if "book" not in item_data.get("type", []):
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
             else:
                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
@@ -2214,9 +2225,9 @@ class InventoryHouseManager(GenericJsonTool):
 
         # Validate that it is indeed a book item
         is_valid_book, validation_msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid_book or item_data.get("type") != "book":
-            if item_data.get("type") != "book":
-                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book."
+        if not is_valid_book or "book" not in item_data.get("type", []):
+            if "book" not in item_data.get("type", []):
+                return f"Error: Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
             else:
                 return f"Error: Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
 
@@ -2337,9 +2348,9 @@ class InventoryHouseManager(GenericJsonTool):
 
 
         # 4. Check if it's a consumable item
-        if item_data.get("type") != "consumable":
+        if "consumable" not in item_data.get("type", []):
             # Use .get() for type for safety, though validation should ensure it exists
-            return f"Failed to consume {item_display}: This item is not a consumable type ({item_data.get('type', 'unknown type')})."
+            return f"Failed to consume {item_display}: This item is not a consumable type (types found: {item_data.get('type', ['unknown type'])})."
 
         # 5. Get stat effects and text effects (use .get for safety, provide defaults)
         stats_edit = item_data.get("stats_edit", {})
