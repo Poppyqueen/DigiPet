@@ -69,7 +69,7 @@ class ItemDefinition(BaseModel):
     # 'effects' field from your example, assuming it's required for this definition structure
     effects: List[str] = Field(description="A list of strings describing narrative effects upon use.")
 
-    type: List[str] = Field(description="A list of types for the item, e.g., ['consumable', 'food']")
+    type: List[str] = Field(description="A list of types for the item, e.g., ['consumable', 'seed'], from the possible, consumable, seed or misc. A misc item cannot be a consumable.")
 
     
 # --- Structure that contains a list of these item definitions (Optional) ---
