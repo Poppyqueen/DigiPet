@@ -1292,7 +1292,8 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["dev_room", "bedroom"],
+                    "room_types": ["planting_garden"],
+                    "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
     "late night": [
@@ -1327,7 +1328,15 @@ dev_room={
                     "items": []
                 }
             ],
-            "inventory": [],
+            "inventory": [{
+        "name": "lettuce seed",
+        "descriptions": [
+            "A tiny seed, promises a refreshing lettuce."
+        ],
+        "static": False,
+        "type": "seed",
+        "plant_type": "lettuce" # This key links the seed to its plant type
+    }],
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
             "possible_emotes": {

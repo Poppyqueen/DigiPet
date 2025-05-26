@@ -38,7 +38,7 @@ params = {
     "timezone": "auto"
 }
 
-def get_full_weather():
+def get_structured_weather():
     time_tag=get_time_tag_from_now()
     responses = openmeteo.weather_api(url, params=params)
     
@@ -54,6 +54,29 @@ def get_full_weather():
     current_cloud_cover = current.Variables(5).Value()
     
     is_day = "True" if current_is_day == 1 else "False"
+
+    weather_data={
+        "time":time_tag,
+        "current humidity":current_relative_humidity_2m,
+        "current temperature": current_apparent_temperature,
+        "is_day": is_day,
+        "wind_speed": current_wind_speed_10m,
+        "precipitation": current_precipitation,
+        "cloud_cover": current_cloud_cover
+    }
+
+    return weather_data
+
+def get_full_weather():
+    
+    weather_data = get_structured_weather()
+    time_tag = weather_data["time"]
+    current_apparent_temperature = weather_data["current temperature"]
+    current_relative_humidity_2m = weather_data["current humidity"]
+    is_day = weather_data["is_day"]
+    current_wind_speed_10m = weather_data["wind_speed"]
+    current_precipitation = weather_data["precipitation"]
+    current_cloud_cover = weather_data["cloud_cover"]
 
     stringed_response = f"""
 Current apparent temperature: {current_apparent_temperature}°C

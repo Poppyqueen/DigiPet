@@ -39,10 +39,10 @@ class InventoryHouseManager(GenericJsonTool):
     """
 
     # Define allowed item types, now including "book"
-    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "plant"]
+    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed"]
 
     # Define starting IDs for generation.
-    ITEM_ID_START_COUNTER = 0
+    ITEM_ID_START_COUNTER = 1
     ROOM_ID_START_COUNTER = 1
     MAX_INVENTORY_SLOTS = 20 # You can set this number to whatever you like
 
@@ -59,8 +59,9 @@ class InventoryHouseManager(GenericJsonTool):
         # --- IMPORTANT: Override attributes BEFORE calling super().__init__() ---
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
+        self.base_path=base_path
         # Define the default state structure, now moved to items_init
-        self._default_state = base_state # custom_state, base_state, dev_room
+        self._default_state = dev_room # custom_state, base_state, dev_room
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state
@@ -342,6 +343,14 @@ class InventoryHouseManager(GenericJsonTool):
                 print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'items' (not list). Correcting to empty list.")
                 room["items"] = []
                 needs_save = True # Need to re-validate items in this corrected list
+
+            # validate room type planting garden
+
+            if room.get("room_types") == "planting_garden":
+                if not isinstance(room.get("plot_number"), int):
+                    print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'plot number' (not int). Correcting to base number.")
+                    room["plot_number"] = 3
+                    needs_save = True
 
             # Validate items within the room using _is_valid_item_data (which now includes consumable checks)
             # Filter out invalid ones and collect unique IDs
@@ -721,30 +730,12 @@ class InventoryHouseManager(GenericJsonTool):
         # Add validation for other types if they have specific requirements
 
 
-# -------- Plant validation (NEW)
-
-        # --- Plant-specific validation ---
-        if item_type == "plant":
-            item_id_for_log = item_data.get('id', 'unknown') # Get ID once for logging
-
-            # Use .get() for required keys and check types
-            timestamp_of_creation = item_data.get("timestamp_of_creation")
-            if timestamp_of_creation is None or not isinstance(timestamp_of_creation, (int, float)): # Assuming timestamp is a number (Unix epoch, etc.)
-                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'timestamp_of_creation' or it's not a number (int or float)."
-
-            last_watered = item_data.get("last_watered")
-            if last_watered is None or not isinstance(last_watered, (int, float)): # Assuming timestamp is a number
-                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'last_watered' or it's not a number (int or float)."
-
-            current_stage = item_data.get("current_stage")
-            if current_stage is None or not isinstance(current_stage, float):
-                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'current_stage' or it's not a float."
-
-            total_stages = item_data.get("total_stages")
-            if total_stages is None or not isinstance(total_stages, float):
-                return False, f"Plant item '{item_name}' (ID:{item_id_for_log}) missing 'total_stages' or it's not a float."
-
-        
+# -------- Seed validation (NEW)
+        elif item_type == "seed":
+            seed_type = item_data.get("plant_type")
+            if not isinstance(seed_type, str):
+                return False, f"Seed item '{item_name}' (ID:{item_id_for_log}) 'plant_type' key is not a string"
+    
         return True, "" # Item is valid
 
 
@@ -1421,8 +1412,7 @@ class InventoryHouseManager(GenericJsonTool):
             return room.get("name", "Unknown Room")
         return "Unknown Room"
 
-
-    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False):
+    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
         """
         Creates new item(s) with generated unique IDs and places them in the specified location.
         This method is used for ALL item types, including books.
@@ -1438,6 +1428,10 @@ class InventoryHouseManager(GenericJsonTool):
                                                    MUST NOT include the 'id' key (it is generated).
                                                    e.g., for a single book: {'name': str, 'descriptions': list[str], 'static': bool, 'type': 'book', 'chapters': list[dict]}
                                                    e.g., for multiple: [{}, {}, ...]
+            internal (bool): If True, returns a list of created item IDs or False/empty list.
+                             If False, returns a string message.
+            quantity (int): The number of identical copies to create for each item defined
+                            in `item_creation_data`. Defaults to 1.
 
         Returns:
             list[int] | bool | str:
@@ -1449,26 +1443,40 @@ class InventoryHouseManager(GenericJsonTool):
         items_to_process = [] # List to hold item data dicts after validation and ID generation
         failed_items_info = [] # List of tuples: (item_display_name, reason_for_failure)
 
-        # --- 1. Handle input type: Convert single dict to list of one ---
+        # --- 0. Validate quantity ---
+        if not isinstance(quantity, int) or quantity <= 0:
+            msg = f"Failed to create item(s): 'quantity' must be a positive integer, received '{quantity}' ({type(quantity).__name__})."
+            if internal: return False # Indicate invalid input *type* specifically for internal
+            return msg
+
+        # --- 1. Handle input type: Convert single dict to list of one, and apply quantity ---
+        data_list_templates = [] # This list will hold the templates to be processed, expanded by quantity
+
         if isinstance(item_creation_data, dict):
-            data_list = [item_creation_data]
+            # Create 'quantity' references to the same item dict.
+            # The individual copies will be created via .copy() inside the loop.
+            data_list_templates = [item_creation_data] * quantity
         elif isinstance(item_creation_data, list):
-            data_list = item_creation_data
+            # For each item in the input list, duplicate it 'quantity' times.
+            for item_template in item_creation_data:
+                data_list_templates.extend([item_template] * quantity)
         else:
             msg = f"Failed to create item(s): item_creation_data must be a dict or a list of dicts, received {type(item_creation_data).__name__}."
             if internal: return False # Indicate invalid input *type* specifically for internal
             return msg
 
-        if not data_list:
-             msg = "No item data provided."
+        if not data_list_templates:
+             # This means either item_creation_data was an empty list, or contained only non-dict elements
+             msg = "No valid item data provided after applying quantity."
              if internal: return [] # No items to create, valid empty list input
              return msg
 
 
         # --- 2. Validate, generate ID, and prepare each item ---
-        for item_data in data_list:
+        for item_data in data_list_templates:
             if not isinstance(item_data, dict):
-                 failed_items_info.append((f"Malformed item data (not a dict)", "Invalid item data format"))
+                 # This captures cases like item_creation_data = [{'name': 'Book'}, 'malformed']
+                 failed_items_info.append((f"Malformed item data (expected dict, got {type(item_data).__name__})", "Invalid item data format"))
                  continue # Skip this malformed entry
 
             # Initial validation (no ID check)
@@ -1493,8 +1501,6 @@ class InventoryHouseManager(GenericJsonTool):
             if not is_valid_final:
                  # This shouldn't happen if initial validation passed and only ID was added,
                  # but good defensive check.
-                 # Optionally decrement ID counter here if ID was consumed but item is invalid.
-                 # self._state["next_item_id"] -= 1 # Be careful in multi-threaded envs
                  print(f"Error: Final validation failed for item data with generated ID {new_item_id}: {error_msg_final}")
                  display = self._format_item_for_display(new_item_data) # Use formatter now
                  failed_items_info.append((display, f"Internal validation error after ID generation: {error_msg_final}"))
@@ -1507,12 +1513,22 @@ class InventoryHouseManager(GenericJsonTool):
         if not items_to_process:
              # If no items made it past the validation stage, return failure based on accumulated errors
              if not failed_items_info:
-                 # This case should only happen if data_list was empty initially, handled above.
-                 # Or perhaps data_list contained only non-dict items, also handled above.
-                 # Defensive message just in case.
                  msg = "No valid item data processed."
              else:
-                 msg = "Failed to create any items due to validation errors:\n" + "\n".join([f"- {name}: {reason}" for name, reason in failed_items_info])
+                 # Group failures for a clearer message
+                 grouped_failures = {}
+                 for name, reason in failed_items_info:
+                     key = (name, reason) # Use a tuple as key to group by both name and reason
+                     grouped_failures[key] = grouped_failures.get(key, 0) + 1
+
+                 failure_messages = []
+                 for (name, reason), count in grouped_failures.items():
+                     if count > 1:
+                         failure_messages.append(f"- {count}x {name}: {reason}")
+                     else:
+                         failure_messages.append(f"- {name}: {reason}")
+                 msg = "Failed to create any items due to validation errors:\n" + "\n".join(failure_messages)
+
              if internal: return [] # No items placed
              return msg
 
@@ -1611,14 +1627,25 @@ class InventoryHouseManager(GenericJsonTool):
             messages.append(f"Successfully created {added_count} {item_plural} and placed in {location_desc} with IDs {', '.join(map(str, successfully_created_ids))}.")
 
         if failed_items_info:
-            failure_details = "\n".join([f"- {name}: {reason}" for name, reason in failed_items_info])
-            failed_plural = "item" if len(failed_items_info) == 1 else "items"
+            # Group failures for a clearer message
+            grouped_failures = {}
+            for name, reason in failed_items_info:
+                key = (name, reason) # Use a tuple as key to group by both name and reason
+                grouped_failures[key] = grouped_failures.get(key, 0) + 1
+
+            failure_messages = []
+            for (name, reason), count in grouped_failures.items():
+                if count > 1:
+                    failure_messages.append(f"- {count}x {name}: {reason}")
+                else:
+                    failure_messages.append(f"- {name}: {reason}")
+
+            failed_plural = "item" if len(failed_items_info) == 1 else "items" # based on total count of failed items
             if added_count > 0:
                  messages.append(f"{len(failed_items_info)} {failed_plural} failed to be created or placed:")
             else:
-                 # If no items were added, the main message should indicate failure
                  messages.append(f"Failed to create any items. {len(failed_items_info)} {failed_plural} failed:")
-            messages.append(failure_details)
+            messages.append("\n".join(failure_messages))
 
         if not messages:
              # Should only happen if input was an empty list or all items were malformed
@@ -1627,6 +1654,8 @@ class InventoryHouseManager(GenericJsonTool):
 
 
         return "\n".join(messages)
+    
+    
     def trash_item(self, item_id: int, confirm: bool) -> str:
         """
         Removes an item by its ID *only* if it is located in the player's inventory.

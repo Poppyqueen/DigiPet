@@ -42,9 +42,13 @@ from .my_tools import (
     kitchen_room_tools,
     lab_room_tools,
     dev_room_tools,
+    harvesting_garden_tools
 )
 
 from utils import open_meteo_handle, simulation
+
+from tools.tools_folder.garden_tools import Garden_Mananger
+
 
 # Import tools
 # We import the tool handlers/classes here
@@ -61,6 +65,7 @@ class FunctionBuilder:
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory)
         self.A_Life = None
+        self.garden_manager = Garden_Mananger(self.state_manager)
         self._init_alife()
 
 
@@ -70,7 +75,17 @@ class FunctionBuilder:
         # Values are dictionaries with keys "functions" (dict of function name -> callable)
         # and "definitions" (list of tool definition dicts).
         self._room_type_data = {
-            "dev_room": {
+            "planting_garden": {
+            "functions": {
+                "plant_seed": self.garden_manager.plant_seed,
+                "check_plant_state": self.garden_manager.check_plant_state,
+                "harvest_plant": self.garden_manager.harvest_plant,
+                "get_garden_summary": self.garden_manager.get_garden_summary,
+                "water_plot": self.garden_manager.water_plot
+            },
+            "definitions": harvesting_garden_tools # Use the imported definition list
+            },
+            "dev_room":{
                 "functions": {
                     "simulate_data_fetch": simulate_data_fetch
 
@@ -396,6 +411,7 @@ class FunctionBuilder:
         This will be redundant for many functions, but it is useful for certain essential information
         that needs to be passed to the LLM every prompt, like location, inventory, etc.
         """
+        self.garden_manager.tick() # This tick checks and updates the state of all existing plants in the world based on timestamps, it doesn't have any reason for being here, but i'm lazy and this is being called every message to the LLM, so, here it is
         context = []
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -412,7 +428,7 @@ class FunctionBuilder:
         # if current_room_types:
         #     format_room += f" (Types: {', '.join(current_room_types)})"
         context.append(format_room)
-        context.append(descriptions)
+        #context.append(descriptions)
 
         # Append already formatted context
         context.append("\n#############\n")

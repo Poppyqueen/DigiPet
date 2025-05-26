@@ -4,6 +4,92 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
+
+harvesting_garden_tools=[
+    {
+        "type": "function",
+        "name": "get_garden_summary",
+        "description": "Get all the information necessary of the current garden you are on.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "plant_seed",
+        "description": "Plants a seed from your inventory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "plot_id": {
+                    "type": "string",
+                    "description": "The plot ID where to plant this seed"
+                },
+                "item_id": {
+                    "type": "number",
+                    "description": "An int for the ID of the seed item you want to plant in the plot."
+                }
+            },
+            "required": ["plot_id", "item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "check_plant_state",
+        "description": "Check the state of the plant in a plot of the current garden",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "plot_id": {
+                    "type": "string",
+                    "description": "The plot ID for the plant to check its state of"
+                }
+            },
+            "required": ["plot_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "harvest_plant",
+        "description": "Harvest a the plant in the given plot ID",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "plot_id": {
+                    "type": "string",
+                    "description": "The plot ID for the plant to harvest"
+                }
+            },
+            "required": ["plot_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "water_plot",
+        "description": "Water the plot for the given ID",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "plot_id": {
+                    "type": "string",
+                    "description": "The plot ID for the plant to water"
+                },
+                "water_level_type": {
+                    "type": "string",
+                    "description": "The intensity of watering you will do, it is a string from any of these values, 'low', 'medium','high'."
+                }
+            },
+            "required": ["plot_id", "water_level_type"],
+            "additionalProperties": False
+        }
+    },
+]
 lab_room_tools=[
     {
         "type": "function",
