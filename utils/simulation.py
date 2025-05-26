@@ -290,11 +290,12 @@ class ALifeSimulation:
     ALIVE = "alive"
     DEAD = "dead"
 
-    def __init__(self, config: Dict[str, Any] = None, archive_path=None, state_manager=None):
+    def __init__(self, config: Dict[str, Any] = None, archive_path=None, state_manager=None, signal=None):
         """Initialize the ALifeSimulation with optional configuration."""
 
         self.state_manager = state_manager
         self.current_simulation_ID=""
+        self._signal_callback=signal
 
         self.archive_path = archive_path
         if self.archive_path:
@@ -356,6 +357,21 @@ class ALifeSimulation:
 
         # Initialize the simulation state (placing initial entities etc.)
         self._init_simulation()
+
+
+    def _send_signal(self, signal_data):
+        """Helper method to send signals using the registered callback."""
+        if self._signal_callback:
+            # print(f"{self.__class__.__name__} signaling: {signal_data}") # Optional: uncomment for debug
+            try:
+                self._signal_callback(signal_data)
+            except Exception as e:
+                print(f"Error sending signal from {self.__class__.__name__}: {e}")
+        else:
+            # print(f"{self.__class__.__name__} attempted to signal, but no callback registered: {signal_data}") # Optional: uncomment for debug
+            pass # Silently fail if no callback is registered, or log loudly
+    # ------------------------------------------------------
+
 
     def _deep_update(self, d: Dict, u: Dict) -> Dict:
         """Recursively update a dictionary."""
@@ -962,6 +978,7 @@ class ALifeSimulation:
             "grid_size": grid_size,
             "entities": filtered_entities
         }
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/alife_examine.png"})
 
         # Return the JSON string representation
         return json.dumps(observed_state, indent=2)
@@ -982,6 +999,8 @@ class ALifeSimulation:
             self.current_tick += 1
             # Load the state for the new current_tick using set_current_tick_ALIFE for consistency
             self.set_current_tick_ALIFE(self.current_tick) # This also validates and loads state
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/alife_scroll.png"})
+
             return f"Moved forward to tick {self.current_tick} of {max_valid_tick}. {self.observe_ALIFE()}"
         else:
             return f"Already at the last tick ({self.current_tick} of {max_valid_tick}). Cannot move forward."
@@ -1002,6 +1021,8 @@ class ALifeSimulation:
             self.current_tick -= 1
             # Load the state for the new current_tick using set_current_tick_ALIFE for consistency
             self.set_current_tick_ALIFE(self.current_tick) # This also validates and loads state
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/alife_scroll.png"})
+
             return f"Moved backward to tick {self.current_tick} of {max_valid_tick}. {self.observe_ALIFE()}"
         else:
             return f"Already at the first tick (0 of {max_valid_tick}). Cannot move backward."
@@ -1205,7 +1226,6 @@ class ALifeSimulation:
              if os.path.exists(json_file_path): os.remove(json_file_path)
              if os.path.exists(txt_file_path): os.remove(txt_file_path)
              return f"Error archiving simulation: {e}"
-
 
 
         if "Error" in manager_result:

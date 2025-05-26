@@ -39,12 +39,12 @@ class InventoryHouseManager(GenericJsonTool):
     """
 
     # Define allowed item types, now including "book"
-    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed"]
+    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed"] # armor, weapon and key are not existent
 
     # Define starting IDs for generation.
     ITEM_ID_START_COUNTER = 1
     ROOM_ID_START_COUNTER = 1
-    MAX_INVENTORY_SLOTS = 20 # You can set this number to whatever you like
+    MAX_INVENTORY_SLOTS = 40 # You can set this number to whatever you like
 
     def __init__(self, base_path, signal=None, memory=None):
         """
@@ -61,7 +61,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.memory=memory
         self.base_path=base_path
         # Define the default state structure, now moved to items_init
-        self._default_state = dev_room # custom_state, base_state, dev_room
+        self._default_state = base_state # custom_state, base_state, dev_room this should be more configurable
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state

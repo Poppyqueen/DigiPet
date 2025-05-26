@@ -166,6 +166,114 @@ _strawberry_seed = {
 }
 
 
+# --- NEW ITEM DEFINITIONS ---
+
+# Rose (Ornamental Flower)
+_rose_flower_item = {
+    "name": "rose flower",
+    "descriptions": [
+        "A beautiful, fragrant rose, perfect for decoration.",
+        "Its delicate petals and sweet scent can brighten any room."
+    ],
+    "static": False,
+    "type": ["misc"]
+}
+
+_rose_seed = {
+    "name": "rose seed",
+    "descriptions": [
+        "A small, hard seed that promises a beautiful rose."
+    ],
+    "static": False,
+    "type": ["seed"],
+    "plant_type": "rose"
+}
+
+# Sunflower (Ornamental and Edible Seeds)
+_sunflower_head_item = {
+    "name": "sunflower head",
+    "descriptions": [
+        "The large, iconic head of a sunflower, full of potential seeds.",
+        "A majestic bloom, often turning to follow the sun."
+    ],
+    "static": False,
+    "type": ["misc"]
+
+}
+
+
+_sunflower_seed = {
+    "name": "sunflower seed",
+    "descriptions": [
+        "A single, dark sunflower seed, ready to grow into a giant."
+    ],
+    "static": False,
+    "type": ["seed"],
+    "plant_type": "sunflower"
+}
+
+
+# Mint (Herb)
+_mint_leaves_item = {
+    "name": "mint leaves",
+    "descriptions": [
+        "Fresh, fragrant mint leaves, perfect for tea or flavoring.",
+        "Cool and refreshing, a common culinary herb."
+    ],
+    "static": False,
+    "type": ["consumable"],
+    "stats_edit": {
+        "fullness": 3,
+        "hydration": 5,
+        "energy": 1
+    },
+    "effects": [
+        "A cool, tingling sensation spreads through your mouth.",
+        "You feel a slight revitalization from the mint."
+    ]
+}
+
+_mint_seed = {
+    "name": "mint seed",
+    "descriptions": [
+        "Tiny, dark seeds from a mint plant."
+    ],
+    "static": False,
+    "type": ["seed"],
+    "plant_type": "mint"
+}
+
+# Basil (Herb)
+_basil_leaves_item = {
+    "name": "basil leaves",
+    "descriptions": [
+        "Aromatic basil leaves, commonly used in cooking.",
+        "Sweet and slightly peppery, a staple in many cuisines."
+    ],
+    "static": False,
+    "type": ["consumable"],
+    "stats_edit": {
+        "fullness": 2,
+        "hydration": 3,
+        "energy": 1
+    },
+    "effects": [
+        "The fragrant aroma of basil fills your senses.",
+        "A subtle, savory taste lingers on your tongue."
+    ]
+}
+
+_basil_seed = {
+    "name": "basil seed",
+    "descriptions": [
+        "Small, black seeds from a basil plant."
+    ],
+    "static": False,
+    "type": ["seed"],
+    "plant_type": "basil"
+}
+
+
 # --- Plant Definitions ---
 
 # Dictionary of predefined plant types and their growth stages
@@ -187,7 +295,7 @@ plant_types = {
     },
     "carrot": { # Existing plant (copied for context, not modified)
         "stages": [
-            {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
+            {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
             {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
             {"name": "rooting", "duration_minutes": 30, "optimal_water_level_range": (0.4, 0.7)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.4, 0.7)}
@@ -201,7 +309,7 @@ plant_types = {
     },
     "cactus": { # Existing plant (copied for context, not modified)
         "stages": [
-            {"name": "sprout", "duration_minutes": 30, "optimal_water_level_range": (0.1, 0.6)},
+            {"name": "sprout", "duration_minutes": 30, "optimal_water_level_range": (0.1, 0.7)},
             {"name": "young", "duration_minutes": 60, "optimal_water_level_range": (0.05, 0.4)},
             {"name": "mature", "duration_minutes": 60, "optimal_water_level_range": (0.05, 0.25)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.1, 0.45)}
@@ -218,7 +326,7 @@ plant_types = {
 
     "tomato": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
+            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
             {"name": "young", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.85)},
             {"name": "mature", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.75)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.75)}
@@ -232,7 +340,7 @@ plant_types = {
     },
     "potato": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.6, 1.0)},
             {"name": "young", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
             {"name": "mature", "duration_minutes": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.4, 0.6)}
@@ -245,16 +353,76 @@ plant_types = {
     },
     "strawberry": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
+            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
             {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
             {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
         "total_grow_minutes": 70,
         "harvest_items": [
-            {"item": _strawberry_item, "base_harvest_yield": 5},
+            {"item": _strawberry_item, "base_harvest_yield": 6},
             {"item": _strawberry_seed, "base_harvest_yield": 2}
         ],
         "life_cycle": "perennial" # Can produce fruit year after year (or cycle after cycle in game terms)
-    }
+    },
+
+# Ornamental Plants
+"rose": {
+    "stages": [
+        {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "bushy", "duration_minutes": 40, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "mature", "duration_minutes": 30, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+    ],
+    "total_grow_minutes": 90,
+    "harvest_items": [
+        {"item": _rose_flower_item, "base_harvest_yield": 3},
+        {"item": _rose_seed, "base_harvest_yield": 1}
+    ],
+    "life_cycle": "perennial" # Can be harvested multiple times in its lifetime
+},
+"sunflower": {
+    "stages": [
+        {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "stalking", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "flowering", "duration_minutes": 45, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+    ],
+    "total_grow_minutes": 90,
+    "harvest_items": [
+        {"item": _sunflower_head_item, "base_harvest_yield": 1},
+        {"item": _sunflower_seed, "base_harvest_yield": 3}
+    ],
+    "life_cycle": "annual"
+},
+
+# Herbs
+"mint": {
+    "stages": [
+        {"name": "sprout", "duration_minutes": 10, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "young", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "mature", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.8)},
+        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.8)}
+    ],
+    "total_grow_minutes": 45,
+    "harvest_items": [
+        {"item": _mint_leaves_item, "base_harvest_yield": 8},
+        {"item": _mint_seed, "base_harvest_yield": 2}
+    ],
+    "life_cycle": "perennial" # Can be harvested repeatedly
+},
+"basil": {
+    "stages": [
+        {"name": "sprout", "duration_minutes": 10, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "young", "duration_minutes": 20, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+    ],
+    "total_grow_minutes": 55,
+    "harvest_items": [
+        {"item": _basil_leaves_item, "base_harvest_yield": 7},
+        {"item": _basil_seed, "base_harvest_yield": 2}
+    ],
+    "life_cycle": "annual"
+}
 }

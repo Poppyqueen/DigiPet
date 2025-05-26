@@ -17,6 +17,10 @@ if api_key is None:
     exit(1)
 
 
+valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
+
+strined_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
+
 # --- Structure for the fixed stats_edit dictionary ---
 class ItemStatsEdit(BaseModel):
     """
@@ -46,7 +50,7 @@ class ItemDefinition(BaseModel):
     effects: List[str] |None= Field(default=None, description="A list of strings describing narrative effects upon use (only for 'consumable' items).")
     stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items).")
 
-    plant_type: str  |None =Field(default=None, description="A string for the seed type, it should define the plant of seed this is for, from the valid options: 'lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry'")
+    plant_type: str  |None =Field(default=None, description=f"A string for the seed type, it should define the plant of seed this is for, from the valid options: {strined_plant_types}")
 
 # --- Structure that contains a list of these item definitions ---
 class ItemDefinitionListContainer(BaseModel):
@@ -273,7 +277,7 @@ if __name__ == "__main__":
     target_output_file = "care_packages.py" # Using a distinct name for generated file
 
     bundle_concepts = [
-"Gardener's Starter Kit"
+"Seeds and more seeds! many seeds, for 'rose', 'basil', 'mint', 'sunflower', 'strawberry'" # here we prompt directly for the plants we want, however, the AI agent already knows what the valid plants are. It might generate invalid seeds if you ask for it.
 
         # Add more concepts as needed
     ]

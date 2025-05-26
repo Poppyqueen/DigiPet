@@ -1014,8 +1014,11 @@ base_state={
         "name": "garden",
         "image": "garden",
         "room_types": [
-            "garden"
+            "garden",
+            "planting_garden"
         ],
+        "plot_number": 6, # if it is a planting garden it needs plot number, it should default to 3?
+
         "music": "garden",
         "descriptions": {
             "late night": [
@@ -1146,7 +1149,15 @@ base_state={
                         "A strong, aromatic flavor.",
                         "You feel slightly invigorated."
                     ]
-                }
+                },
+                {'name': 'rose_seeds', 'descriptions': ['Seeds of a beautiful rose plant.', 'Produces fragrant and colorful roses.'], 'static': False, 'type': ['seed'], 'plant_type': 'rose'},
+                {'name': 'basil_seeds', 'descriptions': ['Seeds of the aromatic basil herb.', 'Grows fresh basil leaves for cooking.'], 'static': False, 'type': ['seed'], 'plant_type': 'basil'},
+                {'name': 'mint_seeds', 'descriptions': ['Seeds of the refreshing mint herb.', 'Grows mint leaves used in teas and recipes.'], 'static': False, 'type': ['seed'], 'plant_type': 'mint'},
+                {'name': 'sunflower_seeds', 'descriptions': ['Seeds of a tall sunflower plant.', 'Produces large yellow flowers and edible seeds.'], 'static': False, 'type': ['seed'], 'plant_type': 'sunflower'},
+                {'name': 'strawberry_seeds', 'descriptions': ['Seeds of the sweet strawberry plant.', 'Grows delicious red strawberries.'], 'static': False, 'type': ['seed'], 'plant_type': 'strawberry'},
+                {'name': 'cactus_seeds', 'descriptions': ['Seeds of the resilient cactus plant.', 'Grows tall and spiky cactus.'], 'static': False, 'type': ['seed'], 'plant_type': 'cactus'}
+
+
             ]
     },
     {
@@ -1415,7 +1426,7 @@ how_to_rooms={
                         "A pair of soil-stained gardening gloves."
                     ],
                     "static": False,
-                    "type": ["misc"]
+                    "type": ["misc"] # This just got updated so items type can be a list of types now, for example, a book seed, if you wanted to do that...
                 },                {
                     "name": "mystery_novel", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
                     "descriptions": [

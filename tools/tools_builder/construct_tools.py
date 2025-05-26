@@ -65,7 +65,7 @@ class FunctionBuilder:
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory)
         self.A_Life = None
-        self.garden_manager = Garden_Mananger(self.state_manager)
+        self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback)
         self._init_alife()
 
 
@@ -235,7 +235,7 @@ class FunctionBuilder:
         # --- Step 1: Initialize ALifeSimulation (which also initializes ALifeManager) ---
         # We initialize it first so we have the manager instance available to query.
         # We don't pass a specific config here yet, let it load defaults initially.
-        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager)
+        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
         print("ALifeSimulation instance created, including its manager.")
 
         # --- Step 2: Check the ALifeManager for existing simulations ---
