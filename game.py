@@ -172,7 +172,7 @@ def handle_chatbot_signal(signal_data):
             else:
                  print(f"Signal 'sleep' received with invalid or zero duration: {sleep_duration_seconds}")
 
-        elif action_type == "stat_changed":
+        elif action_type == "stat_changed": # This signal does not change the stats for the backend, it is only signaling changes from it 
             stat_name = signal_data.get("stat_name")
             new_value = signal_data.get("new_value")
             if isinstance(stat_name, str) and isinstance(new_value, (int, float)):
