@@ -1,7 +1,8 @@
-# Assuming this is your jukebox.py file content
+# juke_box.py audio player for pygame
 
 import pygame
 import os
+import io # Needed for BytesIO to simulate a file in memory
 
 # Assume pygame.init() has been called, which includes pygame.mixer.init()
 
@@ -236,3 +237,50 @@ class jukebox:
             print(f"Error loading or playing sound effect '{sound_path}': {e}")
         except Exception as e:
              print(f"An unexpected error occurred playing sound effect '{sound_path}': {e}")
+
+
+    def play_raw_sound_effect(self, raw_audio_data):
+        """
+        Loads and plays a sound effect from raw in-memory audio data
+        without stopping background music.
+        If a sound effect was previously started by this method (or play_sound_effect)
+        and is still playing, it will be stopped before the new sound effect is played.
+        Applies the stored SFX volume to the sound.
+
+        Args:
+            raw_audio_data (bytes or bytearray or file-like object):
+                The audio data in a format supported by pygame.mixer.Sound(),
+                e.g., bytes content of a .wav, .ogg, or .mp3 file, or an
+                io.BytesIO object wrapping such data.
+        """
+        if not self.initialized:
+            print("Error: Jukebox not initialized. Cannot play raw sound effect.")
+            return
+
+        if not raw_audio_data:
+            print("Error: No raw audio data provided to play_raw_sound_effect.")
+            return
+
+        try:
+            # Stop the previously tracked sound effect channel if it's busy
+            if self.current_sfx_channel and self.current_sfx_channel.get_busy():
+                self.current_sfx_channel.stop()
+
+            # Pygame's Sound constructor can take bytes, bytearray, or file-like objects
+            # If `raw_audio_data` is just bytes (e.g., from reading a file with .read()),
+            # you can pass it directly. If it's a very large string or something
+            # that needs to be treated as a file, io.BytesIO is useful.
+            # Assuming raw_audio_data is the full content of a sound file (e.g., WAV, OGG).
+            sfx_sound = pygame.mixer.Sound(raw_audio_data)
+
+            # Apply the stored SFX volume directly to the Sound object
+            sfx_sound.set_volume(self.sfx_volume)
+
+            # Play the sound effect and store the channel
+            self.current_sfx_channel = sfx_sound.play()
+            print(f"Playing raw sound effect (Volume: {self.sfx_volume:.2f})")
+
+        except pygame.error as e:
+            print(f"Error loading or playing raw sound effect: {e}")
+        except Exception as e:
+             print(f"An unexpected error occurred playing raw sound effect: {e}")

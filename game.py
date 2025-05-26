@@ -24,7 +24,7 @@ mock_running = False # If set to True, the mock will run and simulate the chatbo
 if mock_running:
     from ai_managers.mock_chatbot import MockChatbot
 else:
-    from ai_managers.chatbot_api import CLIChatbot
+    from ai_managers.chatbot_api import CLIChatbot # There are interesting settings in the initialization of this class.
 
 # This will allow us to test the game interface and graphics, runtime without external dependencies
 # and without needing to run the actual chatbot.
@@ -123,6 +123,15 @@ def handle_chatbot_signal(signal_data):
         elif action_type == "shake_circle":
             print("Signal type 'shake_circle' received, posting SHAKE_CIRCLE_EVENT.")
             pygame.event.post(pygame.event.Event(config.SHAKE_CIRCLE_EVENT))
+
+
+        elif action_type == "TTS_AUDIO":
+            raw_sound = signal_data.get("raw_audio_data")
+            if raw_sound:
+                print(f"Signal type 'TTS_AUDIO' received with raw audio data.")
+                pygame.event.post(pygame.event.Event(config.TTS_PYGAME_SOUND_EVENT, raw_audio_data=raw_sound))
+            else:
+                print("Signal 'TTS_AUDIO' received but no 'raw_audio_data' in data.")
 
         elif action_type == "function_called":
             function_name = signal_data.get("function_name")
@@ -265,7 +274,8 @@ else:
             deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
             base_model=general_model, # Set as needed
             select_memory_model=memory_model, # Set as needed
-            tts_flag=True # Set as needed
+            tts_provider_id="espeak_ng", # Set to "macos_say", "espeak_ng", or None
+            voice="Storm" # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
@@ -627,6 +637,19 @@ while running:
             image_path = getattr(event, 'image_path', None)
             if image_path: gui.gui_core.load_and_set_background(image_path)
             else: print("CHANGE_BACKGROUND_EVENT received but no 'image_path' attribute.")
+            continue
+        
+        elif event.type == config.TTS_PYGAME_SOUND_EVENT:
+            raw_audio_data = getattr(event, 'raw_audio_data', None)
+            if raw_audio_data:
+                print("Main loop processing TTS_PYGAME_SOUND_EVENT")
+                # Play the raw audio data using music_player
+                if music_player:
+                    music_player.play_raw_sound_effect(raw_audio_data)
+                else:
+                    print("Music player not initialized. Cannot play TTS audio.")
+            else:
+                print("TTS_PYGAME_SOUND_EVENT received but no 'raw_audio_data' attribute.")
             continue
 
         elif event.type == config.SHAKE_CIRCLE_EVENT:

@@ -387,6 +387,10 @@ CHATBOT_RESPONSE_EVENT = pygame.event.custom_type() # Signal new chatbot respons
 
 STAT_CHANGED_EVENT = pygame.event.custom_type() # Signal that a pet stat has changed
 
+
+TTS_PYGAME_SOUND_EVENT = pygame.event.custom_type() # Signal to play TTS audio via pygame jukebox
+
+
 # Inventory & UI Related Events
 ROOM_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current room inventory LIST
 PLAYER_INVENTORY_EVENT = pygame.event.custom_type() # Signal with current player inventory LIST

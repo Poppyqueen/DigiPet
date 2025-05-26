@@ -16,8 +16,10 @@ from tools.tools_builder.construct_tools import FunctionBuilder
 # Import Utils
 from utils.capture_text import TextCapture # Import the text capture class
 
-
-
+# NEW: Import TTS Providers
+from tts_providers.base_tts_provider import BaseTTSProvider
+from tts_providers.macos_say_provider import MacOSSaiProvider
+from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
 # Define default filepaths (these are just the base names now)
 DEFAULT_MEMORY_DB = "cli_memory.json"
@@ -26,7 +28,8 @@ DEFAULT_AI_LOG = "cli_ai_log.txt"
 DEFAULT_INVENTORY_FOLDER = "inventory" # Assuming you have an inventory subdirectory
 
 class CLIChatbot:
-    def __init__(self, system_prompt="You are a helpful assistant.", sub_directory="default_convo", deep_memory=False, base_model="gpt-4.1-nano", select_memory_model="gpt-4.1-nano", tts_flag=False, signal_callback=None):
+    # MODIFIED: Changed tts_flag to tts_provider_id
+    def __init__(self, system_prompt="You are a helpful assistant.", sub_directory="default_convo", deep_memory=False, base_model="gpt-4.1-nano", select_memory_model="gpt-4.1-nano", tts_provider_id: str | None = None, signal_callback=None, voice=None, lang="en"):
         """Initialize the CLI chatbot with AI bot and memory systems."""
         # --- Use the subdirectory structure ---
         # Ensure the directory exists
@@ -45,15 +48,30 @@ class CLIChatbot:
         # Add a recursion depth limit to prevent infinite loops
         self.max_recursion_depth = 10 # Allow up to 10 consecutive AI calls (including function calls and final response)
 
-        self.tts = tts_flag # Set to True if you want to enable text-to-speech output
+        # REMOVED: self.tts = tts_flag
         self.last_response = None # Store the last response for potential use
+
+        # NEW: TTS Provider Initialization
+        self.tts_provider: BaseTTSProvider | None = None
+        if tts_provider_id:
+            if tts_provider_id == "macos_say":
+                self.tts_provider = MacOSSaiProvider(signal_callback=self._signal_callback)
+            elif tts_provider_id == "espeak_ng":
+                self.tts_provider = ESpeakNGProvider(signal_callback=self._signal_callback, voice_name=voice)
+
+            # Add more elifs here for other providers as they are created
+            else:
+                print(f"Warning: Unknown TTS provider ID '{tts_provider_id}'. TTS will be disabled.")
+                self.tts_provider = None
+        
+        if self.tts_provider and not self.tts_provider.is_available():
+            print(f"Warning: Selected TTS provider '{tts_provider_id}' is not available on this system. TTS will be disabled.")
+            self.tts_provider = None
+
 
         try:
             # Initialize with the full paths
-            # Ensure your ai_bot supports act_model="gpt-4.1-nano" or change it
             self.text_capture = TextCapture(filepath=ai_data_filepath)  # Initialize text capture
-
-
 
             self.memory = memory_manager(
                 filepath=memory_filepath,
@@ -66,14 +84,11 @@ class CLIChatbot:
 
             self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, self.memory)
 
-            #self.blsk=bluesky_bot()
-
             self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory)  # Initialize the function builder
 
             self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory) # 4.1-nano is the newest widely available model
-            self.tts = tts_flag # Set to True if you want to enable text-to-speech output
-
-            self._current_tts_process = None
+            # REMOVED: self.tts = tts_flag # Set to True if you want to enable text-to-speech output
+            # REMOVED: self._current_tts_process = None
 
 
         except ImportError as e:
@@ -174,12 +189,6 @@ class CLIChatbot:
                     print(f"Deep memory context inside tools: {deep_memory_context}")
                 else:
                     print("No relevant excerpts found.")
-
-            # else: # Redundant print
-            #    print("Deep Memory system not initialized, skipping search.")
-
-
-
 
             if function_flag:
                 print("*** Function call, decreasing wellness stats")
@@ -321,49 +330,26 @@ class CLIChatbot:
         if self.state_manager: # Defensive check
             self.state_manager.set_color_configured(configured)
 
+    # MODIFIED: Refactored to use TTS Provider
     def process_response_with_tts(self, final_ai_response):
         """
         Processes the AI response, including TTS if enabled, stopping
-        any existing TTS process first.
-    
+        any existing TTS process first using the active TTS provider.
         """
-        # This works in the CLI in macos, however it needs a compatibility update, 
-        # for the pygame implementation this could be managed with a signal and some kind of system
-        # that creates an audio file to play it with pygame. Some clean-up would be needed with such an implementation
+        if self.tts_provider and self.tts_provider.is_available():
+            # Stop any currently playing speech before starting a new one
+            self.tts_provider.stop()
+            # Start new speech synthesis
+            self.tts_provider.synthesize(final_ai_response)
+        else:
+            # If TTS is not enabled or not available, ensure no lingering process from a previous run
+            if self.tts_provider:
+                self.tts_provider.stop() # Even if not available, ensure internal process is cleaned up
 
-        if self.tts: # Check if TTS is enabled *first*
-            if sys.platform == 'darwin': # Then check if the *correct* platform for 'say'
-                try:
-                    # 'say' command works on macOS
-                    subprocess.run(['say', final_ai_response], check=True)
-                except FileNotFoundError:
-                    print("Error: 'say' command not found. Are you sure you are on macOS?")
-                except Exception as e:
-                     print(f"An error occurred while running 'say': {e}")
 
     async def process_input(self, message, role="user"):
         """Process user input and generate AI response."""
-        # Prepare random deep memory context if enabled
-
         joined_random_entity = ""
-        # if self.deep_memory_flag:
-        #     random_memory_data = self.memory.random_memory()
-
-        #     # Validate random_memory_data and excerpts
-        #     if isinstance(random_memory_data, dict):
-        #          random_excerpts = random_memory_data.get("excerpts", [])
-        #          if isinstance(random_excerpts, list):
-        #             # print(f"Randomly selected entity: {random_memory_data.get('Named_Entity')}")
-        #             # print(f"Excerpts: {random_excerpts}")
-        #             joined_random_excerpts = "\n".join(random_excerpts)
-        #             # Ensure Named_Entity is a string before formatting
-        #             entity_name = str(random_memory_data.get('Named_Entity', 'Unknown Entity'))
-        #             joined_random_entity = f"\nRandomly selected entity: {entity_name}\n{joined_random_excerpts}"
-        #          else:
-        #             print(f"Warning: Excerpts for entity '{random_memory_data.get('Named_Entity')}' is not a list: {random_excerpts}")
-        #     else:
-        #          print(f"Warning: random_memory() did not return a dictionary: {random_memory_data}")
-
 
         # Capture  input to logger
         self.text_capture.dump_text(f"{role}:")
@@ -371,66 +357,42 @@ class CLIChatbot:
         self.text_capture.dump_text(f"**************")
 
         # 1. Save  input to short-term memory
-        # The most recent  input is saved into the memory structure, which then is used to generate the response automatically
         self.memory.save_to_memory(message, "short_term", f"{role}")
-        #print(f"Saved  input to short-term memory.") # Redundant print
 
         # 2. Search Deep Memory based on current context (before generating response)
-        #print("Searching deep memory for relevant context...") # Redundant print
         deep_memory_context = ""
         if self.deep_memory_flag:
-            # search_deep_memory is assumed to return List[str]
             found_excerpts_list = self.memory.search_deep_memory()
             if found_excerpts_list:
-                # Deduplicate using a set
                 unique_excerpts_list = list(set(found_excerpts_list))
 
                 print(f"Found {len(unique_excerpts_list)} relevant excerpts (after deduplication).")
-                # Create a formatted string with a clear header
                 deep_memory_context = "\n\nRelevant information from deep memory:\n"
                 deep_memory_context += "\n".join([f"- {excerpt}" for excerpt in unique_excerpts_list])
-                # Add the random excerpts to the context *only if deep memory is enabled*
                 deep_memory_context += joined_random_entity
                 deep_memory_context += "\n\n"
             else:
                 print("No relevant excerpts found.")
-        # else: # Redundant print
-        #    print("Deep Memory system not initialized, skipping search.")
-
 
         # 3. Get current standard memory structure
-        # This initial structure includes the newly saved user input
         mem_structure = self.memory.get_memory_structure() # This structure should include the user input we just added
         if mem_structure is None:
              print("Error: Could not load main memory structure. Proceeding without it.")
              mem_structure = {"short_term": {}, "long_term": [], "base_memory": ""} # Provide default empty
 
         # 4. Construct the dynamic prompt including deep memory context
-
-
         tools_context=self.functions_builder.construct_context()
-
 
         base_prompt = self.sys_prompt
         full_prompt = base_prompt + tools_context
         if deep_memory_context:
-            
-             # Add deep memory context to the prompt
              full_prompt += f"\n\n{deep_memory_context}\nUse any relevant information above to inform your response."
 
         steps=self.get_steps()
 
         full_prompt += f"\n\n You have been in your digital home for: {steps} steps. Your own size is relative to this!"
-        # Note: The memory structure itself is passed separately to the AI call (self.ai.adventure_response)
-        # This deep_memory_context is added to the *prompt string* for models that can process it there.
-        # Ensure your AI model's underlying implementation (`adventure_response`) correctly combines
-        # the memory structure (likely as chat message history) and the full_prompt string.
 
         # 5. Get AI response (now handled recursively)
-        # The recursive function prints intermediate steps and the final response,
-        # and saves all intermediate function results and the final response to memory.
-
-
         final_ai_response = await self._get_ai_response_sequence(
             mem_structure if isinstance(mem_structure, dict) else {},
             full_prompt
@@ -441,137 +403,56 @@ class CLIChatbot:
 
 # --- wellness stats check -----
 
-        # Adjust stats, reduce them a bit to introduce penalization per action 
-        # we will implement whatever "penalization" is in here, 
-        # here for the implementation of pygame we will send a signal to the pygame thread that is running this agent
-        # there we will then simulate a "faint" for the agent, which will prevent autonomous actions of the agent for a set amount of time
-        # while the pygame implementation is managing this timer, here, if we reach this point will just restore the stats a bit immediately,
-        # we will also append a system message to the memory telling the agent that it fainted and for what reasons
-
-
         stats_to_monitor = ["fullness", "hydration", "energy"]
         low_threshold = 10
         recovery_amount = 40
 
         # 1. Decrease the stats
-        # This loop is concise and correct for the decrease step
         for stat_name in stats_to_monitor:
             self.state_manager.adjust_stat(stat_name, -1)
 
         # 2. Get the *updated* stats dictionary using the helper
-        # This gets the dictionary containing "fullness", "hydration", etc.
-        # Returns None if state is corrupted or missing the 'stats' key
         stats_data = self.state_manager.get_stats(True) # Assuming get_stats is a method of state_manager
 
         # 3. Check if any of the monitored stats are below the threshold
-        # We can only do this check if we successfully got the stats data
         low_stat_detected = False
         if stats_data is not None:
             for stat_name in stats_to_monitor:
-                # Access the value from the stats_data dictionary returned by the helper
-                # Use .get() for safety again, although _get_stats_data should validate keys
                 current_value = stats_data.get(stat_name, float('inf'))
 
                 if current_value <= low_threshold:
                     low_stat_detected = True
-                    # Found one low stat, no need to check others
                     break
         else:
-            # Handle the case where stats_data could not be retrieved/validated
-            # Maybe log a warning or raise an error if this indicates a critical state issue
             print("Warning: Could not retrieve valid stats data to check thresholds.")
 
 
         # 4. If a low stat was detected, perform the consequences
-        # This block only runs if stats_data was valid AND a stat was below threshold
         if low_stat_detected:
-            # The original code sent the signal before saving the memory
             self._send_signal({"type": "sleep", "duration": 900})
-            # Save memory message - now correctly only happens when passing out
             self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "system")
             self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "system")
 
             # 5. Increase the stats for recovery if passed out
-            # The _get_stats_data check above didn't block this in the original logic flow
             for stat_name in stats_to_monitor:
                 self.state_manager.adjust_stat(stat_name, recovery_amount)
 
             print("AI agent passed out")
 
 
-
 # --- extra part of the function -----
 
 
         # 6. Perform memory check (summarization, purging)
-        # This happens automatically based on thresholds in memory_manager
-        # Perform this *after* the entire AI response sequence is complete
         print("Performing memory check...")
         self.last_response = final_ai_response # Store the last response for potential TTS
+
+        # MODIFIED: Calling the new process_response_with_tts
+        self.process_response_with_tts(final_ai_response)
+
         self.memory.check()
-        if self.tts:
-            # --- 1. Check for and stop existing TTS process ---
-            if self._current_tts_process is not None:
-                # Use poll() to check if the process is still running.
-                # poll() returns None if the process hasn't terminated yet.
-                if self._current_tts_process.poll() is None:
-                    print("Stopping previous 'say' process...")
-                    try:
-                        # Use terminate() to send a SIGTERM signal (graceful stop)
-                        # Or use kill() to send a SIGKILL signal (forceful stop)
-                        # kill() is often more reliable for simple command-line tools like 'say'
-                        self._current_tts_process.kill()
-
-                        # Optional: Give the process a moment to terminate gracefully
-                        # self._current_tts_process.wait(timeout=1)
-
-                    except ProcessLookupError:
-                        # The process likely finished naturally between the poll() check
-                        # and the kill() call. This is fine, just ignore the error.
-                        pass
-                    except Exception as e:
-                        print(f"Error stopping previous process: {e}")
-
-            # --- 2. Start the new TTS process ---
-            print(f"Starting new 'say' process for: {final_ai_response[:50]}...") # Log start
-            try:
-                # Use subprocess.Popen to run the command in the background.
-                # We store the Popen object so we can manage it later.
-                self._current_tts_process = subprocess.Popen(
-                    ['say', final_ai_response],
-                    # Optional: Use DEVNULL to discard stdout/stderr if 'say'
-                    # produces output you don't want in your console.
-                    # stdout=subprocess.DEVNULL,
-                    # stderr=subprocess.DEVNULL
-                )
-                # Do NOT call .wait() here, as that would make your program
-                # pause until the TTS finishes, defeating the background goal.
-
-            except FileNotFoundError:
-                print("Error: 'say' command not found. Make sure you are on macOS.")
-                self._current_tts_process = None # Clear the reference on failure
-            except Exception as e:
-                print(f"Error starting 'say' process: {e}")
-                self._current_tts_process = None # Clear the reference on failure
-
-        else: # If self.tts is False
-            # If TTS is disabled, make sure to stop any currently running process
-            if self._current_tts_process is not None:
-                if self._current_tts_process.poll() is None:
-                     print("TTS disabled, stopping current 'say' process...")
-                     try:
-                        self._current_tts_process.kill()
-                        # self._current_tts_process.wait(timeout=1)
-                     except ProcessLookupError:
-                        pass
-                     except Exception as e:
-                         print(f"Error stopping process: {e}")
-
-                self._current_tts_process = None # Clear the reference regardless
-
+        
         return final_ai_response # Return the final text response
-
-
 
 
 # Bridge to inventory manager
@@ -600,6 +481,7 @@ class CLIChatbot:
     def add_message_out(self, message, role):
         self.memory.save_to_memory(message, "short_term", f"{role}")
         return
+    
     def run(self):
         """loop for the chatbot as a CLI"""
         try:
@@ -620,7 +502,9 @@ class CLIChatbot:
                 # The process_input method now handles the recursive AI calls
                 # and prints the final response itself.
                 # We can store the final response if needed, but printing is done inside.
-                self.process_input(user_input)
+                self.process_input(user_input) # This is async, but run() isn't. In a CLI, this is typically fine.
+                                                # For a real async loop (e.g., with asyncio), you'd await it.
+                                                # For simple CLI demo, synchronous call is OK.
                 print("-" * 60) # Separator after response
 
         except KeyboardInterrupt:
@@ -631,27 +515,98 @@ class CLIChatbot:
             traceback.print_exc() # Print traceback for unexpected errors
         finally:
             print("\nThank you for using the Memory-Enabled AI Chatbot!")
+            self.shutdown() # Ensure shutdown is called on exit
 
     def shutdown(self):
-        #self._current_tts_process.kill()
-        pass
+        # NEW: Ensure the TTS provider's process is stopped on shutdown
+        if self.tts_provider:
+            self.tts_provider.stop()
+        # REMOVED: self._current_tts_process.kill()
 
 
 def main():
     """Examply entry point for the application."""
-
+    # This example demonstrates a synchronous CLI chat.
+    # If you intend to use `process_input` in an async context (e.g., a web server),
+    # you would need to run the main loop with `asyncio.run()`.
+    import asyncio # Import asyncio for demonstration if you want to run sync code with an async method
 
     # Example usage: set deep_memory=True to enable
-    chatbot = CLIChatbot(
-        system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
-        sub_directory="base_bot", # Change this to your desired subdirectory
-        deep_memory=False, # Set to True to test deep memory features
-        base_model="gpt-4.1-mini", # Change to your desired base conversation model
-        select_memory_model="gpt-4.1-mini", # Change to your desired model for memory
-        tts_flag=True # Set to True to enable text-to-speech output (only macOS for now)
-    )
-    message=chatbot.process_input("Hello!") # To send an individual message to the bot, for use as an endpoint for the bot
-    chatbot.run() # To use the chatbot with CLI
+    # MODIFIED: Changed tts_flag to tts_provider_id
+    # To use macOS 'say': tts_provider_id="macos_say"
+    # To use eSpeak NG: tts_provider_id="espeak_ng" (ensure espeak-ng is installed)
+    # To disable TTS: tts_provider_id=None (or any unrecognized string)
+    
+    # Example for testing with a specific provider:
+    # chatbot = CLIChatbot(
+    #     system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
+    #     sub_directory="base_bot",
+    #     deep_memory=False,
+    #     base_model="gpt-4.1-mini",
+    #     select_memory_model="gpt-4.1-mini",
+    #     tts_provider_id="macos_say" # or "espeak_ng"
+    # )
+
+    # To run a single async message:
+    # async def run_single_message():
+    #     chatbot = CLIChatbot(
+    #         system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
+    #         sub_directory="base_bot",
+    #         deep_memory=False,
+    #         base_model="gpt-4.1-mini",
+    #         select_memory_model="gpt-4.1-mini",
+    #         tts_provider_id="macos_say" # or "espeak_ng"
+    #     )
+    #     print("Sending initial message...")
+    #     response = await chatbot.process_input("Hello! How are you today?")
+    #     print(f"Bot's initial response: {response}")
+    #     chatbot.shutdown() # Ensure shutdown on single message completion
+    #
+    # asyncio.run(run_single_message())
+
+
+    # To use the chatbot with CLI (this will still work synchronously for input/output,
+    # but the internal async calls will implicitly run if not explicitly awaited in the loop context)
+    # For robust async CLI, you'd integrate an async event loop (like asyncio.run in a wrapper).
+    # For this current CLI `run` method, `await` is not used directly, which means the process_input
+    # will run, but `await` inside it will create a "nested" event loop if not already in one.
+    # This is a common pattern for "hybrid" sync/async applications.
+
+    # Recommended way to run a CLI that uses async methods:
+    async def cli_main_async():
+        chatbot = CLIChatbot(
+            system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
+            sub_directory="base_bot",
+            deep_memory=False,
+            base_model="gpt-4.1-mini",
+            select_memory_model="gpt-4.1-mini",
+            tts_provider_id="macos_say" # Set to "macos_say", "espeak_ng", or None
+        )
+        # We start the chatbot loop from within an async function
+        # This will allow `await` inside process_input to work correctly.
+        try:
+            while chatbot.running:
+                user_input = input("\n💬 You: ").strip()
+                if not user_input:
+                    continue
+                if chatbot.handle_special_commands(user_input):
+                    print("-" * 60)
+                    continue
+                # Await the async process_input call
+                await chatbot.process_input(user_input)
+                print("-" * 60)
+        except KeyboardInterrupt:
+            print("\n\nProgram interrupted by user. Exiting gracefully...")
+        except Exception as e:
+            print(f"\nAn unexpected error occurred: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            print("\nThank you for using the Memory-Enabled AI Chatbot!")
+            chatbot.shutdown()
+
+    asyncio.run(cli_main_async())
+
 
 if __name__ == "__main__":
     main()
