@@ -8,7 +8,7 @@ _lettuce_item = {
         "A refreshing lettuce"
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable"],
     "stats_edit": {
         "fullness": 10,
         "hydration": 10,
@@ -26,7 +26,7 @@ _carrot_item = {
         "A crunchy, sweet orange carrot."
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable"],
     "stats_edit": {
         "fullness": 15,
         "hydration": 5,
@@ -43,7 +43,7 @@ _cactus_fruit_item = {
         "A surprisingly juicy fruit from a cactus, often prickly but hydrating."
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable"],
     "stats_edit": {
         "fullness": 5,
         "hydration": 20,
@@ -57,10 +57,10 @@ _cactus_fruit_item = {
 _lettuce_seed = {
     "name": "lettuce seed",
     "descriptions": [
-        "A  seed, promises a refreshing lettuce."
+        "A seed, promises a refreshing lettuce."
     ],
     "static": False,
-    "type": "seed",
+    "type": ["seed"],
     "plant_type": "lettuce" # This key links the seed to its plant type
 }
 
@@ -70,7 +70,7 @@ _carrot_seed = {
         "A tiny brownish seed, for a carrot!"
     ],
     "static": False,
-    "type": "seed",
+    "type": ["seed"],
     "plant_type": "carrot"
 } 
 
@@ -80,7 +80,7 @@ _cactus_seed = {
         "A round, hardy seed, for a resilient cactus."
     ],
     "static": False,
-    "type": "seed",
+    "type": ["seed"],
     "plant_type": "cactus"
 }
 
@@ -94,7 +94,7 @@ _tomato_item = {
         "A ripe, red and juicy tomato, good for eating raw or cooking."
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable"],
     "stats_edit": {
         "fullness": 12,
         "hydration": 15,
@@ -112,7 +112,7 @@ _tomato_seed = {
         "Small, flat seeds from a tomato, ready to grow."
     ],
     "static": False,
-    "type": "seed",
+    "type": ["seed"],
     "plant_type": "tomato"
 }
 
@@ -120,29 +120,20 @@ _tomato_seed = {
 _potato_item = {
     "name": "potato",
     "descriptions": [
-        "A starchy, earthy potato, excellent for baking or boiling."
+        "A starchy, earthy potato, excellent for baking or boiling. It is still raw! It needs cooking or will be harmful to eat. Can be used to grow another potato while raw."
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable", "seed"],
     "stats_edit": {
         "fullness": 25,
-        "hydration": 3,
-        "energy": 8
+        "hydration": -20,
+        "energy": -20
     },
     "effects": [
-        "A satisfyingly hearty potato, fills you up.",
-        "You feel a surge of sustained energy."
+        "The raw potato makes your stomach hurt",
+        "You powered through all that raw potato, amazing.",
+        "You feel tired after that whole situation."
     ]
-}
-
-_potato_seed = {
-    "name": "potato seed",
-    "descriptions": [
-        "A small piece of a potato with an 'eye', ready to sprout into a new plant."
-    ],
-    "static": False,
-    "type": "seed",
-    "plant_type": "potato"
 }
 
 # Strawberry
@@ -152,7 +143,7 @@ _strawberry_item = {
         "A small, sweet, and fragrant red berry."
     ],
     "static": False,
-    "type": "consumable",
+    "type": ["consumable"],
     "stats_edit": {
         "fullness": 8,
         "hydration": 12,
@@ -170,7 +161,7 @@ _strawberry_seed = {
         "Tiny seeds from a strawberry, promising more sweetness."
     ],
     "static": False,
-    "type": "seed",
+    "type": ["seed"],
     "plant_type": "strawberry"
 }
 
@@ -180,21 +171,21 @@ _strawberry_seed = {
 # Dictionary of predefined plant types and their growth stages
 # Each stage defines duration in *minutes* and optimal water level range.
 plant_types = {
-    "lettuce": { 
+    "lettuce": { # Existing plant (copied for context, not modified)
         "stages": [
-            {"name": "seedling", "duration_minutes": 5, "optimal_water_level_range": (0.8, 1.0)},
-            {"name": "juvenile", "duration_minutes": 10, "optimal_water_level_range": (0.6, 0.9)},
-            {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "seedling", "duration_minutes": 10, "optimal_water_level_range": (0.8, 1.0)},
+            {"name": "juvenile", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.9)},
+            {"name": "mature", "duration_minutes": 35, "optimal_water_level_range": (0.5, 0.7)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)} # Duration 0 means it's ready
         ],
-        "total_grow_minutes": 40, # Sum of duration_minutes for stages before harvestable
+        "total_grow_minutes": 60, # Sum of duration_minutes for stages before harvestable
         "harvest_items": [ # A list of items this plant can yield upon harvest
             {"item": _lettuce_item, "base_harvest_yield": 7}, # Yield 5 lettuce items
             {"item": _lettuce_seed, "base_harvest_yield": 2}   # Yield 1 lettuce seed
         ],
         "life_cycle": "annual"
     },
-    "carrot": { 
+    "carrot": { # Existing plant (copied for context, not modified)
         "stages": [
             {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
             {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
@@ -208,7 +199,7 @@ plant_types = {
         ],
         "life_cycle": "biennial" 
     },
-    "cactus": { 
+    "cactus": { # Existing plant (copied for context, not modified)
         "stages": [
             {"name": "sprout", "duration_minutes": 30, "optimal_water_level_range": (0.1, 0.6)},
             {"name": "young", "duration_minutes": 60, "optimal_water_level_range": (0.05, 0.4)},
@@ -227,12 +218,12 @@ plant_types = {
 
     "tomato": {
         "stages": [
-            {"name": "seedling", "duration_minutes": 7, "optimal_water_level_range": (0.7, 0.9)},
-            {"name": "young plant", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.85)},
-            {"name": "flowering", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.75)},
+            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
+            {"name": "young", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.85)},
+            {"name": "mature", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.75)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.75)}
         ],
-        "total_grow_minutes": 42,
+        "total_grow_minutes": 50,
         "harvest_items": [
             {"item": _tomato_item, "base_harvest_yield": 6},
             {"item": _tomato_seed, "base_harvest_yield": 2}
@@ -241,23 +232,22 @@ plant_types = {
     },
     "potato": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 10, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "foliage growth", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "tubering", "duration_minutes": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
+            {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "young", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "mature", "duration_minutes": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.4, 0.6)}
         ],
-        "total_grow_minutes": 75,
+        "total_grow_minutes": 85,
         "harvest_items": [
-            {"item": _potato_item, "base_harvest_yield": 4}, # Potatoes are heavier, so fewer quantity
-            {"item": _potato_seed, "base_harvest_yield": 1} # Potatoes are grown from seed potatoes (pieces)
+            {"item": _potato_item, "base_harvest_yield": 8}, # Potatoes are plenty
         ],
         "life_cycle": "annual" # Though some varieties are biennial, annual is common for game simplicity.
     },
     "strawberry": {
         "stages": [
             {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 0.9)},
-            {"name": "runner growth", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "flowering/fruiting", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
             {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
         "total_grow_minutes": 70,

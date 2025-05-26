@@ -158,7 +158,8 @@ class Garden_Mananger(GenericJsonTool):
         # Define how much water to deplete per minute of real-world time
         # This is a critical value to tune for game balance.
         # Example: 0.001 per minute means it takes 1000 minutes (approx 16.6 hours) for water to go from 1.0 to 0.0 without any input.
-        WATER_DEPLETION_RATE_PER_MINUTE = 0.001 
+        # 6 hours * 60 minutes/hour = 360 minutes
+        WATER_DEPLETION_RATE_PER_MINUTE = 0.002778
 
         # Iterate through all gardens in the state
         for room_id, garden_data in self._state.items():

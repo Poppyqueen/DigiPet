@@ -1,5 +1,4 @@
-#
-#  bundles_construct.py
+# bundles_construct.py
 
 import os
 import re
@@ -17,40 +16,6 @@ if api_key is None:
     print("API key not found. Please set the OPENAI_API_KEY environment variable.")
     exit(1)
 
-
-"""
-we have a py file with packages defined like this:
-
-care_package_1_general_survival = [
-    {
-        "name": "water_bottle",
-        "descriptions": ["A standard plastic water bottle", "Sealed and clean", "Essential hydration"],
-        "static": False,
-        "type": "consumable",
-        "stats_edit": {
-            "fullness": 5,
-            "hydration": 30,
-            "energy": 0
-        },
-        "effects": ["Quenches your thirst effectively", "Leaves you feeling refreshed"]
-    }
-]
-
-...
-
-we need to make a helper function to save the created bundle as a the list we are returning,
-the bundle name should be based on the concept, we need to make it filename safe and append it into the existing py file as a list with that name
-
-please do not change anything, just make the function to save the data in the structure we need
-
-print(crafter.prepare_bundle("A bundle for hydratation, some misc items"))
-
---- Calling AI ---
-Prompt: A bundle for hydratation, some misc items Bundle
-Processing misc item 'pair_of_sunglasses': Removing effects and stats_edit.
---- AI Call Successful ---
-[{'name': 'bottle_of_water', 'descriptions': ['A clean bottle filled with fresh water.', 'Useful for staying hydrated.'], 'static': False, 'effects': ['Restores hydration.'], 'type': 'consumable', 'stats_edit': {'fullness': 0.0, 'hydration': 20.0, 'energy': 0.0}}, {'name': 'pair_of_sunglasses', 'descriptions': ['Protective sunglasses to shield your eyes.', 'A stylish accessory for sunny days.'], 'static': True, 'type': 'misc'}, {'name': 'energy_bar', 'descriptions': ['A tasty energy bar.', 'Boosts your energy levels.'], 'static': False, 'effects': ['Increases energy temporarily.'], 'type': 'consumable', 'stats_edit': {'fullness': 2.0, 'hydration': 0.0, 'energy': 5.0}}]
-"""
 
 # --- Structure for the fixed stats_edit dictionary ---
 class ItemStatsEdit(BaseModel):
@@ -72,13 +37,16 @@ class ItemDefinition(BaseModel):
     name: str = Field(description="A unique string identifier for the item type (e.g., 'bowl_of_nuts').")
     descriptions: List[str] = Field(description="A list of strings providing descriptions for the item.")
     static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved like furniture).")
-    type: str = Field(description="Options: 'consumable' or 'misc' for items that are not consumable. Raw items should be considered 'consumable' too.")
+    # UPDATED: type is now List[str]
+    type: List[str] = Field(description="A list of strings defining item categories (e.g., ['consumable'], ['misc', 'tool'], ['consumable', 'seed'], ['seed']). Primary categories: 'consumable', 'misc', 'furniture', 'seed'.")    
 
     # MAKE effects and stats_edit OPTIONAL
     # Use | None for Pydantic V2 syntax for optional fields
     # default=None allows the field to be missing in the input data without Pydantic error
-    effects: List[str] |None= Field(default=None, description="A list of strings describing narrative effects upon use (only for 'consumable').")
-    stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable').")
+    effects: List[str] |None= Field(default=None, description="A list of strings describing narrative effects upon use (only for 'consumable' items).")
+    stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items).")
+
+    plant_type: str  |None =Field(default=None, description="A string for the seed type, it should define the plant of seed this is for, from the valid options: 'lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry'")
 
 # --- Structure that contains a list of these item definitions ---
 class ItemDefinitionListContainer(BaseModel):
@@ -138,14 +106,18 @@ class bundles_maker:
             "You are a bundle crafter AI. Given an idea, you will generate a list of item definitions "
             "for a care package or bundle. Your response MUST be a JSON object with a single key 'items' "
             "containing a list of item dictionaries. Each item dictionary MUST strictly follow these rules:\n"
-            "- Include 'name' (string), 'descriptions' (List[str]), 'static' (bool), and 'type' (string, either 'consumable' or 'misc').\n"
-            "- IF 'type' is 'consumable', you MUST include 'effects' (List[str]) and 'stats_edit' (a dictionary with keys 'fullness', 'hydration', 'energy' as floats).\n"
-            "- IF 'type' is 'misc', you MUST NOT include the 'effects' or 'stats_edit' keys.\n"
+            "- Include 'name' (string), 'descriptions' (List[str]), 'static' (bool), and 'type' (List[str]). "
+            "The 'type' list MUST contain at least one primary category: 'consumable', 'misc', 'furniture', or 'seed'. "
+            "It can also include other descriptive types (e.g., 'tool', 'weapon', 'wearable', 'container').\n"
+            "- IF the 'type' list contains 'consumable', you MUST include 'effects' (List[str]) and 'stats_edit' (a dictionary with keys 'fullness', 'hydration', 'energy' as floats).\n"
+            "- IF the 'type' list does NOT contain 'consumable', you MUST NOT include the 'effects' or 'stats_edit' keys.\n"
+            "- IF the 'type' list contains 'seed', you MUST include 'plant_type' (string) with one of the following exact values: 'lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry'.\n"
+            "- IF the 'type' list does NOT contain 'seed', you MUST NOT include the 'plant_type' key.\n"
             "Ensure all values match the specified types (e.g., floats for stats_edit values, not integers)."
-            "You can create raw items, if you do, these need to be tagged as 'consumable'"
-            "In the stats floats you can use negative values to cause negative effects or punishments for consumtion of raw items or other similar effects."
+            "You can create raw items, if you do, these need to have 'consumable' in their type list."
+            "In the stats floats you can use negative values to cause negative effects or punishments for consumption of raw items or other similar effects."
             "The stats effect ranges are from -50 to 50."
-            "Be punishing for the consumption of raw items in all stats, from fullness, hydration and energy, specially raw protein will cause sickness, loss of energy, stomach ache, dehydration, and hunger. Eating a whole raw chicken should give something like -10, -30, -50"
+            "Be punishing for the consumption of raw items in all stats, from fullness, hydration and energy, specially raw protein will cause sickness, loss of energy, stomach ache, dehydration, and hunger. Eating a whole raw chicken should give something like -10, -30, -50."
         )
 
         # Use the prompt format from your working example
@@ -170,32 +142,38 @@ class bundles_maker:
 
         for item_definition in response.items:
             # Convert the Pydantic ItemDefinition model instance to a dictionary
-            # model_dump() includes optional fields if they were present in the input data
             item_dict = item_definition.model_dump(exclude_unset=True) # exclude_unset=True is useful here
 
-            # --- Post-processing: Safeguard to remove keys for 'misc' items ---
-            # While the AI *should* omit these for 'misc' items according to the prompt,
-            # and Pydantic now allows them to be missing, this step ensures the *final*
-            # Python dictionary list definitely doesn't have effects/stats_edit for misc.
-            if item_dict.get("type") == "misc":
-                # Use .pop() to safely remove keys if they exist
+            item_types = item_dict.get("type", []) # Get the list of types, default to empty list
+
+            # --- Post-processing: Safeguard for 'consumable' related fields ---
+            if "consumable" not in item_types:
                 if item_dict.pop("effects", None) is not None:
-                     print(f"Processing misc item '{item_dict.get('name')}': Removed effects (AI incorrectly included).")
+                     print(f"Processing non-consumable item '{item_dict.get('name')}': Removed 'effects' (AI incorrectly included).")
                 if item_dict.pop("stats_edit", None) is not None:
-                     print(f"Processing misc item '{item_dict.get('name')}': Removed stats_edit (AI incorrectly included).")
-            elif item_dict.get("type") == "consumable":
-                 # Optional checks for consumables: ensure they have effects/stats_edit
-                 # Pydantic validation would have passed as they are optional, but
-                 # your game logic might strictly require them for consumables.
+                     print(f"Processing non-consumable item '{item_dict.get('name')}': Removed 'stats_edit' (AI incorrectly included).")
+            else: # "consumable" IS in item_types, so effects and stats_edit should be present
                  if item_dict.get("effects") is None:
-                      print(f"Warning: Consumable item '{item_dict.get('name')}' is missing 'effects'.")
-                      # Decide how to handle: add default? log error?
+                      print(f"Warning: Consumable item '{item_dict.get('name')}' is missing 'effects'. Adding empty list.")
+                      item_dict["effects"] = []
                  if item_dict.get("stats_edit") is None:
-                      print(f"Warning: Consumable item '{item_dict.get('name')}' is missing 'stats_edit'.")
-                      # Decide how to handle: add default? log error?
+                      print(f"Warning: Consumable item '{item_dict.get('name')}' is missing 'stats_edit'. Adding default zero stats.")
+                      item_dict["stats_edit"] = ItemStatsEdit(fullness=0.0, hydration=0.0, energy=0.0).model_dump()
 
+            # --- Post-processing: Safeguard for 'seed' related fields (NEW) ---
+            valid_plant_types = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry']
+            if "seed" not in item_types:
+                if item_dict.pop("plant_type", None) is not None:
+                    print(f"Processing non-seed item '{item_dict.get('name')}': Removed 'plant_type' (AI incorrectly included).")
+            else: # "seed" IS in item_types, so plant_type should be present and valid
+                current_plant_type = item_dict.get("plant_type")
+                if current_plant_type is None or current_plant_type not in valid_plant_types:
+                    # If missing or invalid, remove it and log a warning.
+                    # Depending on game logic, you might want to default to a specific type
+                    # or mark the item as invalid for planting. Here, we remove it.
+                    item_dict.pop("plant_type", None) # Ensure it's removed if invalid/missing
+                    print(f"Warning: Seed item '{item_dict.get('name')}' has missing or invalid 'plant_type' ('{current_plant_type}'). Expected one of {valid_plant_types}. Removed 'plant_type'.")
 
-            # Append the processed dictionary to our list
             processed_items_list.append(item_dict)
 
         print("--- AI Call Successful ---")
@@ -295,7 +273,7 @@ if __name__ == "__main__":
     target_output_file = "care_packages.py" # Using a distinct name for generated file
 
     bundle_concepts = [
-"cheat bundles, items that replenish stats by 150, consumables, 3 items, 1 for each stat"
+"Gardener's Starter Kit"
 
         # Add more concepts as needed
     ]
