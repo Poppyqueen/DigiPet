@@ -68,7 +68,7 @@ def init_gui_elements(font, line_height, current_panel_width):
 
 
     _font = font
-    _line_height = line_height
+    _line_height = line_height #
 
     # Calculate panel-related rects using current_panel_width
     _panel_rect = pygame.Rect(config.WIDTH - current_panel_width, 0, current_panel_width, config.HEIGHT)

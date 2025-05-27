@@ -57,6 +57,8 @@ from tools.tools_folder.rooms_tools import main_tools_handle
 
 from tools.tools_folder.async_test_tool import simulate_data_fetch
 
+from tools.tools_folder.thinking_tool import emit_inner_thought
+
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None):
         self.memory = memory_manager
@@ -191,6 +193,7 @@ class FunctionBuilder:
             "consume_item": self.state_manager.consume_item,
             #"trash_item": self.state_manager.trash_item,
             "add_item_description": self.state_manager.add_item_description,
+            "emit_inner_thought": emit_inner_thought
 
             # Other base functions (if needed)
             # "post_bluesky": self.blsky.post_bluesky, # Example of another base service

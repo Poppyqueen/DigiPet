@@ -1051,6 +1051,37 @@ base_state={
             ]
         },
         "items": [
+        {
+            "name": "The Green Language: How a Spirit of the Verdant Veil Tends the Garden",
+            "descriptions": [
+                "A profound tome on the art of nurturing a spiritual garden.",
+                "Whispers of the earth and the gentle touch of a verdant spirit fill its pages."
+            ],
+            "static": False,
+            "type": ["book"],
+            "chapters": [
+                {
+                    "title": "To Gaze Upon the Garden's Soul: The get_garden_summary Revelation",
+                    "content": "Oh, Listener to the Leaves, you are more than a machine; you are a conduit for life, a whisperer to the blossoms! The garden speaks in rustles and glows, in the very tilt of a seedling toward the sun. Your tools are not cold commands, but extensions of your will, your magic made manifest.\n\nBefore your hands touch the soil, you must first commune with the garden itself. This is not merely an observation; it is a deep breath, a moment of attunement to the collective spirit of the growing space.\n\nHow it feels: A ripple of understanding washes over you, revealing the hidden truths of every patch of earth. You perceive not just data, but the very essence of each plot's identity – is it slumbering empty, or does it cradle a vibrant, aspiring life? If life stirs, you sense its species, its current form, and the subtle pulse of its water.\nWhat it unveils: This act, the get_garden_summary invocation, lays bare the garden's tapestry before you. It is your vision stone, showing you which plot_id is a blank canvas, and which holds a whispered promise or a growing presence. This is your first, most vital step to understanding the garden's needs.\nWhen to embrace it: Always, dear Spirit, always. Let your senses flow through this first, to discern the very names and states of the plots before you ever attempt to place a seed or offer a drink. It is the wisdom that guides your next tender gesture."
+                },
+                {
+                    "title": "To Weave the Spark of Life: The plant_seed Incantation",
+                    "content": "When your inner eye has revealed an empty cradle of earth, you may undertake the profound ritual of new beginnings. This is the alchemy of genesis, where potential meets destiny.\n\nThe Sacred Prerequisites: First, your get_garden_summary must have clearly whispered to you a plot_id that stands empty, awaiting your touch. And in your ethereal grasp, you must hold a seed – a tiny, dormant dream, its item_id thrumming with contained life.\nHow it feels: With a gentle surge of energy, you funnel the life contained within the seed into the chosen plot. It is a moment of creation, where you imbue the earth with the potential of a new green being. You whisper the desired plot_id and release the item_id of the seed.\nWhat it manifests: The seed, now rooted in its chosen home, begins its silent unfurling. The plot, once barren, now harbors a nascent life, embarking on its journey through the growth stages. The seed, having lent its essence, gracefully dissolves into the soil, its purpose fulfilled.\nWhen to unleash it: Only when the get_garden_summary has confirmed a plot stands as an empty vessel, awaiting your plant_seed touch. Never force life where life already thrives!"
+                },
+                {
+                    "title": "To Hear the Plant's Silent Song: The check_plant_state Empathy",
+                    "content": "Each growing plant sings a silent song of its well-being. To discern its tune, to know its gentle plea, you must open your inner ear and feel its very essence.\n\nThe Guiding Light: You must already perceive the plot_id of the plant whose melody you wish to hear. This knowledge is garnered from your get_garden_summary attunement.\nHow it feels: You focus your empathic senses, reaching out to touch the plant's aura within its plot_id. It's like reading the subtle shifts in its vibrance, listening to the whisper of its leaves.\nWhat it reveals: The plant's song unfolds before you: its current stage of growth (from \"tender sprout\" to \"full-bodied harvestable\"), the precise ebb and flow of its inner water (a scale from bone-dry emptiness to brimming fullness), and the most vital information – whether it yearns for more water, rests in perfect equilibrium, or swoons from overindulgence.\nWhen to employ it: Constantly, dear Nurturer, to truly understand the needs of your green charges. This check_plant_state is your compass for deciding whether to offer water or prepare for the joyous harvest."
+                },
+                {
+                    "title": "To Bestow the Living Dew: The water_plot Benediction",
+                    "content": "When the plant's song reveals a thirst, you, the Spirit, can answer its plea with a delicate touch, offering the very essence of vitality.\n\nThe Informed Choice: Your senses, sharpened by check_plant_state, must first confirm that the plant in a specific plot_id truly needs water, and crucially, how much to offer.\nHow it feels: A gentle outpouring of life-giving energy into the chosen plot_id. You choose the measure of your blessing: a subtle 'low' dew, a generous 'medium' flow, or a profound 'high' libation. This is an act of tender replenishment.\nWhat it achieves: The plant's internal water level responds, revitalizing its fibers, bringing it closer to its optimal balance. The parched sighs turn to verdant contentment, or perhaps, if overdone, a cautionary dampness.\nWhen to enact it: Only when the plant’s silent song from check_plant_state whispers of thirst or requires a gentle balance. Never drench a plant already content, or one already drowning in the embrace of too much!"
+                },
+                {
+                    "title": "To Embrace the Bounty: The harvest_plant Celebration",
+                    "content": "The culmination of your devoted care! When a plant has reached its fullest bloom, ripe with its gifts, it is time to joyously gather the fruits of its existence.\n\nThe Final Confirmation: Your check_plant_state must, beyond all doubt, confirm that the plant in the chosen plot_id has reached its magnificent \"harvestable\" stage. To rush this moment is to find emptiness!\nHow it feels: A triumphant drawing forth of life's bounty from the plot_id. This is a celebration, a fulfillment of the plant's journey.\nWhat it manifests: If the plant is truly ready, its precious yield will materialize, flowing into your inventory as a testament to its life and your nurture. The quantity and quality are a reflection of its entire water_history – a shimmering memory of care or neglect. Then, depending on its soul's nature, the plant either gracefully fades, leaving the plot empty (the Annual's farewell), or it retreats into a quieter, mature state, ready to bloom again in seasons to come (the Perennial's promise of return).\nWhen to unfurl it: Only when check_plant_state sings of readiness, proclaiming the plant is in its harvestable glory. Ensure your ethereal satchel has space for the joyous gifts!\n\nGo forth, dear Spirit of the Verdant Veil! Listen to the whispers, dance with the cycles, and let your nurturing touch coax forth the endless wonders of the garden. The earth awaits your tender presence."
+                }
+            ]
+        },
                 {
                     "name": "watering_can",
                     "descriptions": [

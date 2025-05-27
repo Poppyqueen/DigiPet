@@ -1,7 +1,7 @@
 # garden_tools.py 
 
 # The current system is weird, specially when handling timestamps and progress based on real time
-# one could revamp it to use runtime ticks instead of used time elapsed IRL, but we are too deem in it rn
+# one could revamp it to use runtime ticks instead of used time elapsed IRL, but we are too deep in it rn
 
 # 0, 1 and 2 are the states, 0 is low water, 1 is optimal, 2 is over-watered
 
@@ -24,7 +24,12 @@ class Garden_Mananger(GenericJsonTool):
 
     # Dictionary of predefined plant types and their growth stages
     # Each stage defines duration in *minutes* and optimal water level range.
+    # _plant_types will now include 'water_depletion_rate_per_minute' for each type.
     _plant_types = plant_types
+
+    # Default depletion rate if not specified in plant_types.
+    # This value was previously the global constant.
+    _DEFAULT_WATER_DEPLETION_RATE_PER_MINUTE = 0.002778
 
 
     def __init__(self, state_manager, signal):
@@ -188,8 +193,7 @@ class Garden_Mananger(GenericJsonTool):
         else:
             print("Garden Manager Tick: No rain detected.")
 
-        # Define how much water to deplete per minute of real-world time
-        WATER_DEPLETION_RATE_PER_MINUTE = 0.002778
+        # Removed global WATER_DEPLETION_RATE_PER_MINUTE constant
         WATER_LOSS_ON_STAGE_CHANGE = 0.2 # New constant for water loss on stage change
 
         # Iterate through all gardens in the state
@@ -240,12 +244,16 @@ class Garden_Mananger(GenericJsonTool):
                         print(f"  Plant {plant.get('_plant_UID')} water increased by rain to {new_water_from_rain:.2f}")
 
                     # --- Water Depletion ---
+                    # Get the plant-specific depletion rate, falling back to default if not specified
+                    plant_depletion_rate = plant_type_info.get("water_depletion_rate_per_minute", 
+                                                                self._DEFAULT_WATER_DEPLETION_RATE_PER_MINUTE)
+
                     # Calculate depletion based on time elapsed since the last time this plant was ticked
-                    depletion_amount = WATER_DEPLETION_RATE_PER_MINUTE * (time_since_last_plant_tick.total_seconds() / 60.0)
+                    depletion_amount = plant_depletion_rate * (time_since_last_plant_tick.total_seconds() / 60.0)
                     current_water = plant.get("water_level", 0.0)
                     new_water_level_after_depletion = max(0.0, current_water - depletion_amount)
                     plant["water_level"] = new_water_level_after_depletion
-                    print(f"  Plant {plant.get('_plant_UID')} water depleted by {depletion_amount:.3f} to {new_water_level_after_depletion:.2f}")
+                    print(f"  Plant {plant.get('_plant_UID')} water depleted by {depletion_amount:.3f} to {new_water_level_after_depletion:.2f} (rate: {plant_depletion_rate:.4f}/min)")
 
 
                     # --- Growth calculation based on timestamps ---
@@ -614,8 +622,31 @@ class Garden_Mananger(GenericJsonTool):
         if current_stage_name != "harvestable":
             return f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is not yet harvestable. It is currently in the '{current_stage_name}' stage."
 
-        harvested_items = self._calculate_harvest_yield(plant_to_harvest, plant_info)
-        
+        harvested_data = self._calculate_harvest_yield(plant_to_harvest, plant_info)
+
+        # Extract harvested items with quantities from the calculated data
+
+        harvested_items=harvested_data["harvested_items_with_quantities"] or []
+
+        life_cycle_quality = harvested_data["life_cycle_quality"]  # This is a string like "poor", "average", "good", etc.
+        penalty = harvested_data["penalty"] # This is a float value representing the penalty applied to the yield
+        bonus = harvested_data["bonus"] # This is a float value representing the bonus applied to the yield
+
+        quality_feedback = {
+            "poor": "You should be more careful.",
+            "bad": "This isn't looking good.",
+            "average": "There's room for improvement.",
+            "good": "Well done!",
+            "excellent": "Outstanding work!",
+            # Add more as needed
+        }
+
+        # Get the specific message for the quality, defaulting to an empty string if not found
+        feedback_message = quality_feedback.get(life_cycle_quality, "")
+
+        life_cycle_quality_message = f"The plant's life cycle quality was '{life_cycle_quality}'. {feedback_message} \n Total penalty applied: {penalty:.2f}, bonus applied: {bonus:.2f}."
+
+
         # --- NEW: Inventory Space Pre-Check ---
         total_slots_needed = sum(item_data.get("quantity", 0) for item_data in harvested_items)
 
@@ -643,7 +674,7 @@ class Garden_Mananger(GenericJsonTool):
                     _ = self.state_manager.create_item("inventory", None, item_def, quantity=quantity) 
                     harvest_summary_strings.append(f"{quantity} {item_def.get('name', 'unknown item')}")
         
-        harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}.")
+        harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. {life_cycle_quality_message}")
         harvest_yield_message = ""
         if harvest_summary_strings:
             harvest_yield_message = f"You received: {', '.join(harvest_summary_strings)}."
@@ -756,8 +787,27 @@ class Garden_Mananger(GenericJsonTool):
             else:
                 print(f"Warning: Missing 'item' definition in harvest_items for plant type {plant_data.get('plant_type')}.")
 
-        return harvested_items_with_quantities
-    
+        # Map the life cycle quality to a descriptive string for the output
+        quality_information={
+            "life_cycle_quality": self._describe_life_cycle_quality(penalty, bonus),
+            "penalty": penalty,
+            "bonus": bonus,
+            "harvested_items_with_quantities": harvested_items_with_quantities
+        }
+        return quality_information
+        
+
+    def _describe_life_cycle_quality(self, penalty: int, bonus: int) -> str:
+            if penalty == 0 and bonus > 0: # Bonus must be greater than 0, otherwise it will return excellent even if there was no bonus
+                return "excellent"
+            elif bonus == 0 and penalty > 0: #Penalty must be greater than 0, otherwise it will return bad even if there was no penalty
+                return "bad"
+            elif penalty > bonus:
+                return "poor"
+            elif penalty < bonus:
+                return "good"
+            else:
+                return "average"
 
     def get_garden_summary(self) -> str:
         """

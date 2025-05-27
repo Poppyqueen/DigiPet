@@ -487,6 +487,28 @@ bathroom_tools=[
 ]
 base_tools=[
     {
+    "type": "function",
+    "name": "emit_inner_thought",
+    "description": "Emits a quick, ephemeral reflection or thought about the current or upcoming action. Used for internal reasoning, questioning, or subtle judgment.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "thought": {
+            "type": "string",
+            "description": "A brief, freeform inner thought. Can be a question, concern, instinct, or moment of reflection."
+        },
+        "context": {
+            "type": "string",
+            "description": "Optional short description of what this thought refers to (e.g., current step, user request, past tool output).",
+            "default": "unspecified"
+        }
+        },
+        "required": ["thought"],
+        "additionalProperties": False
+    }
+    },
+
+    {
         "type": "function",
         "name": "add_item_description",
         "description": "Appends a custom description to a specific item currently in your inventory.",

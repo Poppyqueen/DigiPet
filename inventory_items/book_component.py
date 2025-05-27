@@ -46,7 +46,7 @@ class BookComponent:
              return None, f"Item with ID '{book_item_id}' not found anywhere."
 
         item_data = item_info["item_data"]
-        # Use the manager's validation method, which knows about book type
+        # Use the manager's validation method, which knows about item types
         is_valid, msg = self._manager._is_valid_item_data(item_data, check_id=True)
 
         if not is_valid:
@@ -54,9 +54,23 @@ class BookComponent:
              print(f"Warning: Item ID {book_item_id} found but data is invalid ({msg}). Treated as non-book or corrupted.")
              return None, f"Item with ID '{book_item_id}' ({item_data.get('name', 'Unnamed Item')}) data is corrupted: {msg}"
 
-        # After validation, check if the validated item is actually a book type
-        if item_data.get("type") != "book":
-             return None, f"Item with ID '{book_item_id}' ({item_data.get('name', 'Unnamed Item')}) is not a book (type is '{item_data.get('type')}')."
+        # After validation, check if the validated item is actually a book type.
+        # The 'type' key is now a list of strings.
+        item_types = item_data.get("type")
+
+        # Check if 'book' is one of the types. item_types must be a list for this to be true.
+        is_book_type = isinstance(item_types, list) and "book" in item_types
+
+        if not is_book_type:
+             type_info_for_msg = ""
+             if item_types is None:
+                 type_info_for_msg = "type key is missing or None"
+             elif isinstance(item_types, list):
+                 type_info_for_msg = f"types are '{', '.join(item_types)}'"
+             else:
+                 type_info_for_msg = f"type is '{item_types}' (not a list)"
+
+             return None, f"Item with ID '{book_item_id}' ({item_data.get('name', 'Unnamed Item')}) is not categorized as a book ({type_info_for_msg})."
 
 
         # Return the item data dictionary itself (a reference from the main state)
@@ -244,7 +258,7 @@ class BookComponent:
              print(f"Error: Chapters key for book ID {book_item_id} is not a list in delete_chapter after validation. Attempting to fix.")
              book_item["chapters"] = [] # Attempt to fix state
              chapters_list = book_item["chapters"]
-             needs_save = True # Need to save correction if successful later
+             # needs_save = True # Need to save correction if successful later
 
 
         chapter_title_lower = str(chapter_title).strip().lower()
@@ -283,10 +297,11 @@ class BookComponent:
              return "Error: Could not access inventory to list books. State might be corrupted."
 
         # Filter inventory items to find those of type "book"
-        # Robust checks for dict type, 'type' key, and 'id' key
+        # The 'type' key is now expected to be a list of strings, so check if "book" is in that list.
         book_items_in_inventory = [
             item for item in inventory_list
-            if isinstance(item, dict) and item.get("type") == "book" and item.get("id") is not None and isinstance(item.get("id"), int)
+            if isinstance(item, dict) and isinstance(item.get("type"), list) and "book" in item.get("type") \
+            and item.get("id") is not None and isinstance(item.get("id"), int)
         ]
 
         # Use manager's formatter for display

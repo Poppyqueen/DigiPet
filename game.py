@@ -26,11 +26,8 @@ if mock_running:
 else:
     from ai_managers.chatbot_api import CLIChatbot # There are interesting settings in the initialization of this class.
 
-# This will allow us to test the game interface and graphics, runtime without external dependencies
-# and without needing to run the actual chatbot.
 
-# If we were to divide it we would have to create a new section of signals and manage them. So, this way, they only
-# exist here, no need to divide it.
+
 main_config = configparser.ConfigParser()
 main_config.read('main_config.ini')
 system_prompt = main_config['AI']['sys_prompt']
@@ -421,23 +418,6 @@ def add_items(items_list, room):
         error_message = f"System Error preparing add items instruction: {type(e).__name__}: {e}"
         print(error_message)
         gui.gui_text_utils.add_message_to_history(error_message, 'error')
-
-
-
-# # --- Calculate GUI Rects and Initialize GUI Module ---
-# panel_rect = pygame.Rect(config.WIDTH - config.PANEL_WIDTH, 0, config.PANEL_WIDTH, config.HEIGHT)
-# input_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.bottom - config.INPUT_HEIGHT - config.PADDING, panel_rect.width - 2 * config.PADDING, config.INPUT_HEIGHT )
-# history_rect = pygame.Rect( panel_rect.left + config.PADDING, panel_rect.top + config.PADDING, panel_rect.width - 2 * config.PADDING, input_rect.top - (panel_rect.top + config.PADDING) - config.PADDING )
-# history_display_area = pygame.Rect( history_rect.left + config.PADDING, history_rect.top + config.PADDING, history_rect.width - 2 * config.PADDING, history_rect.height - 2 * config.PADDING )
-# text_width_limit = history_display_area.width
-
-# gui_rects = {
-#     'panel_rect': panel_rect,
-#     'input_rect': input_rect,
-#     'history_rect': history_rect,
-#     'history_display_area': history_display_area,
-#     'text_width_limit': text_width_limit
-# }
 
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
