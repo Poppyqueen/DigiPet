@@ -1,7 +1,7 @@
 # --- Item Definitions for Harvest and Seeds ---
 # These items will be created and added to the inventory upon harvest or used for planting.
 
-# Existing Items (copied for context, not modified)
+# Existing Items
 _lettuce_item = {
     "name": "lettuce",
     "descriptions": [
@@ -276,45 +276,46 @@ _basil_seed = {
 
 # --- Plant Definitions ---
 
+
+# Our main game loop is now calling a tick in a set timer, each tick is called in 
+
 # Dictionary of predefined plant types and their growth stages
 # Each stage defines duration in *minutes* and optimal water level range.
 plant_types = {
-    "lettuce": { # Existing plant (copied for context, not modified)
+    "lettuce": { # Existing plant, if a tick is called every minute, this lettuce will take 60 runtime minutes to grow to harvestable 
         "stages": [
-            {"name": "seedling", "duration_minutes": 10, "optimal_water_level_range": (0.8, 1.0)},
-            {"name": "juvenile", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.9)},
-            {"name": "mature", "duration_minutes": 35, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)} # Duration 0 means it's ready
+            {"name": "seedling", "duration_ticks": 10, "optimal_water_level_range": (0.8, 1.0)},
+            {"name": "juvenile", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
+            {"name": "mature", "duration_ticks": 35, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)} # Duration 0 means it's ready
         ],
-        "total_grow_minutes": 60, # Sum of duration_minutes for stages before harvestable
         "harvest_items": [ # A list of items this plant can yield upon harvest
             {"item": _lettuce_item, "base_harvest_yield": 7}, # Yield 5 lettuce items
             {"item": _lettuce_seed, "base_harvest_yield": 2}   # Yield 1 lettuce seed
         ],
-        "life_cycle": "annual"
+        "life_cycle": "annual",
+        "water_depletion_rate_per_tick": 0.002 # Water levels are a float from 0 to 1
     },
-    "carrot": { # Existing plant (copied for context, not modified)
+    "carrot": { # Existing plant
         "stages": [
-            {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "rooting", "duration_minutes": 30, "optimal_water_level_range": (0.4, 0.7)},
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.4, 0.7)}
+            {"name": "seedling", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
+            {"name": "young", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "rooting", "duration_ticks": 30, "optimal_water_level_range": (0.4, 0.7)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.7)}
         ],
-        "total_grow_minutes": 75,
         "harvest_items": [
             {"item": _carrot_item, "base_harvest_yield": 10},
             {"item": _carrot_seed, "base_harvest_yield": 4}
         ],
         "life_cycle": "biennial" 
     },
-    "cactus": { # Existing plant (copied for context, not modified)
+    "cactus": { # Existing plant
         "stages": [
-            {"name": "sprout", "duration_minutes": 30, "optimal_water_level_range": (0.1, 0.7)},
-            {"name": "young", "duration_minutes": 60, "optimal_water_level_range": (0.05, 0.4)},
-            {"name": "mature", "duration_minutes": 60, "optimal_water_level_range": (0.05, 0.25)},
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.1, 0.45)}
+            {"name": "sprout", "duration_ticks": 30, "optimal_water_level_range": (0.1, 0.7)},
+            {"name": "young", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.4)},
+            {"name": "mature", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.25)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.1, 0.45)}
         ],
-        "total_grow_minutes": 150,
         "harvest_items": [
             {"item": _cactus_fruit_item, "base_harvest_yield": 7},
             {"item": _cactus_seed, "base_harvest_yield": 3}
@@ -326,12 +327,11 @@ plant_types = {
 
     "tomato": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.85)},
-            {"name": "mature", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.75)},
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.75)}
+            {"name": "sprout", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
+            {"name": "young", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.85)},
+            {"name": "mature", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.75)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.75)}
         ],
-        "total_grow_minutes": 50,
         "harvest_items": [
             {"item": _tomato_item, "base_harvest_yield": 6},
             {"item": _tomato_seed, "base_harvest_yield": 2}
@@ -340,12 +340,11 @@ plant_types = {
     },
     "potato": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.6, 1.0)},
-            {"name": "young", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "mature", "duration_minutes": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.4, 0.6)}
+            {"name": "sprout", "duration_ticks": 20, "optimal_water_level_range": (0.6, 1.0)},
+            {"name": "young", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "mature", "duration_ticks": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.6)}
         ],
-        "total_grow_minutes": 85,
         "harvest_items": [
             {"item": _potato_item, "base_harvest_yield": 8}, # Potatoes are plenty
         ],
@@ -353,12 +352,11 @@ plant_types = {
     },
     "strawberry": {
         "stages": [
-            {"name": "sprout", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+            {"name": "sprout", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
+            {"name": "young", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "mature", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
-        "total_grow_minutes": 70,
         "harvest_items": [
             {"item": _strawberry_item, "base_harvest_yield": 6},
             {"item": _strawberry_seed, "base_harvest_yield": 2}
@@ -369,12 +367,11 @@ plant_types = {
 # Ornamental Plants
 "rose": {
     "stages": [
-        {"name": "sprout", "duration_minutes": 20, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "bushy", "duration_minutes": 40, "optimal_water_level_range": (0.6, 0.8)},
-        {"name": "mature", "duration_minutes": 30, "optimal_water_level_range": (0.5, 0.7)},
-        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+        {"name": "sprout", "duration_ticks": 20, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "bushy", "duration_ticks": 40, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "mature", "duration_ticks": 30, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
-    "total_grow_minutes": 90,
     "harvest_items": [
         {"item": _rose_flower_item, "base_harvest_yield": 3},
         {"item": _rose_seed, "base_harvest_yield": 1}
@@ -383,12 +380,11 @@ plant_types = {
 },
 "sunflower": {
     "stages": [
-        {"name": "seedling", "duration_minutes": 15, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "stalking", "duration_minutes": 30, "optimal_water_level_range": (0.6, 0.9)},
-        {"name": "flowering", "duration_minutes": 45, "optimal_water_level_range": (0.5, 0.7)},
-        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+        {"name": "seedling", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "stalking", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "flowering", "duration_ticks": 45, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
-    "total_grow_minutes": 90,
     "harvest_items": [
         {"item": _sunflower_head_item, "base_harvest_yield": 1},
         {"item": _sunflower_seed, "base_harvest_yield": 3}
@@ -399,12 +395,11 @@ plant_types = {
 # Herbs
 "mint": {
     "stages": [
-        {"name": "sprout", "duration_minutes": 10, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "young", "duration_minutes": 15, "optimal_water_level_range": (0.6, 0.9)},
-        {"name": "mature", "duration_minutes": 20, "optimal_water_level_range": (0.5, 0.8)},
-        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.8)}
+        {"name": "sprout", "duration_ticks": 10, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "young", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "mature", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.8)},
+        {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
     ],
-    "total_grow_minutes": 45,
     "harvest_items": [
         {"item": _mint_leaves_item, "base_harvest_yield": 8},
         {"item": _mint_seed, "base_harvest_yield": 2}
@@ -413,12 +408,11 @@ plant_types = {
 },
 "basil": {
     "stages": [
-        {"name": "sprout", "duration_minutes": 10, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "young", "duration_minutes": 20, "optimal_water_level_range": (0.6, 0.8)},
-        {"name": "mature", "duration_minutes": 25, "optimal_water_level_range": (0.5, 0.7)},
-        {"name": "harvestable", "duration_minutes": 0, "optimal_water_level_range": (0.5, 0.7)}
+        {"name": "sprout", "duration_ticks": 10, "optimal_water_level_range": (0.7, 1.0)},
+        {"name": "young", "duration_ticks": 20, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "mature", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
-    "total_grow_minutes": 55,
     "harvest_items": [
         {"item": _basil_leaves_item, "base_harvest_yield": 7},
         {"item": _basil_seed, "base_harvest_yield": 2}

@@ -1,9 +1,16 @@
 # garden_tools.py 
 
-# The current system is weird, specially when handling timestamps and progress based on real time
-# one could revamp it to use runtime ticks instead of used time elapsed IRL, but we are too deep in it rn
+# This system is now tick based, the main runtime increments ticks based on a timer of its own
 
-# 0, 1 and 2 are the states, 0 is low water, 1 is optimal, 2 is over-watered
+# States: 0 is low water, 1 is optimal, 2 is over-watered
+
+# Inside the data folder there are plant structures that define their behavior, growth, life cycle type and water depletion rate per tick 
+
+# Plants have different stages, they need at least the stage 'harvestable'; If they are perennial, they need a 'mature' stage. Each stage needs a tick lenght. For the harvestable stage the lenght has to be 0
+
+# Plants have a list of nested item structures and base harvest number for each item
+
+# Perennials revert to mature stage after harvesting, while annuals get removed from the plot directly.
 
 from utils import open_meteo_handle
 from utils.generic_json_tool import GenericJsonTool
@@ -23,13 +30,14 @@ class Garden_Mananger(GenericJsonTool):
     """
 
     # Dictionary of predefined plant types and their growth stages
-    # Each stage defines duration in *minutes* and optimal water level range.
-    # _plant_types will now include 'water_depletion_rate_per_minute' for each type.
+    # Each stage defines duration in *ticks* and optimal water level range.
+    # Assuming 1 tick = 1 minute for consistency with original "duration_ticks" values.
+    # _plant_types will now include 'water_depletion_rate_per_tick' for each type.
     _plant_types = plant_types
 
     # Default depletion rate if not specified in plant_types.
-    # This value was previously the global constant.
-    _DEFAULT_WATER_DEPLETION_RATE_PER_MINUTE = 0.002778
+    # This value was previously the global constant (per minute, now per tick).
+    _DEFAULT_WATER_DEPLETION_RATE_PER_TICK = 0.002778
 
 
     def __init__(self, state_manager, signal):
@@ -59,6 +67,10 @@ class Garden_Mananger(GenericJsonTool):
             # or if the key was just added to an existing file.
             self._write_json(self._state) 
         
+        # Initialize internal logical tick counter for the garden
+        # This counter tracks how many "logical minutes" have passed for garden mechanics.
+        self._garden_logical_tick_counter = self._state.get("_garden_logical_tick_counter", 0)
+
         # After GenericJsonTool initializes self._state (either from file or default),
         # ensure all garden rooms from the main state manager are reflected here.
         self._initialize_garden_plots()
@@ -89,7 +101,7 @@ class Garden_Mananger(GenericJsonTool):
         rooms_list = self.state_manager._state.get("rooms", [])
 
         # Make a copy to modify safely, then assign back to self._state.
-        # This preserves non-garden specific keys like "_last_rain_applied_timestamp".
+        # This preserves non-garden specific keys like "_last_rain_applied_timestamp" and "_garden_logical_tick_counter".
         updated_gardens_in_state = self._state.copy() 
         
         for room in rooms_list:
@@ -156,34 +168,37 @@ class Garden_Mananger(GenericJsonTool):
 
     def tick(self) -> None:
         """
-        Advances the state of all plants in the garden based on real-world time elapsed.
-        Applies rain effect if currently raining and the rain cooldown based on real-time has passed.
-        Also applies natural water depletion.
+        Advances the state of all plants in the garden based on logical game ticks.
+        This function is intended to be called once per "logical game minute" by the game orchestrator.
+        It handles natural water depletion, growth, and rain effects.
         """
         RAIN_COOLDOWN_MINUTES = 30 
-        # New constant for water history recording interval
-        RECORD_WATER_HISTORY_INTERVAL_MINUTES = 10 
+        RECORD_WATER_HISTORY_INTERVAL_TICKS = 10 # Record water history every 10 logical ticks
 
-        current_time = datetime.now() # Use datetime.datetime for clarity
+        # Increment our internal logical tick counter. This represents one "game minute".
+        self._garden_logical_tick_counter += 1 
+        current_logical_tick = self._garden_logical_tick_counter
+
+        # Rain cooldown is still based on real-time as per original design.
+        current_time_irl = datetime.now() 
         last_rain_applied_str = self._state.get("_last_rain_applied_timestamp")
         
-        # Convert stored string timestamp back to datetime object
         last_rain_applied_datetime = None
         if last_rain_applied_str:
             last_rain_applied_datetime = datetime.fromisoformat(last_rain_applied_str)
         else:
             # If no last_rain_applied_timestamp exists, set it to now to start cooldown
-            self._state["_last_rain_applied_timestamp"] = current_time.isoformat()
-            last_rain_applied_datetime = current_time
+            self._state["_last_rain_applied_timestamp"] = current_time_irl.isoformat()
+            last_rain_applied_datetime = current_time_irl
             print("Garden Manager Tick: Initializing _last_rain_applied_timestamp.")
 
         rain_level = self._get_rain()
-        time_since_last_rain_applied = current_time - last_rain_applied_datetime
+        time_since_last_rain_applied = current_time_irl - last_rain_applied_datetime
         
         apply_rain_this_tick = False
         if rain_level > 0.0 and time_since_last_rain_applied >= timedelta(minutes=RAIN_COOLDOWN_MINUTES):
             apply_rain_this_tick = True
-            self._state["_last_rain_applied_timestamp"] = current_time.isoformat() # Update timestamp
+            self._state["_last_rain_applied_timestamp"] = current_time_irl.isoformat() # Update timestamp
             print(f"Garden Manager Tick: Rain level detected: {rain_level}mm/h. Applying rain effects. Next rain application possible in {RAIN_COOLDOWN_MINUTES} minutes.")
         elif rain_level > 0.0:
             remaining_time = timedelta(minutes=RAIN_COOLDOWN_MINUTES) - time_since_last_rain_applied
@@ -193,14 +208,8 @@ class Garden_Mananger(GenericJsonTool):
         else:
             print("Garden Manager Tick: No rain detected.")
 
-        # Removed global WATER_DEPLETION_RATE_PER_MINUTE constant
-        WATER_LOSS_ON_STAGE_CHANGE = 0.2 # New constant for water loss on stage change
+        WATER_LOSS_ON_STAGE_CHANGE = 0.1 # New constant for water loss on stage change
 
-        # Iterate through all gardens in the state
-        # Assuming top-level keys that are not 'room_id' are internal system keys
-        # The original code iterates through self._state.items() and checks for "room_id" in garden_data
-        # This implies _state contains both garden data (dicts with room_id) and other state variables (like _last_rain_applied_timestamp).
-        # We need to filter for actual garden rooms.
         room_ids_to_process = [k for k in self._state.keys() if isinstance(self._state[k], dict) and "room_id" in self._state[k]]
 
         for room_id in room_ids_to_process:
@@ -220,58 +229,63 @@ class Garden_Mananger(GenericJsonTool):
                         updated_plants.append(plant)
                         continue
 
-                    # Retrieve the last tick time for this specific plant for more precise depletion
-                    last_tick_time_str = plant.get("_last_ticked_timestamp")
-                    if not last_tick_time_str:
-                        # If a plant doesn't have this, it's new or from an old save. Set it to current_time.
-                        plant["_last_ticked_timestamp"] = current_time.isoformat()
-                        time_since_last_plant_tick = timedelta(0) # No depletion yet for first tick
-                        print(f"  Plant {plant.get('_plant_UID')} Initializing _last_ticked_timestamp.")
+                    # Retrieve the last logical tick time for this specific plant for precise depletion
+                    last_ticked_logical_tick = plant.get("_last_ticked_logical_tick") # Renamed for clarity
+                    if last_ticked_logical_tick is None: 
+                        # If a plant doesn't have this, it's new or from an old save. Set it to current_logical_tick.
+                        plant["_last_ticked_logical_tick"] = current_logical_tick
+                        ticks_since_last_plant_tick = 0 # No depletion yet for first tick
+                        print(f"  Plant {plant.get('_plant_UID')} Initializing _last_ticked_logical_tick.")
                     else:
-                        last_tick_datetime = datetime.fromisoformat(last_tick_time_str)
-                        time_since_last_plant_tick = current_time - last_tick_datetime
+                        ticks_since_last_plant_tick = current_logical_tick - last_ticked_logical_tick
                     
-                    # Update the plant's last ticked timestamp for the next iteration
-                    plant["_last_ticked_timestamp"] = current_time.isoformat()
+                    # If the plant has already been processed for this logical tick (or planted this tick), skip it
+                    # This ensures we don't apply growth/depletion multiple times within the same logical minute.
+                    if ticks_since_last_plant_tick <= 0:
+                        # Update the plant's last ticked logical tick to ensure it's current
+                        plant["_last_ticked_logical_tick"] = current_logical_tick
+                        updated_plants.append(plant)
+                        continue
+
+                    # Update the plant's last ticked logical tick for the next iteration
+                    plant["_last_ticked_logical_tick"] = current_logical_tick
 
 
                     # Apply rain effect (example: increase water_level)
                     if apply_rain_this_tick:
                         current_water = plant.get("water_level", 0.0)
-                        # Arbitrary multiplier for rain effect, caps water at 1.0
-                        new_water_from_rain = min(1.0, current_water + (rain_level * 0.05)) 
+                        # Scale rain effect by the number of logical ticks processed
+                        new_water_from_rain = min(1.0, current_water + (rain_level * 0.05 * ticks_since_last_plant_tick)) 
                         plant["water_level"] = new_water_from_rain
                         print(f"  Plant {plant.get('_plant_UID')} water increased by rain to {new_water_from_rain:.2f}")
 
                     # --- Water Depletion ---
                     # Get the plant-specific depletion rate, falling back to default if not specified
-                    plant_depletion_rate = plant_type_info.get("water_depletion_rate_per_minute", 
-                                                                self._DEFAULT_WATER_DEPLETION_RATE_PER_MINUTE)
+                    plant_depletion_rate = plant_type_info.get("water_depletion_rate_per_tick", 
+                                                                self._DEFAULT_WATER_DEPLETION_RATE_PER_TICK)
 
-                    # Calculate depletion based on time elapsed since the last time this plant was ticked
-                    depletion_amount = plant_depletion_rate * (time_since_last_plant_tick.total_seconds() / 60.0)
+                    # Calculate depletion based on logical ticks elapsed since the last time this plant was ticked
+                    depletion_amount = plant_depletion_rate * ticks_since_last_plant_tick
                     current_water = plant.get("water_level", 0.0)
                     new_water_level_after_depletion = max(0.0, current_water - depletion_amount)
                     plant["water_level"] = new_water_level_after_depletion
-                    print(f"  Plant {plant.get('_plant_UID')} water depleted by {depletion_amount:.3f} to {new_water_level_after_depletion:.2f} (rate: {plant_depletion_rate:.4f}/min)")
+                    print(f"  Plant {plant.get('_plant_UID')} water depleted by {depletion_amount:.3f} to {new_water_level_after_depletion:.2f} (rate: {plant_depletion_rate:.4f}/logical tick)")
 
 
-                    # --- Growth calculation based on timestamps ---
-                    planted_timestamp_str = plant.get("planted_timestamp")
-                    if not planted_timestamp_str:
-                        plant["planted_timestamp"] = current_time.isoformat()
-                        print(f"Warning: Plant {plant.get('_plant_UID')} missing planted_timestamp, setting to current time.")
-                        planted_timestamp_str = plant["planted_timestamp"]
+                    # --- Growth calculation based on logical ticks ---
+                    planted_logical_tick = plant.get("planted_logical_tick") # Renamed for clarity
+                    if planted_logical_tick is None:
+                        plant["planted_logical_tick"] = current_logical_tick
+                        print(f"Warning: Plant {plant.get('_plant_UID')} missing planted_logical_tick, setting to current logical tick.")
+                        planted_logical_tick = plant["planted_logical_tick"]
 
-                    planted_datetime = datetime.fromisoformat(planted_timestamp_str)
-                    elapsed_time = current_time - planted_datetime
-                    elapsed_minutes = elapsed_time.total_seconds() / 60.0
+                    elapsed_logical_ticks = current_logical_tick - planted_logical_tick
 
                     # Store old stage index before updating
                     old_stage_index = plant.get("current_stage_index", 0) # Default to 0 if not present
 
-                    # Determine and update current stage based on elapsed time
-                    plant["current_stage_index"] = self._get_current_stage_index(plant_type_info, elapsed_minutes)
+                    # Determine and update current stage based on elapsed logical ticks
+                    plant["current_stage_index"] = self._get_current_stage_index(plant_type_info, elapsed_logical_ticks)
                     plant["current_stage_name"] = plant_type_info["stages"][plant["current_stage_index"]]["name"]
 
                     # --- Apply water loss on stage change ---
@@ -281,36 +295,33 @@ class Garden_Mananger(GenericJsonTool):
                         plant["water_level"] = max(0.0, current_water - WATER_LOSS_ON_STAGE_CHANGE)
                         print(f"  Plant {plant.get('_plant_UID')} advanced from stage {old_stage_index} to {plant['current_stage_index']}. Water reduced by {WATER_LOSS_ON_STAGE_CHANGE} to {plant['water_level']:.2f}.")
 
-                    # --- Water History Recording (Modified Logic) ---
+                    # --- Water History Recording ---
                     # Record water state (0: low, 1: optimal, 2: high)
                     water_state = self._get_water_state(plant, plant_type_info)
                     plant_water_history = plant.get("water_history", []) # Get current history
 
-                    last_water_history_record_str = plant.get("_last_water_history_recorded_timestamp")
-                    last_water_history_record_datetime = None
-                    if last_water_history_record_str:
-                        last_water_history_record_datetime = datetime.fromisoformat(last_water_history_record_str)
-
-                    time_since_last_history_record = timedelta(0)
-                    if last_water_history_record_datetime:
-                        time_since_last_history_record = current_time - last_water_history_record_datetime
+                    last_water_history_recorded_logical_tick = plant.get("_last_water_history_recorded_logical_tick") # Renamed
+                    
+                    ticks_since_last_history_record = 0
+                    if last_water_history_recorded_logical_tick is not None:
+                        ticks_since_last_history_record = current_logical_tick - last_water_history_recorded_logical_tick
 
                     should_append_new_history_entry = False
 
                     # Condition to append a new history entry:
                     # 1. If no history recorded yet for this plant (always append the first entry)
-                    # 2. If enough time has passed since the last record
+                    # 2. If enough logical ticks have passed since the last record
                     if not plant_water_history:
                         should_append_new_history_entry = True
                         print(f"  Plant {plant.get('_plant_UID')} water history: First entry being recorded.")
-                    elif time_since_last_history_record >= timedelta(minutes=RECORD_WATER_HISTORY_INTERVAL_MINUTES):
+                    elif ticks_since_last_history_record >= RECORD_WATER_HISTORY_INTERVAL_TICKS:
                         should_append_new_history_entry = True
-                        print(f"  Plant {plant.get('_plant_UID')} water history: Interval passed ({time_since_last_history_record.total_seconds()/60:.1f}m). Appending new entry.")
+                        print(f"  Plant {plant.get('_plant_UID')} water history: Interval passed ({ticks_since_last_history_record} logical ticks). Appending new entry.")
 
                     if should_append_new_history_entry:
                         plant_water_history.append(water_state)
-                        plant["_last_water_history_recorded_timestamp"] = current_time.isoformat()
-                        print(f"  Plant {plant.get('_plant_UID')} water history: Appended new state {water_state} at {current_time.isoformat()}")
+                        plant["_last_water_history_recorded_logical_tick"] = current_logical_tick
+                        print(f"  Plant {plant.get('_plant_UID')} water history: Appended new state {water_state} at logical tick {current_logical_tick}")
                     elif plant_water_history and plant_water_history[-1] != water_state:
                         # If not appending a new entry, but the current state is different from the last recorded one, update the last one.
                         plant_water_history[-1] = water_state
@@ -322,41 +333,43 @@ class Garden_Mananger(GenericJsonTool):
                     plant["water_history"] = plant_water_history # Ensure the updated list is saved back
 
                     print(f"Plant {plant.get('_plant_UID')} ({plant.get('plant_type')}) in plot {plot.get('plot_id')} "
-                          f"has been growing for {elapsed_minutes:.2f} minutes, is in stage '{plant['current_stage_name']}', current water: {plant['water_level']:.2f}")
+                          f"has been growing for {elapsed_logical_ticks} logical ticks, is in stage '{plant['current_stage_name']}', current water: {plant['water_level']:.2f}")
                         
                     updated_plants.append(plant)
                 plot["plants"] = updated_plants
         
+        # Save the logical tick counter to persist it
+        self._state["_garden_logical_tick_counter"] = self._garden_logical_tick_counter
         self._write_json(self._state) # Save state after all plants are processed
-        print("Garden state updated after tick.")
+        print(f"Garden state updated after logical tick {current_logical_tick}.")
 
 
-    def _get_current_stage_index(self, plant_type_info: dict, elapsed_minutes: float) -> int:
+    def _get_current_stage_index(self, plant_type_info: dict, elapsed_ticks: int) -> int:
         """
-        Calculates the current growth stage index based on plant's elapsed time (in minutes).
+        Calculates the current growth stage index based on plant's elapsed time (in logical ticks).
         Args:
             plant_type_info (dict): The dictionary defining the plant type properties.
-            elapsed_minutes (float): The total number of minutes elapsed since the plant was planted.
+            elapsed_ticks (int): The total number of logical ticks elapsed since the plant was planted.
         Returns:
             int: The index of the current stage in the plant's stages list.
         """
         
-        cumulative_minutes = 0
+        cumulative_ticks = 0
         for i, stage in enumerate(plant_type_info["stages"]):
             # For harvestable stage with duration 0, it means it's the final state
-            # If elapsed minutes are greater than or equal to total growth time, it's harvestable.
-            # Otherwise, if elapsed minutes are less than the cumulative minutes for this stage, it's in this stage.
-            if i == len(plant_type_info["stages"]) - 1 and stage["duration_minutes"] == 0:
+            # If elapsed ticks are greater than or equal to total growth time, it's harvestable.
+            # Otherwise, if elapsed ticks are less than the cumulative ticks for this stage, it's in this stage.
+            if i == len(plant_type_info["stages"]) - 1 and stage["duration_ticks"] == 0:
                 # If it's the last stage and duration is 0, it's the final harvestable stage
-                if elapsed_minutes >= cumulative_minutes: # Check against cumulative minutes up to the previous stage
+                if elapsed_ticks >= cumulative_ticks: # Check against cumulative ticks up to the previous stage
                     return i
             
-            cumulative_minutes += stage["duration_minutes"]
+            cumulative_ticks += stage["duration_ticks"] # using existing key but interpreting as logical ticks
             
-            if elapsed_minutes < cumulative_minutes:
+            if elapsed_ticks < cumulative_ticks:
                 return i
         
-        # If elapsed_minutes exceeds all defined stages (excluding the harvestable with 0 duration),
+        # If elapsed_ticks exceeds all defined stages (excluding the harvestable with 0 duration),
         # it's in the last (harvestable) stage.
         return len(plant_type_info["stages"]) - 1
 
@@ -394,7 +407,7 @@ class Garden_Mananger(GenericJsonTool):
         """
         existing_uids = set()
         for garden_data in self._state.values():
-            # Skip global-level keys (like _last_rain_applied_timestamp)
+            # Skip global-level keys (like _last_rain_applied_timestamp, _garden_logical_tick_counter)
             if not isinstance(garden_data, dict) or "room_id" not in garden_data:
                 continue
             for plot in garden_data.get("plots", []):
@@ -418,6 +431,8 @@ class Garden_Mananger(GenericJsonTool):
             str: A message indicating success or failure.
         """
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        # Use the logical tick counter from Garden_Mananger itself for planting
+        current_logical_tick = self._garden_logical_tick_counter
 
         if current_room_id not in self._state:
             return f"Error: You are not in a garden room. Cannot plant here."
@@ -436,7 +451,6 @@ class Garden_Mananger(GenericJsonTool):
             item_name = attempt_item.get('item_data', {}).get('name', 'unknown item')
             return f"Item {item_id} ({item_name}) is not in your inventory, can't use it to plant."
         
-        # *** FIX STARTS HERE ***
         item_details = attempt_item.get("item_data", {}) # Get the nested item_data dictionary
         
         item_name = item_details.get('name', 'unknown item') # Access 'name' from item_details
@@ -448,7 +462,7 @@ class Garden_Mananger(GenericJsonTool):
         plant_type = item_details.get("plant_type") # Access 'plant_type' from item_details
         if not plant_type:
             return f"Error: Seed item {item_id} ({item_name}) does not specify a 'plant_type'."
-        # *** FIX ENDS HERE ***
+        
 
         garden_data = self._state[current_room_id]
         plots = garden_data.get("plots", [])
@@ -473,24 +487,25 @@ class Garden_Mananger(GenericJsonTool):
 
         new_plant_uid = self._generate_plant_uid()
         
-        # Initial stage is calculated based on 0 elapsed time
+        # Initial stage is calculated based on 0 elapsed ticks
         plant_type_info = self._plant_types[plant_type]
         initial_stage_index = self._get_current_stage_index(plant_type_info, 0)
         initial_stage_name = plant_type_info["stages"][initial_stage_index]["name"]
 
         new_plant = {
             "plant_type": plant_type,
-            "planted_timestamp": datetime.now().isoformat(), # Store current time for growth tracking
+            "planted_logical_tick": current_logical_tick, # Store current logical tick for growth tracking
+            "_last_ticked_logical_tick": current_logical_tick, # To track depletion from this logical tick
             "water_level": 0.5, # Initial water level (e.g., freshly watered after planting)
             "current_stage_index": initial_stage_index, # Set explicitly for immediate display
             "current_stage_name": initial_stage_name,   # Set explicitly for immediate display
             "water_history": [], # To record water states over time (0:low, 1:optimal, 2:high)
+            "_last_water_history_recorded_logical_tick": current_logical_tick, # Initialize history recording logical tick
             "_plant_UID": new_plant_uid
         }
         
         target_plot["plants"].append(new_plant)
-        # Assuming _write_json is for persistence
-        # self._write_json(self._state) 
+        # self._write_json(self._state) # Handled by the tick() function at the end.
 
         # If successfully planted, remove the seed item from inventory
         self.state_manager.remove_item(item_id)
@@ -509,6 +524,7 @@ class Garden_Mananger(GenericJsonTool):
             str: A description of the plant's current state or an error message.
         """
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        current_logical_tick = self._garden_logical_tick_counter # Use logical tick for display
 
         if current_room_id not in self._state:
             return f"Error: You are not in a garden room. Cannot check plant state here."
@@ -534,14 +550,10 @@ class Garden_Mananger(GenericJsonTool):
         plant_uid = plant.get("_plant_UID", "N/A")
         water_level = plant.get("water_level", 0.0)
         
-        planted_timestamp_str = plant.get("planted_timestamp")
-        elapsed_minutes = 0.0
-        if planted_timestamp_str:
-            try:
-                planted_datetime = datetime.fromisoformat(planted_timestamp_str)
-                elapsed_minutes = (datetime.now() - planted_datetime).total_seconds() / 60.0
-            except ValueError:
-                pass # Handle corrupted timestamp if necessary
+        planted_logical_tick = plant.get("planted_logical_tick") # Renamed
+        elapsed_ticks = 0
+        if planted_logical_tick is not None:
+            elapsed_ticks = current_logical_tick - planted_logical_tick
 
         plant_info = self._plant_types.get(plant_type)
         current_stage_name = plant.get("current_stage_name", "unknown stage") # Use stored name for consistency
@@ -564,18 +576,18 @@ class Garden_Mananger(GenericJsonTool):
                 water_status_desc = "has optimal water levels."
             
             return (f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is "
-                    f"{current_stage_name} (Elapsed time: {elapsed_minutes:.2f} minutes). "
+                    f"{current_stage_name} (Elapsed time: {elapsed_ticks} logical ticks). "
                     f"Its current water level is {water_level:.2f}, and it {water_status_desc}")
         else:
             return (f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is "
-                    f"{current_stage_name} (Elapsed time: {elapsed_minutes:.2f} minutes). Water level: {water_level:.2f}. "
+                    f"{current_stage_name} (Elapsed time: {elapsed_ticks} logical ticks). Water level: {water_level:.2f}. "
                     f"Details for this plant type are not available.")
 
-    # --- Modified harvest_plant function ---
     def harvest_plant(self, plot_id: str) -> str:
         """
         Allows an AI agent to harvest a plant from a specified plot in the current garden room.
-        Harvested items are added to the player's inventory.
+        Harvested items are added to the player's inventory. If inventory is full, items are
+        placed in the current room.
         Args:
             plot_id (str): The ID of the plot within the room.
         Returns:
@@ -587,6 +599,7 @@ class Garden_Mananger(GenericJsonTool):
         
         max_inventory = self.state_manager.MAX_INVENTORY_SLOTS 
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        current_logical_tick = self._garden_logical_tick_counter # Use logical tick
 
         if current_room_id not in self._state:
             return f"Error: You are not in a garden room. Cannot harvest here."
@@ -624,10 +637,7 @@ class Garden_Mananger(GenericJsonTool):
 
         harvested_data = self._calculate_harvest_yield(plant_to_harvest, plant_info)
 
-        # Extract harvested items with quantities from the calculated data
-
-        harvested_items=harvested_data["harvested_items_with_quantities"] or []
-
+        harvested_items_with_quantities = harvested_data.get("harvested_items_with_quantities", [])
         life_cycle_quality = harvested_data["life_cycle_quality"]  # This is a string like "poor", "average", "good", etc.
         penalty = harvested_data["penalty"] # This is a float value representing the penalty applied to the yield
         bonus = harvested_data["bonus"] # This is a float value representing the bonus applied to the yield
@@ -638,61 +648,65 @@ class Garden_Mananger(GenericJsonTool):
             "average": "There's room for improvement.",
             "good": "Well done!",
             "excellent": "Outstanding work!",
-            # Add more as needed
         }
 
         # Get the specific message for the quality, defaulting to an empty string if not found
         feedback_message = quality_feedback.get(life_cycle_quality, "")
 
-        life_cycle_quality_message = f"The plant's life cycle quality was '{life_cycle_quality}'. {feedback_message} \n Total penalty applied: {penalty:.2f}, bonus applied: {bonus:.2f}."
+        life_cycle_quality_message = f"The plant's life cycle quality was '{life_cycle_quality}'. {feedback_message} \nTotal penalty applied: {penalty:.2f}, bonus applied: {bonus:.2f}."
 
 
-        # --- NEW: Inventory Space Pre-Check ---
-        total_slots_needed = sum(item_data.get("quantity", 0) for item_data in harvested_items)
+        # --- Inventory Space Handling ---
+        # total_slots_needed = sum(item_data.get("quantity", 0) for item_data in harvested_items_with_quantities) # This calculation was simplified to 1 slot per item instance in create_item
 
-        # Only perform check if there are items to be harvested and they require slots
-        if harvested_items and total_slots_needed > 0:
-            if (current_inventory_length + total_slots_needed) > max_inventory:
-                space_needed = (current_inventory_length + total_slots_needed) - max_inventory
-                return (f"Your inventory does not have enough space to harvest all items. "
-                        f"You need {space_needed} more slot(s) for the expected {total_slots_needed} items. "
-                        f"Please make space before harvesting.")
-        # --- END Inventory Space Pre-Check ---
+        items_placed_in_inventory = []
+        items_placed_in_room = []
+
+        if harvested_items_with_quantities:
+            for item_data in harvested_items_with_quantities:
+                item_def = item_data.get("item")
+                quantity = item_data.get("quantity", 0)
+                
+                if item_def and quantity > 0:
+                    # Check if there's enough space in inventory for this specific item quantity
+                    # This is a simplified check assuming each quantity unit takes one slot
+                    # A more robust system would check if existing stackable items can absorb the new quantity
+                    if (current_inventory_length + 1) <= max_inventory: # Check for one slot per item for simplicity, or check actual item_data space needs
+                        self.state_manager.create_item("inventory", None, item_def, quantity=quantity)
+                        items_placed_in_inventory.append(f"{quantity} {item_def.get('name', 'unknown item')}")
+                        current_inventory_length += 1 # Simulate slot consumption
+                    else:
+                        # Inventory full, place in room
+                        self.state_manager.create_item("room", current_room_id, item_def, quantity=quantity)
+                        items_placed_in_room.append(f"{quantity} {item_def.get('name', 'unknown item')}")
+
+        harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. {life_cycle_quality_message}")
+        
+        harvest_yield_message_parts = []
+        if items_placed_in_inventory:
+            harvest_yield_message_parts.append(f"You received: {', '.join(items_placed_in_inventory)} (added to inventory).")
+        if items_placed_in_room:
+            harvest_yield_message_parts.append(f"Due to limited inventory space, {', '.join(items_placed_in_room)} were placed in the current room.")
+        
+        harvest_yield_message = " ".join(harvest_yield_message_parts)
+        if not harvest_yield_message: # If no items were harvested at all
+            harvest_yield_message = "It yielded no items due to poor conditions."
+
 
         # Determine the life cycle of the plant for post-harvest behavior
         life_cycle = plant_info.get("life_cycle", "annual") # Default to annual if not specified
 
-        harvest_summary_strings = []
-        if harvested_items:
-            for item_data in harvested_items:
-                item_def = item_data.get("item")
-                quantity = item_data.get("quantity", 0)
-                if item_def and quantity > 0:
-                    # UPDATED: Call create_item with correct arguments
-                    # The return value of create_item (a string message) is ignored here
-                    # because the space check was done upfront.
-                    _ = self.state_manager.create_item("inventory", None, item_def, quantity=quantity) 
-                    harvest_summary_strings.append(f"{quantity} {item_def.get('name', 'unknown item')}")
-        
-        harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. {life_cycle_quality_message}")
-        harvest_yield_message = ""
-        if harvest_summary_strings:
-            harvest_yield_message = f"You received: {', '.join(harvest_summary_strings)}."
-        else:
-            harvest_yield_message = "It yielded no items due to poor conditions."
-
-
         if life_cycle == "perennial":
             # For perennial plants, revert to 'mature' stage and allow re-growth
             mature_stage_index = -1
-            minutes_to_reach_mature = 0
+            ticks_to_reach_mature = 0
             
-            # Find the 'mature' stage and calculate cumulative minutes to reach its start
+            # Find the 'mature' stage and calculate cumulative ticks to reach its start
             for i, stage in enumerate(plant_info["stages"]):
                 if stage["name"] == "mature":
                     mature_stage_index = i
                     break # Found the mature stage
-                minutes_to_reach_mature += stage["duration_minutes"] # Accumulate duration of stages *before* mature
+                ticks_to_reach_mature += stage["duration_ticks"] # Accumulate duration of stages *before* mature (interpreted as logical ticks)
 
             if mature_stage_index == -1:
                 # Fallback if 'mature' stage not found for some reason, treat as annual and remove
@@ -701,9 +715,8 @@ class Garden_Mananger(GenericJsonTool):
                 self._write_json(self._state)
                 return f"{harvest_message_prefix} {harvest_yield_message} The plant was removed due to a configuration error for its life cycle type."
 
-            # Calculate the new planted_timestamp so that elapsed_minutes will put it exactly at the start of 'mature'
-            new_planted_datetime = datetime.now() - timedelta(minutes=minutes_to_reach_mature)
-            plant_to_harvest["planted_timestamp"] = new_planted_datetime.isoformat()
+            # Calculate the new planted_logical_tick so that elapsed_ticks will put it exactly at the start of 'mature'
+            plant_to_harvest["planted_logical_tick"] = current_logical_tick - ticks_to_reach_mature
             
             # Explicitly set current stage to mature for immediate feedback/state consistency
             plant_to_harvest["current_stage_index"] = mature_stage_index
@@ -711,6 +724,8 @@ class Garden_Mananger(GenericJsonTool):
 
             plant_to_harvest["water_level"] = 0.5 # Optional: Reset water to a neutral level after harvest
             plant_to_harvest["water_history"] = [] # Reset water history for the new growth cycle
+            plant_to_harvest["_last_water_history_recorded_logical_tick"] = current_logical_tick # Reset history recording logical tick
+            plant_to_harvest["_last_ticked_logical_tick"] = current_logical_tick # Reset last ticked logical tick
 
             # Plant remains in plot, no removal needed from the list
             self._write_json(self._state)
@@ -727,7 +742,7 @@ class Garden_Mananger(GenericJsonTool):
             return (f"{harvest_message_prefix} {harvest_yield_message} "
                     f"The plant has completed its life cycle. The plot is now empty.")
         
-    def _calculate_harvest_yield(self, plant_data: dict, plant_type_info: dict) -> list[dict]:
+    def _calculate_harvest_yield(self, plant_data: dict, plant_type_info: dict) -> dict:
         water_history = plant_data.get("water_history", [])
 
         # Count optimal, low, and high water states
@@ -737,7 +752,7 @@ class Garden_Mananger(GenericJsonTool):
 
         total_non_optimal_states = low_water_count + high_water_count
 
-        # --- Logarithmic Penalty Logic (unchanged) ---
+        # --- Logarithmic Penalty Logic ---
         LOG_BASE = 2
         PENALTY_SENSITIVITY_FACTOR = 5
 
@@ -746,19 +761,11 @@ class Garden_Mananger(GenericJsonTool):
         )
         # --- End Logarithmic Penalty Logic ---
 
-        # --- NEW: Logarithmic Additive Bonus Logic ---
-        # BONUS_LOG_BASE: Base for the bonus logarithm (e.g., 2 for doublings)
+        # --- Logarithmic Additive Bonus Logic ---
         BONUS_LOG_BASE = 2
-        # BONUS_SENSITIVITY_FACTOR: How many optimal stages are needed for a "log step"
-        # A smaller value means the bonus increases faster initially.
         BONUS_SENSITIVITY_FACTOR = 3
-        # BONUS_PER_LOG_STEP: How much actual yield is added for each "log step" of bonus
         BONUS_PER_LOG_STEP = 1.0 # Example: 1 full item for each log step
 
-        # Calculate the bonus using a logarithmic function.
-        # We add 1 to the scaled optimal_water_count to ensure log input >= 1.
-        # math.log(1, base) is 0, so if optimal_water_count is 0, the bonus is 0.
-        # The result is multiplied by BONUS_PER_LOG_STEP and then floored.
         bonus = math.floor(
             math.log(1 + optimal_water_count / BONUS_SENSITIVITY_FACTOR, BONUS_LOG_BASE) * BONUS_PER_LOG_STEP
         )
@@ -798,9 +805,9 @@ class Garden_Mananger(GenericJsonTool):
         
 
     def _describe_life_cycle_quality(self, penalty: int, bonus: int) -> str:
-            if penalty == 0 and bonus > 0: # Bonus must be greater than 0, otherwise it will return excellent even if there was no bonus
+            if penalty == 0 and bonus > 0: 
                 return "excellent"
-            elif bonus == 0 and penalty > 0: #Penalty must be greater than 0, otherwise it will return bad even if there was no penalty
+            elif bonus == 0 and penalty > 0: 
                 return "bad"
             elif penalty > bonus:
                 return "poor"
@@ -814,6 +821,7 @@ class Garden_Mananger(GenericJsonTool):
         Provides a summary of the garden in the current room.
         """
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        current_logical_tick = self._garden_logical_tick_counter # Use logical tick for summary
 
         if current_room_id not in self._state:
             return "You are not in a garden room. No garden summary available for this location."
@@ -844,14 +852,11 @@ class Garden_Mananger(GenericJsonTool):
                 current_stage_name = plant.get("current_stage_name", "unknown")
                 water_level = plant.get("water_level", 0.0)
 
-                planted_timestamp_str = plant.get("planted_timestamp")
-                elapsed_minutes_display = "N/A"
-                if planted_timestamp_str:
-                    try:
-                        planted_datetime = datetime.fromisoformat(planted_timestamp_str)
-                        elapsed_minutes_display = f"{int((datetime.now() - planted_datetime).total_seconds() / 60.0)} minutes"
-                    except ValueError:
-                        pass # Keep N/A on error
+                planted_logical_tick = plant.get("planted_logical_tick") # Renamed
+                elapsed_ticks_display = "N/A"
+                if planted_logical_tick is not None:
+                    elapsed_ticks_display = f"{current_logical_tick - planted_logical_tick} logical ticks"
+
 
                 plant_info = self._plant_types.get(plant_type)
                 water_status_desc = "N/A"
@@ -863,7 +868,7 @@ class Garden_Mananger(GenericJsonTool):
 
                 summary_lines.append(
                     f"Plot ID: {plot_id}\n Plant: {plant_type} Plant (UID: {plant_uid}) "
-                    f"Stage: {current_stage_name} (Time Grown: {elapsed_minutes_display}) "
+                    f"Stage: {current_stage_name} (Time Grown: {elapsed_ticks_display}) "
                     f"Water: {water_level:.2f} ({water_status_desc})"
                 )
         

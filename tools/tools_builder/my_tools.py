@@ -8,8 +8,8 @@
 harvesting_garden_tools=[
     {
         "type": "function",
-        "name": "get_garden_summary",
-        "description": "Get all the information necessary of the current garden you are on.",
+        "name": "get_current_garden_information",
+        "description": "Get all the information related to the current garden you are on. Helpful for getting plot IDs and plant states.",
         "parameters": {
             "type": "object",
             "properties": {},

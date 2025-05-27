@@ -148,6 +148,8 @@ class CLIChatbot:
             # Decrease stats each function call set
             for stat_name in stats_to_monitor:
                 self.state_manager.adjust_stat(stat_name, -10)
+
+            # Change this, we will pass the recursion depth to adventure response, and remove tools from it when we reach a limit
             self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) You have been heavily penalized with some of your wellness stats", "short_term", "system")
             self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
             return "Error: Max recursion depth reached while processing AI response chain."
@@ -521,6 +523,9 @@ class CLIChatbot:
         # NEW: Ensure the TTS provider's process is stopped on shutdown
         if self.tts_provider:
             self.tts_provider.stop()
+
+        if self.state_manager:
+            self.state_manager.save_state()
         # REMOVED: self._current_tts_process.kill()
 
 

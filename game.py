@@ -271,7 +271,7 @@ else:
             deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
             base_model=general_model, # Set as needed
             select_memory_model=memory_model, # Set as needed
-            tts_provider_id="espeak_ng", # Set to "macos_say", "espeak_ng", or None
+            tts_provider_id="macos_say", # Set to "macos_say", "espeak_ng", or None
             voice="Storm" # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
         )
         chatbot_available = True
@@ -558,7 +558,52 @@ def start_chatbot_request(user_input, input_role='user'):
     else:
         print("Chatbot not available, cannot start request thread.")
         return False
+    
 
+
+# --- Worker Function for Garden Tick ---
+def garden_tick_worker(chatbot_instance):
+    """
+    This function runs in a separate thread to call the garden manager's tick.
+    It posts a system message on completion or error.
+    """
+    if not chatbot_instance or \
+    not hasattr(chatbot_instance, 'ai') or \
+    not hasattr(chatbot_instance.ai, 'functions_builder') or \
+    not hasattr(chatbot_instance.ai.functions_builder, 'garden_manager') or \
+    not callable(getattr(chatbot_instance.ai.functions_builder.garden_manager, 'tick', None)):
+        print("Chatbot or garden manager not fully available for tick. Skipping.")
+        return
+
+    print("Garden tick worker thread started.")
+    try:
+        chatbot_instance.ai.functions_builder.garden_manager.tick()
+        print("Garden tick processed successfully.")
+    except Exception as e:
+        error_message = f"Error in garden tick worker thread: {type(e).__name__}: {e}"
+        print(error_message)
+
+        
+# --- Function to Start the Garden Tick Asynchronously ---
+def start_garden_tick_request():
+    """
+    Starts a new thread to process the garden tick.
+    Checks if the main chatbot processing is currently active to avoid conflicts.
+    """
+    global chatbot_available, chatbot
+    if not chatbot_available or not chatbot:
+        print("Chatbot not available, cannot start garden tick.")
+        return False
+
+    # Only proceed if the chatbot is NOT currently processing a user request
+    if state.chatbot_is_processing: # <--- UNCOMMENT THIS LINE
+        #print("Chatbot is currently busy processing, deferring garden tick.") # Keep this line for debugging if needed
+        return False # And this line
+
+    print("Starting garden tick request thread.")
+    thread = threading.Thread(target=garden_tick_worker, args=(chatbot,))
+    thread.start()
+    return True
 
 CURSOR_INTERVAL = 500 # Milliseconds
 
@@ -573,6 +618,10 @@ music_player = None
 state.last_activity_time = pygame.time.get_ticks()
 print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
 
+# NEW: Garden Tick Timer Initialization
+state.next_garden_tick_time = pygame.time.get_ticks() + config.GARDEN_TICK_INTERVAL_MS
+print(f"Next garden tick scheduled for {state.next_garden_tick_time} ms.")
+
 # only direct chat with the bot should count as interaction
 
 while running:
@@ -581,6 +630,8 @@ while running:
     #steps=chatbot.get_steps()
     #size=state.size
     #size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+
+    #chatbot.state_manager.increment_game_tick()
 
 
     #state.current_radius=size
@@ -1108,6 +1159,21 @@ while running:
             # This prevents spamming requests if the bot is slow to respond.
             pass # Do nothing here, last_activity_time is reset on CHATBOT_RESPONSE_EVENT
 
+
+
+    # NEW: Garden Tick Logic
+    if current_time_ms >= state.next_garden_tick_time:
+        print(f"Attempting garden tick. (Scheduled at {state.next_garden_tick_time}, current: {current_time_ms})")
+        if start_garden_tick_request(): # This will now return False if chatbot is busy
+            # If the tick was successfully launched, schedule the next one.
+            state.next_garden_tick_time = current_time_ms + config.GARDEN_TICK_INTERVAL_MS
+            print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
+        else:
+            # If the tick was deferred (because chatbot was busy),
+            # `state.next_garden_tick_time` is NOT updated.
+            # This means on the very next frame, if the chatbot is free,
+            # it will immediately try to run this "due" tick again.
+            pass # Keep state.next_garden_tick_time as is, for re-attempt
 
     # --- Drawing ---
     # Inside the game loop, before drawing:

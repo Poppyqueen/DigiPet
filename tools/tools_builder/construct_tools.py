@@ -82,7 +82,7 @@ class FunctionBuilder:
                 "plant_seed": self.garden_manager.plant_seed,
                 "check_plant_state": self.garden_manager.check_plant_state,
                 "harvest_plant": self.garden_manager.harvest_plant,
-                "get_garden_summary": self.garden_manager.get_garden_summary,
+                "get_current_garden_information": self.garden_manager.get_garden_summary,
                 "water_plot": self.garden_manager.water_plot
             },
             "definitions": harvesting_garden_tools # Use the imported definition list
@@ -404,7 +404,6 @@ class FunctionBuilder:
         This will be redundant for many functions, but it is useful for certain essential information
         that needs to be passed to the LLM every prompt, like location, inventory, etc.
         """
-        self.garden_manager.tick() # This tick checks and updates the state of all existing plants in the world based on timestamps, it doesn't have any reason for being here, but i'm lazy and this is being called every message to the LLM, so, here it is
         context = []
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
