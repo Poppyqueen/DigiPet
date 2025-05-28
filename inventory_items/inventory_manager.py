@@ -2012,7 +2012,7 @@ class InventoryHouseManager(GenericJsonTool):
             'name': book_name.strip(),
             'descriptions': [description.strip()], # Ensure descriptions is a list
             'static': False, # Books are typically not static
-            'type': 'book',
+            'type': ['book'],
             'chapters': [] # New books start with no chapters
         }
         # Delegate to the generic create_item method, placing in inventory

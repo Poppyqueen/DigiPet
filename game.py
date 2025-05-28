@@ -18,7 +18,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -600,7 +600,7 @@ def start_garden_tick_request():
         #print("Chatbot is currently busy processing, deferring garden tick.") # Keep this line for debugging if needed
         return False # And this line
 
-    print("Starting garden tick request thread.")
+    #print("Starting garden tick request thread.")
     thread = threading.Thread(target=garden_tick_worker, args=(chatbot,))
     thread.start()
     return True

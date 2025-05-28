@@ -1,3 +1,5 @@
+# rooms_tools.py
+
 # State manager is being passed into this
 
 
@@ -11,7 +13,7 @@
 import asyncio
 import math
 
-from utils import open_meteo_handle, tv_handle, wiki_handle, random_object, simulation
+from utils import open_meteo_handle, tv_handle, wiki_handle, random_object
 
 from utils.ai_cook import cook
 
