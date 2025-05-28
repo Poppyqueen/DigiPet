@@ -53,7 +53,7 @@ class ai_bot:
         return result # Return the result of the function call
 
     
-    async def adventure_response(self, mem_structure, prompt):
+    async def adventure_response(self, mem_structure, prompt, depth, max_depth):
             our_room= self.state_manager.get_current_room_name()
 
             # Here we will implement a function to get a "current state", this will be 
@@ -66,13 +66,20 @@ class ai_bot:
             #print(f"📌 Final prompt for OpenAI API: {final_prompt}")
 
 
+            # Depth check for tools
+            tools_settings = "auto"
+            if depth >= (max_depth - 1):
+                tools_settings="none"
+
+
             messages_data = self.memory_manager.construct_data(mem_structure, final_prompt)
             tools = self.functions_builder.construct_tools() # Get the tools for the current room
             try:
                 response = self.client.responses.create(
                     model=self.action_model, # Using a widely available model name
                     input=messages_data,
-                    tools=tools
+                    tools=tools,
+                    tool_choice=tools_settings
                 )
                 time.sleep(1)
             except Exception as e:

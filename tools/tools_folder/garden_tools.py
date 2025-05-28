@@ -1,4 +1,4 @@
-# garden_tools.py 
+# garden_tools.py
 
 # This system is now tick based, the main runtime increments ticks based on a timer of its own
 
@@ -22,6 +22,9 @@ from datetime import datetime, timedelta
 
 from tools.tools_folder.tools_data.harvesting_data import (plant_types)
 
+# Import the new settings from the garden_settings module
+from tools.tools_folder.tools_data.garden_settings import GARDEN_SETTINGS
+
 
 class Garden_Mananger(GenericJsonTool):
     """
@@ -29,16 +32,7 @@ class Garden_Mananger(GenericJsonTool):
     Uses GenericJsonTool to persist garden data.
     """
 
-    # Dictionary of predefined plant types and their growth stages
-    # Each stage defines duration in *ticks* and optimal water level range.
-    # Assuming 1 tick = 1 minute for consistency with original "duration_ticks" values.
-    # _plant_types will now include 'water_depletion_rate_per_tick' for each type.
     _plant_types = plant_types
-
-    # Default depletion rate if not specified in plant_types.
-    # This value was previously the global constant (per minute, now per tick).
-    _DEFAULT_WATER_DEPLETION_RATE_PER_TICK = 0.002778
-
 
     def __init__(self, state_manager, signal):
         """
@@ -52,6 +46,9 @@ class Garden_Mananger(GenericJsonTool):
         self.state_manager = state_manager
         self._signal_callback=signal
 
+        # Load settings from the GARDEN_SETTINGS dictionary
+        self.settings = GARDEN_SETTINGS
+        
         # _default_state is an empty dictionary because the garden keys (room_ids)
         # are dynamic and populated based on the main state_manager's room definitions.
         self._default_state = {}
@@ -75,8 +72,6 @@ class Garden_Mananger(GenericJsonTool):
         # ensure all garden rooms from the main state manager are reflected here.
         self._initialize_garden_plots()
     
-
-
     def _send_signal(self, signal_data):
         """Helper method to send signals using the registered callback."""
         if self._signal_callback:
@@ -89,7 +84,6 @@ class Garden_Mananger(GenericJsonTool):
             # print(f"{self.__class__.__name__} attempted to signal, but no callback registered: {signal_data}") # Optional: uncomment for debug
             pass # Silently fail if no callback is registered, or log loudly
     # ------------------------------------------------------
-
 
     def _initialize_garden_plots(self):
         """
@@ -172,8 +166,12 @@ class Garden_Mananger(GenericJsonTool):
         This function is intended to be called once per "logical game minute" by the game orchestrator.
         It handles natural water depletion, growth, and rain effects.
         """
-        RAIN_COOLDOWN_MINUTES = 30 
-        RECORD_WATER_HISTORY_INTERVAL_TICKS = 10 # Record water history every 10 logical ticks
+        # Retrieve settings from self.settings
+        RAIN_COOLDOWN_MINUTES = self.settings["RAIN_COOLDOWN_MINUTES"]
+        RECORD_WATER_HISTORY_INTERVAL_TICKS = self.settings["RECORD_WATER_HISTORY_INTERVAL_TICKS"]
+        WATER_LOSS_ON_STAGE_CHANGE = self.settings["WATER_LOSS_ON_STAGE_CHANGE"]
+        RAIN_WATER_APPLY_MULTIPLIER = self.settings["RAIN_WATER_APPLY_MULTIPLIER"]
+        DEFAULT_WATER_DEPLETION_RATE_PER_TICK = self.settings["DEFAULT_WATER_DEPLETION_RATE_PER_TICK"]
 
         # Increment our internal logical tick counter. This represents one "game minute".
         self._garden_logical_tick_counter += 1 
@@ -207,8 +205,6 @@ class Garden_Mananger(GenericJsonTool):
             print(f"Garden Manager Tick: Rain detected, but still on cooldown. Next rain application possible in approx. {remaining_minutes} minutes.")
         else:
             print("Garden Manager Tick: No rain detected.")
-
-        WATER_LOSS_ON_STAGE_CHANGE = 0.1 # New constant for water loss on stage change
 
         room_ids_to_process = [k for k in self._state.keys() if isinstance(self._state[k], dict) and "room_id" in self._state[k]]
 
@@ -255,14 +251,14 @@ class Garden_Mananger(GenericJsonTool):
                     if apply_rain_this_tick:
                         current_water = plant.get("water_level", 0.0)
                         # Scale rain effect by the number of logical ticks processed
-                        new_water_from_rain = min(1.0, current_water + (rain_level * 0.05 * ticks_since_last_plant_tick)) 
+                        new_water_from_rain = min(1.0, current_water + (rain_level * RAIN_WATER_APPLY_MULTIPLIER * ticks_since_last_plant_tick)) 
                         plant["water_level"] = new_water_from_rain
                         print(f"  Plant {plant.get('_plant_UID')} water increased by rain to {new_water_from_rain:.2f}")
 
                     # --- Water Depletion ---
                     # Get the plant-specific depletion rate, falling back to default if not specified
                     plant_depletion_rate = plant_type_info.get("water_depletion_rate_per_tick", 
-                                                                self._DEFAULT_WATER_DEPLETION_RATE_PER_TICK)
+                                                                DEFAULT_WATER_DEPLETION_RATE_PER_TICK)
 
                     # Calculate depletion based on logical ticks elapsed since the last time this plant was ticked
                     depletion_amount = plant_depletion_rate * ticks_since_last_plant_tick
@@ -433,6 +429,10 @@ class Garden_Mananger(GenericJsonTool):
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
         # Use the logical tick counter from Garden_Mananger itself for planting
         current_logical_tick = self._garden_logical_tick_counter
+        
+        # Retrieve default initial water level from settings
+        DEFAULT_INITIAL_WATER_LEVEL = self.settings["DEFAULT_INITIAL_WATER_LEVEL"]
+
 
         if current_room_id not in self._state:
             return f"Error: You are not in a garden room. Cannot plant here."
@@ -496,7 +496,7 @@ class Garden_Mananger(GenericJsonTool):
             "plant_type": plant_type,
             "planted_logical_tick": current_logical_tick, # Store current logical tick for growth tracking
             "_last_ticked_logical_tick": current_logical_tick, # To track depletion from this logical tick
-            "water_level": 0.5, # Initial water level (e.g., freshly watered after planting)
+            "water_level": DEFAULT_INITIAL_WATER_LEVEL, # Initial water level from settings
             "current_stage_index": initial_stage_index, # Set explicitly for immediate display
             "current_stage_name": initial_stage_name,   # Set explicitly for immediate display
             "water_history": [], # To record water states over time (0:low, 1:optimal, 2:high)
@@ -642,13 +642,8 @@ class Garden_Mananger(GenericJsonTool):
         penalty = harvested_data["penalty"] # This is a float value representing the penalty applied to the yield
         bonus = harvested_data["bonus"] # This is a float value representing the bonus applied to the yield
 
-        quality_feedback = {
-            "poor": "You should be more careful.",
-            "bad": "This isn't looking good.",
-            "average": "There's room for improvement.",
-            "good": "Well done!",
-            "excellent": "Outstanding work!",
-        }
+        # Use the configurable messages
+        quality_feedback = self.settings["LIFE_CYCLE_QUALITY_MESSAGES"]
 
         # Get the specific message for the quality, defaulting to an empty string if not found
         feedback_message = quality_feedback.get(life_cycle_quality, "")
@@ -722,7 +717,7 @@ class Garden_Mananger(GenericJsonTool):
             plant_to_harvest["current_stage_index"] = mature_stage_index
             plant_to_harvest["current_stage_name"] = plant_info["stages"][mature_stage_index]["name"]
 
-            plant_to_harvest["water_level"] = 0.5 # Optional: Reset water to a neutral level after harvest
+            plant_to_harvest["water_level"] = self.settings["DEFAULT_INITIAL_WATER_LEVEL"] # Reset water to a neutral level after harvest
             plant_to_harvest["water_history"] = [] # Reset water history for the new growth cycle
             plant_to_harvest["_last_water_history_recorded_logical_tick"] = current_logical_tick # Reset history recording logical tick
             plant_to_harvest["_last_ticked_logical_tick"] = current_logical_tick # Reset last ticked logical tick
@@ -753,18 +748,20 @@ class Garden_Mananger(GenericJsonTool):
         total_non_optimal_states = low_water_count + high_water_count
 
         # --- Logarithmic Penalty Logic ---
-        LOG_BASE = 2
-        PENALTY_SENSITIVITY_FACTOR = 5
+        # Retrieve settings from self.settings
+        PENALTY_LOG_BASE = self.settings["PENALTY_LOG_BASE"]
+        PENALTY_SENSITIVITY_FACTOR = self.settings["PENALTY_SENSITIVITY_FACTOR"]
 
         penalty = math.floor(
-            math.log(1 + total_non_optimal_states / PENALTY_SENSITIVITY_FACTOR, LOG_BASE)
+            math.log(1 + total_non_optimal_states / PENALTY_SENSITIVITY_FACTOR, PENALTY_LOG_BASE)
         )
         # --- End Logarithmic Penalty Logic ---
 
         # --- Logarithmic Additive Bonus Logic ---
-        BONUS_LOG_BASE = 2
-        BONUS_SENSITIVITY_FACTOR = 3
-        BONUS_PER_LOG_STEP = 1.0 # Example: 1 full item for each log step
+        # Retrieve settings from self.settings
+        BONUS_LOG_BASE = self.settings["BONUS_LOG_BASE"]
+        BONUS_SENSITIVITY_FACTOR = self.settings["BONUS_SENSITIVITY_FACTOR"]
+        BONUS_PER_LOG_STEP = self.settings["BONUS_PER_LOG_STEP"]
 
         bonus = math.floor(
             math.log(1 + optimal_water_count / BONUS_SENSITIVITY_FACTOR, BONUS_LOG_BASE) * BONUS_PER_LOG_STEP
@@ -805,6 +802,7 @@ class Garden_Mananger(GenericJsonTool):
         
 
     def _describe_life_cycle_quality(self, penalty: int, bonus: int) -> str:
+            # These conditions directly determine the quality string
             if penalty == 0 and bonus > 0: 
                 return "excellent"
             elif bonus == 0 and penalty > 0: 
@@ -867,9 +865,10 @@ class Garden_Mananger(GenericJsonTool):
                     elif water_state == 2: water_status_desc = "High Water"
 
                 summary_lines.append(
-                    f"Plot ID: {plot_id}\n Plant: {plant_type} Plant (UID: {plant_uid}) "
-                    f"Stage: {current_stage_name} (Time Grown: {elapsed_ticks_display}) "
-                    f"Water: {water_level:.2f} ({water_status_desc})"
+                    f"  Plot {plot_id}:\n"
+                    f"    Plant: {plant_type} Plant (UID: {plant_uid})\n"
+                    f"    Stage: {current_stage_name} (Time Grown: {elapsed_ticks_display})\n"
+                    f"    Water: {water_level:.2f} ({water_status_desc})"
                 )
         
         return "\n".join(summary_lines)
@@ -910,15 +909,11 @@ class Garden_Mananger(GenericJsonTool):
         current_water = plant.get("water_level", 0.0)
 
         # Define how much water each type adds (arbitrary values, can be tuned)
-        water_amounts = {
-            "low": 0.1,    # Adds 10% to water level
-            "medium": 0.25,  # Adds 25% to water level
-            "high": 0.5    # Adds 50% to water level
-        }
+        water_amounts = self.settings["WATERING_AMOUNTS"]
 
         amount_to_add = water_amounts.get(water_level_type.lower())
         if amount_to_add is None:
-            return f"Error: Invalid water level type '{water_level_type}'. Choose from 'low', 'medium', or 'high'."
+            return f"Error: Invalid water level type '{water_level_type}'. Choose from {', '.join(water_amounts.keys())}."
 
         new_water_level = min(1.0, max(0.0, current_water + amount_to_add)) # Cap water level between 0.0 and 1.0
         plant["water_level"] = new_water_level

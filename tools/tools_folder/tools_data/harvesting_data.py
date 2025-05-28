@@ -277,30 +277,43 @@ _basil_seed = {
 # --- Plant Definitions ---
 
 
-# Our main game loop is now calling a tick in a set timer, each tick is called in 
+# Our main game loop is now calling a tick in a set timer, each tick is called in a minute
 
 # Dictionary of predefined plant types and their growth stages
-# Each stage defines duration in *minutes* and optimal water level range.
+# Each stage defines duration in *ticks* and optimal water level range.
+
+
+# Plants have different stages, they need at least the stage 'harvestable'; If they are perennial, they need a 'mature' stage. Each stage needs a tick lenght. For the harvestable stage the lenght has to be 0
+
+# Plants have a list of nested item structures and base harvest number for each item
+
+# Perennials revert to mature stage after harvesting, while annuals get removed from the plot directly.
+
+
+# These settings need careful thought
+
 plant_types = {
-    "lettuce": { # Existing plant, if a tick is called every minute, this lettuce will take 60 runtime minutes to grow to harvestable 
+    "lettuce": {
         "stages": [
             {"name": "seedling", "duration_ticks": 10, "optimal_water_level_range": (0.8, 1.0)},
-            {"name": "juvenile", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
-            {"name": "mature", "duration_ticks": 35, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)} # Duration 0 means it's ready
+            {"name": "early_leafing", "duration_ticks": 10, "optimal_water_level_range": (0.7, 0.95)},
+            {"name": "heading_up", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
+            {"name": "forming_head", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
         ],
-        "harvest_items": [ # A list of items this plant can yield upon harvest
-            {"item": _lettuce_item, "base_harvest_yield": 7}, # Yield 5 lettuce items
-            {"item": _lettuce_seed, "base_harvest_yield": 2}   # Yield 1 lettuce seed
+        "harvest_items": [
+            {"item": _lettuce_item, "base_harvest_yield": 7},
+            {"item": _lettuce_seed, "base_harvest_yield": 2}
         ],
         "life_cycle": "annual",
-        "water_depletion_rate_per_tick": 0.002 # Water levels are a float from 0 to 1
+        "water_depletion_rate_per_tick": 0.002
     },
-    "carrot": { # Existing plant
+    "carrot": {
         "stages": [
             {"name": "seedling", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "rooting", "duration_ticks": 30, "optimal_water_level_range": (0.4, 0.7)},
+            {"name": "foliage_developing", "duration_ticks": 20, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "early_root_swelling", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.75)},
+            {"name": "root_maturing", "duration_ticks": 20, "optimal_water_level_range": (0.4, 0.7)},
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.7)}
         ],
         "harvest_items": [
@@ -309,18 +322,21 @@ plant_types = {
         ],
         "life_cycle": "biennial" 
     },
-    "cactus": { # Existing plant
+    "cactus": { # PERENNIAL - ENSURING 'mature' stage
         "stages": [
-            {"name": "sprout", "duration_ticks": 30, "optimal_water_level_range": (0.1, 0.7)},
-            {"name": "young", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.4)},
-            {"name": "mature", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.25)},
+            {"name": "sprout", "duration_ticks": 30, "optimal_water_level_range": (0.1, 0.6)},
+            {"name": "pad_developing", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.4)},
+            {"name": "mature", "duration_ticks": 60, "optimal_water_level_range": (0.05, 0.30)}, # Renamed from 'fully_established'
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.1, 0.45)}
         ],
         "harvest_items": [
             {"item": _cactus_fruit_item, "base_harvest_yield": 7},
             {"item": _cactus_seed, "base_harvest_yield": 3}
+
         ],
-        "life_cycle": "perennial" 
+        "life_cycle": "perennial",
+        "water_depletion_rate_per_tick": 0.009
+
     },
 
     # --- NEW PLANT DEFINITIONS ---
@@ -328,8 +344,9 @@ plant_types = {
     "tomato": {
         "stages": [
             {"name": "sprout", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.85)},
-            {"name": "mature", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.75)},
+            {"name": "vining_out", "duration_ticks": 10, "optimal_water_level_range": (0.6, 0.85)},
+            {"name": "flowering", "duration_ticks": 10, "optimal_water_level_range": (0.55, 0.8)},
+            {"name": "fruit_setting", "duration_ticks": 15, "optimal_water_level_range": (0.5, 0.75)},
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.75)}
         ],
         "harvest_items": [
@@ -341,48 +358,53 @@ plant_types = {
     "potato": {
         "stages": [
             {"name": "sprout", "duration_ticks": 20, "optimal_water_level_range": (0.6, 1.0)},
-            {"name": "young", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
-            {"name": "mature", "duration_ticks": 40, "optimal_water_level_range": (0.4, 0.6)}, # Develops underground tubers
+            {"name": "foliage_developing", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "tuber_forming", "duration_ticks": 40, "optimal_water_level_range": (0.4, 0.6)},
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.6)}
         ],
         "harvest_items": [
-            {"item": _potato_item, "base_harvest_yield": 8}, # Potatoes are plenty
+            {"item": _potato_item, "base_harvest_yield": 8},
         ],
-        "life_cycle": "annual" # Though some varieties are biennial, annual is common for game simplicity.
+        "life_cycle": "annual"
     },
-    "strawberry": {
+    "strawberry": { # PERENNIAL - ENSURING 'mature' stage
         "stages": [
             {"name": "sprout", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
-            {"name": "young", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.8)},
-            {"name": "mature", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "spreading_foliage", "duration_ticks": 20, "optimal_water_level_range": (0.6, 0.8)},
+            {"name": "budding", "duration_ticks": 15, "optimal_water_level_range": (0.55, 0.75)},
+            {"name": "mature", "duration_ticks": 10, "optimal_water_level_range": (0.5, 0.75)}, # Renamed from 'fruiting', now the plant is established
+            {"name": "fruit_ripening", "duration_ticks": 10, "optimal_water_level_range": (0.5, 0.7)}, # New stage for actual fruit ripening
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
         "harvest_items": [
             {"item": _strawberry_item, "base_harvest_yield": 6},
             {"item": _strawberry_seed, "base_harvest_yield": 2}
         ],
-        "life_cycle": "perennial" # Can produce fruit year after year (or cycle after cycle in game terms)
+        "life_cycle": "perennial"
     },
 
 # Ornamental Plants
-"rose": {
+"rose": { # PERENNIAL - ENSURING 'mature' stage
     "stages": [
         {"name": "sprout", "duration_ticks": 20, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "bushy", "duration_ticks": 40, "optimal_water_level_range": (0.6, 0.8)},
-        {"name": "mature", "duration_ticks": 30, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "branching_out", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "vegetative_growth", "duration_ticks": 20, "optimal_water_level_range": (0.55, 0.75)},
+        {"name": "mature", "duration_ticks": 10, "optimal_water_level_range": (0.5, 0.7)}, # Renamed from 'budding', now the established plant
+        {"name": "flowering", "duration_ticks": 10, "optimal_water_level_range": (0.5, 0.7)}, # New stage for actual bloom
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [
         {"item": _rose_flower_item, "base_harvest_yield": 3},
         {"item": _rose_seed, "base_harvest_yield": 1}
     ],
-    "life_cycle": "perennial" # Can be harvested multiple times in its lifetime
+    "life_cycle": "perennial"
 },
 "sunflower": {
     "stages": [
         {"name": "seedling", "duration_ticks": 15, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "stalking", "duration_ticks": 30, "optimal_water_level_range": (0.6, 0.9)},
-        {"name": "flowering", "duration_ticks": 45, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "stem_elongating", "duration_ticks": 25, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "bud_forming", "duration_ticks": 20, "optimal_water_level_range": (0.55, 0.8)},
+        {"name": "flowering", "duration_ticks": 30, "optimal_water_level_range": (0.5, 0.7)},
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [
@@ -393,24 +415,24 @@ plant_types = {
 },
 
 # Herbs
-"mint": {
+"mint": { # PERENNIAL - ENSURING 'mature' stage
     "stages": [
         {"name": "sprout", "duration_ticks": 10, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "young", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
-        {"name": "mature", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.8)},
+        {"name": "spreading_foliage", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
+        {"name": "mature", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.8)}, # Renamed from 'lush_growth'
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
     ],
     "harvest_items": [
         {"item": _mint_leaves_item, "base_harvest_yield": 8},
         {"item": _mint_seed, "base_harvest_yield": 2}
     ],
-    "life_cycle": "perennial" # Can be harvested repeatedly
+    "life_cycle": "perennial"
 },
 "basil": {
     "stages": [
         {"name": "sprout", "duration_ticks": 10, "optimal_water_level_range": (0.7, 1.0)},
-        {"name": "young", "duration_ticks": 20, "optimal_water_level_range": (0.6, 0.8)},
-        {"name": "mature", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+        {"name": "leaf_expansion", "duration_ticks": 20, "optimal_water_level_range": (0.6, 0.8)},
+        {"name": "bushy_growth", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [

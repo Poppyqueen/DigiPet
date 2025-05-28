@@ -149,9 +149,8 @@ class CLIChatbot:
             for stat_name in stats_to_monitor:
                 self.state_manager.adjust_stat(stat_name, -10)
 
-            # Change this, we will pass the recursion depth to adventure response, and remove tools from it when we reach a limit
             self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) You have been heavily penalized with some of your wellness stats", "short_term", "system")
-            self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
+            #self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
             return "Error: Max recursion depth reached while processing AI response chain."
 
         print(f"\n🤖 Thinking... (Call Depth: {depth})") # Added depth indicator
@@ -166,7 +165,7 @@ class CLIChatbot:
             # Returns a function_flag if any message was a tool call, for us to process here
             function_flag, response_content = await self.ai.adventure_response(
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
-                current_full_prompt
+                current_full_prompt, depth, self.max_recursion_depth
             )
 
 
@@ -207,19 +206,21 @@ class CLIChatbot:
                 self.text_capture.dump_text(f"**************")
 
 
-                depth_message=""
-                if depth == self.max_recursion_depth-3:
-                    depth_message="Depth of function calling reached the limit, your next message must not contain any function call."
+            # Change this, we will pass the recursion depth to adventure response, and remove tools from it when we reach a limit
 
-                elif depth >= self.max_recursion_depth/2:
-                    depth_message="Depth of function calling reached half way to the limit, please consider outputting your final message"
+                # depth_message=""
+                # if depth == self.max_recursion_depth-3:
+                #     depth_message="Depth of function calling reached the limit, your next message must not contain any function call."
 
-                function_result = f"Function response: {response_content}, Depth: {depth}, {depth_message}" # Assuming response_content is the function output/confirmation
+                # elif depth >= self.max_recursion_depth/2:
+                #     depth_message="Depth of function calling reached half way to the limit, please consider outputting your final message"
+
+                function_result = f"Function response: {response_content}" # Assuming response_content is the function output/confirmation
 
 
                 # If deep memory active, we add the retrieved memories from it and append it to the function result of the agent.
                 if self.memory.deep_memory and self.deep_memory_flag:
-                    function_result = f"Deep memories retrieved: {deep_memory_context} Function response: {response_content}, Depth: {depth}, {depth_message}" # Assuming response_content is the function output/confirmation
+                    function_result = f"Deep memories retrieved: {deep_memory_context} Function response: {response_content}, Depth: {depth}" # Assuming response_content is the function output/confirmation
 
                 # Save the function *result* to memory so the AI can see it
                 # Use 'system' or similar role if your AI model supports it,

@@ -2,6 +2,8 @@
 
 import os
 
+from datetime import datetime
+
 class TextCapture:
     def __init__(self, filepath="captured_text.txt"):
         """
@@ -26,9 +28,15 @@ class TextCapture:
         """
         Saves the captured text to the specified file.
         """
+
+        now = datetime.now()
+
+        formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        final_text=f"Current time: {formatted_time}\n {text}"
         try:
             with open(self.filepath, 'a') as f:
-                f.write(text + "\n")
+                f.write(final_text + "\n")
         except Exception as e:
             print(f"Error saving to text file: {e}")
 

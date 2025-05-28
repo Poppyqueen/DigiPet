@@ -493,19 +493,6 @@ class InventoryHouseManager(GenericJsonTool):
             needs_save = True
         # --- End New Validation ---
 
-        # --- NEW: Validate Current Game Tick State ---
-        current_game_tick = self._state.get("current_game_tick")
-        default_game_tick = 0 # Assuming a default of 0 for game tick
-
-        if not isinstance(current_game_tick, int):
-            print(f"Validation Warning: 'current_game_tick' missing or not an integer ({type(current_game_tick).__name__}). Setting to default ({default_game_tick}).")
-            self._state["current_game_tick"] = default_game_tick
-            needs_save = True
-        elif current_game_tick < 0:
-            print(f"Validation Warning: 'current_game_tick' value ({current_game_tick}) is negative. Resetting to default ({default_game_tick}).")
-            self._state["current_game_tick"] = default_game_tick
-            needs_save = True
-
 # --- NEW: Validate current_sim ID State ---
         id_value = self._state.get("id_value")
         default_id_value = "" # Assuming a default of "" for id_value
@@ -788,15 +775,6 @@ class InventoryHouseManager(GenericJsonTool):
             return f"{room_name} (ID:INVALID)"
 
         return f"{room_name} (ID:{room_id:06d})"
-
-
-    def get_current_game_tick(self) -> int:
-        return self._state.get("current_game_tick", 0) # Safely get it
-
-    def increment_game_tick(self) -> None:
-        self._state["current_game_tick"] += 1
-        # You might want to save here, or save periodically in your main game loop
-        # self._write_json(self._state) # Only save if you want frequent writes
 
 
     def save_state(self) -> None:
