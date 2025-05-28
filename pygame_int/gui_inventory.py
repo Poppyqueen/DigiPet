@@ -1,3 +1,5 @@
+# gui_inventory.py
+
 import pygame
 from pygame_int import config
 from pygame_int import state

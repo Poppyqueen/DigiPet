@@ -18,7 +18,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -659,6 +659,27 @@ while running:
             break
 
         gui.handle_gui_event(event)
+
+
+        # --- NEW: Fetch the LATEST GUI rects for event detection ---
+        # Do this at the start of each event loop iteration
+        # so collision checks use the most current dimensions.
+        current_button_rects = gui.gui_core.get_button_rects()
+        inventory_toggle_button_rect = current_button_rects.get('inventory_toggle')
+        mute_button_rect = current_button_rects.get('mute_button') # Also fetch mute button
+        panel_toggle_button_rect = current_button_rects.get('panel_toggle') # And panel toggle button
+
+        # For inventory panel specific areas, fetch them only if the panel is visible
+        # to avoid unnecessary lookups when it's closed.
+        room_list_area_rect = None
+        player_list_area_rect = None
+        history_display_area = gui.gui_core.get_gui_rects().get('history_display_area') # Always get chat history area, it's always relevant if panel is visible
+
+        if state.inventory_panel_visible:
+            current_panel_rects = gui.gui_core.get_panel_rects()
+            room_list_area_rect = current_panel_rects.get('room_list_area')
+            player_list_area_rect = current_panel_rects.get('player_list_area')
+
 
 
         # --- Always Handle Custom Events (like signals from chatbot) ---
