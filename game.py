@@ -592,7 +592,7 @@ def start_garden_tick_request():
     """
     global chatbot_available, chatbot
     if not chatbot_available or not chatbot:
-        print("Chatbot not available, cannot start garden tick.")
+        #print("Chatbot not available, cannot start garden tick.")
         return False
 
     # Only proceed if the chatbot is NOT currently processing a user request
@@ -1163,11 +1163,11 @@ while running:
 
     # NEW: Garden Tick Logic
     if current_time_ms >= state.next_garden_tick_time:
-        print(f"Attempting garden tick. (Scheduled at {state.next_garden_tick_time}, current: {current_time_ms})")
+        #print(f"Attempting garden tick. (Scheduled at {state.next_garden_tick_time}, current: {current_time_ms})")
         if start_garden_tick_request(): # This will now return False if chatbot is busy
             # If the tick was successfully launched, schedule the next one.
             state.next_garden_tick_time = current_time_ms + config.GARDEN_TICK_INTERVAL_MS
-            print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
+            #print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
         else:
             # If the tick was deferred (because chatbot was busy),
             # `state.next_garden_tick_time` is NOT updated.

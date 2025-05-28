@@ -57,7 +57,7 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick
 MAX_MESSAGE_HISTORY = 50  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
-IDLE_TIMEOUT_MINUTES = 3 # Minutes until pet is considered idle
+IDLE_TIMEOUT_MINUTES = 1 # Minutes until pet is considered idle
 IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
 # Background
 fallback_bg_color = (50, 50, 70) # Default background color
