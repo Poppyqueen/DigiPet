@@ -963,7 +963,7 @@ class InventoryHouseManager(GenericJsonTool):
 
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pointer_icon.png"})
 
-                return f"You move to the {self._format_room_for_display(target_room)}. {desc_str}"
+                return f"You move to the {self._format_room_for_display(target_room)}. Tools pool has changed. {desc_str}"
         else:
             return f"There is no room with ID '{room_id}'. The existing rooms are: {self.get_all_rooms()}"
 
@@ -1273,7 +1273,7 @@ class InventoryHouseManager(GenericJsonTool):
 
 
         # item_display is defined here
-        return f"You picked up the {item_display}."
+        return f"You picked up the {item_display}. It has been correctly placed into your inventory."
     
 
     def list_inventories(self):

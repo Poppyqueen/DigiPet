@@ -817,36 +817,6 @@ base_state={
                     "type": ["furniture"]
                 },
                 {
-                    "name": "bedside_novel",
-                    "descriptions": [
-                        "A well-worn novel left open on the nightstand."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "Chapter 1: The Old House",
-                            "content": "Once upon a midnight dreary, while I pondered weak and weary, over many a quaint and curious volume of forgotten lore... The old house stood silent on the hill, its windows like vacant eyes staring out over the mist-shrouded valley. Dust motes danced in the sparse moonlight that pierced the grimy panes, illuminating forgotten relics of lives long past. It was here, within its crumbling walls, that the first faint whispers of the adventure began, drawn by an unseen force to the secrets hidden within its foundations."
-                        },
-                        {
-                            "title": "Chapter 2: A Journey Begins",
-                            "content": "Across mountains and valleys, through whispering forests and echoing caves, the path stretched out, uncertain but compelling. The protagonist, guided by an instinct older than maps, left the familiar comforts of home behind, setting foot onto ancient trails rumored to lead to places of both wonder and danger. Supplies were few, the journey long, but the pull of the unknown, of destiny, was stronger than any fear."
-                        },
-                        {
-                            "title": "Chapter 3: First Encounters",
-                            "content": "The air grew cold as a figure emerged from the mist, their eyes glowing with an otherworldly light that seemed to pierce the very soul. They were neither human nor beast, their form shifting subtly at the edges of vision, cloaked in shadows that defied the morning light. A silence fell, broken only by the protagonist's ragged breath and the distant cry of a hawk overhead, marking this moment as profoundly significant, a meeting outside the bounds of ordinary existence."
-                        },
-                        {
-                            "title": "Chapter 4: The Whisperer's Words",
-                            "content": "The figure did not speak with a voice heard by the ears, but with thoughts placed directly into the mind, a cascade of images and feelings that were both alien and strangely familiar. They spoke of balance, of threads woven and unraveled, and of a disruption far older than the mountains themselves. The glowing eyes held an ancient sorrow, hinting at responsibilities vast and terrible, a burden they seemed on the verge of sharing.\n\nThe message was cryptic, filled with riddles of stars and stones, but one command was clear: a specific object, lost to mortal memory, must be found before a certain celestial alignment. The figure imparted a symbol, etched not onto the hand, but into the protagonist's awareness, a mark that would guide the way and perhaps signal their worthiness. Then, as silently as they had appeared, the figure dissolved back into the mist, leaving the traveler alone with impossible knowledge and a daunting task."
-                        },
-                        {
-                            "title": "Chapter 5: A Change in Direction",
-                            "content": "The path forward was no longer a simple journey towards a vague destination, but a focused quest with a specific, urgent goal dictated by a being beyond comprehension. The symbol burned faintly in the protagonist's thoughts, a constant reminder of the task. Consulting worn maps and piecing together fragmented legends, it became clear that the object mentioned by the Whisperer was tied to a region far from the original route, a place whispered about only in hushed tones by fearful villagers.\n\nThis new destination lay through territory rumored to be cursed, haunted by lingering energies from ancient conflicts. The cheerful optimism that had fueled the initial journey was replaced by a grim determination. The stakes had been raised immeasurably, and the traveler understood that failure was not merely a personal setback, but potentially a cosmic catastrophe. The journey had truly just begun, leading now into the heart of True peril."
-                        }
-                    ]
-                },
-                {
                     "name": "large_bed",
                     "descriptions": [
                         "A large, comfortable bed with clean sheets."
@@ -884,15 +854,6 @@ base_state={
                     ],
                     "static": True,
                     "type": ["furniture"]
-                },
-                {
-                    "name": "personal_diary",
-                    "descriptions": [
-                        "A locked diary with a small heart-shaped clasp."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": []
                 },
                 {
                     "name": "glass_of_water",
@@ -952,17 +913,10 @@ base_state={
         },
         "items": [
                 {
-                    "name": "usb_drive",
-                    "descriptions": [
-                        "A small USB drive."
-                    ],
-                    "static": False,
-                    "type": ["tool"]
-                },
-                {
                     "name": "desktop_computer",
                     "descriptions": [
-                        "A desktop computer setup."
+                        "A desktop computer setup.",
+                        "This interface seems to have an internet connection."
                     ],
                     "static": True,
                     "type": ["furniture"]
@@ -1282,7 +1236,15 @@ base_state={
         "The deep blue light dominates, creating an atmospheric calm."
     ]
 },
-                    "items": []
+                    "items": [                {
+                    "name": "Research computer interface",
+                    "descriptions": [
+                        "A complex and detailed computer, useful for A-Life research.",
+                        "This interface gives access to an A-Life simulation."
+                    ],
+                    "static": True,
+                    "type": ["furniture"]
+                },]
                 }
 ],
             "inventory": [],

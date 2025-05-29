@@ -187,8 +187,8 @@ class FunctionBuilder:
             "set_current_emote": self.state_manager.set_current_emote,
             "move_to_room": self.state_manager.set_current_room,
             "list_all_rooms": self.state_manager.get_all_rooms,
-            "examine_item": self.state_manager.get_item_details,
             "pickup_item": self.state_manager.pickup_item,
+            "examine_item": self.state_manager.get_item_details,
             "drop_item": self.state_manager.drop_item,
             "consume_item": self.state_manager.consume_item,
             #"trash_item": self.state_manager.trash_item,
@@ -317,10 +317,9 @@ class FunctionBuilder:
         Constructs the function mapping based on the current room's types
         and the player's inventory.
         """
-        # Start with base functions
-        self.function_map = self.base_function_map.copy()
 
-        # Add room-type specific functions
+
+        # Start with room-type specific functions
         current_types = self.get_current_room_types()
         for room_type in current_types:
             if room_type in self._room_type_data and "functions" in self._room_type_data[room_type]:
@@ -339,6 +338,9 @@ class FunctionBuilder:
                             if individual_type_str in self._item_specific_functions:
                                 self.function_map.update(self._item_specific_functions[individual_type_str])
                                 print(f"DEBUG: Added functions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
+
+        # End with base functions
+        self.function_map = self.base_function_map.copy()
         # print(f"DEBUG: Final constructed function map keys: {list(self.function_map.keys())}")
 
 
@@ -355,9 +357,6 @@ class FunctionBuilder:
 
         # Collect all potential tool definitions relevant to the current state
         all_potential_definitions = []
-
-        # Add base tools (always available if their function is in the map)
-        all_potential_definitions.extend(base_tools)
 
         # Add room-type specific definitions
         current_types = self.get_current_room_types()
@@ -377,6 +376,9 @@ class FunctionBuilder:
                             if individual_type_str in self._item_specific_definitions:
                                 all_potential_definitions.extend(self._item_specific_definitions[individual_type_str])
                                 # print(f"DEBUG: Added definitions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
+
+        # Add base tools (always available if their function is in the map)
+        all_potential_definitions.extend(base_tools)
 
 
         # Now, filter the potential definitions based on which function names
@@ -408,17 +410,14 @@ class FunctionBuilder:
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
         context.append("#############")
-        context.append("Current context:")
+        context.append("Current State:")
         context.append(f"Current time: {f}")
 
         # Format the current room name and types
         current_room_name = self.state_manager.get_current_room_name()
         current_room_types = self.get_current_room_types()
         format_room = f"Currently, you are in: {current_room_name}\n"
-        descriptions = self.state_manager.get_current_room_description()
-        print(f"‼️‼️‼️‼️‼️DEBUG: Current room types ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️: {current_room_types}, descriptions: {descriptions}")
-        # if current_room_types:
-        #     format_room += f" (Types: {', '.join(current_room_types)})"
+
         context.append(format_room)
         #context.append(descriptions)
 
