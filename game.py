@@ -4,6 +4,7 @@ from pygame_int import state
 from pygame_int import gui
 from pygame_int import animation
 from pygame_int.juke_box import jukebox 
+from pygame_int import gui_lore_panel
 
 from pygame_int import gui_color_selector
 
@@ -94,12 +95,41 @@ def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=con
   return int(final_size)
 
 
+# We'll need a helper function to trigger the lore update
+def trigger_lore_panel_update():
+    """Fetches current room info and posts an event to update the lore panel."""
+    global chatbot_available, chatbot
+    if chatbot_available and chatbot and hasattr(chatbot, 'functions_builder') and \
+       hasattr(chatbot.functions_builder, 'get_current_room_info') and \
+       callable(chatbot.functions_builder.get_current_room_info):
+        
+        current_room_info = chatbot.functions_builder.get_current_room_info()
+        
+        # Ensure room_data is a dictionary, even if functions_builder returns None or non-dict
+        if not isinstance(current_room_info, dict):
+            current_room_info = {} # Fallback to empty dict
+            print("Warning: get_current_room_info did not return a dictionary. Lore panel may show default text.")
+
+        print(f"Triggering lore panel update with room data: {current_room_info.get('name', 'N/A')}")
+        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
+    else:
+        print("Chatbot or its functions_builder.get_current_room_info is not available for lore update.")
+        # Post a default empty lore update if chatbot isn't ready
+        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data={
+            'name': 'System Lore',
+            'description': 'The lore system is not yet initialized or the chatbot is unavailable.'
+        }))
+
+
+
 # --- Callback function to receive signals from the chatbot ---
 # This callback is already designed to run potentially in the chatbot's
 # internal thread(s) and post events to the main Pygame loop. This part is good.
 # --- Callback function to receive signals from the chatbot ---
 def handle_chatbot_signal(signal_data):
     """Receives a signal dict from the chatbot and posts a Pygame event."""
+    trigger_lore_panel_update() # <--- ADD THIS LINE
+
     if isinstance(signal_data, dict):
         action_type = signal_data.get("type")
 
@@ -601,6 +631,7 @@ def start_garden_tick_request():
         return False # And this line
 
     #print("Starting garden tick request thread.")
+
     thread = threading.Thread(target=garden_tick_worker, args=(chatbot,))
     thread.start()
     return True
@@ -627,6 +658,9 @@ print(f"Next garden tick scheduled for {state.next_garden_tick_time} ms.")
 while running:
     dt = clock.tick(60)
     current_time_ms = pygame.time.get_ticks()
+    # current_location_info=chatbot.functions_builder.get_current_room_info() # This is getting an updated state every frame
+
+    # pygame.event.Event(config.LORE_PANEL_CONTENT_EVENT,current_location_info) # This is posting an event every frame
     #steps=chatbot.get_steps()
     #size=state.size
     #size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
@@ -668,6 +702,7 @@ while running:
         inventory_toggle_button_rect = current_button_rects.get('inventory_toggle')
         mute_button_rect = current_button_rects.get('mute_button') # Also fetch mute button
         panel_toggle_button_rect = current_button_rects.get('panel_toggle') # And panel toggle button
+        lore_toggle_button_rect = current_button_rects.get('lore_toggle') # NEW: Fetch lore toggle button rect
 
         # For inventory panel specific areas, fetch them only if the panel is visible
         # to avoid unnecessary lookups when it's closed.
@@ -709,33 +744,6 @@ while running:
             animation.start_circle_shake()
             continue
 
-        # Note: Emote events now call animation directly in handle_chatbot_signal
-        # elif event.type == config.START_SAD_EVENT:
-        #     print("Main loop processing START_SAD_EVENT")
-        #     animation.start_sad_animation()
-        #     continue
-        # elif event.type == config.START_HAPPY_EVENT:
-        #     print()
-        #     animation.start_happy_animation()
-        #     continue
-
-
-        # elif event.type == config.PLAY_SOUND_EVENT:
-        #     sound_path = getattr(event, 'sound_path', None)
-        #     if sound_path:
-        #         print(f"Main loop received and processing PLAY_SOUND_EVENT for: {sound_path}")
-        #         try:
-        #             if pygame.mixer.get_init():
-        #                  # Consider loading sound once if it's common
-        #                  music_player.play_sound_effect(sound_path)
-        #                  print(f"Successfully played sound: {sound_path}")
-        #             else: print("Pygame Mixer not initialized. Cannot play sound.")
-        #         except pygame.error as e: print(f"Error playing sound '{sound_path}': {e}")
-        #         except FileNotFoundError: print(f"Sound file not found: {sound_path}")
-        #         except Exception as e: print(f"An unexpected error occurred while playing sound '{sound_path}': {e}")
-        #     else: print("PLAY_SOUND_EVENT received but no 'sound_path' attribute.")
-        #     continue
-
         elif event.type == config.CHATBOT_RESPONSE_EVENT:
              response_text = getattr(event, 'text', None)
              message_type = getattr(event, 'msg_type', 'bot')
@@ -755,6 +763,28 @@ while running:
                  print(f"Bot response received via event (type: {message_type}). Idle timer reset? {'Yes' if message_type != 'system' else 'No'}. Time: {state.last_activity_time}")
 
              continue
+
+
+        elif event.type == config.UPDATE_LORE_DISPLAY_EVENT: # NEW EVENT TYPE
+            # 1. Get the dictionary passed as 'room_data' from the event
+            room_data = getattr(event, 'room_data', {}) # Default to empty dict if not present
+
+            # 2. Extract 'title' and 'body' SAFELY from the room_data dictionary
+            #    using .get() to provide default values if keys are missing
+            lore_title = room_data.get('title', 'Info Title Not Found')
+            lore_body = room_data.get('body', 'No content received for this info entry.')
+
+            print(f"Main loop processing UPDATE_LORE_DISPLAY_EVENT. Title: {lore_title}")
+            
+            # 3. Prepare and store the content data in state
+            state.lore_panel_content = gui_lore_panel.prepare_lore_content_data(lore_title, lore_body)
+            
+            # 4. Reset scroll to top ONLY IF the panel is visible.
+            #    This prevents constant scroll resets if the room changes while the panel is closed.
+            if state.lore_panel_visible:
+                state.lore_panel_scroll_y = 0
+            continue # Event consumed
+
 
         elif event.type == config.ROOM_INVENTORY_EVENT:
             item_list_raw = getattr(event, 'item_list', None) # Get the raw list of strings
@@ -860,20 +890,28 @@ while running:
             # --- Inventory Panel IS Open (Modal Behavior) ---
 
             if event.type == pygame.KEYDOWN:
-                 if event.key == pygame.K_ESCAPE:
-                     print("Escape pressed. Closing inventory panel.")
-                     state.inventory_panel_visible = False
-                     continue # Consume event
+                if event.key == pygame.K_ESCAPE:
+                    if state.lore_panel_visible: # NEW: Prioritize closing lore panel
+                        print("Escape pressed. Closing lore panel.")
+                        state.lore_panel_visible = False # Snap closed
+                        continue # Consume the event
+                    elif state.inventory_panel_visible:
+                        print("Escape pressed. Closing inventory panel.")
+                        state.inventory_panel_visible = False
+                        continue
+                    else:
+                        running = False # Exit the game
+                        continue
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                 # Check inventory toggle button click (to close)
-                 if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
-                      print("Inventory toggle button clicked while panel open. Closing panel.")
-                      state.inventory_panel_visible = False
-                      continue
+                # Check inventory toggle button click (to close)
+                if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
+                    print("Inventory toggle button clicked while panel open. Closing panel.")
+                    state.inventory_panel_visible = False
+                    continue
 
-                 # Handle Mouse Wheel Scrolling over the panel list areas
-                 if event.button in (4, 5): # 4: up, 5: down
+                # Handle Mouse Wheel Scrolling over the panel list areas
+                if event.button in (4, 5): # 4: up, 5: down
                     scroll_speed = config.SCROLL_SPEED * (-1 if event.button == 4 else 1) # Negative for up, positive for down
                     # Check if mouse is over the room list area
                     if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
@@ -897,8 +935,8 @@ while running:
                         #print(f"Player list scrolled. Current: {state.player_inventory_scroll_y}, Max: {max_player_scroll}")
                         continue # Consume event
 
-                 # If the click wasn't on the toggle button or handled by scrolling, ignore it
-                 #continue # Simply do nothing for other events inside the panel
+                # If the click wasn't on the toggle button or handled by scrolling, ignore it
+                #continue # Simply do nothing for other events inside the panel
 
         #else:
         # --- Inventory Panel IS NOT Open (Normal Game Behavior) ---
@@ -915,130 +953,140 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
                 #state.last_activity_time = current_time_ms #
 
-                # Check inventory toggle button click (to open)
-                if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
-                    print("Inventory toggle button clicked while panel closed. Opening panel.")
-                    state.inventory_panel_visible = True
-                    # Reset scroll positions when opening
-                    state.room_inventory_scroll_y = 0
-                    state.player_inventory_scroll_y = 0
+                # NEW: Handle Lore Panel Toggle Button click
+                if lore_toggle_button_rect and lore_toggle_button_rect.collidepoint(event.pos):
+                    if not state.lore_panel_visible: # Only open if not already open
+                        print("Lore toggle button clicked. Opening panel.")
+                        state.lore_panel_visible = True
+                        state.lore_panel_scroll_y = 0 # Reset scroll
+                        trigger_lore_panel_update()
                     continue # Consume event
 
-                # Check if the click is within the history display are
-                if mute_button_rect and mute_button_rect.collidepoint(event.pos):
-                    if music_player is not None:
-                        music_player.toggle_mute()
-                        mute_status = "muted" if music_player.get_is_muted() else "unmuted"
-                        state.is_muted=music_player.get_is_muted()
-                        gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
+                if not state.lore_panel_visible:
+                    # Check inventory toggle button click (to open)
+                    if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
+                        print("Inventory toggle button clicked while panel closed. Opening panel.")
+                        state.inventory_panel_visible = True
+                        # Reset scroll positions when opening
+                        state.room_inventory_scroll_y = 0
+                        state.player_inventory_scroll_y = 0
+                        continue # Consume event
 
-                        continue
+                    # Check if the click is within the history display area
+                    if mute_button_rect and mute_button_rect.collidepoint(event.pos):
+                        if music_player is not None:
+                            music_player.toggle_mute()
+                            mute_status = "muted" if music_player.get_is_muted() else "unmuted"
+                            state.is_muted=music_player.get_is_muted()
+                            gui.gui_text_utils.add_message_to_history(f"Music toggled {mute_status}.", 'system')
 
-                # Handle Mouse Wheel Scrolling for Chat History
-                # Ensure mouse is over the history display area, not just the larger history_rect
-                
-                # --- Panel Toggle Button Click Check ---
-                all_button_rects = gui.gui_core.get_button_rects()
-                panel_toggle_rect = all_button_rects.get('panel_toggle')
+                            continue
 
-                if panel_toggle_rect and panel_toggle_rect.collidepoint(event.pos):
-                    state.panel_visible = not state.panel_visible
-                    if state.panel_visible:
-                        state.panel_width = config.DEFAULT_PANEL_WIDTH
-                    # If panel is hidden, its width is effectively 0 for layout purposes,
-                    # but we don't change state.panel_width to 0 here.
-                    # update_gui_rects will use state.panel_width if visible, or handle appropriately if hidden.
-                    # The actual drawing of the panel is skipped in gui.py if state.panel_visible is False.
-                    # The pet's centering logic in gui.py already uses `state.panel_width if state.panel_visible else 0`.
-                    gui.gui_core.update_gui_rects(state.panel_width)
-                    continue # Consume event, no further MOUSEBUTTONDOWN processing for this click
+                    # Handle Mouse Wheel Scrolling for Chat History
+                    # Ensure mouse is over the history display area, not just the larger history_rect
+                    
+                    # --- Panel Toggle Button Click Check ---
+                    all_button_rects = gui.gui_core.get_button_rects()
+                    panel_toggle_rect = all_button_rects.get('panel_toggle')
 
-                if history_display_area.collidepoint(event.pos): # Use history_display_area for scroll detection
-                    if event.button == 4: # Scroll up
-                        state.scroll_y -= config.SCROLL_SPEED
-                    elif event.button == 5: # Scroll down
-                        state.scroll_y += config.SCROLL_SPEED
-                    # Clamp chat scroll
-                    current_total_height = gui.gui_text_utils.calculate_total_history_height(state.chat_history)
-                    # Scroll range goes from 0 (top) to max_scroll (bottom)
-                    max_scroll = max(0, current_total_height - history_display_area.height)
-                    state.scroll_y = max(0, min(state.scroll_y, max_scroll))
-                    #print(f"Chat scroll adjusted. Current: {state.scroll_y}, Max: {max_scroll}")
-                    continue # Consume event
+                    if panel_toggle_rect and panel_toggle_rect.collidepoint(event.pos):
+                        state.panel_visible = not state.panel_visible
+                        if state.panel_visible:
+                            state.panel_width = config.DEFAULT_PANEL_WIDTH
+                        # If panel is hidden, its width is effectively 0 for layout purposes,
+                        # but we don't change state.panel_width to 0 here.
+                        # update_gui_rects will use state.panel_width if visible, or handle appropriately if hidden.
+                        # The actual drawing of the panel is skipped in gui.py if state.panel_visible is False.
+                        # The pet's centering logic in gui.py already uses `state.panel_width if state.panel_visible else 0`.
+                        gui.gui_core.update_gui_rects(state.panel_width)
+                        continue # Consume event, no further MOUSEBUTTONDOWN processing for this click
+
+                    if history_display_area.collidepoint(event.pos): # Use history_display_area for scroll detection
+                        if event.button == 4: # Scroll up
+                            state.scroll_y -= config.SCROLL_SPEED
+                        elif event.button == 5: # Scroll down
+                            state.scroll_y += config.SCROLL_SPEED
+                        # Clamp chat scroll
+                        current_total_height = gui.gui_text_utils.calculate_total_history_height(state.chat_history)
+                        # Scroll range goes from 0 (top) to max_scroll (bottom)
+                        max_scroll = max(0, current_total_height - history_display_area.height)
+                        state.scroll_y = max(0, min(state.scroll_y, max_scroll))
+                        #print(f"Chat scroll adjusted. Current: {state.scroll_y}, Max: {max_scroll}")
+                        continue # Consume event
 
 
-                # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
-                # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
-                if not is_input_locked_by_state:
-                    package_click_regions = gui.gui_care_package.get_package_button_click_regions()
-                    clicked_package_button = False # Flag to consume event
+                    # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
+                    # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
+                    if not is_input_locked_by_state:
+                        package_click_regions = gui.gui_care_package.get_package_button_click_regions()
+                        clicked_package_button = False # Flag to consume event
 
-                    for identifier, rect in package_click_regions:
-                        if rect.collidepoint(event.pos):
-                            #print(f"Clicked on Care Package button region: {identifier}") # Debug click detection
-                            if identifier == "scroll_left":
-                                # Check if we can scroll left
-                                if state.package_button_visible_start_index > 0:
-                                    state.package_button_visible_start_index -= 1
-                                    #state.last_activity_time = current_time_ms # Scrolling counts as activity (it shouldt...)
-                                    #print(f"Scrolled package buttons left. New start index: {state.package_button_visible_start_index}")
-                                else:
-                                    print("Scroll left clicked but already at the beginning.")
-                                clicked_package_button = True # Event consumed by scroll click
-                                break # Stop checking regions
-
-                            elif identifier == "scroll_right":
-                                # Check if we can scroll right
-                                total_packages = len(config.CARE_PACKAGES)
-                                buttons_per_page = gui.gui_core._buttons_per_page # Access the calculated value from gui
-                                if state.package_button_visible_start_index + buttons_per_page < total_packages:
-                                    state.package_button_visible_start_index += 1
-                                    #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
-                                    #print(f"Scrolled package buttons right. New start index: {state.package_button_visible_start_index}")
-                                else:
-                                    print("Scroll right clicked but already at the end.")
-                                clicked_package_button = True # Event consumed by scroll click
-                                break # Stop checking regions
-
-                            elif identifier.startswith("package_"):
-                                # Extract package index from the identifier string "package_N"
-                                try:
-                                    package_index = int(identifier.split('_')[1])
-                                    if 0 <= package_index < len(config.CARE_PACKAGES):
-                                        package_info = config.CARE_PACKAGES[package_index]
-                                        #print(f"Clicked on package button {package_index}. Calling add_items.")
-                                        # Call the add_items function with the package data
-                                        # The add_items function has its own lock check,
-                                        # but we already checked is_currently_asleep above.
-                                        current_room_id=chatbot.state_manager.get_current_room_id()
-                                        add_items(package_info["package"], current_room_id )
-                                        
-                                        room_name=chatbot.get_room_name_out(current_room_id)
-                                        message=f"Items placed in: {room_name}"
-                                        color=(0,255,120)
-                                        gui.gui_popups.show_popup_message(message)
-                                        # new
-                                        list_items=[]
-                                        for i in package_info["package"]:
-                                            item_name = i["name"]
-                                            list_items.append(item_name)
-                                        delimiter = ", "
-                                        str_list = delimiter.join(list_items)
-                                        gui.gui_text_utils.add_message_to_history(f"{message}. Items: {str_list}", 'system')
-
+                        for identifier, rect in package_click_regions:
+                            if rect.collidepoint(event.pos):
+                                #print(f"Clicked on Care Package button region: {identifier}") # Debug click detection
+                                if identifier == "scroll_left":
+                                    # Check if we can scroll left
+                                    if state.package_button_visible_start_index > 0:
+                                        state.package_button_visible_start_index -= 1
+                                        #state.last_activity_time = current_time_ms # Scrolling counts as activity (it shouldt...)
+                                        #print(f"Scrolled package buttons left. New start index: {state.package_button_visible_start_index}")
                                     else:
-                                        print(f"Error: Clicked package button with invalid index: {package_index}")
-                                except (ValueError, IndexError):
-                                    print(f"Error: Could not parse package index from identifier: {identifier}")
+                                        print("Scroll left clicked but already at the beginning.")
+                                    clicked_package_button = True # Event consumed by scroll click
+                                    break # Stop checking regions
 
-                                clicked_package_button = True # Event consumed by package button click
-                                break # Stop checking regions
+                                elif identifier == "scroll_right":
+                                    # Check if we can scroll right
+                                    total_packages = len(config.CARE_PACKAGES)
+                                    buttons_per_page = gui.gui_core._buttons_per_page # Access the calculated value from gui
+                                    if state.package_button_visible_start_index + buttons_per_page < total_packages:
+                                        state.package_button_visible_start_index += 1
+                                        #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
+                                        #print(f"Scrolled package buttons right. New start index: {state.package_button_visible_start_index}")
+                                    else:
+                                        print("Scroll right clicked but already at the end.")
+                                    clicked_package_button = True # Event consumed by scroll click
+                                    break # Stop checking regions
 
-                    if clicked_package_button:
-                        continue # Consume the mouse event if it was handled by a package/scroll button
+                                elif identifier.startswith("package_"):
+                                    # Extract package index from the identifier string "package_N"
+                                    try:
+                                        package_index = int(identifier.split('_')[1])
+                                        if 0 <= package_index < len(config.CARE_PACKAGES):
+                                            package_info = config.CARE_PACKAGES[package_index]
+                                            #print(f"Clicked on package button {package_index}. Calling add_items.")
+                                            # Call the add_items function with the package data
+                                            # The add_items function has its own lock check,
+                                            # but we already checked is_currently_asleep above.
+                                            current_room_id=chatbot.state_manager.get_current_room_id()
+                                            add_items(package_info["package"], current_room_id )
+                                            
+                                            room_name=chatbot.get_room_name_out(current_room_id)
+                                            message=f"Items placed in: {room_name}"
+                                            color=(0,255,120)
+                                            gui.gui_popups.show_popup_message(message)
+                                            # new
+                                            list_items=[]
+                                            for i in package_info["package"]:
+                                                item_name = i["name"]
+                                                list_items.append(item_name)
+                                            delimiter = ", "
+                                            str_list = delimiter.join(list_items)
+                                            gui.gui_text_utils.add_message_to_history(f"{message}. Items: {str_list}", 'system')
 
-                # If the click wasn't handled by buttons or scrolling, it's ignored or could activate input
-                pass # Continue to next event processing if not handled
+                                        else:
+                                            print(f"Error: Clicked package button with invalid index: {package_index}")
+                                    except (ValueError, IndexError):
+                                        print(f"Error: Could not parse package index from identifier: {identifier}")
+
+                                    clicked_package_button = True # Event consumed by package button click
+                                    break # Stop checking regions
+
+                        if clicked_package_button:
+                            continue # Consume the mouse event if it was handled by a package/scroll button
+
+                    # If the click wasn't handled by buttons or scrolling, it's ignored or could activate input
+                    pass # Continue to next event processing if not handled
 
 
         # Handle Keyboard events (typing, Ctrl+keys, Escape)
@@ -1188,6 +1236,8 @@ while running:
         if start_garden_tick_request(): # This will now return False if chatbot is busy
             # If the tick was successfully launched, schedule the next one.
             state.next_garden_tick_time = current_time_ms + config.GARDEN_TICK_INTERVAL_MS
+            trigger_lore_panel_update()
+
             #print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
         else:
             # If the tick was deferred (because chatbot was busy),

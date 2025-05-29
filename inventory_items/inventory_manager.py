@@ -61,7 +61,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.memory=memory
         self.base_path=base_path
         # Define the default state structure, now moved to items_init
-        self._default_state = base_state # custom_state, base_state, dev_room this should be more configurable
+        self._default_state = dev_room # custom_state, base_state, dev_room this should be more configurable
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state
@@ -871,6 +871,8 @@ class InventoryHouseManager(GenericJsonTool):
         else:
             # 6. Item with the given ID was not found in the inventory
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
+
+
 
     def get_room_name(self, room_id: int) -> str:
         """

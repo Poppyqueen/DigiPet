@@ -126,3 +126,10 @@ is_muted = False # Boolean flag for muting/unmuting sounds.
 
 # --- Garden Tick State ---
 next_garden_tick_time = 0 # Stores the time (ms) when the next garden tick is due
+
+
+
+# --- NEW: Lore Panel State ---
+lore_panel_visible = False # True if the lore panel is currently displayed
+lore_panel_content = {'title': '', 'body_wrapped_lines': [], 'body_total_height': 0} # Stores processed lore content
+lore_panel_scroll_y = 0 # Current vertical scroll offset for the lore body

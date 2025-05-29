@@ -293,9 +293,12 @@ class ALifeSimulation:
     ALIVE = "alive"
     DEAD = "dead"
 
+
+
+
     def __init__(self, config: Dict[str, Any] = None, archive_path=None, state_manager=None, signal=None):
         """Initialize the ALifeSimulation with optional configuration."""
-
+        self.latest_config_summary = ""
         self.state_manager = state_manager
         self.current_simulation_ID=""
         self._signal_callback=signal
@@ -1052,9 +1055,9 @@ class ALifeSimulation:
 
         # Map entity type IDs to characters for the visualization
         type_map = {
-            self.PLANT: 'P',
-            self.HERBIVORE: 'H',
-            self.CARNIVORE: 'C'
+            self.PLANT: '0',
+            self.HERBIVORE: '1',
+            self.CARNIVORE: '2'
         }
 
         # Fill in entities (only alive ones for visualization) and count them
@@ -1090,7 +1093,7 @@ class ALifeSimulation:
         visualization += '+' + '-' * grid_size[0] + '+\n'
 
         # Add entity counts based on the *current* state in history
-        visualization += f"Alive counts: Plants (P): {plants_alive}, Herbivores (H): {herbivores_alive}, Carnivores (C): {carnivores_alive}\n"
+        visualization += f"Alive counts: Type 0: {plants_alive}, Type 1: {herbivores_alive}, Type 2: {carnivores_alive}\n"
 
         return visualization
 
@@ -1511,7 +1514,7 @@ class ALifeSimulation:
         elif grid_size is None and max_ticks is None and type_0_init_count is None and type_1_init_count is None and type_2_init_count is None:
              final_config_summary += ". Notes: Default settings used as no custom values were provided."
 
-
+        self.latest_config_summary=final_config_summary
         # The run_simulation() call handles running the simulation steps
         # new_run=True re-seeds the random generator for a fresh run starting from tick 0
         self.run_simulation(new_run=True)
@@ -1559,3 +1562,89 @@ class ALifeSimulation:
                 return archive_data.archive_data.get("simulation_ID", "Unknown ID")
             return "Error archiving simulation data."
         return f"System confirmation, New simulation run completed and archived with simulation ID: {simulation_id}, Name:{new_name or 'Unnamed Simulation'}, Configuration: {final_config_summary}. Ready to view from tick {self.current_tick}."
+
+
+    def display_information(self):
+        """
+        Gathers and presents comprehensive information about the current simulation state,
+        including metadata, configuration, and an ASCII visualization, in a human-readable format.
+        """
+        # --- 1. Get and Parse Simulation Metadata Details ---
+        # The details_of_simulation method returns a string that *contains* JSON
+        sim_details_raw_string = self.simulations_manager.details_of_simulation(self.current_simulation_ID)
+        sim_details_dict = None # Initialize as None, will be parsed if possible
+        metadata_status_message = ""
+
+        if "Error: Simulation with ID" in sim_details_raw_string:
+            # Handle the case where the simulation ID is not found in the manager
+            metadata_status_message = f"Note: Simulation with ID '{self.current_simulation_ID}' not found in archive. Metadata details are unavailable."
+        else:
+            # Attempt to parse the JSON content from the raw string
+            try:
+                # Look for the JSON block: '```json\n{...}\n```'
+                json_start = sim_details_raw_string.find('```json\n')
+                json_end = sim_details_raw_string.find('\n```', json_start + 8)
+                if json_start != -1 and json_end != -1:
+                    json_content = sim_details_raw_string[json_start + 8 : json_end]
+                    sim_details_dict = json.loads(json_content)
+                else:
+                    metadata_status_message = "Warning: Could not parse simulation metadata. Unexpected format from manager."
+            except json.JSONDecodeError:
+                metadata_status_message = "Warning: Could not decode JSON from simulation metadata. Data might be corrupted."
+            except Exception as e:
+                metadata_status_message = f"Warning: An unexpected error occurred parsing metadata: {e}"
+
+        # --- 2. Format the Metadata for Human Readability ---
+        metadata_parts = []
+        metadata_parts.append("--- Simulation Metadata ---")
+        if metadata_status_message:
+            metadata_parts.append(metadata_status_message)
+        
+        if sim_details_dict:
+            metadata_parts.append(f"  Simulation ID: {sim_details_dict.get('simulation_ID', 'N/A')}")
+            metadata_parts.append(f"  Name: {sim_details_dict.get('simulation_name', 'Unnamed Simulation')}")
+            details_list = sim_details_dict.get('simulation_details', [])
+            if details_list:
+                metadata_parts.append("  Details:")
+                for i, detail in enumerate(details_list):
+                    metadata_parts.append(f"    {i+1}. {detail}")
+            else:
+                metadata_parts.append("  Details: No specific details recorded for this simulation run.")
+        elif not metadata_status_message: # If no specific error, but no dict was parsed, indicate general unavailability
+             metadata_parts.append(f"  No detailed metadata available for simulation ID '{self.current_simulation_ID}'.")
+             metadata_parts.append("  This simulation might be new and not yet archived, or its ID is not set.")
+
+        # --- 3. Format the Current Configuration for Human Readability ---
+        config_parts = []
+        config_parts.append("\n--- Current Simulation Configuration ---")
+        config_parts.append(f"  Grid Size: {self.config.get('grid_size', ['N/A', 'N/A'])[0]}x{self.config.get('grid_size', ['N/A', 'N/A'])[1]}")
+        config_parts.append(f"  Configured Max Ticks: {self.config.get('max_ticks', 'N/A')}")
+
+        # Map internal type names to their constant IDs for display
+        type_id_map = {
+            "plant": self.PLANT,
+            "herbivore": self.HERBIVORE,
+            "carnivore": self.CARNIVORE
+        }
+
+        entity_config = self.config.get('entity_config', {})
+        for entity_type_name, config_data in entity_config.items():
+            type_id = type_id_map.get(entity_type_name, 'N/A')
+            config_parts.append(f"\n (Type ID {type_id}) Settings:")
+            for key, value in config_data.items():
+                # Format key for better readability (e.g., "initial_count" -> "Initial Count")
+                readable_key = key.replace('_', ' ').title()
+                config_parts.append(f"    - {readable_key}: {value}")
+
+
+        # --- 4. Get the ASCII Visualization (already human-readable) ---
+        # The get_visualization() method already includes its own header and tick information.
+        visuals = self.get_visualization()
+
+        # --- 5. Combine all formatted parts into a final message ---
+        message = "\n".join(metadata_parts) + "\n" + \
+                  "\n".join(config_parts) + "\n" + \
+                  f"\n--- ASCII Visualization (Current Tick: {self.current_tick}) ---\n" + \
+                  visuals # get_visualization() string starts with "Tick X of Y\n"
+
+        return message

@@ -460,6 +460,10 @@ class room_garden:
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
 
+    def display_information(self):
+        return open_meteo_handle.get_full_weather()
+        
+
     def lay_down(self):
         edit=5
         self.state.adjust_stat("energy", edit)
@@ -494,20 +498,29 @@ class room_living_room:
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
+
+        self.last_show_watched=""
         #print("Living room initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
+
+    def display_information(self):
+        message=f"The last TV show watched was:\n {self.last_show_watched}"
+        return message
+    
 
     def watch_tv(self):
         """
         Returns an excerpt of a random TV show based on the current time
         delegated to a TV manager
         """
+        tv_show=tv_handle.get_tv_program()
+        self.last_show_watched=tv_show
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/tv_icon.png"})
         # ------------------------
-        return tv_handle.get_tv_program()
+        return tv_show
 
     def sit_on_couch(self):
         edit=1
@@ -540,13 +553,21 @@ class room_computer:
         self.wiki=wiki
         # Store the state_manager reference
         self.state = state_manager
+
+        self.last_accessed_wiki=""
+        self.last_wiki_query=""
         #print("Computer room initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
 
+    def display_information(self):
+        message=f"""The last query made into the wiki was:\n{self.last_wiki_query}\n
+                    The last accessed article was: \n{self.last_accessed_wiki}\n 
+                """
+        return message
 
-    def write_blog_post(self, post):
+    def write_blog_post(self, post):        
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/writing_icon.png"}) # Example icon
         # ------------------------
@@ -559,21 +580,27 @@ class room_computer:
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
-        return self.wiki.fetch_random_wiki_article()
+        article=self.wiki.fetch_random_wiki_article()
+        self.last_accessed_wiki=article
+        return article
     
     def search_wikipedia_articles(self, query):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
-        return self.wiki.search_wikipedia(query)
+        query_result=self.wiki.search_wikipedia(query)
+        self.last_wiki_query=query_result
+        return query_result
 
     def get_wikipedia_article_content(self, title):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
-        return self.wiki.get_wikipedia_content_by_title(title)
+        article=self.wiki.get_wikipedia_content_by_title(title)
+        self.last_accessed_wiki=article
+        return article
     
     
     

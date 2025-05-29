@@ -85,7 +85,8 @@ class FunctionBuilder:
                 "get_current_garden_information": self.garden_manager.get_garden_summary,
                 "water_plot": self.garden_manager.water_plot
             },
-            "definitions": harvesting_garden_tools # Use the imported definition list
+            "definitions": harvesting_garden_tools, # Use the imported definition list
+            "current_info": self.garden_manager.get_garden_summary # Optional key, if the room type has this key, the system will retrieve a string from it to display as current information for the room
             },
             "dev_room":{
                 "functions": {
@@ -116,7 +117,8 @@ class FunctionBuilder:
                     "look_at_window": self.room_tools.living_room.look_at_window,
                     "sit_on_couch": self.room_tools.living_room.sit_on_couch
                 },
-                "definitions": living_room_tools
+                "definitions": living_room_tools,
+                "current_info": self.room_tools.living_room.display_information
             },
              "bathroom": {
                 "functions": {
@@ -132,14 +134,17 @@ class FunctionBuilder:
                      "random_wikipedia": self.room_tools.computer.random_wikipedia
 
                 },
-                "definitions": computer_room_tools
+                "definitions": computer_room_tools,
+                "current_info": self.room_tools.computer.display_information
             },
              "garden": {
                 "functions": {
                      "dig_hole": self.room_tools.garden.dig_hole,
                      "lay_down": self.room_tools.garden.lay_down
                 },
-                "definitions": garden_room_tools
+                "definitions": garden_room_tools,
+                "current_info": self.room_tools.garden.display_information # 
+
             },
              "white_room": {
                 "functions": {
@@ -167,7 +172,8 @@ class FunctionBuilder:
                     "add_simulation_detail": self.A_Life.simulations_manager.add_simulation_detail,
 
                 },
-                "definitions": lab_room_tools
+                "definitions": lab_room_tools,
+                "current_info": self.A_Life.display_information
             }
             # Add entries for other room types as needed
         }
@@ -307,27 +313,28 @@ class FunctionBuilder:
         current_id = self.state_manager.get_current_room_id()
         room = self.state_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
         if room and "room_types" in room:
-            print(f"DEBUG: Current room types: {room['room_types']}")
+            #print(f"DEBUG: Current room types: {room['room_types']}")
             return room["room_types"]
-        print("DEBUG: No room types found or room not found.")
+        #print("DEBUG: No room types found or room not found.")
         return [] # Return empty list if no types found
 
     def construct_map(self):
         """
         Constructs the function mapping based on the current room's types
-        and the player's inventory.
+        and the player's inventory, with base functions added last.
         """
+        # Start with an empty map
+        self.function_map = {}
+        print(f"DEBUG: Initializing empty function map for dynamic construction.")
 
-
-        # Start with room-type specific functions
+        # 1. Add room-type specific functions FIRST
         current_types = self.get_current_room_types()
         for room_type in current_types:
             if room_type in self._room_type_data and "functions" in self._room_type_data[room_type]:
                 self.function_map.update(self._room_type_data[room_type]["functions"])
                 print(f"DEBUG: Added functions for room type: {room_type}")
 
-
-        # Add item-specific functions based on inventory
+        # 2. Add item-specific functions (these will overwrite room functions if names clash)
         inventory_items = self.state_manager.get_inventory_items(internal=True)
         if isinstance(inventory_items, list): # Ensure it's a list
             for item_in_inventory in inventory_items:
@@ -339,10 +346,11 @@ class FunctionBuilder:
                                 self.function_map.update(self._item_specific_functions[individual_type_str])
                                 print(f"DEBUG: Added functions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
 
-        # End with base functions
-        self.function_map = self.base_function_map.copy()
-        # print(f"DEBUG: Final constructed function map keys: {list(self.function_map.keys())}")
-
+        # 3. Finally, add base functions LAST.
+        # This means if a base function has the same name as a room or item function,
+        # the base function's implementation will be the one that is ultimately used.
+        self.function_map.update(self.base_function_map)
+        #print(f"DEBUG: Added base functions last. Final constructed function map keys: {list(self.function_map.keys())}")
 
     def construct_tools(self):
         """
@@ -395,8 +403,8 @@ class FunctionBuilder:
             # else:
             #     print(f"Excluding tool definition '{tool_name}' as function is not in map.")
 
-        # print(f"DEBUG: Final available tool definitions count: {len(available_tools_definitions)}")
-        # print(f"DEBUG: Final available tool definition names: {[d['name'] for d in available_tools_definitions]}")
+        #print(f"DEBUG: Final available tool definitions count: {len(available_tools_definitions)}")
+        #print(f"DEBUG: Final available tool definition names: {[d['name'] for d in available_tools_definitions]}")
 
         return available_tools_definitions
 
@@ -452,6 +460,66 @@ class FunctionBuilder:
         string_context = "\n".join(context)
         return string_context
 
+    def get_current_room_info(self): 
+        
+        # This is currently used to update and display information into the GUI about the current room based on the types. 
+        # It retrieves information a function tied to each room type for the room we are in and returns this to the pygame integration
+        # I don't know if it should be here
+        """
+        Constructs and returns specific information about the current room
+        including room-type-specific functions for information retrieval.
+        """
+        current_room_id = self.state_manager.get_current_room_id()
+        full_room = self.state_manager._find_room_by_id(current_room_id)
+
+        if not full_room:
+            print(f"Error: Could not find room with ID: {current_room_id}")
+            return {"title": "Unknown Room", "body": "Could not retrieve information about this room."}
+
+        room_name = full_room.get("name", "Unknown Room")
+        
+        # Get the general description of the room from the state manager
+        
+        # Get the list of types associated with the current room
+        room_types = self.get_current_room_types()
+
+        room_description=self.state_manager.get_current_room_description()
+
+        # Initialize a list to hold all parts of the body content
+        body_parts = [room_description] # Start with the general room description
+
+        # Iterate through room types to find and call specific info functions
+        for room_type in room_types:
+            # Check if this room type has specific data and a 'current_info' function defined
+            if room_type in self._room_type_data and "current_info" in self._room_type_data[room_type]:
+                info_function = self._room_type_data[room_type]["current_info"]
+                try:
+                    # Call the specific info function for this room type
+                    type_info = info_function()
+                    if type_info:
+                        # Append the specific info, formatted for clarity
+                        body_parts.append(f"\n--- {room_type.replace('_', ' ').title()} Details ---\n{type_info}")
+                except Exception as e:
+                    # Handle potential errors during the call to the info function
+                    print(f"Warning: Error calling current_info for room type '{room_type}': {e}")
+                    body_parts.append(f"\n--- {room_type.replace('_', ' ').title()} Details ---\n(Error retrieving specific details: {e})")
+            # else:
+                # Optionally, you could add a message if a room type has no specific info function
+                # For most cases, we only want to show if there *is* info, so this is commented out.
+                # pass
+
+        # If after collecting all parts, the body is still empty (e.g., no description, no type-specific info)
+        if not any(body_parts): # Check if all elements in body_parts are empty/None/False-like
+            body_parts = ["No specific information available for this room."]
+        
+        # Join all collected parts into a single string
+        body_content = "\n".join([part for part in body_parts if part]) # Filter out any None or empty strings that might have snuck in
+
+        info = {
+            "title": room_name,
+            "body": body_content
+        }
+        return info
 
     async def call_function(self, name, args):
         """

@@ -79,8 +79,7 @@ class ai_bot:
                     model=self.action_model, # Using a widely available model name
                     input=messages_data,
                     tools=tools,
-                    tool_choice=tools_settings,
-                    parallel_tool_calls="true"
+                    tool_choice=tools_settings
                 )
                 time.sleep(1)
             except Exception as e:

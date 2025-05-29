@@ -48,6 +48,19 @@ _mute_button_rect = None # Declare the global variable for the mute button
 _panel_toggle_button_rect = None
 
 
+# --- NEW: Lore Panel GUI Rects ---
+_lore_panel_rect = None
+_lore_panel_title_rect = None
+_lore_panel_body_area_rect = None
+_lore_panel_close_button_rect = None
+_lore_panel_text_draw_width = 0
+_lore_panel_text_start_x_offset = 0
+
+# --- NEW: Lore Panel Toggle Button Rect ---
+_lore_toggle_button_rect = None
+
+
+
 # --- Initialization Function ---
 def init_gui_elements(font, line_height, current_panel_width):
     """Initializes GUI module with necessary objects and dimensions."""
@@ -65,6 +78,11 @@ def init_gui_elements(font, line_height, current_panel_width):
     global _panel_toggle_button_rect # Add new global for panel toggle button
 
     # Removed globals for _image_popup_display_area and _image_popup_background_surface as they are managed in gui_popups
+
+    global _lore_panel_rect, _lore_panel_title_rect, _lore_panel_body_area_rect, \
+           _lore_panel_close_button_rect, _lore_panel_text_draw_width, \
+           _lore_panel_text_start_x_offset # Add new globals
+    global _lore_toggle_button_rect # Add new global for lore toggle button
 
 
     _font = font
@@ -230,6 +248,58 @@ def init_gui_elements(font, line_height, current_panel_width):
     toggle_y = config.HEIGHT // 2 - toggle_btn_height // 2
     _panel_toggle_button_rect = pygame.Rect(toggle_x, toggle_y, toggle_btn_width, toggle_btn_height)
 
+
+
+    # --- NEW: Calculate Lore Panel Rects (full screen) ---
+    _lore_panel_rect = pygame.Rect(0, 0, config.WIDTH, config.HEIGHT)
+
+    # Calculate inner content area (panel_rect minus padding)
+    lore_inner_x = _lore_panel_rect.left + config.LORE_PANEL_PADDING
+    lore_inner_y = _lore_panel_rect.top + config.LORE_PANEL_PADDING
+    lore_inner_width = _lore_panel_rect.width - 2 * config.LORE_PANEL_PADDING
+    lore_inner_height = _lore_panel_rect.height - 2 * config.LORE_PANEL_PADDING
+
+    _lore_panel_title_rect = pygame.Rect(
+        lore_inner_x,
+        lore_inner_y,
+        lore_inner_width,
+        config.LORE_PANEL_TITLE_HEIGHT
+    )
+
+    # Lore Panel Close Button (top right within the panel's padding)
+    _lore_panel_close_button_rect = pygame.Rect(
+        _lore_panel_rect.right - config.LORE_PANEL_PADDING - config.LORE_PANEL_CLOSE_BUTTON_SIZE,
+        _lore_panel_rect.top + config.LORE_PANEL_PADDING,
+        config.LORE_PANEL_CLOSE_BUTTON_SIZE,
+        config.LORE_PANEL_CLOSE_BUTTON_SIZE
+    )
+
+    # Body area starts below the title and extends to the bottom padding
+    _lore_panel_body_area_rect = pygame.Rect(
+        lore_inner_x,
+        lore_inner_y + config.LORE_PANEL_TITLE_HEIGHT,
+        lore_inner_width,
+        lore_inner_height - config.LORE_PANEL_TITLE_HEIGHT # Use inner_height - title_height
+    )
+
+    _lore_panel_text_draw_width = _lore_panel_body_area_rect.width - 2 * config.LORE_PANEL_PADDING # Padding for text
+    _lore_panel_text_draw_width = max(1, _lore_panel_text_draw_width)
+    _lore_panel_text_start_x_offset = config.LORE_PANEL_PADDING
+
+    # --- NEW: Calculate Lore Panel Toggle Button Rect ---
+    # Initial position (when panel is closed)
+    _lore_toggle_button_rect = pygame.Rect(
+        config.WIDTH // 2 - config.LORE_PANEL_TOGGLE_BUTTON_WIDTH // 2, # Centered horizontally
+        config.PADDING, # Top padding
+        config.LORE_PANEL_TOGGLE_BUTTON_WIDTH,
+        config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+    )
+
+
+
+
+
+
     # Initialize overlay_surface
     screen_width = pygame.display.get_surface().get_width() if pygame.display.get_surface() else config.WIDTH
     screen_height = pygame.display.get_surface().get_height() if pygame.display.get_surface() else config.HEIGHT
@@ -272,7 +342,12 @@ def update_gui_rects(current_panel_width):
     global _panel_rect, _history_rect, _input_rect, _history_display_area, _text_width_limit
     global _left_scroll_button_rect, _care_package_area_rect, _right_scroll_button_rect, _buttons_per_page
     global _panel_toggle_button_rect # Add panel toggle button rect
-    
+    global _lore_panel_rect, _lore_panel_title_rect, _lore_panel_body_area_rect, \
+           _lore_panel_close_button_rect, _lore_panel_text_draw_width, \
+           _lore_panel_text_start_x_offset # Add new globals
+    global _lore_toggle_button_rect # Add new global for lore toggle button
+
+
     _panel_rect = pygame.Rect(config.WIDTH - current_panel_width, 0, current_panel_width, config.HEIGHT)
     _input_rect = pygame.Rect(
         config.WIDTH - current_panel_width + config.PADDING,
@@ -390,6 +465,60 @@ def update_gui_rects(current_panel_width):
         list_area_height
     )
 
+
+
+    # --- NEW: Recalculate Lore Panel Rects (full screen, static) ---
+    _lore_panel_rect = pygame.Rect(0, 0, config.WIDTH, config.HEIGHT) # Always full screen
+
+    lore_inner_x = _lore_panel_rect.left + config.LORE_PANEL_PADDING
+    lore_inner_y = _lore_panel_rect.top + config.LORE_PANEL_PADDING
+    lore_inner_width = _lore_panel_rect.width - 2 * config.LORE_PANEL_PADDING
+    lore_inner_height = _lore_panel_rect.height - 2 * config.LORE_PANEL_PADDING
+
+    _lore_panel_title_rect = pygame.Rect(
+        lore_inner_x,
+        lore_inner_y,
+        lore_inner_width,
+        config.LORE_PANEL_TITLE_HEIGHT
+    )
+
+    _lore_panel_close_button_rect = pygame.Rect(
+        _lore_panel_rect.right - config.LORE_PANEL_PADDING - config.LORE_PANEL_CLOSE_BUTTON_SIZE,
+        _lore_panel_rect.top + config.LORE_PANEL_PADDING,
+        config.LORE_PANEL_CLOSE_BUTTON_SIZE,
+        config.LORE_PANEL_CLOSE_BUTTON_SIZE
+    )
+
+    _lore_panel_body_area_rect = pygame.Rect(
+        lore_inner_x,
+        lore_inner_y + config.LORE_PANEL_TITLE_HEIGHT,
+        lore_inner_width,
+        lore_inner_height - config.LORE_PANEL_TITLE_HEIGHT
+    )
+
+    _lore_panel_text_draw_width = _lore_panel_body_area_rect.width - 2 * config.LORE_PANEL_PADDING
+    _lore_panel_text_draw_width = max(1, _lore_panel_text_draw_width)
+    _lore_panel_text_start_x_offset = config.LORE_PANEL_PADDING
+
+    # --- NEW: Recalculate Lore Panel Toggle Button Rect ---
+    if state.panel_visible:
+        # If right panel is visible, move button to account for it
+        _lore_toggle_button_rect = pygame.Rect(
+            config.WIDTH // 2 - config.LORE_PANEL_TOGGLE_BUTTON_WIDTH // 2 -current_panel_width //2,
+            config.PADDING, # Top padding
+            config.LORE_PANEL_TOGGLE_BUTTON_WIDTH,
+            config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+        )
+    else:
+        # If  panel is not visible, keep button at the center
+        _lore_toggle_button_rect = pygame.Rect(
+            config.WIDTH // 2 - config.LORE_PANEL_TOGGLE_BUTTON_WIDTH // 2,
+            config.PADDING, # Top padding
+            config.LORE_PANEL_TOGGLE_BUTTON_WIDTH,
+            config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+        )
+
+
 # --- Helper function to load stat icons ---
 def _load_stat_icons():
     """Loads and scales stat icon images into _stat_icons dictionary."""
@@ -469,13 +598,16 @@ def load_and_set_background(image_path):
 def get_button_rects():
      """Returns a dictionary of button rects."""
      global _inventory_toggle_button_rect, _mute_button_rect, _panel_toggle_button_rect # Add panel_toggle_button_rect
+     global _lore_toggle_button_rect # Add new global
      rects = {}
      if _inventory_toggle_button_rect is not None:
          rects['inventory_toggle'] = _inventory_toggle_button_rect
-     if _mute_button_rect is not None: # Add mute button to the dictionary
+     if _mute_button_rect is not None:
          rects['mute_button'] = _mute_button_rect
-     if _panel_toggle_button_rect is not None: # Add panel toggle button to the dictionary
+     if _panel_toggle_button_rect is not None:
          rects['panel_toggle'] = _panel_toggle_button_rect
+     if _lore_toggle_button_rect is not None: # NEW: Add lore toggle button
+         rects['lore_toggle'] = _lore_toggle_button_rect
      return rects
 
 
@@ -502,4 +634,18 @@ def get_gui_rects():
         'history_rect': _history_rect,
         'input_rect': _input_rect,
         'history_display_area': _history_display_area
+    }
+
+
+# --- NEW: Getter for Lore Panel rects ---
+def get_lore_panel_rects():
+    """Returns a dictionary of Lore Panel rects."""
+    global _lore_panel_rect, _lore_panel_title_rect, _lore_panel_body_area_rect, _lore_panel_close_button_rect
+    if _lore_panel_rect is None:
+        return {}
+    return {
+        'lore_panel': _lore_panel_rect,
+        'lore_title_area': _lore_panel_title_rect,
+        'lore_body_area': _lore_panel_body_area_rect,
+        'lore_close_button': _lore_panel_close_button_rect
     }

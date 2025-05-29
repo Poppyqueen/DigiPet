@@ -975,3 +975,7 @@ class Garden_Mananger(GenericJsonTool):
         self._write_json(self._state)
 
         return f"Successfully removed {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. The plot is now empty."
+    
+
+    def display_info(self):
+        pass

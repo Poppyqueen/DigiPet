@@ -57,7 +57,7 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick
 MAX_MESSAGE_HISTORY = 50  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
-IDLE_TIMEOUT_MINUTES = 1 # Minutes until pet is considered idle
+IDLE_TIMEOUT_MINUTES = 3 # Minutes until pet is considered idle
 IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
 # Background
 fallback_bg_color = (50, 50, 70) # Default background color
@@ -404,3 +404,33 @@ MESSAGE_PADDING = 3 # Example: 10 pixels of padding between messages
 # --- Garden Tick Configuration ---
 GARDEN_TICK_INTERVAL_MINUTES = 1 # Tick every 1 minute
 GARDEN_TICK_INTERVAL_MS = GARDEN_TICK_INTERVAL_MINUTES * 60 * 1000
+
+# --- NEW: Lore Panel Constants ---
+LORE_PANEL_BG_COLOR = (40, 40, 40, 220) # Dark grey with alpha for transparency
+LORE_PANEL_OVERLAY_COLOR = (0, 0, 0, 150) # Very dark, more transparent overlay for the whole screen
+LORE_PANEL_BORDER_COLOR = (100, 100, 100, 255) # Light grey border
+LORE_PANEL_BORDER_WIDTH = 1 # Width of the border
+LORE_PANEL_TITLE_COLOR = (255, 255, 200) # Light yellow for title
+LORE_PANEL_TEXT_COLOR = (200, 200, 200) # Light grey for body text
+LORE_PANEL_PADDING = 20 # General padding inside the panel
+LORE_PANEL_TITLE_HEIGHT = 50 # Height allocated for the title area
+LORE_PANEL_SCROLL_SPEED = 30 # Pixels to scroll per mouse wheel tick
+
+# Lore Panel Close Button (inside the panel)
+LORE_PANEL_CLOSE_BUTTON_SIZE = 30
+LORE_PANEL_CLOSE_BUTTON_COLOR = (150, 50, 50) # Reddish color
+LORE_PANEL_CLOSE_BUTTON_TEXT_COLOR = (255, 255, 255) # White text
+
+
+
+# Lore Panel Toggle Button (the external moving button)
+
+LORE_PANEL_TOGGLE_BUTTON_WIDTH = PANEL_TOGGLE_BUTTON_SIZE[1] # Width of the toggle button. We are inverting the size of the right panel button
+LORE_PANEL_TOGGLE_BUTTON_HEIGHT = PANEL_TOGGLE_BUTTON_SIZE[0] # Height of the toggle button is the width of the right panel button
+LORE_PANEL_TOGGLE_BUTTON_COLOR = (50, 150, 50) # Greenish color
+LORE_PANEL_TOGGLE_BUTTON_TEXT_COLOR = (255, 255, 255) # White text
+
+# --- NEW: Custom Event Type for Lore Panel Content ---
+LORE_PANEL_CONTENT_EVENT = pygame.event.custom_type() # Ensure this is a unique number, higher than existing USEREVENTs
+
+UPDATE_LORE_DISPLAY_EVENT = pygame.event.custom_type()

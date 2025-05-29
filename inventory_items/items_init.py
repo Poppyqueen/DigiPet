@@ -1293,12 +1293,12 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["planting_garden"],
+                    "room_types": ["planting_garden", "garden", "ALIFE_research"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
     "late night": [
-        "A modern computer room, full with servers, cables and screens.",
+        "A modern lab, full with servers, cables and screens.",
         "The light in here is of a deep blue tone, casting long shadows."
     ],
     "early morning": [

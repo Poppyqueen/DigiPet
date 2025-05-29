@@ -10,6 +10,7 @@ from pygame_int import gui_text_utils
 from pygame_int import gui_inventory
 from pygame_int import gui_popups
 from pygame_int import gui_care_package
+from pygame_int import gui_lore_panel # NEW: Import the new lore panel module
 
 import pygame
 # import pygame.gfxdraw # Removed
@@ -81,6 +82,34 @@ def handle_gui_event(event):
         current_gui_rects = gui_core.get_gui_rects()
         input_rect = current_gui_rects.get('input_rect')
 
+
+        if state.lore_panel_visible:
+            lore_panel_rects = gui_core.get_lore_panel_rects()
+            lore_body_area_rect = lore_panel_rects.get('lore_body_area')
+            lore_close_button_rect = lore_panel_rects.get('lore_close_button')
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Handle Mouse Wheel Scrolling for Lore Panel Body
+                if event.button in (4, 5) and lore_body_area_rect and lore_body_area_rect.collidepoint(event.pos):
+                    scroll_speed = config.LORE_PANEL_SCROLL_SPEED * (-1 if event.button == 4 else 1)
+                    state.lore_panel_scroll_y += scroll_speed
+                    # Clamp scroll
+                    lore_content_height = gui_lore_panel.calculate_lore_body_height(state.lore_panel_content)
+                    max_lore_scroll = max(0, lore_content_height - lore_body_area_rect.height)
+                    state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_lore_scroll))
+                    return # Event consumed by scroll
+
+                # Handle Lore Close Button Click
+                if event.button == 1 and lore_close_button_rect and lore_close_button_rect.collidepoint(event.pos):
+                    print("Lore panel close button clicked. Closing panel.")
+                    state.lore_panel_visible = False # Snap closed
+                    return # Event consumed by close button
+
+            # If the click wasn't on scroll or close button, consume it to block interaction with background
+            return # Consume ALL other events when lore panel is open
+        
+            
+        
         # Check if the panel is visible and the input_rect exists (i.e., the input box is drawn)
         if event.button == 1 and not state.chatbot_is_processing: # was it a left click and not a scroll or other button? is the bot free?
 
@@ -265,70 +294,146 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         # Their positioning might need to be adjusted based on panel visibility in gui_care_package.py
         gui_care_package.draw_package_buttons(screen, is_input_locked)
 
-    # Popups and inventory are drawn on top of everything, managed by their own visibility flags
-    gui_popups.draw_active_image_popups(screen)
 
-    if not state.is_initial_popup_phase:
-         gui_popups.draw_popups(screen)
+        # --- NEW: Draw Mute Button ---
+        if gui_core._mute_button_rect:
+            button_rect = gui_core._mute_button_rect
+            button_color = state.game_theme_colors["system_messages"] if state.is_muted else state.game_theme_colors["original_pet_color"]
+            border_color = config.MUTE_BUTTON_BORDER_COLOR
 
-    if not state.is_initial_popup_phase and state.inventory_panel_visible:
-        gui_inventory.draw_inventory_panel(screen)
+            pygame.draw.circle(screen, button_color, button_rect.center, button_rect.width // 2)
+            pygame.draw.circle(screen, border_color, button_rect.center, button_rect.width // 2, 1)
 
-    if not state.is_initial_popup_phase and gui_core._inventory_toggle_button_rect:
-        pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
-        pygame.draw.circle(screen, state.game_theme_colors["original_pet_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+            # Draw a simple speaker icon (or speaker with a cross if muted)
+            icon_color = config.WHITE if state.is_muted else config.BLACK # Icon color changes based on mute state
 
+            # Speaker body
+            speaker_width = button_rect.width // 4
+            speaker_height = button_rect.height // 3
+            speaker_x = button_rect.centerx - speaker_width // 2 - button_rect.width // 8
+            speaker_y = button_rect.centery - speaker_height // 2
+            pygame.draw.rect(screen, icon_color, (speaker_x, speaker_y, speaker_width, speaker_height))
 
-    # --- NEW: Draw Mute Button ---
-    if not state.is_initial_popup_phase and gui_core._mute_button_rect:
-        button_rect = gui_core._mute_button_rect
-        button_color = state.game_theme_colors["system_messages"] if state.is_muted else state.game_theme_colors["original_pet_color"]
-        border_color = config.MUTE_BUTTON_BORDER_COLOR
+            # Speaker "horn" (triangle)
+            horn_points = [
+                (speaker_x + speaker_width, speaker_y),
+                (speaker_x + speaker_width + speaker_width // 2, button_rect.centery),
+                (speaker_x + speaker_width, speaker_y + speaker_height)
+            ]
+            pygame.draw.polygon(screen, icon_color, horn_points)
 
-        pygame.draw.circle(screen, button_color, button_rect.center, button_rect.width // 2)
-        pygame.draw.circle(screen, border_color, button_rect.center, button_rect.width // 2, 1)
-
-        # Draw a simple speaker icon (or speaker with a cross if muted)
-        icon_color = config.WHITE if state.is_muted else config.BLACK # Icon color changes based on mute state
-
-        # Speaker body
-        speaker_width = button_rect.width // 4
-        speaker_height = button_rect.height // 3
-        speaker_x = button_rect.centerx - speaker_width // 2 - button_rect.width // 8
-        speaker_y = button_rect.centery - speaker_height // 2
-        pygame.draw.rect(screen, icon_color, (speaker_x, speaker_y, speaker_width, speaker_height))
-
-        # Speaker "horn" (triangle)
-        horn_points = [
-            (speaker_x + speaker_width, speaker_y),
-            (speaker_x + speaker_width + speaker_width // 2, button_rect.centery),
-            (speaker_x + speaker_width, speaker_y + speaker_height)
-        ]
-        pygame.draw.polygon(screen, icon_color, horn_points)
-
-        if state.is_muted:
-            # Draw a diagonal line through the speaker
-            line_start = (button_rect.left + button_rect.width // 4, button_rect.top + button_rect.height // 4)
-            line_end = (button_rect.right - button_rect.width // 4, button_rect.bottom - button_rect.height // 4)
-            pygame.draw.line(screen, icon_color, line_start, line_end, 2)
+            if state.is_muted:
+                # Draw a diagonal line through the speaker
+                line_start = (button_rect.left + button_rect.width // 4, button_rect.top + button_rect.height // 4)
+                line_end = (button_rect.right - button_rect.width // 4, button_rect.bottom - button_rect.height // 4)
+                pygame.draw.line(screen, icon_color, line_start, line_end, 2)
 
 
-    if not state.is_initial_popup_phase:
-        # --- Draw Panel Toggle Button ---
-        if not state.is_initial_popup_phase and gui_core._panel_toggle_button_rect:
-            button_rect = gui_core._panel_toggle_button_rect
-            pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect)
+        gui_popups.draw_popups(screen)
 
-            arrow_char = ">" if state.panel_visible else "<"
+
+        if state.inventory_panel_visible:
+            gui_inventory.draw_inventory_panel(screen)
+
+
+
+        if gui_core._inventory_toggle_button_rect:
+            pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
+            pygame.draw.circle(screen, state.game_theme_colors["original_pet_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+
+
+
+
+
+            # --- Draw Panel Toggle Button ---
+            if gui_core._panel_toggle_button_rect:
+                button_rect = gui_core._panel_toggle_button_rect
+                pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect)
+
+                arrow_char = ">" if state.panel_visible else "<"
+                try:
+                    arrow_surface = gui_core._font.render(arrow_char, True, state.game_theme_colors["contrast_color"])
+                    arrow_rect = arrow_surface.get_rect(center=button_rect.center)
+                    screen.blit(arrow_surface, arrow_rect)
+                except pygame.error as e:
+                    print(f"Pygame error rendering panel toggle arrow: {e}")
+
+
+
+        # --- Draw Lore Panel Toggle Button (always visible) ---
+        if gui_core._lore_toggle_button_rect:
+            button_rect = gui_core._lore_toggle_button_rect
+
+
+            # Make border rect
+            border_thickness = 2
+            border_color = state.game_theme_colors["original_pet_color"]
+            border_rect = button_rect.inflate(border_thickness * 2, border_thickness * 2)
+
+            # Draw border
+            pygame.draw.rect(screen, border_color, border_rect)
+
+
+            pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], button_rect)
             try:
-                arrow_surface = gui_core._font.render(arrow_char, True, state.game_theme_colors["contrast_color"])
-                arrow_rect = arrow_surface.get_rect(center=button_rect.center)
-                screen.blit(arrow_surface, arrow_rect)
+                # Text for the toggle button
+                button_text = "Info"
+                text_surface = gui_core._font.render(button_text, True, border_color)
+                text_rect = text_surface.get_rect(center=button_rect.center)
+                screen.blit(text_surface, text_rect)
             except pygame.error as e:
-                print(f"Pygame error rendering panel toggle arrow: {e}")
+                print(f"Pygame error rendering lore toggle button text: {e}")
 
 
+        # NEW: Draw Lore Panel if visible (highest layer, after other modals)
+        if state.lore_panel_visible:
+            gui_lore_panel.draw_lore_panel(screen) # No current_time_ms needed as it snaps
+
+###### 
+# Inverted design, similar to the button we have on the right panel
+
+        # # --- Draw Lore Panel Toggle Button (always visible) ---
+        # if gui_core._lore_toggle_button_rect:
+        #     button_rect = gui_core._lore_toggle_button_rect
+
+
+        #     # # Make border rect
+        #     # border_thickness = 2
+        #     # border_color = state.game_theme_colors["original_pet_color"]
+        #     # border_rect = button_rect.inflate(border_thickness * 2, border_thickness * 2)
+
+        #     # # Draw border
+        #     # pygame.draw.rect(screen, border_color, border_rect)
+
+
+        #     pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect)
+        #     try:
+        #         # Text for the toggle button
+        #         button_text = "Lore"
+        #         text_surface = gui_core._font.render(button_text, True, state.game_theme_colors["contrast_color"])
+        #         text_rect = text_surface.get_rect(center=button_rect.center)
+        #         screen.blit(text_surface, text_rect)
+        #     except pygame.error as e:
+        #         print(f"Pygame error rendering lore toggle button text: {e}")
+
+
+        # # NEW: Draw Lore Panel if visible (highest layer, after other modals)
+        # if state.lore_panel_visible:
+        #     gui_lore_panel.draw_lore_panel(screen) # No current_time_ms needed as it snaps
+###### 
+
+
+
+
+
+    # Draw whole screen border
         screen_width = screen.get_width()
         screen_height = screen.get_height()
         border_rect = pygame.Rect(0, 0, screen_width, screen_height)
         pygame.draw.rect(screen, state.pet_color, border_rect, config.PADDING)
+
+
+
+
+    gui_popups.draw_active_image_popups(screen)
+    gui_popups.draw_popups(screen)
