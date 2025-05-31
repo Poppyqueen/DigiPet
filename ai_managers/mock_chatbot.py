@@ -5,6 +5,7 @@
 import time
 import random
 import pygame_int.config as config # Need access to event types, CARE_PACKAGES, etc.
+import asyncio # ADDED THIS IMPORT IN PREVIOUS STEP
 
 
 # --- Mock State Manager Class ---
@@ -43,6 +44,38 @@ class MockStateManager:
          print(f"MockStateManager: _update_current_room_id('{new_room_id}') called.")
          self._state["current_room_id"] = new_room_id
          print(f"MockStateManager: _state['current_room_id'] updated to '{new_room_id}'")
+
+
+# --- NEW: Mock Functions Builder Class ---
+# This class mocks the functions_builder attribute of the real chatbot,
+# specifically to provide the get_current_room_info method.
+class MockFunctionsBuilder:
+    def __init__(self, parent_chatbot):
+        self._parent = parent_chatbot # To access parent's state if needed
+
+    def get_current_room_info(self):
+        """
+        Mock: Returns a dictionary containing mock lore for the current room.
+        This provides the structured data expected by the UI for the lore panel.
+        """
+        # We can make this dynamic if needed, but for now, a static string is requested.
+        # However, to be more robust for different rooms, let's use the parent's mock room data.
+        current_room_id = self._parent.state_manager.get_current_room_id()
+        room_data = self._parent._mock_room_data.get(current_room_id, {})
+        room_name = room_data.get("name", "Unknown Room")
+
+        # Static lore, but with a dynamic room name for context
+        mock_lore = (
+            f"Welcome to the {room_name}! This is a cozy space where your "
+            "digital pet loves to spend time. Each room in the house has "
+            "its own unique charm and potential interactions. Explore to "
+            "discover new items, interact with your pet, and learn more "
+            "about the world they inhabit. Keep an eye on your pet's stats "
+            "to ensure they are happy, full, energetic, and clean!"
+        )
+        print(f"MockFunctionsBuilder: get_current_room_info() called for '{room_name}'.")
+        return {"title": room_name,
+                "body": mock_lore}
 
 
 # --- Mock Chatbot Class ---
@@ -91,8 +124,10 @@ class MockChatbot:
         self._player_inventory = ["wallet", "phone"] # Mock player inventory
 
         # --- Instantiate the Mock State Manager ---
-        # Assign an instance of the mock state manager to the state_manager attribute
         self.state_manager = MockStateManager(self) # Pass self (the MockChatbot instance)
+
+        # --- NEW: Instantiate the Mock Functions Builder ---
+        self.functions_builder = MockFunctionsBuilder(self) # Pass self
 
         print("MockChatbot: Initialized.")
 
@@ -187,15 +222,15 @@ class MockChatbot:
         return room_items, player_items
 
 
-    def process_input(self, user_input, role='user'):
+    async def process_input(self, user_input, role='user'):
         """
         Mock: Simulates processing input and triggering signals/responses.
         Adds a small delay. Responds based on simple keywords.
         """
-        print(f"\nMockChatbot: process_input() called [Role: {role}]: {user_input[:100]}...") # Print first 100 chars
+        print(f"\nMockChatbot: process_input() called [Role: {role}]: {user_input[:100]}...")
 
         # Simulate processing time
-        time.sleep(random.uniform(0.5, 2.0)) # Simulate a delay between 0.5 and 2 seconds
+        await asyncio.sleep(random.uniform(0.5, 2.0))
 
         response_text = ""
         signal_sent = False # Flag to track if any signal was sent

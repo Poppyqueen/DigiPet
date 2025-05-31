@@ -19,7 +19,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:

@@ -60,7 +60,7 @@ def prepare_lore_content_data(title_text, body_raw_text):
         body_total_height = len(all_wrapped_lines) * gui_core._line_height + config.LORE_PANEL_PADDING
         
         return {
-            'title': title_text.capitalize().replace("_", " "),
+            'title': title_text.upper().replace("_", " "),
             'body_wrapped_lines': all_wrapped_lines,
             'body_total_height': body_total_height
         }
