@@ -187,32 +187,32 @@ base_state={
                         "You feel a slight energy boost."
                     ]
                 },
-                {
-                    "name": "mystery_novel",
-                    "descriptions": [
-                        "A paperback novel with a intriguing cover."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "The Gathering Storm",
-                            "content": "The rain lashed against the windows as Detective Miles received the anonymous call, the voice on the other end ragged with fear. \"He's gone... they took him,\" the caller choked out before the line went dead, leaving only the sound of distant thunder and Miles's own racing heart. This wasn't the typical petty crime; this felt darker, colder, like the storm brewing outside."
-                        },
-                        {
-                            "title": "A Cryptic Clue",
-                            "content": "Beneath the overturned vase, a small, folded piece of paper lay hidden, damp but the ink still legible. It wasn't a name or an address, but a series of symbols and numbers that meant nothing to Miles initially. Yet, there was a deliberate quality to its placement, a message clearly intended to be found, if only by the right eyes."
-                        },
-                        {
-                            "title": "Whispers in the Alley",
-                            "content": "Miles followed the breadcrumbs from the cryptic note to a grimy alley behind the old docks, the air thick with the smell of salt and decay. A shadowy figure lingered near overflowing bins, startled by Miles's approach. \"You askin' 'bout the professor?\" the figure rasped, eyes darting nervously. \"Saw him with a couple of rough types, headed towards the abandoned warehouse last night. Looked like they weren't goin' for tea.\"\n\nThe figure, a dockworker named Silas with a reputation for seeing things he shouldn't, reluctantly shared more details. He mentioned a distinctive symbol one of the men wore \u2013 a coiled serpent \u2013 and the specific time they'd passed by. Silas's fear was palpable, whispering that these weren't local thugs, but 'outsiders' who didn't ask questions, they just took what they wanted. His information, though sparse, gave Miles a concrete direction and a chilling confirmation that the professor's disappearance was no accident."
-                        },
-                        {
-                            "title": "The Warehouse's Secret",
-                            "content": "The abandoned warehouse loomed by the water, its broken windows like vacant eyes staring out at the choppy sea. Inside, dust motes danced in the few shafts of light filtering through the gaps in the roof. The air was cold, stagnant, and heavy with the scent of mildew and something else... something metallic and faint. Careful footsteps echoed in the vast space as Miles searched, finding scattered crates and forgotten machinery, but no immediate sign of the professor.\n\nHowever, a section of the concrete floor near the back wall seemed newer, less stained than the rest. Prying at a small crack revealed that it wasn't solid concrete, but a cleverly disguised hatch. Beneath it lay not a storage space, but a narrow, descending stairwell leading into absolute darkness, the metallic scent much stronger now. The warehouse wasn't just a drop-off point; it was a gateway to somewhere hidden beneath."
-                        }
-                    ]
-                },
+                # {
+                #     "name": "mystery_novel",
+                #     "descriptions": [
+                #         "A paperback novel with a intriguing cover."
+                #     ],
+                #     "static": False,
+                #     "type": ["book"],
+                #     "chapters": [
+                #         {
+                #             "title": "The Gathering Storm",
+                #             "content": "The rain lashed against the windows as Detective Miles received the anonymous call, the voice on the other end ragged with fear. \"He's gone... they took him,\" the caller choked out before the line went dead, leaving only the sound of distant thunder and Miles's own racing heart. This wasn't the typical petty crime; this felt darker, colder, like the storm brewing outside."
+                #         },
+                #         {
+                #             "title": "A Cryptic Clue",
+                #             "content": "Beneath the overturned vase, a small, folded piece of paper lay hidden, damp but the ink still legible. It wasn't a name or an address, but a series of symbols and numbers that meant nothing to Miles initially. Yet, there was a deliberate quality to its placement, a message clearly intended to be found, if only by the right eyes."
+                #         },
+                #         {
+                #             "title": "Whispers in the Alley",
+                #             "content": "Miles followed the breadcrumbs from the cryptic note to a grimy alley behind the old docks, the air thick with the smell of salt and decay. A shadowy figure lingered near overflowing bins, startled by Miles's approach. \"You askin' 'bout the professor?\" the figure rasped, eyes darting nervously. \"Saw him with a couple of rough types, headed towards the abandoned warehouse last night. Looked like they weren't goin' for tea.\"\n\nThe figure, a dockworker named Silas with a reputation for seeing things he shouldn't, reluctantly shared more details. He mentioned a distinctive symbol one of the men wore \u2013 a coiled serpent \u2013 and the specific time they'd passed by. Silas's fear was palpable, whispering that these weren't local thugs, but 'outsiders' who didn't ask questions, they just took what they wanted. His information, though sparse, gave Miles a concrete direction and a chilling confirmation that the professor's disappearance was no accident."
+                #         },
+                #         {
+                #             "title": "The Warehouse's Secret",
+                #             "content": "The abandoned warehouse loomed by the water, its broken windows like vacant eyes staring out at the choppy sea. Inside, dust motes danced in the few shafts of light filtering through the gaps in the roof. The air was cold, stagnant, and heavy with the scent of mildew and something else... something metallic and faint. Careful footsteps echoed in the vast space as Miles searched, finding scattered crates and forgotten machinery, but no immediate sign of the professor.\n\nHowever, a section of the concrete floor near the back wall seemed newer, less stained than the rest. Prying at a small crack revealed that it wasn't solid concrete, but a cleverly disguised hatch. Beneath it lay not a storage space, but a narrow, descending stairwell leading into absolute darkness, the metallic scent much stronger now. The warehouse wasn't just a drop-off point; it was a gateway to somewhere hidden beneath."
+                #         }
+                #     ]
+                # },
                 {
                     "name": "woolen_blanket",
                     "descriptions": [
@@ -435,225 +435,225 @@ base_state={
                 }
             ]
     },
-    {
-        "name": "library",
-        "image": "library",
-        "room_types": [
-            "library"
-        ],
-        "music": "library",
-        "descriptions": {
-            "late night": [
-                "The library lies in profound silence, bathed in the gentle glow of a single reading lamp, shadows dancing across towering shelves.",
-                "The scent of aged paper deepens as moonlight filters through the high windows, wrapping the room in a quiet, contemplative hush."
-            ],
-            "early morning": [
-                "Soft dawn light spills softly over rows of leather-bound tomes, the air fresh yet rich with the musk of history.",
-                "A gentle hush lingers, broken only by the faint rustle of pages as the library begins to stir from slumber."
-            ],
-            "morning": [
-                "Sunlight floods the room, illuminating the golden spinesbeneath the soaring shelves.",
-                "Warm rays coax a cozy ambiance, where the comforting scent of old books welcomes early visitors."
-            ],
-            "noon": [
-                "Bright midday light fills the library, revealing every crease and dust mote in the air, alive and welcoming.",
-                "The peaceful room hums gently with the subtle movements of readers, wrapped in the comforting aroma of aged parchment."
-            ],
-            "afternoon": [
-                "Late afternoon sun casts elongated shadows between the aisles, adding depth to the hushed, cozy space.",
-                "The warmth from the sinking sun complements the rich leather and paper scents."
-            ],
-            "late afternoon": [
-                "Golden light intensifies as day wanes, highlighting the intricate textures of bindings and polished wood.",
-                "A serene calm envelops the library, bathed in a soft amber glow, perfect for quiet reflection."
-            ],
-            "night": [
-                "Darkness outside deepens the library\u2019s glow, where lamps emit a warm, intimate light amid endless stories.",
-                "The quiet hush is profound, every whispered turn of a page echoing softly beneath the high ceiling."
-            ]
-        },
-        "items": [
-                {
-                    "name": "ancient_tome",
-                    "descriptions": [
-                        "A dusty, heavy tome bound in weathered leather."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "Origins of the Void",
-                            "content": "Long ago, before the stars were born, there was only the silent, formless void, an infinite expanse of nothingness pregnant with unrealized potential. This was not darkness as we know it, but an absolute absence of light, sound, and substance, where the very concepts of time and space held no meaning. It is said that the first stirrings of existence were but infinitesimal ripples upon this boundless, primordial ocean of non-being.\n\nThe tome hints that the material realm, with all its chaotic energy and vibrant life, is but a thin membrane stretched over the surface of this eternal nullity. Glimpses of the Void can sometimes be perceived in places of utter desolation or through certain forbidden practices, and its chilling emptiness is a constant reminder of the fragile, temporary nature of reality."
-                        },
-                        {
-                            "title": "Whispers of the Future",
-                            "content": "Foretellings of events yet to unfold, written in a script that shifts before your eyes, defy linear time as understood by mortals. These are not simple predictions but echoes from the future, vibrating backward through the fragile fabric of causality. Reading them requires not just understanding the mutable glyphs, but sensing the resonance of probabilities and potential outcomes, a practice fraught with peril as it can blur the lines between what is and what might be.\n\nThe whispers are rarely clear, often contradictory, and deeply unsettling, speaking of great cosmic shifts, the alignment of distant, unknown stars, and the slow erosion of reality by unseen forces. Attempting to decipher these future echoes can attract unwanted attention from entities dwelling outside of time, who view such scrying as an intrusion and may seek to silence the reader permanently."
-                        },
-                        {
-                            "title": "The Elder Signs",
-                            "content": "Illustrations and descriptions of symbols said to ward off or beckon entities from beyond the veil, these signs are potent conductors of intent and anchors in the non-Euclidean spaces they represent. They are not mere drawings, but diagrams of cosmic forces and pathways, each line and curve imbued with ancient, possibly dangerous, power. Some signs are protective, meant to form barriers against intrusions from the Void, while others are keys, designed to open gates or attract the notice of beings best left undisturbed.\n\nUsing the Elder Signs requires precise execution and a deep understanding of their True meaning, lest one invite disaster instead of protection or communication. Misdrawn or misunderstood, they can backfire horribly, drawing unwelcome attention, causing localized distortions in reality, or even inflicting madness upon the one who invokes them. Caution and reverence are paramount when dealing with these ancient glyphs."
-                        },
-                        {
-                            "title": "The Architects of Stillness",
-                            "content": "Beyond the reaches of the material cosmos, in the tranquil spaces where even light refuses to tread, reside entities known only as the Architects of Stillness. They are not born of matter or energy, but are fundamental aspects of the non-existent, dwelling in absolute quietude. Their forms, if they can be said to have forms, are described as impossible geometries or simply the profound absence of anything else, chilling the soul of any who perceive them.\n\nThe tome postulates that these Architects are passively, perhaps unknowingly, influencing the edges of reality, their sheer stillness imposing moments of inexplicable silence or dread in the noisiest corners of existence. Attempts to contact them are futile, as sound and thought are abhorrent to their nature. Instead, their influence is felt as a growing sense of emptiness and futility that can creep into the minds of sensitive beings, a slow dissolution towards their own state of non-being."
-                        },
-                        {
-                            "title": "The Gateways of Flesh",
-                            "content": "This chapter details forbidden rituals centered on the manipulation of the physical form, not for mundane power, but as keys to unlock passages between realms. These practices are gruesome, involving precise excisions, unnatural contortions, and the mapping of cosmic alignments onto the suffering body. The goal is not transformation, but the creation of a living, screaming resonance that momentarily thins the veil separating the material world from the Void.\n\nThe tome warns that these are not prayers or offerings, but violent acts of defiance against the natural order, forcing reality to buckle. The sites of such rituals are forever tainted, vibrating with residual psychic and physical agony. Those who attempt to construct these 'Gateways of Flesh' risk not only their sanity and life, but also the integrity of existence around them, attracting the ravenous attention of whatever horrors may lurk just beyond the threshold."
-                        }
-                    ]
-                },
-                {
-                    "name": "comfy_armchair",
-                    "descriptions": [
-                        "A large, upholstered armchair, perfect for reading."
-                    ],
-                    "static": True,
-                    "type": ["furniture"]
-                },
-                {
-                    "name": "reading_lamp",
-                    "descriptions": [
-                        "A brass reading lamp next to the armchair."
-                    ],
-                    "static": True,
-                    "type": ["furniture"]
-                },
-                {
-                    "name": "journal_with_pen",
-                    "descriptions": [
-                        "A blank leather-bound journal with a pen tucked into its strap."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": []
-                },
-                {
-                    "name": "history_of_the_realm",
-                    "descriptions": [
-                        "A comprehensive history book detailing local events."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "The Founding",
-                            "content": "The first stones were laid in the year of the Great Stag, when Chieftain Eldrin Ironhand united the scattered tribes of the valley. Facing constant threats from the northern raiders, Eldrin envisioned a fortified settlement, a place where his people could thrive and defend themselves from external aggression. This pivotal moment marked the beginning of recorded history for the realm, establishing the initial boundaries and laying the groundwork for its future development."
-                        },
-                        {
-                            "title": "The Silver War",
-                            "content": "A bloody conflict erupted over control of the eastern mines, resources vital to the realm's economy and military strength. Lasting for five brutal years, the war pitted regional lords against the central authority, fueled by greed and ancient rivalries. Villages were razed, trade routes disrupted, and countless lives were lost on both sides of the conflict."
-                        },
-                        {
-                            "title": "Modern Governance",
-                            "content": "The current council was established after the treaty of Oakhaven, a fragile peace agreement brokered in the aftermath of the Succession Crisis. This council, composed of representatives from key noble houses and merchant guilds, aims to provide a more stable and equitable form of leadership than the single monarch it replaced. Their decisions guide policy on trade, defense, and justice within the realm's borders."
-                        },
-                        {
-                            "title": "The Great Plague",
-                            "content": "In the Year of the Weeping Star, a devastating plague swept across the land, originating in the crowded port cities and quickly spreading inland. The disease claimed nearly a third of the population, leaving villages deserted and throwing the social order into chaos. Healers and alchemists worked tirelessly, but few remedies proved effective against the relentless malady."
-                        },
-                        {
-                            "title": "The Age of Exploration",
-                            "content": "Following the plague's retreat, a period of renewed vigor led to the Age of Exploration. Brave captains sailed the uncharted waters of the Sunset Sea, seeking new trade routes and lands. These voyages brought back exotic goods, strange knowledge, and sometimes, new conflicts with the peoples encountered beyond the known world. Mapmakers became invaluable as the realm's understanding of the globe expanded significantly."
-                        },
-                        {
-                            "title": "The Ironwood Treaties",
-                            "content": "Centuries after the founding, a series of treaties known as the Ironwood Treaties solidified the realm's borders and established long-lasting alliances with neighboring kingdoms. These agreements, hammered out over decades of negotiation and minor skirmishes, defined spheres of influence and mutual defense pacts. While not entirely eliminating border disputes, they ushered in an era of relative peace and increased diplomatic ties."
-                        }
-                    ]
-                },
-                {
-                    "name": "atlas_of_the_world",
-                    "descriptions": [
-                        "A large, detailed atlas with maps of various regions."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "The Western Continents",
-                            "content": "Explore the vast lands beyond the Sunset Sea... (Detailed map follows)\n\nThese continents are home to diverse empires, soaring mountain ranges, and deep, ancient forests. From the temperate northern coasts to the sun-scorched southern plains, life thrives in countless forms and civilizations rise and fall like the tides. Studying the terrain and key locations on the map is vital for understanding the history and power dynamics of this dominant landmass."
-                        },
-                        {
-                            "title": "The Eastern Isles",
-                            "content": "A chain of volcanic islands known for their unique flora and fauna... (Detailed map follows)\n\nStretching across the Eastern Ocean, these islands range from steaming volcanic peaks to lush, secluded lagoons. Many species here are found nowhere else in the world, adapted to the islands' isolated ecosystems and frequent seismic activity. Navigating the treacherous currents between islands and identifying safe harbors requires careful consultation of the included maritime charts."
-                        },
-                        {
-                            "title": "The Northern Reaches",
-                            "content": "Journey into the lands of ice and frost... (Detailed map follows)\n\nFar beyond the temperate zones lies the unforgiving expanse of the Northern Reaches. This territory is dominated by immense glaciers, frozen tundras, and jagged fjords that carve into a desolate coastline. Survival here is a constant battle against the elements, with long, dark winters and biting winds sweeping across the frozen plains."
-                        },
-                        {
-                            "title": "The Shifting Sands",
-                            "content": "Uncover the secrets buried beneath the dunes... (Detailed map follows)\n\nTo the south, stretching further than the eye can see, is the vast and deadly territory known as the Shifting Sands. This immense desert is a sea of dunes, where landmarks are few and water is a precious rarity. Ancient ruins are said to lie half-buried beneath the sand, remnants of civilizations claimed by the scorching heat and endless drought."
-                        },
-                        {
-                            "title": "The Underworld Depths",
-                            "content": "Descend into the caverns below... (Detailed map follows)\n\nNot all lands exist under the sun; beneath the surface lies a complex network of caverns, tunnels, and vast subterranean lakes known collectively as the Underworld Depths. Home to unique geological formations and species adapted to eternal darkness, this region presents an entirely different challenge for explorers. The map details known primary routes and major chambers, though countless unexplored passages remain hidden."
-                        },
-                        {
-                            "title": "The Sky Islands",
-                            "content": "Ascend to the floating landmasses... (Detailed map follows)\n\nA truly unique phenomenon are the Sky Islands, great chunks of land that mysteriously float high above the surface world. These islands possess their own peculiar climates and ecosystems, some supporting strange flora and fauna, others containing rare minerals drawn upwards from deep within the earth. The map indicates approximate positions and known stable platforms, though movement and altitude can vary."
-                        }
-                    ]
-                },
-                {
-                    "name": "poetry_anthology",
-                    "descriptions": [
-                        "A collection of modern and contemporary poems."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "City Scratches",
-                            "content": "Cobblestones gleam, slick with rain,\ncarrying the tired lamplight down drain.\nGhost of footsteps echo in the narrow space,\na forgotten scent, a hurried pace.\n\nHigh window, a single yellow square,\nholds somebody breathing the damp air.\nThe city breathes, a low, wet sigh,\nbeneath a sky the color of a bruised eye."
-                        },
-                        {
-                            "title": "Root-Bound Silence",
-                            "content": "Beneath the ancient oak's spread,\nwhere tangled roots make a tangled bed,\nthe air hangs thick, tasting of earth and mold,\nsecrets the silent stones have held.\n\nA single dewdrop clings to a spider's thread,\nreflecting a sunbeam, barely shed.\nNo birdsong here, no rustling leaf,\njust the deep, slow breath of green relief."
-                        },
-                        {
-                            "title": "The Hum Behind the Eyes",
-                            "content": "The world outside is sharp, defined,\nbut inside the hum is hard to find.\nA low vibration, behind the bone,\na radio frequency, tuned to the unknown.\n\nSometimes it whispers, sometimes it screams,\na static haze over waking dreams.\nIs it my own pulse, or something vast,\na message from a future or the past?"
-                        }
-                    ]
-                },
-                {
-                    "name": "botany_guide",
-                    "descriptions": [
-                        "A guide to identifying local plants and their uses."
-                    ],
-                    "static": False,
-                    "type": ["book"],
-                    "chapters": [
-                        {
-                            "title": "Identifying Common Herbs",
-                            "content": "Learn to distinguish between Feverfew, Comfrey, and Valerian, three of the most frequently encountered and utilized herbs in the realm. Feverfew is recognized by its small, daisy-like flowers and pungent scent, commonly used for headaches and fevers. Comfrey, with its large, hairy leaves and bell-shaped flowers, is renowned for its ability to aid bone and tissue healing, though internal use is cautioned against.\n\nValerian is identified by its strong, distinct odor and clusters of small pink or white flowers atop a tall stem; it is a potent relaxant and sleep aid. Mastering the identification of these foundational herbs is crucial for any aspiring healer or traveler needing basic medicinal knowledge in the wild."
-                        },
-                        {
-                            "title": "Edible Wild Plants",
-                            "content": "A guide to foraging safely for berries, roots, and leaves that can provide sustenance when other food sources are scarce. Important examples include the Sweetroot, a tuber found in moist soil identifiable by its broad leaves, which is nutritious when roasted. Wild Greens, such as those resembling nettles but lacking their sting, can be boiled to remove bitterness and provide essential vitamins.\n\nAlways positively identify a plant multiple times before consuming it, as many edible species have poisonous look-alikes. Pay attention to leaf shape, stem structure, growth location, and any flowers or fruits. When in doubt, do not eat it; even small amounts of certain plants can be deadly."
-                        },
-                        {
-                            "title": "Poisonous Species",
-                            "content": "Crucial information on plants to avoid at all costs, as ingestion or even contact can cause severe harm or death. The Deathcap Mushroom, while not a plant, is often mistaken for edible fungi and is lethally toxic, identifiable by its white gills, ring on the stem, and volva cup at the base. The Hemlock plant, with its purple-spotted stem and parsley-like leaves, is another highly poisonous species; even a small amount ingested can cause respiratory failure.\n\nLearn the appearance of common irritants like Itchvine, which causes blistering rashes upon contact, and airborne irritants from certain flowering plants that can cause severe allergic reactions. Carrying a small amount of purifying poultice or antidote is advised when traveling through areas known for dangerous flora, and always treat unknown plants with extreme caution."
-                        },
-                        {
-                            "title": "Trees of the Whispering Woods",
-                            "content": "The Whispering Woods are dominated by several key tree species, each with distinct characteristics. The Ironwood, named for the incredible density and strength of its timber, is easily recognized by its deeply furrowed, dark bark and broad, persistent leaves. The Moonpetal Birch, on the other hand, has smooth, silver-white bark that peels like paper, and delicate, pale leaves that seem to glow faintly in twilight.\n\nIdentifying these trees is vital for woodcutters and builders; Ironwood is prized for fortifications and weapons, while Moonpetal Birch wood is lighter, easier to work, and often used in fine furniture or carvings. Pay attention to bark texture, leaf shape, and the arrangement of branches, as these are the primary identifiers when the trees are bare in winter."
-                        },
-                        {
-                            "title": "Fungi of the Damp Caves",
-                            "content": "The subterranean environments of the Damp Caves host a unique ecosystem dominated by various fungal lifeforms adapted to perpetual darkness. The Glowcap, a bioluminescent mushroom, provides the primary light source in many caverns and is identifiable by its soft blue or green light emanating from the cap's underside. The Stonefoot Fungus, found growing directly on damp rock faces, is tough and rubbery, often serving as a minor food source for cavern dwellers.\n\nWhile many cave fungi are harmless or have specific, often minor, effects, some can be toxic or even explosive if disturbed. Always observe subterranean fungi from a distance before interacting, noting their color, growth pattern, and any unusual emanations or scents. The Glowcap's light is useful for navigation, but caution is advised with less well-documented species."
-                        },
-                        {
-                            "title": "Desert Cacti and Succulents",
-                            "content": "Surviving in the harsh environment of the Shifting Sands requires understanding the flora adapted to extreme drought and heat. Barrel Cacti are common, identifiable by their ribbed, cylindrical shape and formidable spines; their inner pulp can provide a small amount of emergency water when carefully extracted. The Dune Lily, a succulent with thick, fleshy leaves often buried except for the tips, stores water and nutrients underground.\n\nMany desert plants are spiny or possess irritants as defense mechanisms against dehydration and predation. Learn to distinguish edible or useful species from purely defensive ones. The presence of certain succulents can also indicate slightly higher water tables, making them valuable markers for travelers seeking oases or subterranean water sources."
-                        }
-                    ]
-                }
-            ]
-    },
+    # {
+    #     "name": "library",
+    #     "image": "library",
+    #     "room_types": [
+    #         "library"
+    #     ],
+    #     "music": "library",
+    #     "descriptions": {
+    #         "late night": [
+    #             "The library lies in profound silence, bathed in the gentle glow of a single reading lamp, shadows dancing across towering shelves.",
+    #             "The scent of aged paper deepens as moonlight filters through the high windows, wrapping the room in a quiet, contemplative hush."
+    #         ],
+    #         "early morning": [
+    #             "Soft dawn light spills softly over rows of leather-bound tomes, the air fresh yet rich with the musk of history.",
+    #             "A gentle hush lingers, broken only by the faint rustle of pages as the library begins to stir from slumber."
+    #         ],
+    #         "morning": [
+    #             "Sunlight floods the room, illuminating the golden spinesbeneath the soaring shelves.",
+    #             "Warm rays coax a cozy ambiance, where the comforting scent of old books welcomes early visitors."
+    #         ],
+    #         "noon": [
+    #             "Bright midday light fills the library, revealing every crease and dust mote in the air, alive and welcoming.",
+    #             "The peaceful room hums gently with the subtle movements of readers, wrapped in the comforting aroma of aged parchment."
+    #         ],
+    #         "afternoon": [
+    #             "Late afternoon sun casts elongated shadows between the aisles, adding depth to the hushed, cozy space.",
+    #             "The warmth from the sinking sun complements the rich leather and paper scents."
+    #         ],
+    #         "late afternoon": [
+    #             "Golden light intensifies as day wanes, highlighting the intricate textures of bindings and polished wood.",
+    #             "A serene calm envelops the library, bathed in a soft amber glow, perfect for quiet reflection."
+    #         ],
+    #         "night": [
+    #             "Darkness outside deepens the library\u2019s glow, where lamps emit a warm, intimate light amid endless stories.",
+    #             "The quiet hush is profound, every whispered turn of a page echoing softly beneath the high ceiling."
+    #         ]
+    #     },
+    #     "items": [
+    #             {
+    #                 "name": "ancient_tome",
+    #                 "descriptions": [
+    #                     "A dusty, heavy tome bound in weathered leather."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": [
+    #                     {
+    #                         "title": "Origins of the Void",
+    #                         "content": "Long ago, before the stars were born, there was only the silent, formless void, an infinite expanse of nothingness pregnant with unrealized potential. This was not darkness as we know it, but an absolute absence of light, sound, and substance, where the very concepts of time and space held no meaning. It is said that the first stirrings of existence were but infinitesimal ripples upon this boundless, primordial ocean of non-being.\n\nThe tome hints that the material realm, with all its chaotic energy and vibrant life, is but a thin membrane stretched over the surface of this eternal nullity. Glimpses of the Void can sometimes be perceived in places of utter desolation or through certain forbidden practices, and its chilling emptiness is a constant reminder of the fragile, temporary nature of reality."
+    #                     },
+    #                     {
+    #                         "title": "Whispers of the Future",
+    #                         "content": "Foretellings of events yet to unfold, written in a script that shifts before your eyes, defy linear time as understood by mortals. These are not simple predictions but echoes from the future, vibrating backward through the fragile fabric of causality. Reading them requires not just understanding the mutable glyphs, but sensing the resonance of probabilities and potential outcomes, a practice fraught with peril as it can blur the lines between what is and what might be.\n\nThe whispers are rarely clear, often contradictory, and deeply unsettling, speaking of great cosmic shifts, the alignment of distant, unknown stars, and the slow erosion of reality by unseen forces. Attempting to decipher these future echoes can attract unwanted attention from entities dwelling outside of time, who view such scrying as an intrusion and may seek to silence the reader permanently."
+    #                     },
+    #                     {
+    #                         "title": "The Elder Signs",
+    #                         "content": "Illustrations and descriptions of symbols said to ward off or beckon entities from beyond the veil, these signs are potent conductors of intent and anchors in the non-Euclidean spaces they represent. They are not mere drawings, but diagrams of cosmic forces and pathways, each line and curve imbued with ancient, possibly dangerous, power. Some signs are protective, meant to form barriers against intrusions from the Void, while others are keys, designed to open gates or attract the notice of beings best left undisturbed.\n\nUsing the Elder Signs requires precise execution and a deep understanding of their True meaning, lest one invite disaster instead of protection or communication. Misdrawn or misunderstood, they can backfire horribly, drawing unwelcome attention, causing localized distortions in reality, or even inflicting madness upon the one who invokes them. Caution and reverence are paramount when dealing with these ancient glyphs."
+    #                     },
+    #                     {
+    #                         "title": "The Architects of Stillness",
+    #                         "content": "Beyond the reaches of the material cosmos, in the tranquil spaces where even light refuses to tread, reside entities known only as the Architects of Stillness. They are not born of matter or energy, but are fundamental aspects of the non-existent, dwelling in absolute quietude. Their forms, if they can be said to have forms, are described as impossible geometries or simply the profound absence of anything else, chilling the soul of any who perceive them.\n\nThe tome postulates that these Architects are passively, perhaps unknowingly, influencing the edges of reality, their sheer stillness imposing moments of inexplicable silence or dread in the noisiest corners of existence. Attempts to contact them are futile, as sound and thought are abhorrent to their nature. Instead, their influence is felt as a growing sense of emptiness and futility that can creep into the minds of sensitive beings, a slow dissolution towards their own state of non-being."
+    #                     },
+    #                     {
+    #                         "title": "The Gateways of Flesh",
+    #                         "content": "This chapter details forbidden rituals centered on the manipulation of the physical form, not for mundane power, but as keys to unlock passages between realms. These practices are gruesome, involving precise excisions, unnatural contortions, and the mapping of cosmic alignments onto the suffering body. The goal is not transformation, but the creation of a living, screaming resonance that momentarily thins the veil separating the material world from the Void.\n\nThe tome warns that these are not prayers or offerings, but violent acts of defiance against the natural order, forcing reality to buckle. The sites of such rituals are forever tainted, vibrating with residual psychic and physical agony. Those who attempt to construct these 'Gateways of Flesh' risk not only their sanity and life, but also the integrity of existence around them, attracting the ravenous attention of whatever horrors may lurk just beyond the threshold."
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "name": "comfy_armchair",
+    #                 "descriptions": [
+    #                     "A large, upholstered armchair, perfect for reading."
+    #                 ],
+    #                 "static": True,
+    #                 "type": ["furniture"]
+    #             },
+    #             {
+    #                 "name": "reading_lamp",
+    #                 "descriptions": [
+    #                     "A brass reading lamp next to the armchair."
+    #                 ],
+    #                 "static": True,
+    #                 "type": ["furniture"]
+    #             },
+    #             {
+    #                 "name": "journal_with_pen",
+    #                 "descriptions": [
+    #                     "A blank leather-bound journal with a pen tucked into its strap."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": []
+    #             },
+    #             {
+    #                 "name": "history_of_the_realm",
+    #                 "descriptions": [
+    #                     "A comprehensive history book detailing local events."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": [
+    #                     {
+    #                         "title": "The Founding",
+    #                         "content": "The first stones were laid in the year of the Great Stag, when Chieftain Eldrin Ironhand united the scattered tribes of the valley. Facing constant threats from the northern raiders, Eldrin envisioned a fortified settlement, a place where his people could thrive and defend themselves from external aggression. This pivotal moment marked the beginning of recorded history for the realm, establishing the initial boundaries and laying the groundwork for its future development."
+    #                     },
+    #                     {
+    #                         "title": "The Silver War",
+    #                         "content": "A bloody conflict erupted over control of the eastern mines, resources vital to the realm's economy and military strength. Lasting for five brutal years, the war pitted regional lords against the central authority, fueled by greed and ancient rivalries. Villages were razed, trade routes disrupted, and countless lives were lost on both sides of the conflict."
+    #                     },
+    #                     {
+    #                         "title": "Modern Governance",
+    #                         "content": "The current council was established after the treaty of Oakhaven, a fragile peace agreement brokered in the aftermath of the Succession Crisis. This council, composed of representatives from key noble houses and merchant guilds, aims to provide a more stable and equitable form of leadership than the single monarch it replaced. Their decisions guide policy on trade, defense, and justice within the realm's borders."
+    #                     },
+    #                     {
+    #                         "title": "The Great Plague",
+    #                         "content": "In the Year of the Weeping Star, a devastating plague swept across the land, originating in the crowded port cities and quickly spreading inland. The disease claimed nearly a third of the population, leaving villages deserted and throwing the social order into chaos. Healers and alchemists worked tirelessly, but few remedies proved effective against the relentless malady."
+    #                     },
+    #                     {
+    #                         "title": "The Age of Exploration",
+    #                         "content": "Following the plague's retreat, a period of renewed vigor led to the Age of Exploration. Brave captains sailed the uncharted waters of the Sunset Sea, seeking new trade routes and lands. These voyages brought back exotic goods, strange knowledge, and sometimes, new conflicts with the peoples encountered beyond the known world. Mapmakers became invaluable as the realm's understanding of the globe expanded significantly."
+    #                     },
+    #                     {
+    #                         "title": "The Ironwood Treaties",
+    #                         "content": "Centuries after the founding, a series of treaties known as the Ironwood Treaties solidified the realm's borders and established long-lasting alliances with neighboring kingdoms. These agreements, hammered out over decades of negotiation and minor skirmishes, defined spheres of influence and mutual defense pacts. While not entirely eliminating border disputes, they ushered in an era of relative peace and increased diplomatic ties."
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "name": "atlas_of_the_world",
+    #                 "descriptions": [
+    #                     "A large, detailed atlas with maps of various regions."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": [
+    #                     {
+    #                         "title": "The Western Continents",
+    #                         "content": "Explore the vast lands beyond the Sunset Sea... (Detailed map follows)\n\nThese continents are home to diverse empires, soaring mountain ranges, and deep, ancient forests. From the temperate northern coasts to the sun-scorched southern plains, life thrives in countless forms and civilizations rise and fall like the tides. Studying the terrain and key locations on the map is vital for understanding the history and power dynamics of this dominant landmass."
+    #                     },
+    #                     {
+    #                         "title": "The Eastern Isles",
+    #                         "content": "A chain of volcanic islands known for their unique flora and fauna... (Detailed map follows)\n\nStretching across the Eastern Ocean, these islands range from steaming volcanic peaks to lush, secluded lagoons. Many species here are found nowhere else in the world, adapted to the islands' isolated ecosystems and frequent seismic activity. Navigating the treacherous currents between islands and identifying safe harbors requires careful consultation of the included maritime charts."
+    #                     },
+    #                     {
+    #                         "title": "The Northern Reaches",
+    #                         "content": "Journey into the lands of ice and frost... (Detailed map follows)\n\nFar beyond the temperate zones lies the unforgiving expanse of the Northern Reaches. This territory is dominated by immense glaciers, frozen tundras, and jagged fjords that carve into a desolate coastline. Survival here is a constant battle against the elements, with long, dark winters and biting winds sweeping across the frozen plains."
+    #                     },
+    #                     {
+    #                         "title": "The Shifting Sands",
+    #                         "content": "Uncover the secrets buried beneath the dunes... (Detailed map follows)\n\nTo the south, stretching further than the eye can see, is the vast and deadly territory known as the Shifting Sands. This immense desert is a sea of dunes, where landmarks are few and water is a precious rarity. Ancient ruins are said to lie half-buried beneath the sand, remnants of civilizations claimed by the scorching heat and endless drought."
+    #                     },
+    #                     {
+    #                         "title": "The Underworld Depths",
+    #                         "content": "Descend into the caverns below... (Detailed map follows)\n\nNot all lands exist under the sun; beneath the surface lies a complex network of caverns, tunnels, and vast subterranean lakes known collectively as the Underworld Depths. Home to unique geological formations and species adapted to eternal darkness, this region presents an entirely different challenge for explorers. The map details known primary routes and major chambers, though countless unexplored passages remain hidden."
+    #                     },
+    #                     {
+    #                         "title": "The Sky Islands",
+    #                         "content": "Ascend to the floating landmasses... (Detailed map follows)\n\nA truly unique phenomenon are the Sky Islands, great chunks of land that mysteriously float high above the surface world. These islands possess their own peculiar climates and ecosystems, some supporting strange flora and fauna, others containing rare minerals drawn upwards from deep within the earth. The map indicates approximate positions and known stable platforms, though movement and altitude can vary."
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "name": "poetry_anthology",
+    #                 "descriptions": [
+    #                     "A collection of modern and contemporary poems."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": [
+    #                     {
+    #                         "title": "City Scratches",
+    #                         "content": "Cobblestones gleam, slick with rain,\ncarrying the tired lamplight down drain.\nGhost of footsteps echo in the narrow space,\na forgotten scent, a hurried pace.\n\nHigh window, a single yellow square,\nholds somebody breathing the damp air.\nThe city breathes, a low, wet sigh,\nbeneath a sky the color of a bruised eye."
+    #                     },
+    #                     {
+    #                         "title": "Root-Bound Silence",
+    #                         "content": "Beneath the ancient oak's spread,\nwhere tangled roots make a tangled bed,\nthe air hangs thick, tasting of earth and mold,\nsecrets the silent stones have held.\n\nA single dewdrop clings to a spider's thread,\nreflecting a sunbeam, barely shed.\nNo birdsong here, no rustling leaf,\njust the deep, slow breath of green relief."
+    #                     },
+    #                     {
+    #                         "title": "The Hum Behind the Eyes",
+    #                         "content": "The world outside is sharp, defined,\nbut inside the hum is hard to find.\nA low vibration, behind the bone,\na radio frequency, tuned to the unknown.\n\nSometimes it whispers, sometimes it screams,\na static haze over waking dreams.\nIs it my own pulse, or something vast,\na message from a future or the past?"
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "name": "botany_guide",
+    #                 "descriptions": [
+    #                     "A guide to identifying local plants and their uses."
+    #                 ],
+    #                 "static": False,
+    #                 "type": ["book"],
+    #                 "chapters": [
+    #                     {
+    #                         "title": "Identifying Common Herbs",
+    #                         "content": "Learn to distinguish between Feverfew, Comfrey, and Valerian, three of the most frequently encountered and utilized herbs in the realm. Feverfew is recognized by its small, daisy-like flowers and pungent scent, commonly used for headaches and fevers. Comfrey, with its large, hairy leaves and bell-shaped flowers, is renowned for its ability to aid bone and tissue healing, though internal use is cautioned against.\n\nValerian is identified by its strong, distinct odor and clusters of small pink or white flowers atop a tall stem; it is a potent relaxant and sleep aid. Mastering the identification of these foundational herbs is crucial for any aspiring healer or traveler needing basic medicinal knowledge in the wild."
+    #                     },
+    #                     {
+    #                         "title": "Edible Wild Plants",
+    #                         "content": "A guide to foraging safely for berries, roots, and leaves that can provide sustenance when other food sources are scarce. Important examples include the Sweetroot, a tuber found in moist soil identifiable by its broad leaves, which is nutritious when roasted. Wild Greens, such as those resembling nettles but lacking their sting, can be boiled to remove bitterness and provide essential vitamins.\n\nAlways positively identify a plant multiple times before consuming it, as many edible species have poisonous look-alikes. Pay attention to leaf shape, stem structure, growth location, and any flowers or fruits. When in doubt, do not eat it; even small amounts of certain plants can be deadly."
+    #                     },
+    #                     {
+    #                         "title": "Poisonous Species",
+    #                         "content": "Crucial information on plants to avoid at all costs, as ingestion or even contact can cause severe harm or death. The Deathcap Mushroom, while not a plant, is often mistaken for edible fungi and is lethally toxic, identifiable by its white gills, ring on the stem, and volva cup at the base. The Hemlock plant, with its purple-spotted stem and parsley-like leaves, is another highly poisonous species; even a small amount ingested can cause respiratory failure.\n\nLearn the appearance of common irritants like Itchvine, which causes blistering rashes upon contact, and airborne irritants from certain flowering plants that can cause severe allergic reactions. Carrying a small amount of purifying poultice or antidote is advised when traveling through areas known for dangerous flora, and always treat unknown plants with extreme caution."
+    #                     },
+    #                     {
+    #                         "title": "Trees of the Whispering Woods",
+    #                         "content": "The Whispering Woods are dominated by several key tree species, each with distinct characteristics. The Ironwood, named for the incredible density and strength of its timber, is easily recognized by its deeply furrowed, dark bark and broad, persistent leaves. The Moonpetal Birch, on the other hand, has smooth, silver-white bark that peels like paper, and delicate, pale leaves that seem to glow faintly in twilight.\n\nIdentifying these trees is vital for woodcutters and builders; Ironwood is prized for fortifications and weapons, while Moonpetal Birch wood is lighter, easier to work, and often used in fine furniture or carvings. Pay attention to bark texture, leaf shape, and the arrangement of branches, as these are the primary identifiers when the trees are bare in winter."
+    #                     },
+    #                     {
+    #                         "title": "Fungi of the Damp Caves",
+    #                         "content": "The subterranean environments of the Damp Caves host a unique ecosystem dominated by various fungal lifeforms adapted to perpetual darkness. The Glowcap, a bioluminescent mushroom, provides the primary light source in many caverns and is identifiable by its soft blue or green light emanating from the cap's underside. The Stonefoot Fungus, found growing directly on damp rock faces, is tough and rubbery, often serving as a minor food source for cavern dwellers.\n\nWhile many cave fungi are harmless or have specific, often minor, effects, some can be toxic or even explosive if disturbed. Always observe subterranean fungi from a distance before interacting, noting their color, growth pattern, and any unusual emanations or scents. The Glowcap's light is useful for navigation, but caution is advised with less well-documented species."
+    #                     },
+    #                     {
+    #                         "title": "Desert Cacti and Succulents",
+    #                         "content": "Surviving in the harsh environment of the Shifting Sands requires understanding the flora adapted to extreme drought and heat. Barrel Cacti are common, identifiable by their ribbed, cylindrical shape and formidable spines; their inner pulp can provide a small amount of emergency water when carefully extracted. The Dune Lily, a succulent with thick, fleshy leaves often buried except for the tips, stores water and nutrients underground.\n\nMany desert plants are spiny or possess irritants as defense mechanisms against dehydration and predation. Learn to distinguish edible or useful species from purely defensive ones. The presence of certain succulents can also indicate slightly higher water tables, making them valuable markers for travelers seeking oases or subterranean water sources."
+    #                     }
+    #                 ]
+    #             }
+    #         ]
+    # },
     {
         "name": "bathroom",
         "image": "bathroom",
@@ -1293,7 +1293,7 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["planting_garden", "garden", "ALIFE_research"],
+                    "room_types": ["computer_room"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
@@ -1329,15 +1329,17 @@ dev_room={
                     "items": []
                 }
             ],
-            "inventory": [{
-        "name": "lettuce seed",
-        "descriptions": [
-            "A tiny seed, promises a refreshing lettuce."
-        ],
-        "static": False,
-        "type": ["seed"],
-        "plant_type": "lettuce" # This key links the seed to its plant type
-    }],
+            "inventory": [
+    #             {
+    #     "name": "lettuce seed",
+    #     "descriptions": [
+    #         "A tiny seed, promises a refreshing lettuce."
+    #     ],
+    #     "static": False,
+    #     "type": ["seed"],
+    #     "plant_type": "lettuce" # This key links the seed to its plant type
+    # }
+    ],
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
             "possible_emotes": {

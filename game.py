@@ -19,7 +19,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -51,7 +51,7 @@ except pygame.error as e:
 
 # Font
 try:
-    font = pygame.font.Font(None, 20) # Default font, size 24
+    font = pygame.font.Font(None, 20) # Default font
     line_height = font.get_linesize()
 except pygame.error:
     print("Warning: Default font not found, using a fallback.")
