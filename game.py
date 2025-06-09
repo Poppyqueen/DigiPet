@@ -609,6 +609,16 @@ def garden_tick_worker(chatbot_instance):
     try:
         chatbot_instance.ai.functions_builder.garden_manager.tick()
         print("Garden tick processed successfully.")
+
+
+        current_room_info = chatbot_instance.functions_builder.get_current_room_info()
+
+        if not isinstance(current_room_info, dict):
+            current_room_info = {} # Fallback to empty dict
+
+        # Post the event to the main Pygame thread with the fresh data
+        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
+
     except Exception as e:
         error_message = f"Error in garden tick worker thread: {type(e).__name__}: {e}"
         print(error_message)
@@ -1017,7 +1027,7 @@ while running:
 
                     # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
                     # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
-                    if not is_input_locked_by_state:
+                    if not is_input_locked_by_state and not state.inventory_panel_visible:
                         package_click_regions = gui.gui_care_package.get_package_button_click_regions()
                         clicked_package_button = False # Flag to consume event
 
@@ -1236,8 +1246,6 @@ while running:
         if start_garden_tick_request(): # This will now return False if chatbot is busy
             # If the tick was successfully launched, schedule the next one.
             state.next_garden_tick_time = current_time_ms + config.GARDEN_TICK_INTERVAL_MS
-            trigger_lore_panel_update()
-
             #print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
         else:
             # If the tick was deferred (because chatbot was busy),

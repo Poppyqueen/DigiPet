@@ -349,6 +349,88 @@ class CLIChatbot:
             if self.tts_provider:
                 self.tts_provider.stop() # Even if not available, ensure internal process is cleaned up
 
+    def _check_wellness_and_consequences(self):
+        """
+        Monitors the AI agent's wellness stats (fullness, hydration, energy).
+        Decreases stats, checks against predefined thresholds, applies specific
+        messages to memory based on severity, and triggers a "pass out" state
+        with subsequent recovery if any stat drops to a critical level.
+        """
+        stats_to_monitor = ["fullness", "hydration", "energy"]
+        low_threshold_for_passout = 10  # The critical threshold below which passing out occurs
+        recovery_amount = 40            # The amount stats are recovered after passing out
+
+        # Define thresholds and messages for different severity levels for each stat.
+        # Messages are ordered from highest threshold (least severe) to lowest (most severe).
+        # This ensures that when iterating, the first matched threshold will be the
+        # most severe applicable message for the current stat value.
+        wellness_threshold_messages = {
+            "fullness": [
+                (120, "You begin to feel a bit hungry."),
+                (60, "You feel really hungry, your stomach rumbles loudly."),
+                (30, "Your hunger is unbearable, you can barely focus."),
+                (low_threshold_for_passout, "You're about to collapse from hunger."),
+            ],
+            "hydration": [
+                (120, "You feel a little thirsty."),
+                (60, "Your mouth feels dry, you desperately need water."),
+                (30, "You're severely dehydrated, your head throbs."),
+                (low_threshold_for_passout, "You're about to collapse from dehydration."),
+            ],
+            "energy": [
+                (120, "You feel a bit tired."),
+                (60, "Your eyelids feel heavy, you're struggling to stay awake."),
+                (30, "You're utterly exhausted, your body screams for rest."),
+                (low_threshold_for_passout, "You're about to collapse from exhaustion."),
+            ],
+        }
+
+        # 1. Decrease the monitored stats by 1 unit
+        for stat_name in stats_to_monitor:
+            self.state_manager.adjust_stat(stat_name, -1)
+
+        # 2. Get the *updated* stats dictionary
+        stats_data = self.state_manager.get_stats(True)
+
+        low_stat_detected = False # Flag to determine if any stat has hit the critical pass-out threshold
+
+        if stats_data is not None:
+            for stat_name in stats_to_monitor:
+                # Retrieve current value, defaulting to infinity if stat is missing to avoid false positives
+                current_value = stats_data.get(stat_name, float('inf'))
+
+                # Check for specific threshold messages and save them to memory
+                if stat_name in wellness_threshold_messages:
+                    # Iterate through the defined thresholds for the current stat
+                    for threshold, message in wellness_threshold_messages[stat_name]:
+                        if current_value <= threshold:
+                            # If the current value is at or below this threshold, save the associated message
+                            self.memory.save_to_memory(message, "short_term", "system")
+                            
+                            # If this specific threshold is the critical pass-out threshold,
+                            # set the flag to trigger a pass-out event after checking all stats.
+                            if threshold == low_threshold_for_passout:
+                                low_stat_detected = True
+                            break # Stop after finding the most severe applicable message for this stat
+
+        else:
+            print("Warning: Could not retrieve valid stats data to check wellness thresholds.")
+
+        # 3. If a critically low stat was detected, perform the consequences
+        if low_stat_detected:
+            # Send a signal to the system that the agent has passed out and needs to 'sleep'
+            self._send_signal({"type": "sleep", "duration": 900}) # 15 minutes = 900 seconds
+
+            # Save pass-out specific messages to the agent's memory
+            self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "system")
+            self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "system")
+
+            # 4. Increase the stats for recovery after passing out
+            for stat_name in stats_to_monitor:
+                self.state_manager.adjust_stat(stat_name, recovery_amount)
+
+            print("AI agent passed out due to critically low wellness levels.")
+
 
     async def process_input(self, message, role="user"):
         """Process user input and generate AI response."""
@@ -405,43 +487,7 @@ class CLIChatbot:
 
 
 # --- wellness stats check -----
-
-        stats_to_monitor = ["fullness", "hydration", "energy"]
-        low_threshold = 10
-        recovery_amount = 40
-
-        # 1. Decrease the stats
-        for stat_name in stats_to_monitor:
-            self.state_manager.adjust_stat(stat_name, -1)
-
-        # 2. Get the *updated* stats dictionary using the helper
-        stats_data = self.state_manager.get_stats(True) # Assuming get_stats is a method of state_manager
-
-        # 3. Check if any of the monitored stats are below the threshold
-        low_stat_detected = False
-        if stats_data is not None:
-            for stat_name in stats_to_monitor:
-                current_value = stats_data.get(stat_name, float('inf'))
-
-                if current_value <= low_threshold:
-                    low_stat_detected = True
-                    break
-        else:
-            print("Warning: Could not retrieve valid stats data to check thresholds.")
-
-
-        # 4. If a low stat was detected, perform the consequences
-        if low_stat_detected:
-            self._send_signal({"type": "sleep", "duration": 900})
-            self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "system")
-            self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "system")
-
-            # 5. Increase the stats for recovery if passed out
-            for stat_name in stats_to_monitor:
-                self.state_manager.adjust_stat(stat_name, recovery_amount)
-
-            print("AI agent passed out")
-
+        self._check_wellness_and_consequences()
 
 # --- extra part of the function -----
 
@@ -451,10 +497,10 @@ class CLIChatbot:
         self.last_response = final_ai_response # Store the last response for potential TTS
 
         # MODIFIED: Calling the new process_response_with_tts
+        self.memory.check()
+
         self.process_response_with_tts(final_ai_response)
 
-        self.memory.check()
-        
         return final_ai_response # Return the final text response
 
 

@@ -296,9 +296,9 @@ plant_types = {
     "lettuce": {
         "stages": [
             {"name": "seedling", "duration_ticks": 10, "optimal_water_level_range": (0.8, 1.0)},
-            {"name": "early_leafing", "duration_ticks": 10, "optimal_water_level_range": (0.7, 0.95)},
-            {"name": "heading_up", "duration_ticks": 15, "optimal_water_level_range": (0.6, 0.9)},
-            {"name": "forming_head", "duration_ticks": 25, "optimal_water_level_range": (0.5, 0.7)},
+            {"name": "early_leafing", "duration_ticks": 15, "optimal_water_level_range": (0.7, 0.95)},
+            {"name": "heading_up", "duration_ticks": 10, "optimal_water_level_range": (0.6, 0.9)},
+            {"name": "forming_head", "duration_ticks": 20, "optimal_water_level_range": (0.5, 0.7)},
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
         ],
         "harvest_items": [

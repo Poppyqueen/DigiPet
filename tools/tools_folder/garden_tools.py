@@ -582,7 +582,6 @@ class Garden_Mananger(GenericJsonTool):
             return (f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is "
                     f"{current_stage_name} (Elapsed time: {elapsed_ticks} logical ticks). Water level: {water_level:.2f}. "
                     f"Details for this plant type are not available.")
-
     def harvest_plant(self, plot_id: str) -> str:
         """
         Allows an AI agent to harvest a plant from a specified plot in the current garden room.
@@ -594,8 +593,9 @@ class Garden_Mananger(GenericJsonTool):
             str: A message indicating the harvest result or an error.
         """
 
-        current_inventory = self.state_manager._state.get("inventory", [])
-        current_inventory_length = len(current_inventory)
+        # Remove these lines, as current_inventory_length will be calculated in the loop
+        # current_inventory = self.state_manager._state.get("inventory", [])
+        # current_inventory_length = len(current_inventory)
         
         max_inventory = self.state_manager.MAX_INVENTORY_SLOTS 
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
@@ -663,16 +663,21 @@ class Garden_Mananger(GenericJsonTool):
                 quantity = item_data.get("quantity", 0)
                 
                 if item_def and quantity > 0:
+                    # RE-EVALUATE current inventory length inside the loop
+                    # This ensures we get the most up-to-date count of occupied slots
+                    current_inventory = self.state_manager._state.get("inventory", [])
+                    current_inventory_length = len(current_inventory)
+                    
                     # Check if there's enough space in inventory for this specific item quantity
-                    # This is a simplified check assuming each quantity unit takes one slot
-                    # A more robust system would check if existing stackable items can absorb the new quantity
-                    if (current_inventory_length + 1) <= max_inventory: # Check for one slot per item for simplicity, or check actual item_data space needs
+                    # This is a simplified check assuming create_item will either consume
+                    # 0 new slots (if stacking onto an existing item) or 1 new slot (if creating a new stack).
+                    if (current_inventory_length + 1) <= max_inventory: 
                         self.state_manager.create_item("inventory", None, item_def, quantity=quantity)
                         items_placed_in_inventory.append(f"{quantity} {item_def.get('name', 'unknown item')}")
-                        current_inventory_length += 1 # Simulate slot consumption
+                        # NO MANUAL INCREMENT HERE: current_inventory_length will be recalculated on the next iteration
                     else:
                         # Inventory full, place in room
-                        self.state_manager.create_item("room", current_room_id, item_def, quantity=quantity)
+                        self.state_manager.create_item("room", int(current_room_id), item_def, quantity=quantity) # Create item expects an int for the room
                         items_placed_in_room.append(f"{quantity} {item_def.get('name', 'unknown item')}")
 
         harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. {life_cycle_quality_message}")
@@ -737,6 +742,7 @@ class Garden_Mananger(GenericJsonTool):
             return (f"{harvest_message_prefix} {harvest_yield_message} "
                     f"The plant has completed its life cycle. The plot is now empty.")
         
+
     def _calculate_harvest_yield(self, plant_data: dict, plant_type_info: dict) -> dict:
         water_history = plant_data.get("water_history", [])
 

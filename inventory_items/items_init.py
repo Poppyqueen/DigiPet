@@ -838,7 +838,7 @@ base_state={
                         "A thick, knitted sweater."
                     ],
                     "static": False,
-                    "type": "armor",
+                    "type": ["armor"],
                     "stats_edit": {
                         "energy": 5
                     },
@@ -1293,7 +1293,7 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["computer_room"],
+                    "room_types": ["computer_room", "planting_garden"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
@@ -1330,15 +1330,15 @@ dev_room={
                 }
             ],
             "inventory": [
-    #             {
-    #     "name": "lettuce seed",
-    #     "descriptions": [
-    #         "A tiny seed, promises a refreshing lettuce."
-    #     ],
-    #     "static": False,
-    #     "type": ["seed"],
-    #     "plant_type": "lettuce" # This key links the seed to its plant type
-    # }
+                {
+        "name": "lettuce seed",
+        "descriptions": [
+            "A tiny seed, promises a refreshing lettuce."
+        ],
+        "static": False,
+        "type": ["seed"],
+        "plant_type": "lettuce" # This key links the seed to its plant type
+    }
     ],
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
