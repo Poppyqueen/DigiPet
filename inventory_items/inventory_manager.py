@@ -8,6 +8,8 @@ import random
 import math
 import datetime # Import datetime for timestamping
 
+import configparser
+
 from utils.time_manager import get_time_tag_from_now
 
 from inventory_items.items_init import base_state, dev_room
@@ -31,6 +33,32 @@ try:
 except ImportError:
     print("Error: stats_component.py not found. Make sure it's in the same directory or PYTHONPATH.")
     sys.exit(1)
+
+
+# 1. Create a mapping dictionary
+available_states = {
+    "base_state": base_state,
+    "dev_room": dev_room,
+}
+
+# 2. Load the configuration from the INI file
+config = configparser.ConfigParser()
+config.read('main_config.ini') # Assuming your INI file is named main_config.ini
+
+# 3. Get the selected state name from the INI file
+selected_state_name = config['game_settings']['initial_state'] # e.g., "base_state"
+
+# 4. Use the mapping dictionary to get the actual JSON structure
+if selected_state_name in available_states:
+    selected_state = available_states[selected_state_name]
+    print(f"Loaded state: {selected_state_name}")
+    print(selected_state)
+
+else:
+    print(f"Error: '{selected_state_name}' is not a recognized state.")
+    # Handle the error, perhaps by falling back to a default state
+
+
 
 class InventoryHouseManager(GenericJsonTool):
     """
@@ -61,7 +89,7 @@ class InventoryHouseManager(GenericJsonTool):
         self.memory=memory
         self.base_path=base_path
         # Define the default state structure, now moved to items_init
-        self._default_state = base_state # custom_state, base_state, dev_room this should be more configurable
+        self._default_state = selected_state # custom_state, base_state, dev_room this should be more configurable
         # --- End of override ---
 
         # Call the parent constructor to load/create state using the defined filename and default_state

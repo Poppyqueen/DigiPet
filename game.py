@@ -693,6 +693,8 @@ while running:
     if state.cursor_active:
         state.last_activity_time = current_time_ms # Cursor activity resets the autonomous action timer
 
+    if state.chatbot_is_processing:
+        state.last_activity_time = current_time_ms
 
     is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
 
@@ -1140,6 +1142,9 @@ while running:
                 #if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(20); continue
 
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
+
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL:start_chatbot_request("The following should be an autonomous action.", "system"); continue
+
 
 
 

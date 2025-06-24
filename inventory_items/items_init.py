@@ -1293,7 +1293,7 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["computer_room", "planting_garden"],
+                    "room_types": ["discogs", "youtube_playlists", "musicbrainz"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
@@ -1330,15 +1330,26 @@ dev_room={
                 }
             ],
             "inventory": [
-                {
-        "name": "lettuce seed",
-        "descriptions": [
-            "A tiny seed, promises a refreshing lettuce."
-        ],
-        "static": False,
-        "type": ["seed"],
-        "plant_type": "lettuce" # This key links the seed to its plant type
-    }
+    #             {
+    #     "name": "lettuce seed",
+    #     "descriptions": [
+    #         "A tiny seed, promises a refreshing lettuce."
+    #     ],
+    #     "static": False,
+    #     "type": ["seed"],
+    #     "plant_type": "lettuce" # This key links the seed to its plant type
+    # }
+
+               {
+                    "name": "notepad", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
+                    "descriptions": [
+                        "A personal notepad to save useful information"
+                    ],
+                    "static": False,
+                    "type": ["book"],
+                    "chapters": [
+                    ]
+                }
     ],
             # --- Emote State (NEW) ---
             "current_emote": "neutral",

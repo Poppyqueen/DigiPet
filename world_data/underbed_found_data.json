@@ -7,7 +7,7 @@
         "The natural accumulation of forgotten corners."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Single Lost Sock",
@@ -17,7 +17,7 @@
         "A common casualty of laundry and inertia."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Stray Coin (Low Denomination)",
@@ -27,7 +27,7 @@
         "A minor piece of lost wealth."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Small Plastic Toy Animal",
@@ -37,7 +37,7 @@
         "Escaped from a toy box or pocket."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Bent Paperclip",
@@ -47,7 +47,7 @@
         "A small, forgotten tool."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Empty Pen",
@@ -57,7 +57,7 @@
         "Reached the end of its useful life under here."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Crumpled Tissue",
@@ -67,7 +67,7 @@
         "An ephemeral artifact."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Hair Tie (Stretched)",
@@ -77,7 +77,7 @@
         "Slipped off a wrist or out of hair."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Bobby Pin",
@@ -87,7 +87,7 @@
         "Fell during dressing or undressing."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Small Button (Plastic)",
@@ -97,7 +97,7 @@
         "A tiny part detached from a whole."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Bottle Cap (Plastic)",
@@ -107,7 +107,7 @@
         "Rolled away after a late-night drink."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Faded Remote Control",
@@ -117,7 +117,7 @@
         "Lost utility under the bed."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Piece of Lego/Building Block",
@@ -127,7 +127,7 @@
         "Escaped from a child's construction project."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Cracked Phone Screen Protector",
@@ -137,7 +137,7 @@
         "Evidence of a close call."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Dried Up Eraser",
@@ -147,7 +147,7 @@
         "Rolled off a desk or nightstand."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Small Battery (AA/AAA)",
@@ -157,7 +157,7 @@
         "Fell out of a remote or toy."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Tiny Screw or Nail",
@@ -167,7 +167,7 @@
         "Dropped during a repair or assembly."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Used Cotton Swab",
@@ -177,7 +177,7 @@
         "Carelessly discarded and rolled away."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Empty Candy Wrapper",
@@ -187,7 +187,7 @@
         "Left behind as evidence."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Broken Crayon Stub",
@@ -197,7 +197,7 @@
         "Fell from a creative session."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Shopping List Fragment",
@@ -207,7 +207,7 @@
         "A discarded reminder."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Plastic Bread Tag",
@@ -217,7 +217,7 @@
         "A mundane tagalong."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Small Key (Unidentified)",
@@ -227,7 +227,7 @@
         "Unlocks a forgotten box or drawer?"
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Lost Earring Back",
@@ -237,7 +237,7 @@
         "Separated from its purpose."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     },
     {
       "name": "Chapstick Cap",
@@ -247,6 +247,6 @@
         "Lost protection for dry lips."
       ],
       "static": false,
-      "type": "misc"
+      "type": ["misc"]
     }
   ]

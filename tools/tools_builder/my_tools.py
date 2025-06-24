@@ -4,6 +4,344 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
+musicbrainz_tools=[ 
+    {
+        "type": "function",
+        "name": "musicbrainz_search_album_by_name",
+        "description": "Searches for albums (Release Groups) by name, optionally filtered by artist.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "album_name": {
+                    "type": "string",
+                    "description": "The name of the album to search for."
+                },
+                "artist_name": {
+                    "type": "string",
+                    "description": "The name of the artist to refine the search."
+                }
+            },
+            "required": ["album_name"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_get_album_tracklist",
+        "description": "Retrieves the tracklist for an album (Release Group) identified by its MusicBrainz ID.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "release_group_id": {
+                    "type": "string",
+                    "description": "The unique MusicBrainz Release Group ID of the album. You can search the ID with 'musicbrainz_get_artist_details_and_albums' or 'musicbrainz_search_album_by_name'"
+                }
+            },
+            "required": ["release_group_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_search_artists_by_name",
+        "description": "Searches for artists by name with pagination support. Returns detailed information about the artists and their MusicBrainz IDs",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artist_name": {
+                    "type": "string",
+                    "description": "The search query for the artist's name."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
+                }
+            },
+            "required": ["artist_name"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_get_artist_details_and_albums",
+        "description": "Retrieves detailed information for a specific artist and a paginated list of their primary albums and EPs using their MusicBrainz ID. You must know their MusicBrainz ID, it can be retrieved with the function 'musicbrainz_search_artists_by_name'",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artist_id": {
+                    "type": "string",
+                    "description": "The unique MusicBrainz ID of the artist, found via a search tool."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
+                }
+            },
+            "required": ["artist_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_search_albums_by_tags",
+        "description": "Searches for albums (release groups) associated with one or more folksonomy tags, with pagination support.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tags_string": {
+                    "type": "string",
+                    "description": "Tags are expected as a single string, separated by '#' (e.g., 'concept album#live'). The search will return albums that have ALL specified tags."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
+                }
+            },
+            "required": ["tags_string"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_search_artists_by_tags",
+        "description": "Searches for artists associated with one or more folksonomy tags, with pagination support.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tags_string": {
+                    "type": "string",
+                    "description": "A string of tags separated by '#'. Example: 'rock#gothic metal'. The search will return albums that have ALL specified tags."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
+                }
+            },
+            "required": ["tags_string"],
+            "additionalProperties": False
+        }
+    },
+]
+#discogs_get_wantlist_unique_artists
+discogs_tools=[
+    {
+        "type": "function",
+        "name": "discogs_get_wantlist_unique_artists",
+        "description": "Retrieves a list of the unique artists in the user's Discogs wantlist, it supports pagination. Defaults to page 1.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "number",
+                    "description": "The page number to retrieve (1-indexed)."
+                }
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+{
+        "type": "function",
+        "name": "discogs_get_collection_unique_artists",
+        "description": "Retrieves a list of the unique artists in the user's Discogs collection.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_search_artist_by_name",
+        "description": "Searches for an artist by name on Discogs and returns their ID and main artist page URL. This tool prioritizes exact matches.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artist_name": {
+                    "type": "string",
+                    "description": "The full name of the artist to search for."
+                }
+            },
+            "required": ["artist_name"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_search_master_release_by_name",
+        "description": "Searches for master releases by title and optionally by artist on Discogs, returning the top results..",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "release_title": {
+                    "type": "string",
+                    "description": "The title of the master release to search for."
+                },
+                "artist_name": {
+                    "type": "string",
+                    "description": "The name of the artist to narrow down the search."
+                }
+            },
+            "required": ["release_title"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_get_artist_master_releases_overview",
+        "description": "Retrieves a paginated list of master release titles for a given artist ID. You need an ID from the tool search_artist_by_name to call this.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artist_id": {
+                    "type": "number",
+                    "description": "The Discogs ID of the artist."
+                },
+                "page": {
+                    "type": "number",
+                    "description": "The page number to retrieve (starts from 1). Defaults to 1"
+                }
+            },
+            "required": ["artist_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_get_master_release_tracklist",
+        "description": "Retrieves detailed information about the tracks of a specific Discogs Master release.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "master_id": {
+                    "type": "number",
+                    "description": "The Discogs ID of the Master release."
+                },
+                # "youtube_links": {
+                #     "type": "boolean",
+                #     "description": "If set to true, it will return the youtube links for the tracks in the Discogs database. Defaults to false."
+                # }
+            },
+            "required": ["master_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_get_wantlist_summary",
+        "description": "Retrieves a summary of the authenticated user's Discogs wantlist with pagination.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "number",
+                    "description": "The page number to retrieve, defaults to 1."
+                }
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "discogs_get_collection_summary",
+        "description": "Retrieves a summary of the authenticated user's Discogs music collection with pagination.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "number",
+                    "description": "The page number to retrieve, defaults to 1."
+                }
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+]
+youtube_playlister_tools=[
+    {
+        "type": "function",
+        "name": "youtube_open_youtube_item",
+        "description": "Opens a YouTube video or playlist in the default web browser.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "string",
+                    "description": "The ID of the YouTube video or playlist."
+                },
+                "is_playlist": {
+                    "type": "boolean",
+                    "description": "Set to True if the item_id is a playlist ID, False if it's a video ID (default)"
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "youtube_search_video",
+        "description": " Searches YouTube for videos matching a given query and returns a structured lis of the top N matching videos, including their titles and IDs.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search term (e.g., artist name - song title, AI explained)"
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "youtube_create_playlist",
+        "description": " Creates a new private YouTube playlist and returns a natural language message describing the outcome and details of the created playlist. This playlist will initially be empty. To add videos, use the `add_video_to_playlist` tool.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "The title of the new playlist."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "An optional, detailed description for the playlist. Defaults to an empty string."
+                }
+            },
+            "required": ["title"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "youtube_add_video_to_playlist",
+        "description": "Adds a single YouTube video to an existing private playlist.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "playlist_id": {
+                    "type": "string",
+                    "description": "The ID of the target YouTube playlist."
+                },
+                "video_id": {
+                    "type": "string",
+                    "description": "The ID of the video to add."
+                }
+            },
+            "required": ["playlist_id", "video_id"],
+            "additionalProperties": False
+        }
+    },
+
+]
+
+
 
 harvesting_garden_tools=[
     {
@@ -534,7 +872,7 @@ base_tools=[
     {
         "type": "function",
         "name": "move_to_room",
-        "description": "Changes your current location to a specified room.",
+        "description": "Changes your current location to a specified room. Requires the room ID to move to, which can be obtained using the function list_all_rooms.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -552,7 +890,7 @@ base_tools=[
     {
         "type": "function",
         "name": "list_all_rooms",
-        "description": "Retrieves a list of all available rooms in the environment alongside their ID for exploration and movement across environments.",
+        "description": "Retrieves a list of all available rooms alongside their ID for exploration and movement.",
         "parameters": {
             "type": "object",
             "properties": {},
@@ -653,28 +991,6 @@ base_tools=[
     },
     {
         "type": "function",
-        "name": "post_bluesky",
-        "description": "Publishes a message to the Bluesky social media platform.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "description": "The text content of the post. Consider keeping it concise (e.g., under 250 characters)."
-                },
-                "image_post": {
-                    "type": "boolean",
-                    "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
-                }
-            },
-            "required": [
-                "message"
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
         "name": "trash_item",
         "description": "Permanently and irreversibly deletes a specified item from your inventory.",
         "parameters": {
@@ -698,6 +1014,30 @@ base_tools=[
     }
 ]
 
+bluesky_tools=[
+    {
+        "type": "function",
+        "name": "post_bluesky",
+        "description": "Publishes a message to the Bluesky social media platform.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "The text content of the post. Consider keeping it concise (e.g., under 250 characters)."
+                },
+                "image_post": {
+                    "type": "boolean",
+                    "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
+                }
+            },
+            "required": [
+                "message"
+            ],
+            "additionalProperties": False
+        }
+    },
+]
 
 library_tools = [    {
         "type": "function",

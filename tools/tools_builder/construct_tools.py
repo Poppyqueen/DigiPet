@@ -27,6 +27,9 @@ import os.path
 import json
 import inspect
 
+import configparser
+
+
 # Import the tool definitions lists
 # We still need to import these lists, but they will be organized differently below
 from .my_tools import (
@@ -42,7 +45,11 @@ from .my_tools import (
     kitchen_room_tools,
     lab_room_tools,
     dev_room_tools,
-    harvesting_garden_tools
+    harvesting_garden_tools,
+    youtube_playlister_tools,
+    discogs_tools,
+    musicbrainz_tools,
+    bluesky_tools # Ensure bluesky_tools is imported if it has definitions
 )
 
 from utils import open_meteo_handle, simulation
@@ -52,56 +59,161 @@ from tools.tools_folder.garden_tools import Garden_Mananger
 
 # Import tools
 # We import the tool handlers/classes here
-from tools.tools_folder.bluesky_handle import bluesky_bot
 from tools.tools_folder.rooms_tools import main_tools_handle
-
 from tools.tools_folder.async_test_tool import simulate_data_fetch
-
 from tools.tools_folder.thinking_tool import emit_inner_thought
+
+
+# --- Global Configuration Loading (Happens once when the module is imported) ---
+tools_config = configparser.ConfigParser()
+# Attempt to read the config file. Consider providing a default path or making it configurable.
+config_file_path = "main_config.ini"
+if os.path.exists(config_file_path):
+    tools_config.read(config_file_path)
+    print(f"Config file '{config_file_path}' loaded.")
+else:
+    print(f"Warning: Config file '{config_file_path}' not found. Using default 'disabled' for optional tools.")
+
+# Use a default section if 'Tools' is not found, to prevent KeyError
+if 'Tools' not in tools_config:
+    tools_config['Tools'] = {} # Create an empty section to safely use .getboolean
+
+enabled_tools = tools_config['Tools']
+
+# These booleans will dictate if the tools are *attempted* to be imported and initialized.
+# We will then use the instance itself (e.g., self.youtube is not None) to determine if it truly succeeded.
+youtube_enabled = enabled_tools.getboolean('enable_youtube', fallback=False)
+discogs_enabled = enabled_tools.getboolean('enable_discogs', fallback=False)
+musicbrainz_enabled = enabled_tools.getboolean('enable_musicbrainz', fallback=False)
+bluesky_enabled = enabled_tools.getboolean('enable_bluesky', fallback=False)
+
+# print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
+# print(f"DEBUG: Discogs enabled (config): {discogs_enabled}")
+# print(f"DEBUG: MusicBrainz enabled (config): {musicbrainz_enabled}")
+# print(f"DEBUG: Bluesky enabled (config): {bluesky_enabled}")
+
+# --- Conditional Imports (Only import if enabled in config) ---
+# This saves memory and avoids NameErrors if external libraries aren't installed.
+# We assign these to global variables only if they are imported successfully.
+# This pattern ensures that the 'from utils import x' lines are only executed when needed.
+if youtube_enabled:
+    try:
+        from utils import youtube_service
+    except ImportError as e:
+        print(f"Warning: Could not import youtube_service, disabling YouTube tools. Error: {e}")
+        youtube_enabled = False # Mark as disabled if import fails
+if discogs_enabled:
+    try:
+        from utils import discogs
+    except ImportError as e:
+        print(f"Warning: Could not import discogs, disabling Discogs tools. Error: {e}")
+        discogs_enabled = False
+if musicbrainz_enabled:
+    try:
+        from utils import musicbrainz
+    except ImportError as e:
+        print(f"Warning: Could not import musicbrainz, disabling MusicBrainz tools. Error: {e}")
+        musicbrainz_enabled = False
+if bluesky_enabled:
+    try:
+        from tools.tools_folder.bluesky_handle import bluesky_bot
+    except ImportError as e:
+        print(f"Warning: Could not import bluesky_bot, disabling Bluesky tools. Error: {e}")
+        bluesky_enabled = False
+
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None):
         self.memory = memory_manager
-        self.sub_directory=subdirectory
+        self.sub_directory = subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory)
-        self.A_Life = None
+        self.A_Life = None # Initialized by _init_alife
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback)
-        self._init_alife()
+        self._init_alife() # ALIFE is always initialized
+
+
+        # --- Conditional Initialization of Optional Tool Handlers ---
+        # Initialize to None first.
+        self.youtube = None
+        self.discogs_handle = None
+        self.musicbrainz_ = None
+        self.bluesky = None
+
+        # Use the globally determined `_enabled` flags to attempt instantiation
+        if youtube_enabled:
+            try:
+                # Check if the module was actually imported (prevent NameError if import failed silently)
+                if 'youtube_service' in globals():
+                    self.youtube = youtube_service.YouTubeTools()
+                    print("YouTubeTools instance created.")
+                else:
+                    print("YouTubeTools not imported due to previous error; skipping instantiation.")
+            except Exception as e:
+                print(f"Error instantiating YouTubeTools: {e}")
+                self.youtube = None # Ensure it's None if instantiation fails
+
+        if discogs_enabled:
+            try:
+                if 'discogs' in globals():
+                    self.discogs_handle = discogs.DiscogsTools()
+                    print("DiscogsTools instance created.")
+                else:
+                    print("DiscogsTools not imported due to previous error; skipping instantiation.")
+            except Exception as e:
+                print(f"Error instantiating DiscogsTools: {e}")
+                self.discogs_handle = None
+
+        if musicbrainz_enabled:
+            try:
+                if 'musicbrainz' in globals():
+                    self.musicbrainz_ = musicbrainz.MusicBrainzSearchTools()
+                    print("MusicBrainzSearchTools instance created.")
+                else:
+                    print("MusicBrainzSearchTools not imported due to previous error; skipping instantiation.")
+            except Exception as e:
+                print(f"Error instantiating MusicBrainzSearchTools: {e}")
+                self.musicbrainz_ = None
+
+        if bluesky_enabled:
+            try:
+                if 'bluesky_bot' in globals():
+                    self.bluesky = bluesky_bot(self.state_manager, self._signal_callback)
+                    print("BlueskyBot instance created.")
+                else:
+                    print("BlueskyBot not imported due to previous error; skipping instantiation.")
+            except Exception as e:
+                print(f"Error instantiating BlueskyBot: {e}")
+                self.bluesky = None
 
 
         # --- Central Mapping of Room Types to Functions and Definitions ---
-        # This dictionary holds the functions and tool definitions associated with each room type.
-        # Keys are room type strings (e.g., "library", "bedroom").
-        # Values are dictionaries with keys "functions" (dict of function name -> callable)
-        # and "definitions" (list of tool definition dicts).
+        # Initialize with only the *always-present* room types.
+        # Optional integrations will be added dynamically below if they are enabled and initialized.
         self._room_type_data = {
             "planting_garden": {
-            "functions": {
-                "plant_seed": self.garden_manager.plant_seed,
-                "check_plant_state": self.garden_manager.check_plant_state,
-                "harvest_plant": self.garden_manager.harvest_plant,
-                "get_current_garden_information": self.garden_manager.get_garden_summary,
-                "water_plot": self.garden_manager.water_plot
-            },
-            "definitions": harvesting_garden_tools, # Use the imported definition list
-            "current_info": self.garden_manager.get_garden_summary # Optional key, if the room type has this key, the system will retrieve a string from it to display as current information for the room
+                "functions": {
+                    "plant_seed": self.garden_manager.plant_seed,
+                    "check_plant_state": self.garden_manager.check_plant_state,
+                    "harvest_plant": self.garden_manager.harvest_plant,
+                    "get_current_garden_information": self.garden_manager.get_garden_summary,
+                    "water_plot": self.garden_manager.water_plot
+                },
+                "definitions": harvesting_garden_tools,
+                "current_info": self.garden_manager.get_garden_summary
             },
             "dev_room":{
                 "functions": {
                     "simulate_data_fetch": simulate_data_fetch
-
                 },
-                "definitions": dev_room_tools # Use the imported definition list
+                "definitions": dev_room_tools
             },
             "library": {
                 "functions": {
                     "create_book_item": self.state_manager.create_book_item
-                    # Add other specific library functions here if they existed
-                    # e.g., "save_note": self.local_library.save_note,
                 },
-                "definitions": library_tools # Use the imported definition list
+                "definitions": library_tools
             },
             "bedroom": {
                 "functions": {
@@ -132,7 +244,6 @@ class FunctionBuilder:
                      "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
                      "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
                      "random_wikipedia": self.room_tools.computer.random_wikipedia
-
                 },
                 "definitions": computer_room_tools,
                 "current_info": self.room_tools.computer.display_information
@@ -143,8 +254,7 @@ class FunctionBuilder:
                      "lay_down": self.room_tools.garden.lay_down
                 },
                 "definitions": garden_room_tools,
-                "current_info": self.room_tools.garden.display_information # 
-
+                "current_info": self.room_tools.garden.display_information
             },
              "white_room": {
                 "functions": {
@@ -170,13 +280,68 @@ class FunctionBuilder:
                     "details_of_simulation": self.A_Life.simulations_manager.details_of_simulation,
                     "update_simulation_name": self.A_Life.simulations_manager.update_simulation_name,
                     "add_simulation_detail": self.A_Life.simulations_manager.add_simulation_detail,
-
                 },
                 "definitions": lab_room_tools,
                 "current_info": self.A_Life.display_information
             }
-            # Add entries for other room types as needed
+            # Add entries for other static room types as needed
         }
+
+
+        # --- Dynamically Add Optional Tool Data if Enabled and Initialized ---
+        if self.musicbrainz_: # Check if the instance was successfully created
+            self._room_type_data["musicbrainz"] = {
+                "functions": {
+                    "musicbrainz_search_artists_by_tags": self.musicbrainz_.search_artists_by_tags,
+                    "musicbrainz_search_albums_by_tags": self.musicbrainz_.search_albums_by_tags,
+                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
+                    "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
+                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
+                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name
+                },
+                "definitions": musicbrainz_tools
+            }
+            print("MusicBrainz tools added to room type data.")
+
+        if self.discogs_handle: # Check if the instance was successfully created
+            self._room_type_data["discogs"] = {
+                "functions": {
+                    "discogs_search_artist_by_name": self.discogs_handle.search_artist_by_name,
+                    "discogs_get_artist_master_releases_overview": self.discogs_handle.get_artist_master_releases_overview,
+                    "discogs_get_master_release_tracklist": self.discogs_handle.get_master_release_tracklist,
+                    "discogs_get_collection_summary": self.discogs_handle.get_collection_summary,
+                    "discogs_get_wantlist_summary": self.discogs_handle.get_wantlist_summary,
+                    "discogs_search_master_release_by_name": self.discogs_handle.search_master_release_by_name,
+                    "discogs_get_collection_unique_artists": self.discogs_handle.get_collection_unique_artists,
+                    "discogs_get_wantlist_unique_artists": self.discogs_handle.get_wantlist_unique_artists
+                },
+                "definitions": discogs_tools
+            }
+            print("Discogs tools added to room type data.")
+
+        if self.youtube: # Check if the instance was successfully created
+            self._room_type_data["youtube_playlists"] = {
+                "functions": {
+                    "youtube_search_video": self.youtube.search_video,
+                    "youtube_create_playlist": self.youtube.create_playlist,
+                    "youtube_add_video_to_playlist": self.youtube.add_video_to_playlist,
+                    "youtube_open_youtube_item": self.youtube.open_youtube_item
+                },
+                "definitions": youtube_playlister_tools,
+                "current_info": self.youtube.get_summary
+            }
+            print("YouTube Playlists tools added to room type data.")
+
+        if self.bluesky: # Check if the instance was successfully created
+            self._room_type_data["bluesky_social"] = { # Using a distinct room type name
+                "functions": {
+                    "post_bluesky": self.bluesky.post_bluesky
+                },
+                "definitions": bluesky_tools # Use the imported definitions list
+            }
+            print("Bluesky Social tools added to room type data.")
+
+
         # --- End Central Mapping ---
 
 
@@ -201,8 +366,8 @@ class FunctionBuilder:
             "add_item_description": self.state_manager.add_item_description,
             "emit_inner_thought": emit_inner_thought
 
-            # Other base functions (if needed)
-            # "post_bluesky": self.blsky.post_bluesky, # Example of another base service
+            # Note: "post_bluesky" was here as an example but is now handled
+            # as part of the dynamic _room_type_data for "bluesky_social"
         }
 
         # Item-specific functions (like books), defined separately as they depend on inventory
@@ -244,8 +409,17 @@ class FunctionBuilder:
         # --- Step 1: Initialize ALifeSimulation (which also initializes ALifeManager) ---
         # We initialize it first so we have the manager instance available to query.
         # We don't pass a specific config here yet, let it load defaults initially.
-        self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
-        print("ALifeSimulation instance created, including its manager.")
+        try: # Added try-except for ALife initialization as well
+            self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
+            print("ALifeSimulation instance created, including its manager.")
+        except Exception as e:
+            print(f"Error initializing ALifeSimulation: {e}. ALife features will be unavailable.")
+            self.A_Life = None # Ensure A_Life is None if it fails
+            # Remove ALIFE_research from _room_type_data if A_Life is None
+            # This requires dynamic _room_type_data for ALIFE too, or handling this specific case.
+            # For now, _room_type_data is hardcoded for ALIFE, so ALIFE_research functions would fail if A_Life is None.
+            # A more robust solution might move ALIFE_research into the dynamic section as well.
+            return # Exit if ALife failed to initialize
 
         # --- Step 2: Check the ALifeManager for existing simulations ---
         # We can directly access the manager instance created within ALifeSimulation
@@ -259,54 +433,48 @@ class FunctionBuilder:
         # Get the list of simulation IDs from the manager's state
         sim_ids = list(manager._state.keys()) # Accessing the internal state is safe here
 
+        current_sim_id = None # Initialize to None
+        current_step = 0
+
         if sim_ids:
             # --- Step 3: Existing simulations found - Load the first one ---
-            state_info=self.state_manager.get_sim_state()
-            sim_id=state_info.get("id_value", None)
+            state_info = self.state_manager.get_sim_state()
+            sim_id = state_info.get("id_value", None)
             print(f"Simulation ID from state manager: {sim_id}")
-            current_step=state_info.get("sim_current_step", 0)
-            if not sim_id:
-                print("Warning: No simulation ID found in state manager. Loading the first available simulation.")
+            current_step = state_info.get("sim_current_step", 0)
+
+            if not sim_id or sim_id not in sim_ids: # Also check if the stored sim_id actually exists
+                print("Warning: No valid simulation ID found in state manager or ID does not exist. Loading the first available simulation.")
                 current_sim_id = sim_ids[0]
             else:
                 current_sim_id = sim_id
-            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load the last open one with ID: '{current_sim_id}'")
+            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load last open/first available with ID: '{current_sim_id}'")
             load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
 
             print(f"Load Status: {load_message}")
-
-            # After load_previous_simulation, self.A_Life instance state (config,
-            # history, entities, current_tick) is updated based on the loaded data.
-            # load_previous_simulation already sets current_tick to 0.
 
         else:
             # --- Step 4: No existing simulations found - Create, Run, and Archive a new one ---
             print("No existing simulations found in the archive.")
             print("Creating, running, and archiving a new simulation with default configuration.")
 
-            # The create_new_simulation method handles:
-            # 1. Re-initializing the simulation state based on current config (defaults if none loaded).
-            # 2. Running the simulation fully to populate history.
-            # 3. Archiving the completed run (creating JSON and TXT files, registering with manager).
-            # 4. Setting the instance state (history, current_tick=0, etc.) to the new run.
             message = self.A_Life.create_new_simulation()
-            current_step=0
+            current_step = 0
+            # Get the ID of the newly created simulation
             current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager and self.A_Life.simulations_manager._state else "N/A (Error)"
 
             print(f"New Simulation ID: {message}")
 
         # --- Step 5: Final Confirmation ---
-        # Regardless of whether we loaded or created, the self.A_Life instance
-        # should now be initialized and positioned at tick 0 of its history.
         print(f"\nALife initialization complete.")
         if self.A_Life and self.A_Life.history:
-             # Find the ID of the simulation currently loaded/created (it will be the first in the manager now)
              self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
              print(f"Currently loaded Simulation ID: '{current_sim_id}'")
              print(f"Current Tick: {self.A_Life.current_tick}")
              print(f"Total ticks in loaded history: {len(self.A_Life.history)-1}") # Last tick index is len-1
         else:
              print("Warning: ALifeSimulation instance created, but history is empty after initialization.")
+
 
     def get_current_room_types(self):
         """Retrieves the list of types for the current room."""
@@ -330,6 +498,7 @@ class FunctionBuilder:
         # 1. Add room-type specific functions FIRST
         current_types = self.get_current_room_types()
         for room_type in current_types:
+            # Only add if the room_type is actually in the _room_type_data map (which is now dynamic)
             if room_type in self._room_type_data and "functions" in self._room_type_data[room_type]:
                 self.function_map.update(self._room_type_data[room_type]["functions"])
                 print(f"DEBUG: Added functions for room type: {room_type}")
@@ -369,6 +538,7 @@ class FunctionBuilder:
         # Add room-type specific definitions
         current_types = self.get_current_room_types()
         for room_type in current_types:
+            # Only add if the room_type is actually in the _room_type_data map (which is now dynamic)
             if room_type in self._room_type_data and "definitions" in self._room_type_data[room_type]:
                 all_potential_definitions.extend(self._room_type_data[room_type]["definitions"])
                 # print(f"DEBUG: Added definitions for room type: {room_type}")
@@ -483,7 +653,7 @@ class FunctionBuilder:
         # Get the list of types associated with the current room
         room_types = self.get_current_room_types()
 
-        room_description=self.state_manager.get_current_room_description()
+        room_description = self.state_manager.get_current_room_description()
 
         # Initialize a list to hold all parts of the body content
         body_parts = [room_description] # Start with the general room description
@@ -491,6 +661,7 @@ class FunctionBuilder:
         # Iterate through room types to find and call specific info functions
         for room_type in room_types:
             # Check if this room type has specific data and a 'current_info' function defined
+            # Ensure it's in the dynamically built _room_type_data
             if room_type in self._room_type_data and "current_info" in self._room_type_data[room_type]:
                 info_function = self._room_type_data[room_type]["current_info"]
                 try:
@@ -503,10 +674,6 @@ class FunctionBuilder:
                     # Handle potential errors during the call to the info function
                     print(f"Warning: Error calling current_info for room type '{room_type}': {e}")
                     body_parts.append(f"\n--- {room_type.replace('_', ' ').title()} Details ---\n(Error retrieving specific details: {e})")
-            # else:
-                # Optionally, you could add a message if a room type has no specific info function
-                # For most cases, we only want to show if there *is* info, so this is commented out.
-                # pass
 
         # If after collecting all parts, the body is still empty (e.g., no description, no type-specific info)
         if not any(body_parts): # Check if all elements in body_parts are empty/None/False-like

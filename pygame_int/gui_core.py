@@ -14,7 +14,6 @@ from pygame_int import gui_construct_colors
 # --- Internal Module State (Initialized by init_gui) ---
 _font = None
 _line_height = 0
-_gui_rects = {} # Dictionary to hold the calculated Rects for chat panel elements
 _panel_rect = None # Rect for the main side panel
 _history_rect = None # Rect for the chat history area within the panel
 _input_rect = None # Rect for the text input area within the panel
@@ -318,6 +317,8 @@ def init_gui_elements(font, line_height, current_panel_width):
     # gui.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
     # For now, commenting out this problematic call as per instructions focusing on moving functions.
     # show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, type=0)
+
+    # This was moved to game.py
 
     if pygame.mixer.get_init(): 
         try:

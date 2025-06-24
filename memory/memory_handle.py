@@ -31,9 +31,9 @@ DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.json"
 class memory_manager:
 
     # These numbers need to be adjusted to find an optimal spot, lower seems to be better for coherence during conversation and summarization.
-    SHORT_TERM_THRESHOLD = 30  # Number of short-term entries before summarizing
+    SHORT_TERM_THRESHOLD = 20  # Number of short-term entries before summarizing
     LONG_TERM_THRESHOLD = 10   # Number of long-term entries before summarizing
-    SHORT_TERM_KEEP_COUNT = 15  # Number of latest short-term entries to keep after summarizing
+    SHORT_TERM_KEEP_COUNT = 10  # Number of latest short-term entries to keep after summarizing
     LONG_TERM_KEEP_COUNT = 5   # Number of latest long-term entries to keep after summarizing
 
     def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None):

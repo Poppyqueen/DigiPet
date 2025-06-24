@@ -49,15 +49,15 @@ class memory_ai():
         if memory_type == "short_term":
             system_prompt =  """
 
-            Create a concise summary from the provided information that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors or objectives for future reference to prevent repeated errors and guide planning.
+            Create a concise summary from the provided information that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors, objectives or specific details for future reference to prevent repeated errors and guide planning.
 
 Focus on including:
 
-- **What**: Clearly state the main event or action or objects.
+- **What**: Clearly state the main event or action or objects. Make sure to detail the key elements involved.
 - **When**: Specify the timing or context, include initial and ending time with date, hour and minute.
 - **Where**: Describe the location or environment.
 - **Why**: Explain the purpose or reason behind the action.
-- **Behaviors/Objectives**: Emphasize significant behaviors or objectives that should be noted for future reference, either to avoid mistakes or to enhance planning and beneficial actions.
+- **Behaviors/Objectives**: Emphasize significant behaviors, objectives or details that should be noted for future reference, either to avoid mistakes or to enhance planning and beneficial actions.
 
 Make sure your output contains all the most relevant and important information to remember. Any updates, progress, failures or achievements should be documented.
 
