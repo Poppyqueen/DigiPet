@@ -52,13 +52,13 @@ empty_lab={
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
             "possible_emotes": {
-                "neutral": "I'm feeling calm and attentive.",
-                "happy": "I'm feeling cheerful and optimistic.",
-                "sad": "I'm feeling down.",
-                "confused": "I'm unsure or puzzled.",
-                "excited": "I'm enthusiastic and eager.",
-                "thinking": "I'm processing information or contemplating.",
-                "angry": "I'm feeling frustrated or upset."
+                "neutral": "You're feeling calm and attentive.",
+                "happy": "You're feeling cheerful and optimistic.",
+                "sad": "You're feeling down.",
+                "confused": "You're unsure or puzzled.",
+                "excited": "You're enthusiastic and eager.",
+                "thinking": "You're processing information or contemplating.",
+                "angry": "You're feeling frustrated or upset."
             },
             # --- End Emote State ---
 
@@ -1251,13 +1251,13 @@ base_state={
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
             "possible_emotes": {
-                "neutral": "I'm feeling calm and attentive.",
-                "happy": "I'm feeling cheerful and optimistic.",
-                "sad": "I'm feeling down.",
-                "confused": "I'm unsure or puzzled.",
-                "excited": "I'm enthusiastic and eager.",
-                "thinking": "I'm processing information or contemplating.",
-                "angry": "I'm feeling frustrated or upset."
+                "neutral": "You're feeling calm and attentive.",
+                "happy": "You're feeling cheerful and optimistic.",
+                "sad": "You're feeling down.",
+                "confused": "You're unsure or puzzled.",
+                "excited": "You're enthusiastic and eager.",
+                "thinking": "You're processing information or contemplating.",
+                "angry": "You're feeling frustrated or upset."
             },
             # --- End Emote State ---
 
@@ -1354,13 +1354,13 @@ dev_room={
             # --- Emote State (NEW) ---
             "current_emote": "neutral",
             "possible_emotes": {
-                "neutral": "I'm feeling calm and attentive.",
-                "happy": "I'm feeling cheerful and optimistic.",
-                "sad": "I'm feeling down.",
-                "confused": "I'm unsure or puzzled.",
-                "excited": "I'm enthusiastic and eager.",
-                "thinking": "I'm processing information or contemplating.",
-                "angry": "I'm feeling frustrated or upset."
+                "neutral": "You're feeling calm and attentive.",
+                "happy": "You're feeling cheerful and optimistic.",
+                "sad": "You're feeling down.",
+                "confused": "You're unsure or puzzled.",
+                "excited": "You're enthusiastic and eager.",
+                "thinking": "You're processing information or contemplating.",
+                "angry": "You're feeling frustrated or upset."
             },
             # --- End Emote State ---
 
@@ -1484,13 +1484,13 @@ how_to_rooms={
             # --- Emote State (NEW) ---
             "current_emote": "neutral", # From the possible emotes, they don't change, each has an animation we need to make if you want to add more
             "possible_emotes": {
-                "neutral": "I'm feeling calm and attentive.",
-                "happy": "I'm feeling cheerful and optimistic.",
-                "sad": "I'm feeling down.",
-                "confused": "I'm unsure or puzzled.",
-                "excited": "I'm enthusiastic and eager.",
-                "thinking": "I'm processing information or contemplating.",
-                "angry": "I'm feeling frustrated or upset."
+                "neutral": "You're feeling calm and attentive.",
+                "happy": "You're feeling cheerful and optimistic.",
+                "sad": "You're feeling down.",
+                "confused": "You're unsure or puzzled.",
+                "excited": "You're enthusiastic and eager.",
+                "thinking": "You're processing information or contemplating.",
+                "angry": "You're feeling frustrated or upset."
             },
             # --- End Emote State ---
 

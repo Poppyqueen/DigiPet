@@ -252,10 +252,10 @@ class CLIChatbot:
 
 
                 # Clean up tool context from memory after generating last response
-                self.memory.process_short_term_system() # This now gives the system message a time-life to system messages of 1 tick in 'global' memory
-                
-                
-                # Remove system messages from memories after tool process is done 
+                self.memory.process_short_term_system(11) # This now gives the system message a time-life to system messages of 11 ticks in 'global' memory
+
+
+                # Remove system messages from memories after tool process is done
 
                 # This creates an interesting effect, while it does help reduce tokenage usage, the information in system context is a lot
                 # of the times lost and does not get into regular system processing. 

@@ -12,6 +12,8 @@ import os
 import time
 from datetime import datetime
 from typing import Optional, Dict, Any, List # Import typing helpers
+import re
+from collections import OrderedDict
 
 # Import extra memory module
 from memory.deep_memory import DeepMemory # <--- Import DeepMemory here
@@ -31,10 +33,23 @@ DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.json"
 class memory_manager:
 
     # These numbers need to be adjusted to find an optimal spot, lower seems to be better for coherence during conversation and summarization.
-    SHORT_TERM_THRESHOLD = 20  # Number of short-term entries before summarizing
-    LONG_TERM_THRESHOLD = 10   # Number of long-term entries before summarizing
+
+    # These now are replaced with token thresholds, but kept for reference.
+    # SHORT_TERM_THRESHOLD = 20  # Number of short-term entries before summarizing
+    # LONG_TERM_THRESHOLD = 10   # Number of long-term entries before summarizing
+
+
     SHORT_TERM_KEEP_COUNT = 10  # Number of latest short-term entries to keep after summarizing
     LONG_TERM_KEEP_COUNT = 5   # Number of latest long-term entries to keep after summarizing
+
+
+#. Deciding on token thresholds for summarization will have to be done with some testing, these are just initial values.
+
+    # SHORT_TERM_TOKEN_THRESHOLD = 30000  # Token threshold for short-term memory before summarizing
+    # LONG_TERM_TOKEN_THRESHOLD = 25000   # Token threshold for long-term memory before summarizing
+
+    SHORT_TERM_TOKEN_THRESHOLD = 12000  # Token threshold for short-term memory before summarizing
+    LONG_TERM_TOKEN_THRESHOLD = 12000  # Token threshold for long-term memory before summarizing
 
     def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None):
         """
@@ -73,34 +88,87 @@ class memory_manager:
             print("DeepMemory not initialized because ai_bot_instance is not available.")
             self.deep_memory = None # Ensure deep_memory attribute exists
 
-    def current_memory_tokens(self)-> int:
-        memory_structure=self.get_memory_structure()
-        constructed_data=self.construct_data(memory_structure, system_prompt)
-        def extract_content_to_string(messages):
+                
+    def current_memory_tokens(self, memory_type: str = "all") -> int:
             """
-            Extracts the content from a list of message dictionaries into a single string.
+            Returns the current number of tokens in the memory structure.
+            If type is 'all', it counts tokens from all sections (short_term, long_term, base_memory).
+            If type is 'short_term', it counts only short-term memory tokens.
+            If type is 'long_term', it counts only long-term memory tokens.
+            If type is 'base_memory', it counts only base memory tokens.
 
             Args:
-                messages: A list of dictionaries, where each dictionary is expected
-                        to have a 'content' key.
+                type (str): The type of memory to count tokens for. Default is 'all'.
 
             Returns:
-                A single string containing all the 'content' values concatenated,
-                separated by newlines.
+                int: The total number of tokens in the specified memory section(s).
             """
-            all_content = []
-            for message in messages:
-                # Check if the 'content' key exists in the dictionary
-                if 'content' in message:
-                    all_content.append(message['content'])
-                # Optional: Handle cases where 'content' key is missing
-                # else:
-                #     print(f"Warning: Message dictionary missing 'content' key: {message}")
+            if memory_type not in ["all", "short_term", "long_term", "base_memory"]:
+                raise ValueError("Invalid type specified. Use 'all', 'short_term', 'long_term', or 'base_memory'.")
 
-            # Join all the collected content strings with a newline separator
-            return "\n".join(all_content)
-        string_memory=extract_content_to_string(constructed_data)
-        return self.token_manager.num_tokens_from_string(string_memory)
+            memory_structure = self.get_memory_structure()
+
+            if not memory_structure:
+                return 0
+
+            total_tokens = 0
+            string_memory = ""
+
+            if memory_type == "all" or memory_type == "short_term":
+                if "short_term" in memory_structure and isinstance(memory_structure["short_term"], dict):
+                    for key, value in memory_structure["short_term"].items():
+                        string_memory += f"{key}: {value}\n"
+
+            if memory_type == "all" or memory_type == "long_term":
+                if "long_term" in memory_structure and isinstance(memory_structure["long_term"], list):
+                    for item in memory_structure["long_term"]:
+                        # Assuming long_term items might be dicts or strings, convert to string
+                        if isinstance(item, dict) or isinstance(item, list):
+                            string_memory += json.dumps(item) + "\n"
+                        else:
+                            string_memory += str(item) + "\n"
+
+            if memory_type == "all" or memory_type == "base_memory":
+                if "base_memory" in memory_structure and isinstance(memory_structure["base_memory"], str):
+                    string_memory += memory_structure["base_memory"]
+
+            # Counts the tokens of a string
+            total_tokens = self.token_manager.num_tokens_from_string(string_memory)
+
+            print(f"Current memory tokens ({memory_type}): {total_tokens}")
+
+            return total_tokens
+
+    # def current_memory_tokens(self)-> int:
+    #     memory_structure=self.get_memory_structure()
+    #     print(f"Memory structure: {memory_structure}")
+    #     constructed_data=self.construct_data(memory_structure, system_prompt)
+    #     def extract_content_to_string(messages):
+    #         """
+    #         Extracts the content from a list of message dictionaries into a single string.
+
+    #         Args:
+    #             messages: A list of dictionaries, where each dictionary is expected
+    #                     to have a 'content' key.
+
+    #         Returns:
+    #             A single string containing all the 'content' values concatenated,
+    #             separated by newlines.
+    #         """
+    #         all_content = []
+    #         for message in messages:
+    #             # Check if the 'content' key exists in the dictionary
+    #             if 'content' in message:
+    #                 all_content.append(message['content'])
+    #             # Optional: Handle cases where 'content' key is missing
+    #             else:
+    #                 print(f"Warning: Message dictionary missing 'content' key: {message}")
+
+    #         # Join all the collected content strings with a newline separator
+    #         return "\n".join(all_content)
+    #     string_memory=extract_content_to_string(constructed_data)
+    #     #print(f"Extracted memories: {string_memory}")
+    #     return self.token_manager.num_tokens_from_string(string_memory)
 
 
     def _check_and_create_db(self):
@@ -218,16 +286,31 @@ class memory_manager:
                  }
                  # Note: The '0_' or 'system_' prefix is implicitly handled
                  # by just assigning the "system" role and using the value as content.
-
             else:
                  # Process non-system keys (user, assistant, etc.)
-                 # Extract the role from the key (e.g., "user_123" -> "user")
-                 # Use split('_', 1) to handle potential underscores within the identifier part
-                 parts = key.split('_', 1)
-                 if len(parts) > 0:
-                    role = parts[0]
+                 # The role is the part of the key before the *last* underscore
+                 # The last part (after the last underscore) is assumed to be the timestamp
+                 
+                 parts = key.rsplit('_', 1) # Split from the right, only once
+                 
+                 if len(parts) > 1:
+                    # If there's at least one underscore, the role is the first part
+                    role_with_potential_prefix = parts[0]
+                    
+                    # Now, handle cases like "11_system" vs "assistant"
+                    # We want the *last* component of the role_with_potential_prefix
+                    # if it contains multiple underscores (e.g., "11_system" -> "system")
+                    
+                    # If the role part itself contains an underscore, take the part after it
+                    if '_' in role_with_potential_prefix:
+                        # This covers "11_system" and extracts "system"
+                        role = role_with_potential_prefix.split('_', 1)[1] 
+                    else:
+                        # This covers "assistant" and keeps it as "assistant"
+                        role = role_with_potential_prefix
+                    
                     # Basic validation for common API roles, excluding 'system' which is handled above
-                    valid_roles = ["user", "assistant", "tool"]
+                    valid_roles = ["user", "assistant", "system"]
                     if role in valid_roles:
                          message_entry = {"role": role, "content": text}
                     else:
@@ -236,10 +319,10 @@ class memory_manager:
                          # Include original role and key for context if defaulting
                          message_entry = {"role": "user", "content": f"[{role} - {key}]: {text}"}
                  else:
-                    # Handle keys with no underscore - unexpected, treat as user?
-                    print(f"Warning: Key '{key}' in short_term has no underscore. Treating as 'user'.")
+                    # Handle keys with no underscore (e.g., just "user" or "assistant" without timestamp)
+                    # Or keys that are just a timestamp. Treat as unexpected for now.
+                    print(f"Warning: Key '{key}' in short_term has no valid underscore for role/timestamp separation. Treating as 'user'.")
                     message_entry = {"role": "user", "content": f"[Key: {key}]: {text}"}
-
             # Append the created message entry if one was generated
             if message_entry:
                 messages.append(message_entry)
@@ -330,88 +413,122 @@ class memory_manager:
             return json.dumps(memory_data, indent=4)
         else:
             return memory_data
-        
-    def process_short_term_system(self) -> int:
+
+    def _extract_timestamp(self, key: str) -> int:
         """
-        Processes system-tagged entries in the short_term memory section.
+        Extracts the Unix timestamp (last sequence of digits) from a memory key.
+        Returns 0 if no valid timestamp is found.
+        """
+        if not key:
+            return 0
+        match = re.search(r'(\d+)$', key)
+        if match:
+            try:
+                return int(match.group(1))
+            except ValueError:
+                return 0
+        return 0
 
-        First, removes entries tagged as '0_system_'.
-        Second, finds entries tagged as 'system_' and renames them
-        by prepending '0_' (e.g., 'system_foo' becomes '0_system_foo').
+    def process_short_term_system(self, lifespan: int) -> int:
+        """
+        Processes system-tagged entries in the short_term memory section, managing their lifespan.
+        Ensures the memory remains chronologically ordered by timestamp after processing.
 
-        Finally, saves the updated memory structure if any changes occurred.
+        System messages are aged by incrementing a counter in their key prefix.
+        Messages reaching or exceeding their 'lifespan' are removed.
+        New 'system_' messages are initialized with an age of 0.
+
+        Args:
+            lifespan (int): The maximum age a system message can reach before being removed.
+                            A message with a prefix of `lifespan_system_` will be removed
+                            in the current processing cycle.
 
         Returns:
-            int: The total number of entries that were removed (0_system_)
-                 or processed (system_ renamed to 0_system_).
+            int: The total number of entries that were removed or processed (aged).
         """
         memory_data = self._load_memory()
         if memory_data is None:
             print("Error: Could not load memory data. Cannot process system messages.")
-            return 0 # Indicate nothing affected due to error
+            return 0
 
-        # Access the short_term section, default to an empty dict if it doesn't exist
-        # or is not a dict (defensive coding)
         short_term_memory = memory_data.get("short_term", {})
         if not isinstance(short_term_memory, dict):
             print("Warning: short_term memory structure is not a dictionary. Cannot process system messages.")
             return 0
 
-        removed_0_count = 0
-        processed_count = 0 # Count of system_ keys that were renamed
-        total_affected = 0
+        removed_count = 0
+        processed_count = 0 # Count of messages that were aged/renamed
+        
+        keys_to_remove = []
+        keys_to_age = {} # Maps old_key -> new_key for aging
 
-        # --- Step 1: Remove existing '0_system_' entries ---
-        keys_to_remove_0 = []
-        # Collect keys to remove because we can't modify the dict during iteration
-        for key in short_term_memory.keys():
-            if key.startswith("0_system_"):
-                keys_to_remove_0.append(key)
-
-        # Remove the identified entries
-        for key in keys_to_remove_0:
-            try:
-                del short_term_memory[key]
-                removed_0_count += 1
-                # print(f"Removed old system short-term memory with key: {key}") # Optional logging
-            except KeyError:
-                # Should not happen if list is built from current keys
-                pass # Key was already removed
-
-        # --- Step 2: Find and process 'system_' entries (rename to '0_system_') ---
-        # Collect keys to process *after* removal in case a key was just removed
-        keys_to_process = []
-        for key in short_term_memory.keys():
-             if key.startswith("system_"):
-                 keys_to_process.append(key)
-
-        # Process the identified entries by renaming
-        for old_key in keys_to_process:
-            # Ensure the key still exists before trying to access/delete
-            if old_key in short_term_memory:
-                new_key = "0_" + old_key
+        # --- Step 1: Identify messages to remove and messages to age/rename ---
+        # Iterate over a copy of keys as we'll be modifying the conceptual state
+        for key in list(short_term_memory.keys()):
+            if key.startswith("system_"):
+                # New system message, will be initialized with age 0
+                # Example: "system_175..." -> "0_system_175..."
+                keys_to_age[key] = f"0_{key}"
+                processed_count += 1 # This counts as processing (initial aging)
+            elif "_system_" in key:
+                parts = key.split("_system_", 1)
                 try:
-                    # Copy the value to the new key
-                    short_term_memory[new_key] = short_term_memory[old_key]
-                    # Delete the old key
-                    del short_term_memory[old_key]
-                    processed_count += 1
-                    # print(f"Processed system short-term memory: Renamed '{old_key}' to '{new_key}'") # Optional logging
-                except KeyError:
-                    # Should not happen if key existence is checked, but defensive
-                    pass # Key was unexpectedly modified or removed during processing
+                    current_age = int(parts[0])
+                    original_suffix = "system_" + parts[1] # Reconstruct original "system_foo" part
+                    
+                    if current_age >= lifespan:
+                        # Message has reached or exceeded its lifespan, mark for removal
+                        keys_to_remove.append(key)
+                        removed_count += 1
+                    else:
+                        # Message needs to be aged
+                        new_age = current_age + 1
+                        keys_to_age[key] = f"{new_age}_{original_suffix}"
+                        processed_count += 1 # This counts as processing (aging)
+                except ValueError:
+                    # Not an aged system message, or malformed, ignore for this process
+                    pass
+        
+        # --- Step 2: Prepare entries for a chronological rebuild ---
+        # This list will hold (timestamp, key, value) tuples for all *retained* entries,
+        # using their final keys after aging.
+        entries_for_rebuild = []
 
-        total_affected = removed_0_count + processed_count
+        for original_key, value in short_term_memory.items():
+            if original_key in keys_to_remove:
+                # This entry is marked for removal, so skip adding it to the rebuild list
+                continue
+            
+            final_key = original_key
+            if original_key in keys_to_age:
+                # This entry is being aged/renamed, use its new key
+                final_key = keys_to_age[original_key]
+            
+            # Extract timestamp from the FINAL key
+            timestamp = self._extract_timestamp(final_key)
+            entries_for_rebuild.append((timestamp, final_key, value))
 
-        # Update the memory_data dictionary with the modified short_term section
-        memory_data["short_term"] = short_term_memory
+        # --- Step 3: Sort entries chronologically by timestamp ---
+        # This is the crucial step to ensure correct ordering.
+        entries_for_rebuild.sort(key=lambda x: x[0]) # Sort by the timestamp element (index 0 of the tuple)
 
-        # Save the updated memory data if any items were affected
+        # --- Step 4: Rebuild the short_term_memory dictionary in sorted order ---
+        # Using OrderedDict explicitly states the intent to preserve insertion order,
+        # which will now be chronological. (Python 3.7+ dicts also preserve order).
+        new_short_term_memory = OrderedDict() 
+        for timestamp, key, value in entries_for_rebuild:
+            new_short_term_memory[key] = value
+        
+        total_affected = removed_count + processed_count
+
         if total_affected > 0:
+            memory_data["short_term"] = new_short_term_memory
             self._save_memory(memory_data)
-            print(f"Processed short-term system messages: Removed {removed_0_count} old entries and processed {processed_count} new entries.")
+            print(f"Processed short-term system messages: Removed {removed_count} entries and aged {processed_count} entries. Rebuilt memory chronologically.")
         else:
-            print("No short-term system messages found to process or remove.")
+            print("No short-term system messages found to process or remove, or no changes needed.")
+            # If nothing was removed or aged, the memory is already in its correct state,
+            # so no need to save changes.
 
         return total_affected
 
@@ -479,13 +596,18 @@ class memory_manager:
         non_system_entry_count = 0
         total_entry_count = 0 # Keep track of total count for logging
 
+        token_count= self.current_memory_tokens("short_term")
+
         if isinstance(short_term_memory, dict):
             total_entry_count = len(short_term_memory)
             # Count entries where the key does NOT start with '_system_'
-            non_system_entry_count = len([key for key in short_term_memory.keys() if not key.startswith('_system_')])
+            non_system_entry_count = len([key for key in short_term_memory.keys() if '_system_' not in key])
 
         # Check if the threshold is reached based on non-system entries count
-        if non_system_entry_count >= self.SHORT_TERM_THRESHOLD:
+
+        # Update this to use tokens instead of entry count
+        if token_count >= self.SHORT_TERM_TOKEN_THRESHOLD:
+        #if non_system_entry_count >= self.SHORT_TERM_THRESHOLD:
                 
 
             self._archive_memory(self._load_memory(), "short_term")
@@ -539,9 +661,13 @@ class memory_manager:
 
         # --- Long-Term Memory Check ---
         # Use potentially updated memory_data (if short-term summary was added)
+        token_count= self.current_memory_tokens("long_term")
         long_term_memory = memory_data.get("long_term", [])
-        if isinstance(long_term_memory, list) and len(long_term_memory) >= self.LONG_TERM_THRESHOLD:
-            print(f"\n--- Long-Term Memory Check Triggered ({len(long_term_memory)} >= {self.LONG_TERM_THRESHOLD}) ---")
+
+
+        #if isinstance(long_term_memory, list) and len(long_term_memory) >= self.LONG_TERM_THRESHOLD:
+        if token_count >= self.LONG_TERM_TOKEN_THRESHOLD:
+            print(f"\n--- Long-Term Memory Check Triggered ({token_count} >= {self.LONG_TERM_TOKEN_THRESHOLD}) ---")
 
             self._archive_memory(self._load_memory(), "long_term")
 

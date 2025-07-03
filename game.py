@@ -298,7 +298,7 @@ else:
             signal_callback=handle_chatbot_signal,
             system_prompt= system_prompt,
             sub_directory="bots/"+pet_name, # Change this Bot_circle_pet_scientist_run
-            deep_memory=False, # Seriously, leave as false until deep memory is reworked, it will eat tokens
+            deep_memory=False, # Seriously, leave as false until deep memory is reworked
             base_model=general_model, # Set as needed
             select_memory_model=memory_model, # Set as needed
             tts_provider_id="macos_say", # Set to "macos_say", "espeak_ng", or None

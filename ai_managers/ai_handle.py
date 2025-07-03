@@ -65,33 +65,53 @@ class ai_bot:
 
             #print(f"📌 Final prompt for OpenAI API: {final_prompt}")
 
-
-            # Depth check for tools
-            tools_settings = "auto"
-            if depth >= (max_depth - 1):
-                tools_settings="none"
-
-
             messages_data = self.memory_manager.construct_data(mem_structure, final_prompt)
             tools = self.functions_builder.construct_tools() # Get the tools for the current room
+
+            # Depth check for tools
+            if depth >= (max_depth - 1):
+                settings={
+                    "model":self.action_model,
+                    "input":messages_data
+                }
+            else:
+                settings={
+                    "model":self.action_model,
+                    "input":messages_data,
+                    "tools":tools,
+                    "tool_choice":"auto"
+                }
+
+
             try:
-                response = self.client.responses.create(
-                    model=self.action_model, # Using a widely available model name
-                    input=messages_data,
-                    tools=tools,
-                    tool_choice=tools_settings
+                response = self.client.responses.create( # This is a target process we can turn into a separate script in an ABC design pattern to integrate different AI providers
+                    **settings
                 )
+                # Update notes for ABCs integration:
+                
+                # In theory, we would abstract away the responses structure, and maybe the function calling process, making sure each AI provider returns this response structure similar to the one we are processing now
+                # It should be an openAI response structure, probably a lot of providers follow the same patters but this needs to be carefully managed by each individual provider we make for it
+                # the settings parsed into it should also be managed to follow individual providers APIs documentation
+
+                # The main task fo this function then would be to call functions and process messages as the process bellow is for the component on top of it
+
+                # Maybe if we are going into the weeds and really changing this part of the project, we could simplify the structures it returns 
+                # then we would need to update the process bellow for it to function and return the data exactly as it already does but with our simpler structures we create inside each individual provider
                 time.sleep(1)
             except Exception as e:
                 print(f"Error creating response: {e}")
                 # Handle API errors or connection issues gracefully
                 return False, f"Error communicating with model: {e}"
+            
+
 
 
             # Initialize collectors and flags BEFORE processing the output
             function_flag = False # Use a more descriptive name
             final_text = ""
             functions_list = []
+
+            all_text_content_parts = [] 
 
             if response.output:
                 print("Processing response output:")
@@ -125,6 +145,9 @@ class ai_bot:
 
                                 # Attempt to call the function
                                 # Pass parsed_args (which could be {} or the parsed dict)
+
+                                # We call the functions we find with this method and the arguments for each of them
+
                                 function_result = await self.call_function(item.name, parsed_args)
                                 function_array["result"] = function_result # Store successful result
                                 #print(f"Function call '{item.name}' executed successfully.")
@@ -133,7 +156,7 @@ class ai_bot:
                                 # Add the names of the functions in here you want to have muted for the GUI text. It will truncate the text result on the window
 
 
-                                muted_functions=["forward_ALIFE", "backward_ALIFE", "observe_ALIFE"]
+                                # muted_functions=["forward_ALIFE", "backward_ALIFE", "observe_ALIFE"]
                                 
                                 signal_message={"type": "function_called",  "function_name": f"{item.name}", "function_result": f"{function_result}"}
                                 # if str(item.name) in muted_functions:
@@ -172,11 +195,8 @@ class ai_bot:
                                 for content_item in item.content:
                                     if hasattr(content_item, 'type') and content_item.type == 'output_text':
                                         print(f"Text: {content_item.text}")
-                                        final_text += content_item.text
+                                        all_text_content_parts.append(content_item.text)
 
-                                        # Append this message to the tool call responses in either case 
-
-                                        #functions_list.append(final_text)
 
                                     elif hasattr(content_item, 'type'):
                                         print(f"Found unexpected content item type inside message: {content_item.type}")
@@ -199,19 +219,25 @@ class ai_bot:
 
                 # --- Determine return value AFTER processing ALL items ---
                 # If any function calls were processed (regardless of success/failure)
+
+                # This part returns this information to the main end of the bot which manages the main process of it (subsequent runs or memory management),
+                # this is only tasked on returning information on the current response and actions from functions
                 if functions_list:
                     print("Returning function call results.")
                     # Return True to indicate function calls were the primary result
-                    return True, functions_list
+                    return True, functions_list # Note this tuple return with a bool and the functions list
                 # If no functions were called, check for text message
-                elif final_text:
+                elif all_text_content_parts:
                     print("Returning final text message.")
                     # Return False to indicate no function calls were the primary result
-                    return False, final_text
+                    final_text = all_text_content_parts[-1]
+                    return False, final_text # Note the bool and the final text return
                 # If neither functions nor text were found in the output items
                 else:
                     print("Response output processed, but found no function calls or text messages.")
                     return False, "No relevant output found in output items."
+                
+                # 
 
             else:
                 # Handle cases where response.output is empty or None
