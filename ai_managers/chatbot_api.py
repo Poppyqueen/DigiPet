@@ -21,11 +21,57 @@ from tts_providers.base_tts_provider import BaseTTSProvider
 from tts_providers.macos_say_provider import MacOSSaiProvider
 from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
-# Define default filepaths (these are just the base names now)
+
+from ai_managers.llm_clients import openai_client
+from ai_managers.llm_clients import gemini_client
+
+import configparser
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+# load provider for the selected main AI model
+
+main_config = configparser.ConfigParser()
+main_config.read('main_config.ini')
+config_selected_provider = main_config['AI']['general_ai_provider']
+
+
+available_providers = {
+    "gemini": {
+        "client":gemini_client.GeminiClient,
+        "api_key":gemini_api_key},
+    "openai": {
+        "client":openai_client.OpenAIClient,
+        "api_key":None}
+}
+
+# 4. Use the mapping dictionary to get the actual JSON structure
+if config_selected_provider in available_providers:
+    config_client = available_providers[config_selected_provider]["client"]
+    print(f"Loaded state: {config_selected_provider}")
+    print(config_client)
+    api_key_selected=available_providers[config_selected_provider]["api_key"]
+
+else:
+    print(f"Error: '{config_selected_provider}' is not a recognized state.")
+    # Handle the error, perhaps by falling back to a default state
+
+
+
+
+
+# Default filepaths 
 DEFAULT_MEMORY_DB = "cli_memory.json"
 DEFAULT_DEEP_MEMORY_DB = "cli_deep_memory.json"
 DEFAULT_AI_LOG = "cli_ai_log.txt"
-DEFAULT_INVENTORY_FOLDER = "inventory" # Assuming you have an inventory subdirectory
+DEFAULT_INVENTORY_FOLDER = "inventory" 
 
 class CLIChatbot:
     # MODIFIED: Changed tts_flag to tts_provider_id
@@ -50,6 +96,10 @@ class CLIChatbot:
 
         # REMOVED: self.tts = tts_flag
         self.last_response = None # Store the last response for potential use
+
+
+        #selected_client=openai_client.OpenAIClient()
+        selected_client=config_client(api_key_selected)
 
         # NEW: TTS Provider Initialization
         self.tts_provider: BaseTTSProvider | None = None
@@ -86,7 +136,7 @@ class CLIChatbot:
 
             self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory)  # Initialize the function builder
 
-            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory) # 4.1-nano is the newest widely available model
+            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
             # REMOVED: self.tts = tts_flag # Set to True if you want to enable text-to-speech output
             # REMOVED: self._current_tts_process = None
 
@@ -163,7 +213,7 @@ class CLIChatbot:
 
             # This function is the main API call, it sends the information necesary, returns a stringed response for any tool calls if any were made
             # Returns a function_flag if any message was a tool call, for us to process here
-            function_flag, response_content = await self.ai.adventure_response(
+            function_flag, response_content = await self.ai.ai_response(
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
                 current_full_prompt, depth, self.max_recursion_depth
             )
@@ -215,7 +265,7 @@ class CLIChatbot:
                 # elif depth >= self.max_recursion_depth/2:
                 #     depth_message="Depth of function calling reached half way to the limit, please consider outputting your final message"
 
-                function_result = f"Function response: {response_content}" # Assuming response_content is the function output/confirmation
+                function_result = f"{response_content}" # Assuming response_content is the function output/confirmation
 
 
                 # If deep memory active, we add the retrieved memories from it and append it to the function result of the agent.
@@ -228,8 +278,14 @@ class CLIChatbot:
                 print(f"DEBUG: We are sending this as the tool call response: {function_result}")
 
                 # We have changed this to the system tag
-                self.memory.save_to_memory(function_result, "short_term", "system")
-                print(f"✅ Saved function result to memory. Getting next AI response...")
+                if isinstance(response_content,list):
+                    for result in response_content:
+                        
+                        self.memory.save_to_memory(result, "short_term", "system")
+                        print(f"✅ Saved function result to memory. Getting next AI response...")
+                else:
+                    self.memory.save_to_memory(response_content, "short_term", "system")
+
 
                 # Get the updated memory structure after saving the function result
                 updated_mem_structure = self.memory.get_memory_structure()

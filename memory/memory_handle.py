@@ -89,55 +89,75 @@ class memory_manager:
             self.deep_memory = None # Ensure deep_memory attribute exists
 
                 
+
+
     def current_memory_tokens(self, memory_type: str = "all") -> int:
-            """
-            Returns the current number of tokens in the memory structure.
-            If type is 'all', it counts tokens from all sections (short_term, long_term, base_memory).
-            If type is 'short_term', it counts only short-term memory tokens.
-            If type is 'long_term', it counts only long-term memory tokens.
-            If type is 'base_memory', it counts only base memory tokens.
+        """
+        Returns the current number of tokens in the memory structure based on its
+        raw, stored format (short_term, long_term, base_memory).
 
-            Args:
-                type (str): The type of memory to count tokens for. Default is 'all'.
+        Args:
+            memory_type (str): The type of memory to count tokens for.
+                               Options: 'all', 'short_term', 'long_term', 'base_memory'.
 
-            Returns:
-                int: The total number of tokens in the specified memory section(s).
-            """
-            if memory_type not in ["all", "short_term", "long_term", "base_memory"]:
-                raise ValueError("Invalid type specified. Use 'all', 'short_term', 'long_term', or 'base_memory'.")
+        Returns:
+            int: The total number of tokens in the specified memory section(s).
+        """
+        if memory_type not in ["all", "short_term", "long_term", "base_memory"]:
+            raise ValueError("Invalid type specified. Use 'all', 'short_term', 'long_term', or 'base_memory'.")
 
-            memory_structure = self.get_memory_structure()
+        memory_structure = self.get_memory_structure()
 
-            if not memory_structure:
-                return 0
+        if memory_structure is None: # Check for None from get_memory_structure
+            return 0
 
-            total_tokens = 0
-            string_memory = ""
+        string_memory = ""
 
-            if memory_type == "all" or memory_type == "short_term":
-                if "short_term" in memory_structure and isinstance(memory_structure["short_term"], dict):
-                    for key, value in memory_structure["short_term"].items():
+        # --- Process Short-Term Memory ---
+        if memory_type == "all" or memory_type == "short_term":
+            if "short_term" in memory_structure and isinstance(memory_structure["short_term"], dict):
+                # We need to sort keys to ensure consistent token counting if order matters
+                # (though for pure token count, order of concatenation doesn't change total)
+                # Sorting also ensures consistent output for string_memory for debugging.
+                sorted_short_term_keys = sorted(memory_structure["short_term"].keys(), key=lambda k: int(k.split('_')[-1]))
+
+                for key in sorted_short_term_keys:
+                    value = memory_structure["short_term"][key]
+                    if isinstance(value, dict):
+                        # If the value is a dictionary (like your 0_system_ messages)
+                        # We need to serialize it to a string for token counting.
+                        # For system messages acting as tool outputs, we concatenate key info and result.
+                        if "function_name" in value and "result" in value:
+                            string_memory += f"{key}: function_name='{value['function_name']}', arguments={json.dumps(value['arguments'])}, result='{value['result']}'\n"
+                        else:
+                            # Fallback for any other dictionary structure in short_term
+                            string_memory += f"{key}: {json.dumps(value)}\n"
+                    else:
+                        # For string values (user, assistant)
                         string_memory += f"{key}: {value}\n"
 
-            if memory_type == "all" or memory_type == "long_term":
-                if "long_term" in memory_structure and isinstance(memory_structure["long_term"], list):
-                    for item in memory_structure["long_term"]:
-                        # Assuming long_term items might be dicts or strings, convert to string
-                        if isinstance(item, dict) or isinstance(item, list):
-                            string_memory += json.dumps(item) + "\n"
-                        else:
-                            string_memory += str(item) + "\n"
+        # --- Process Long-Term Memory ---
+        if memory_type == "all" or memory_type == "long_term":
+            if "long_term" in memory_structure and isinstance(memory_structure["long_term"], list):
+                for item in memory_structure["long_term"]:
+                    # Assuming long_term items might be dicts, lists or strings.
+                    # Convert to string representation.
+                    if isinstance(item, (dict, list)):
+                        string_memory += json.dumps(item) + "\n"
+                    else:
+                        string_memory += str(item) + "\n"
 
-            if memory_type == "all" or memory_type == "base_memory":
-                if "base_memory" in memory_structure and isinstance(memory_structure["base_memory"], str):
-                    string_memory += memory_structure["base_memory"]
+        # --- Process Base Memory ---
+        if memory_type == "all" or memory_type == "base_memory":
+            if "base_memory" in memory_structure and isinstance(memory_structure["base_memory"], str):
+                string_memory += memory_structure["base_memory"]
 
-            # Counts the tokens of a string
-            total_tokens = self.token_manager.num_tokens_from_string(string_memory)
+        # Counts the tokens of the aggregated string
+        total_tokens = self.token_manager.num_tokens_from_string(string_memory)
 
-            print(f"Current memory tokens ({memory_type}): {total_tokens}")
+        print(f"Current memory tokens ({memory_type}): {total_tokens}")
 
-            return total_tokens
+        return total_tokens
 
     # def current_memory_tokens(self)-> int:
     #     memory_structure=self.get_memory_structure()
@@ -221,26 +241,37 @@ class memory_manager:
 
     def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled"):
         """
-        Constructs the data to be sent to the OpenAI API for processing in a multi-turn format.
-        It expects a memory structure and a system prompt.
+        Constructs an agnostic, structured memory representation to be consumed by the
+        LLM client.
 
-        Creates an initial 'developer' message containing time, base prompt, base memory,
-        and long-term memory. Then, processes short-term memory entries:
-        'system_' and '0_system_' keys become separate 'system' messages.
-        Other keys ('user_', 'assistant_', etc.) become messages with their corresponding roles.
+        Creates an initial 'system_context' containing time, base prompt, base memory,
+        and long-term memory. Then, processes short-term memory entries, categorizing
+        them into 'conversation_turns' (user, assistant) and 'tool_outputs' (from system_ messages).
         Messages are added in chronological order based on short-term keys.
 
         Args:
             memory_structure (dict): The dictionary representing the memory structure.
                                      Expected keys: 'base_memory', 'long_term', 'short_term'.
-            sys_prompt (str): The base system prompt to include in the developer message.
+            sys_prompt (str): The base system prompt to include in the system_context.
 
         Returns:
-            list: A list of message dictionaries formatted for the OpenAI API.
+            dict: A dictionary representing the structured memory.
+                  Example:
+                  {
+                      "system_context": "...",
+                      "conversation_history": [
+                          {"type": "user", "content": "hello there! can you please move to the garden"},
+                          {"type": "tool_output", "tool_call_id": "tool_call_1751576848", "content": "Available rooms: living_room (ID:000001), kitchen (ID:000002), bathroom (ID:000003), bedroom (ID:000000), computer_room (ID:000004), garden (ID:000005), white_room (ID:000006), lab_room (ID:000007)"},
+                          {"type": "assistant", "content": "Error communicating with OpenAI: Error code: 400 - {'error': {'message': \"Invalid type for 'input[2].content': expected one of an array of objects or string, but got an object instead.\", 'type': 'invalid_request_error', 'param': 'input[2].content', 'code': 'invalid_type'}}"}
+                      ]
+                  }
         """
-        messages = []
+        structured_memory = {
+            "system_context": "",
+            "conversation_history": []
+        }
 
-        # --- Construct the initial 'developer' message (keeping original structure) ---
+        # --- Construct the initial 'system_context' (developer message equivalent) ---
         current_time_unix = int(time.time())
         formatted_time = time.ctime(current_time_unix)
 
@@ -259,84 +290,77 @@ class memory_manager:
         else:
             system_message_content += "No long-term memory entries available.\n"
 
-        developer_message = {
-            "role": "developer",
-            "content": system_message_content
-        }
-        messages.append(developer_message) # Add the initial developer message
+        structured_memory["system_context"] = system_message_content
 
         # --- Process Short-Term Memory entries ---
         short_term_memory = memory_structure.get("short_term", {})
 
         # Sort keys to maintain chronological order for conversation turns
-        # Assumes keys like "user_timestamp", "assistant_timestamp", "0_system_timestamp", etc.
-        # Sort keys based on the numeric timestamp part
         sorted_short_term_keys = sorted(short_term_memory.keys(), key=lambda k: int(k.split('_')[-1]))
 
         for key in sorted_short_term_keys:
-            text = short_term_memory[key]
-            message_entry = None # Initialize message entry
+            text_or_object = short_term_memory[key]
 
-            # Check if the key is a system variant
+            # Check if the key is a system variant (now specifically for tool outputs)
             if key.startswith("0_system_") or key.startswith("system_"):
-                 # Create a system message from this entry
-                 message_entry = {
-                     "role": "system",
-                     "content": text
-                 }
-                 # Note: The '0_' or 'system_' prefix is implicitly handled
-                 # by just assigning the "system" role and using the value as content.
+                if isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
+                    # This is a tool output message from a previous function call
+                    tool_output_content = str(text_or_object["result"])
+                    # Generate a tool_call_id. For consistency with your system messages being tool outputs,
+                    # we derive it from the timestamp or generate a UUID if needed.
+                    tool_call_id_from_key = key.split('_')[-1]
+                    unique_tool_call_id = f"tool_call_{tool_call_id_from_key}" # Or str(uuid.uuid4())
+                    
+                    structured_memory["conversation_history"].append({
+                        "type": "tool_output",
+                        "tool_call_id": unique_tool_call_id,
+                        "content": tool_output_content,
+                        "function_name":text_or_object["function_name"],
+                        "arguments":text_or_object["arguments"]
+                        
+                    })
+                elif isinstance(text_or_object, str):
+                    # Per your instruction, plain string system messages also become tool messages.
+                    # We generate a unique tool_call_id for them.
+                    print(f"Warning: Plain string system message found for key '{key}'. Assigning a new tool_call_id for 'tool' role.")
+                    structured_memory["conversation_history"].append({
+                        "type": "tool_output", # Treated as a generic tool output for a system message
+                        "tool_call_id": f"", # Unique ID for this synthetic tool message
+                        "content": text_or_object
+                    })
             else:
-                 # Process non-system keys (user, assistant, etc.)
-                 # The role is the part of the key before the *last* underscore
-                 # The last part (after the last underscore) is assumed to be the timestamp
-                 
-                 parts = key.rsplit('_', 1) # Split from the right, only once
-                 
-                 if len(parts) > 1:
-                    # If there's at least one underscore, the role is the first part
+                # Process non-system keys (user, assistant, etc.)
+                parts = key.rsplit('_', 1)
+                role = "unknown"
+                if len(parts) > 1:
                     role_with_potential_prefix = parts[0]
-                    
-                    # Now, handle cases like "11_system" vs "assistant"
-                    # We want the *last* component of the role_with_potential_prefix
-                    # if it contains multiple underscores (e.g., "11_system" -> "system")
-                    
-                    # If the role part itself contains an underscore, take the part after it
                     if '_' in role_with_potential_prefix:
-                        # This covers "11_system" and extracts "system"
                         role = role_with_potential_prefix.split('_', 1)[1] 
                     else:
-                        # This covers "assistant" and keeps it as "assistant"
                         role = role_with_potential_prefix
-                    
-                    # Basic validation for common API roles, excluding 'system' which is handled above
-                    valid_roles = ["user", "assistant", "system"]
-                    if role in valid_roles:
-                         message_entry = {"role": role, "content": text}
-                    else:
-                         # Handle unexpected roles - maybe default to user?
-                         print(f"Warning: Unexpected role '{role}' extracted from key '{key}'. Treating as 'user'.")
-                         # Include original role and key for context if defaulting
-                         message_entry = {"role": "user", "content": f"[{role} - {key}]: {text}"}
-                 else:
-                    # Handle keys with no underscore (e.g., just "user" or "assistant" without timestamp)
-                    # Or keys that are just a timestamp. Treat as unexpected for now.
-                    print(f"Warning: Key '{key}' in short_term has no valid underscore for role/timestamp separation. Treating as 'user'.")
-                    message_entry = {"role": "user", "content": f"[Key: {key}]: {text}"}
-            # Append the created message entry if one was generated
-            if message_entry:
-                messages.append(message_entry)
+                else:
+                    role = parts[0]
 
+                valid_roles = ["user", "assistant"]
+                if role in valid_roles:
+                    structured_memory["conversation_history"].append({
+                        "type": role,
+                        "content": str(text_or_object)
+                    })
+                else:
+                    print(f"Warning: Unexpected role '{role}' extracted from key '{key}'. Treating as 'user'.")
+                    structured_memory["conversation_history"].append({
+                        "type": "user",
+                        "content": f"[{role} - {key}]: {str(text_or_object)}"
+                    })
+        return structured_memory
 
-        # print("👾👾 👾👾 THESE ARE THE MESSAGES WE ARE SENDING INTO THE AI 👾👾 👾👾")
-        # print(messages)
-        return messages
 
     def random_memory(self):
         random_data=self.deep_memory.random_access()
         return random_data
 
-    def save_to_memory(self, string_to_save: str, memory_type: str, tag: Optional[str] = None):
+    def save_to_memory(self, string_to_save, memory_type: str, tag: Optional[str] = None):
         """Saves a string to the specified memory section (short_term, long_term, base_memory).
 
         Args:
@@ -361,7 +385,7 @@ class memory_manager:
             # Store raw string, formatting can happen on retrieval if needed
             # Or keep formatting here if it's always desired
             formatted_time = time.ctime(current_time) # Human-readable for storage
-            saved_content = f"Time of the exchange: {formatted_time}\n Exchange: {string_to_save}"
+            saved_content = string_to_save
 
             # Ensure 'short_term' exists and is a dict
             if "short_term" not in memory_data or not isinstance(memory_data["short_term"], dict):
@@ -369,7 +393,10 @@ class memory_manager:
 
             # Create a unique key using the tag and timestamp
             key = f"{tag}_{current_time}" # Timestamp ensures chronological order when sorted
+            
             memory_data["short_term"][key] = saved_content
+            print(f"data saved {saved_content}")
+
 
         elif memory_type == "long_term":
              # Ensure 'long_term' exists and is a list
@@ -391,8 +418,9 @@ class memory_manager:
             return
 
         self._save_memory(memory_data)
+        print(f"data saved {memory_data}")
         # Consider more specific logging later if needed
-        # print(f"Saved to '{memory_type}' memory.")
+        print(f"Saved to '{memory_type}' memory.")
 
     def get_memory_structure(self, formatted: bool = False) -> Optional[Dict[str, Any] | str]:
         """
@@ -573,6 +601,8 @@ class memory_manager:
         except Exception as e:
             print(f"Error archiving memory before {trigger_type} summarization: {e}")
 
+
+    # --- The `check` function to be updated ---
     def check(self):
         """
         Checks memory lengths, triggers summarization via AI bot if thresholds are reached,
@@ -593,56 +623,59 @@ class memory_manager:
         # --- Short-Term Memory Check ---
         short_term_memory = memory_data.get("short_term", {})
 
-        non_system_entry_count = 0
-        total_entry_count = 0 # Keep track of total count for logging
+        token_count = self.current_memory_tokens("short_term")
 
-        token_count= self.current_memory_tokens("short_term")
-
-        if isinstance(short_term_memory, dict):
-            total_entry_count = len(short_term_memory)
-            # Count entries where the key does NOT start with '_system_'
-            non_system_entry_count = len([key for key in short_term_memory.keys() if '_system_' not in key])
-
-        # Check if the threshold is reached based on non-system entries count
-
-        # Update this to use tokens instead of entry count
+        # Use token_count for the threshold check
         if token_count >= self.SHORT_TERM_TOKEN_THRESHOLD:
-        #if non_system_entry_count >= self.SHORT_TERM_THRESHOLD:
-                
+            print(f"\n--- Short-Term Memory Check Triggered ({token_count} >= {self.SHORT_TERM_TOKEN_THRESHOLD}) ---")
 
-            self._archive_memory(self._load_memory(), "short_term")
+            # Archive the memory *before* summarization/purging for historical record
+            self._archive_memory(self._load_memory(), "short_term") # Pass the original, loaded state
 
             if self.deep_memory_flag:
                 self.create_deep_memory()
 
-            # Sort keys chronologically using the timestamp part
-            try:
-                # Ensure keys have the expected format before sorting
-                valid_keys = [k for k in short_term_memory.keys() if '_' in k and k.split('_')[-1].isdigit()]
-                sorted_short_term_keys = sorted(valid_keys, key=lambda k: int(k.split('_')[-1]))
-            except ValueError as e:
-                print(f"Error sorting short-term keys (check key format 'tag_timestamp'): {e}")
-                sorted_short_term_keys = list(short_term_memory.keys()) # Fallback to unsorted
-
+            # Prepare string for summarization from short_term_memory
             structured_short_term = ""
-            for key in sorted_short_term_keys:
-                # Extract tag and handle potential key format issues
-                parts = key.split('_')
-                tag = parts[0].capitalize() if parts else "Unknown"
-                structured_short_term += f"[{tag}]: {short_term_memory[key]}\n" # Assuming value is the string to summarize
+            if isinstance(short_term_memory, dict):
+                try:
+                    # Sort keys chronologically using the timestamp part
+                    # Ensure keys have the expected format before sorting
+                    valid_keys = [k for k in short_term_memory.keys() if '_' in k and k.split('_')[-1].isdigit()]
+                    sorted_short_term_keys = sorted(valid_keys, key=lambda k: int(k.split('_')[-1]))
+                except ValueError as e:
+                    print(f"Error sorting short-term keys (check key format 'tag_timestamp'): {e}")
+                    sorted_short_term_keys = list(short_term_memory.keys()) # Fallback to unsorted
+
+                for key in sorted_short_term_keys:
+                    value = short_term_memory[key]
+                    # This is the crucial part: handling the new dictionary format
+                    if isinstance(value, dict):
+                        # For system messages that are function results
+                        if "function_name" in value and "result" in value:
+                            # Format for AI summarization: include relevant details
+                            structured_short_term += f"[{key.split('_')[0].capitalize()} - Function Call: {value['function_name']}]: Result: {value['result']}\n"
+                        else:
+                            # For any other dict, just dump it
+                            structured_short_term += f"[{key.split('_')[0].capitalize()}]: {json.dumps(value)}\n"
+                    else:
+                        # For string values (user, assistant, simple system messages if any)
+                        parts = key.rsplit('_', 1)
+                        tag = parts[0].capitalize() if parts else "Unknown"
+                        structured_short_term += f"[{tag}]: {value}\n"
 
             if structured_short_term:
-                #print("DEBUG: Calling AI to summarize short-term memory...")
+                print("DEBUG: Calling AI to summarize short-term memory...")
                 try:
                     summary_short_term = self.bot_instance.summarize_memories(structured_short_term, "short_term")
                     if summary_short_term:
-                        #print(f"DEBUG: Short-term summary created: {summary_short_term[:100]}...")
-                        # Add summary to long-term memory (will be saved later)
+                        print(f"DEBUG: Short-term summary created: {summary_short_term[:100]}...")
+                        # Add summary to long-term memory
                         if "long_term" not in memory_data or not isinstance(memory_data["long_term"], list):
                             memory_data["long_term"] = []
                         timestamp_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         memory_data["long_term"].append(f"[{timestamp_str}] [Summary of recent conversation]: {summary_short_term}")
-                        #print("DEBUG: Summary added to long-term memory queue.")
+                        print("DEBUG: Summary added to long-term memory queue.")
                         needs_save = True
 
                         # Purge oldest short-term memories
@@ -660,43 +693,37 @@ class memory_manager:
                 print("DEBUG: No structured short-term memory to summarize.")
 
         # --- Long-Term Memory Check ---
-        # Use potentially updated memory_data (if short-term summary was added)
-        token_count= self.current_memory_tokens("long_term")
+        token_count = self.current_memory_tokens("long_term") # Use the helper for token count
         long_term_memory = memory_data.get("long_term", [])
 
-
-        #if isinstance(long_term_memory, list) and len(long_term_memory) >= self.LONG_TERM_THRESHOLD:
+        # Use token_count for the threshold check
         if token_count >= self.LONG_TERM_TOKEN_THRESHOLD:
             print(f"\n--- Long-Term Memory Check Triggered ({token_count} >= {self.LONG_TERM_TOKEN_THRESHOLD}) ---")
 
-            self._archive_memory(self._load_memory(), "long_term")
-
+            # Archive the memory *before* summarization/purging for historical record
+            self._archive_memory(self._load_memory(), "long_term") # Pass the original, loaded state
 
             structured_long_term = ""
             for i, entry in enumerate(long_term_memory):
-                # Handle potential dicts or just strings
                 entry_text = entry.get("memory") if isinstance(entry, dict) else str(entry)
                 structured_long_term += f"[Entry {i+1}]: {entry_text}\n"
 
             base_memory_content = memory_data.get("base_memory", "")
-            # Ensure base_memory is a string
             if not isinstance(base_memory_content, str):
                  base_memory_content = str(base_memory_content)
 
-            # Combine Base and Long-Term for context during summarization
             structured_for_ai = f"Current Base Memory:\n{base_memory_content}\n\nRecent Long-Term Memories to Summarize and Integrate:\n{structured_long_term}"
 
-            if structured_long_term: # Only summarize if there are long-term entries
+            if structured_long_term:
                 print("DEBUG: Calling AI to summarize long-term memory into base memory...")
                 try:
                     summary_long_term_base = self.bot_instance.summarize_memories(structured_for_ai, "long_term")
                     if summary_long_term_base:
                         print(f"DEBUG: Base memory summary created: {summary_long_term_base[:100]}...")
-                        memory_data["base_memory"] = summary_long_term_base # Update base memory
+                        memory_data["base_memory"] = summary_long_term_base
                         print("DEBUG: Base memory updated with summary.")
                         needs_save = True
 
-                        # Purge oldest long-term memories AFTER summarization
                         if len(long_term_memory) > self.LONG_TERM_KEEP_COUNT:
                             memory_data["long_term"] = long_term_memory[-self.LONG_TERM_KEEP_COUNT:]
                             print(f"Long-term memory purged, keeping latest {self.LONG_TERM_KEEP_COUNT} entries.")
@@ -708,7 +735,6 @@ class memory_manager:
                     print(f"Error during long-term/base summarization: {e}")
             else:
                 print("DEBUG: No structured long-term memory to summarize.")
-
 
         # Save memory if any changes occurred
         if needs_save:
