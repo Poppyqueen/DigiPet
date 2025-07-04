@@ -6,7 +6,16 @@ import time
 import random
 import pygame_int.config as config # Need access to event types, CARE_PACKAGES, etc.
 import asyncio # ADDED THIS IMPORT IN PREVIOUS STEP
+from inventory_items.inventory_manager import InventoryHouseManager
+import os
+from memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
+from utils.capture_text import TextCapture # Import the text capture class
 
+
+DEFAULT_INVENTORY_FOLDER = "inventory" 
+DEFAULT_MEMORY_DB = "cli_memory.json"
+DEFAULT_DEEP_MEMORY_DB = "cli_deep_memory.json"
+DEFAULT_TEXT_CAPTURE_DB = "logs_capture.txt"
 
 # --- Mock State Manager Class ---
 # This class mocks the state_manager attribute of the real chatbot.
@@ -84,6 +93,8 @@ class MockFunctionsBuilder:
 class MockChatbot:
     def __init__(self, signal_callback, system_prompt, sub_directory, deep_memory, base_model, select_memory_model, tts_flag):
         print("MockChatbot: Initializing...")
+        os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
+
         self._signal_callback = signal_callback
         self._system_prompt = system_prompt # Stored, but not used by mock logic
         self._sub_directory = sub_directory # Stored, but not used by mock logic
@@ -122,9 +133,25 @@ class MockChatbot:
             "bathroom": ["sink", "toilet", "shower", "soap"],
         }
         self._player_inventory = ["wallet", "phone"] # Mock player inventory
+        inventory_filepath = os.path.join(sub_directory, DEFAULT_INVENTORY_FOLDER) # Assuming you have an inventory subdirectory
+        memory_filepath = os.path.join(sub_directory, DEFAULT_MEMORY_DB)
+        deep_memory_filepath = os.path.join(sub_directory, DEFAULT_DEEP_MEMORY_DB)
+        text_capture_path = os.path.join(sub_directory, DEFAULT_TEXT_CAPTURE_DB)
 
+
+
+        self.text_capture = TextCapture(filepath=text_capture_path)  # Initialize text capture
+
+        self.memory = memory_manager(
+            filepath=memory_filepath,
+            deep_memory_filepath=deep_memory_filepath,
+            deep_memory=deep_memory, # Pass the deep memory flag
+            text_capture=self.text_capture,
+            sub_directory=sub_directory
+        )
         # --- Instantiate the Mock State Manager ---
-        self.state_manager = MockStateManager(self) # Pass self (the MockChatbot instance)
+        self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, self.memory)
+
 
         # --- NEW: Instantiate the Mock Functions Builder ---
         self.functions_builder = MockFunctionsBuilder(self) # Pass self
@@ -163,7 +190,7 @@ class MockChatbot:
     def get_current_location(self):
         """Mock: Returns the mock current location ID (from the MockChatbot's state)."""
         print(f"MockChatbot: get_current_location() called, returning {self._current_location_id}")
-        return self._current_location_id
+        return self.state_manager.get_current_room_id()
 
     def get_wellness_states(self):
         """Mock: Returns a copy of the mock pet stats."""
@@ -174,30 +201,27 @@ class MockChatbot:
     def add_items_room(self, room_id, items_list):
         """Mock: Adds items to the specified mock room inventory and signals."""
         print(f"MockChatbot: add_items_room() called for room '{room_id}' with items: {items_list}")
-        if room_id in self._mock_inventories:
             # Add item names from the list of dictionaries
-            for item_info in items_list:
-                 if isinstance(item_info, dict) and 'name' in item_info:
-                      item_name = item_info['name']
-                      self._mock_inventories[room_id].append(item_name)
-                      print(f"MockChatbot: Added '{item_name}' to room '{room_id}'.")
-            # Trigger an inventory update signal for the CURRENT room
-            # Note: This might be slightly different from how the real bot works
-            # (which might only update the inventory when you *enter* the room),
-            # but it simulates the items appearing after adding.
-            self._signal_callback({
-                 "type": "room_inventory",
-                 "item_list": self._mock_inventories.get(self._current_location_id, []) # Signal for current room
-            })
-            print("MockChatbot: Signaled room_inventory update.")
-        else:
-            print(f"MockChatbot: Warning - Room '{room_id}' not found in mock inventories.")
-
+        for item_info in items_list:
+                if isinstance(item_info, dict) and 'name' in item_info:
+                    item_name = item_info['name']
+                    self.state_manager.create_item(target_location="room", target_location_id=room_id,item_creation_data=item_info)
+                    print(f"MockChatbot: Added '{item_name}' to room '{room_id}'.")
+        # Trigger an inventory update signal for the CURRENT room
+        # Note: This might be slightly different from how the real bot works
+        # (which might only update the inventory when you *enter* the room),
+        # but it simulates the items appearing after adding.
+        self._signal_callback({
+                "type": "room_inventory",
+                "item_list": self.state_manager.list_inventories() # Signal for current room
+        })
+        print("MockChatbot: Signaled room_inventory update.")
+    
 
     def get_room_name_out(self, room_id):
         """Mock: Returns the name for a given mock room ID using internal mock data."""
         # Access the mock room data directly from the MockChatbot
-        name = self._mock_room_data.get(room_id, {}).get("name", "Unknown Room")
+        name=self.state_manager.get_current_room_name()
         print(f"MockChatbot: get_room_name_out('{room_id}') called, returning '{name}'")
         return name
 

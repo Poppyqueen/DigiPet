@@ -18,13 +18,41 @@ from collections import OrderedDict
 # Import extra memory module
 from memory.deep_memory import DeepMemory # <--- Import DeepMemory here
 
-from utils.memory_ai_helper import memory_ai
 from utils.tokens_handle import token_manager
+
+
+from memory.memory_providers.openai_memory_ai_provider import OpenAIMemoryAI
+from memory.memory_providers.gemini_memory_ai_provider import GeminiMemoryAI
+
+
 import configparser
 
 config = configparser.ConfigParser()
 config.read('main_config.ini')
 system_prompt = config['AI']['sys_prompt']
+selected_model= config['AI']['memory_model']
+config_selected_provider = config['AI']['memory_ai_provider']
+
+
+available_providers = {
+    "gemini": {
+        "client":GeminiMemoryAI},
+    "openai": {
+        "client":OpenAIMemoryAI}
+}
+
+# 4. Use the mapping dictionary to get the actual JSON structure
+if config_selected_provider in available_providers:
+    config_client = available_providers[config_selected_provider]["client"]
+    print(f"Loaded state: {config_selected_provider}")
+    print(config_client)
+
+else:
+    print(f"Error: '{config_selected_provider}' is not a recognized state.")
+    # Handle the error, perhaps by falling back to a default state
+
+
+
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
@@ -48,8 +76,14 @@ class memory_manager:
     # SHORT_TERM_TOKEN_THRESHOLD = 30000  # Token threshold for short-term memory before summarizing
     # LONG_TERM_TOKEN_THRESHOLD = 25000   # Token threshold for long-term memory before summarizing
 
+    # Selected:
     SHORT_TERM_TOKEN_THRESHOLD = 12000  # Token threshold for short-term memory before summarizing
     LONG_TERM_TOKEN_THRESHOLD = 12000  # Token threshold for long-term memory before summarizing
+
+
+    # SHORT_TERM_TOKEN_THRESHOLD = 300  # Token threshold for short-term memory before summarizing
+    # LONG_TERM_TOKEN_THRESHOLD = 300  # Token threshold for long-term memory before summarizing
+
 
     def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None):
         """
@@ -70,7 +104,7 @@ class memory_manager:
 
         # Use provided bot instance or create a new one if needed
 
-        self.bot_instance = memory_ai(self.text_capture)
+        self.bot_instance = config_client(self.text_capture, selected_model)
 
         # Initialize DeepMemory - AFTER bot_instance is set
         if self.bot_instance and self.deep_memory_flag:

@@ -116,69 +116,71 @@ class YouTubeTools:
                 raise # Re-raise for other types of errors
         return {}
     
-    def search_video(self, query: str, max_results: int = 10, category_id: str = '10') -> List[Dict[str, str]]:
-        """
-        Searches YouTube for videos matching a given query and returns a structured list
-        of the top N matching videos, including their titles and IDs.
+    def search_video(self, query: str, max_results: int = 10, category_id: str = '10') -> str:
+            """
+            Searches YouTube for videos matching a given query and returns a structured string
+            of the top N matching videos, including their titles and IDs.
 
-        This tool is useful for finding specific songs, music videos, or any video content
-        on YouTube. It prioritizes video results.
+            This tool is useful for finding specific songs, music videos, or any video content
+            on YouTube. It prioritizes video results.
 
-        Args:
-            query (str): The search term (e.g., "artist name - song title", "AI explained").
-                         Be as specific as possible for best results.
-            max_results (int): The maximum number of video results to return. Defaults to 10.
-                               The YouTube API limits this to a maximum of 50.
-            category_id (str): Optional. The YouTube category ID to filter results.
-                               '10' is Music. Set to '' for broader searches.
+            Args:
+                query (str): The search term (e.g., "artist name - song title", "AI explained").
+                            Be as specific as possible for best results.
+                max_results (int): The maximum number of video results to return. Defaults to 10.
+                                The YouTube API limits this to a maximum of 50.
+                category_id (str): Optional. The YouTube category ID to filter results.
+                                '10' is Music. Set to '' for broader searches.
 
-        Returns:
-            List[Dict[str, str]]: A list of dictionaries. Each dictionary contains:
-                                  - 'video_id': The YouTube ID of the video.
-                                  - 'title': The title of the video.
-                                  Returns an empty list if no videos are found or an error occurs.
+            Returns:
+                str: A formatted string containing the video ID and title for each video found.
+                    Each video's information will be on a new line.
+                    Returns "No videos found." if no videos are found or an error occurs.
 
-        Examples:
-            >>> youtube_tools.search_video(query="Led Zeppelin Stairway to Heaven official video", max_results=2)
-            [
-                {'video_id': 'dQw4w9WgXcQ', 'title': 'Led Zeppelin - Stairway To Heaven (Official Audio)'},
-                {'video_id': 'another_id', 'title': 'Stairway to Heaven Live (Example)'}
-            ]
-            >>> youtube_tools.search_video(query="Non-existent video")
-            []
-        """
-        try:
-            # Ensure max_results doesn't exceed the YouTube API limit (50)
-            effective_max_results = min(max_results, 50)
+            Examples:
+                >>> youtube_tools.search_video(query="Led Zeppelin Stairway to Heaven official video", max_results=2)
+                "Video 1: {'video_id': 'dQw4w9WgXcQ', 'title': 'Led Zeppelin - Stairway To Heaven (Official Audio)'}
+                Video 2: {'video_id': 'another_id', 'title': 'Stairway to Heaven Live (Example)'}"
+                >>> youtube_tools.search_video(query="Non-existent video")
+                "No videos found."
+            """
+            try:
+                # Ensure max_results doesn't exceed the YouTube API limit (50)
+                effective_max_results = min(max_results, 50)
 
-            search_request_builder = lambda: self.service.search().list(
-                part='snippet',
-                q=query,
-                maxResults=effective_max_results,
-                type='video',
-                videoCategoryId=category_id if category_id else None
-            )
+                search_request_builder = lambda: self.service.search().list(
+                    part='snippet',
+                    q=query,
+                    maxResults=effective_max_results,
+                    type='video',
+                    videoCategoryId=category_id if category_id else None
+                )
 
-            search_response = self._execute_with_retry(search_request_builder)
-            
-            # Extract video ID and title for each item
-            results = []
-            for item in search_response.get('items', []):
-                if 'videoId' in item['id']: # Ensure it's a video result
-                    results.append({
-                        'video_id': item['id']['videoId'],
-                        'title': item['snippet']['title']
-                    })
-            
-            return results
-        except HttpError as e:
-            # For errors, return an empty list and potentially log the error internally
-            print(f"Error searching for video '{query}': HTTP Error {e.resp.status} - {e.content.decode()}.")
-            return []
-        except Exception as e:
-            # For unexpected errors, return an empty list and potentially log the error internally
-            print(f"An unexpected error occurred while searching for video '{query}': {e}.")
-            return []
+                search_response = self._execute_with_retry(search_request_builder)
+                
+                # Extract video ID and title for each item and format into a string
+                results_string = []
+                for i, item in enumerate(search_response.get('items', [])):
+                    if 'videoId' in item['id']: # Ensure it's a video result
+                        video_info = {
+                            'video_id': item['id']['videoId'],
+                            'title': item['snippet']['title']
+                        }
+                        results_string.append(f"Video {i+1}: {video_info}")
+                
+                if results_string:
+                    return "\n".join(results_string)
+                else:
+                    return "No videos found."
+
+            except HttpError as e:
+                # For errors, return a specific error message
+                print(f"Error searching for video '{query}': HTTP Error {e.resp.status} - {e.content.decode()}.")
+                return "No videos found. An HTTP error occurred."
+            except Exception as e:
+                # For unexpected errors, return a general error message
+                print(f"An unexpected error occurred while searching for video '{query}': {e}.")
+                return "No videos found. An unexpected error occurred."
         
     def create_playlist(self, title: str, description: str = "") -> str:
         """

@@ -1,7 +1,6 @@
 # ai_handle.py (modified)
 
 import time
-import json # Still needed for parsing args if functions_builder expects them as JSON strings
 
 # Import utils (assuming these remain the same)
 from utils.capture_text import TextCapture
@@ -86,7 +85,7 @@ class ai_bot:
                         #self.memory_manager.save_to_memory(function_message_array, "short_term", "system")
                         #print(f"Trying to save the following data into memory: \n{function_request_array}")
                         function_result = await self.call_function(fc_details.name, fc_details.arguments)
-                        function_array["result"] = function_result
+                        function_array["result"] = str(function_result)
                         signal_message = {"type": "function_called", "function_name": f"{fc_details.name}", "function_result": f"{function_result}"}
                         self._send_signal(signal_message)
                     except Exception as e:
