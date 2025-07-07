@@ -52,7 +52,7 @@ selected_state_name = config['game_settings']['initial_state'] # e.g., "base_sta
 if selected_state_name in available_states:
     selected_state = available_states[selected_state_name]
     print(f"Loaded state: {selected_state_name}")
-    print(selected_state)
+    #print(selected_state)
 
 else:
     print(f"Error: '{selected_state_name}' is not a recognized state.")
@@ -1699,7 +1699,7 @@ class InventoryHouseManager(GenericJsonTool):
 
         # --- 6. Return Value ---
         if internal:
-            print(f"DEBUG: Returning internally. Successfully created IDs: {successfully_created_ids}.")
+            #print(f"DEBUG: Returning internally. Successfully created IDs: {successfully_created_ids}.")
             # Return the list of IDs that were successfully created and placed
             return successfully_created_ids
 
@@ -1736,11 +1736,11 @@ class InventoryHouseManager(GenericJsonTool):
              # Should only happen if input was an empty list or all items were malformed
              # which are handled, but as a fallback:
              final_msg = "No item creation attempts were processed."
-             print(f"DEBUG: No messages to return, falling back to default: {final_msg}")
+             #print(f"DEBUG: No messages to return, falling back to default: {final_msg}")
              return final_msg
 
         final_msg = "\n".join(messages)
-        print(f"DEBUG: Returning final message:\n{final_msg}")
+        #print(f"DEBUG: Returning final message:\n{final_msg}")
         return final_msg
     
 

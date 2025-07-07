@@ -1401,18 +1401,28 @@ dev_room={
     #     "plant_type": "lettuce" # This key links the seed to its plant type
     # }
 
+            #    {
+            #         "name": "notepad", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
+            #         "descriptions": [
+            #             "A personal notepad to save useful information"
+            #         ],
+            #         "static": False,
+            #         "type": ["book"],
+            #         "chapters": [
+            #             {
+            #         "title": "The Key",
+            #         "content": "The grand key, the secret is 'Purple Penguin'."
+            #     },
+            #         ]
+            #     },
                {
-                    "name": "notepad", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
+                    "name": "Leather book", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 
                     "descriptions": [
-                        "A personal notepad to save useful information"
+                        "A book"
                     ],
                     "static": False,
                     "type": ["book"],
                     "chapters": [
-                        {
-                    "title": "The Key",
-                    "content": "The grand key, the secret is 'Purple Penguin'."
-                },
                     ]
                 }
     ],

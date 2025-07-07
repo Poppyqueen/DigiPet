@@ -1,7 +1,9 @@
+# groq_client.py
+
 from groq import Groq
 import json
 from ai_managers.llm_clients.abstract_llm_client import AbstractLLMClient
-from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails, TextMessageDetails
+from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 
 

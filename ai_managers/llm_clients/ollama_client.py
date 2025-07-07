@@ -1,6 +1,8 @@
+# ollama client
+
 import ollama
 from ai_managers.llm_clients.abstract_llm_client import AbstractLLMClient
-from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails, TextMessageDetails
+from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 import json # For parsing arguments from OpenAI's string format (retained as per original code, though not used here now)
 
@@ -108,10 +110,10 @@ class OllamaClient(AbstractLLMClient):
         # This becomes your original 'developer' message.
         if messages.get("system_context"):
             l_messages.append({
-                "role": "developer", # Using 'developer' role as per your original message structure
+                "role": "system", # Using 'developer' role as per your original message structure
                 "content": messages["system_context"]
             })
-            print(f"DEBUG: Added 'developer' (system) message: '{messages['system_context'][:100]}...'")
+            print(f"DEBUG: Added 'system' (system) message: '{messages['system_context'][:100]}...'")
 
         # 2. Process conversation history from the structured memory
         for entry in messages.get("conversation_history", []):
@@ -125,7 +127,7 @@ class OllamaClient(AbstractLLMClient):
                 # As per your requirement: "for the system messages you want to apply them as tool messages"
                 # This directly implements: messages.append({"role": "system" "content": str(result)})
                 l_messages.append({
-                    "role": "system", # Using 'system' role for tool output.
+                    "role": "user", # Using 'system' role for tool output.
                     "content": entry["content"]
                 })
         
@@ -135,6 +137,7 @@ class OllamaClient(AbstractLLMClient):
         settings = {
             "model": model,
             "messages": l_messages, # This will be the 'messages' array in the Ollama API call.
+            "think": False
         }
         
         # --- FIX: Transform tools to Ollama's expected format before passing them ---

@@ -94,7 +94,7 @@ class ai_bot:
                         function_array["result"] = f"Error executing function: {e}"
                     finally:
                         functions_list.append(function_array)
-                        print(f"This is our functions list returned from the last action: {functions_list}")
+                        #print(f"This is our functions list returned from the last action: {functions_list}")
                 
                 # IMPORTANT: Return exactly as before
                 return True, functions_list

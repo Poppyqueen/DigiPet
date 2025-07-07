@@ -1,6 +1,8 @@
+# openai_client.py
+
 from openai import OpenAI
 from ai_managers.llm_clients.abstract_llm_client import AbstractLLMClient
-from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails, TextMessageDetails
+from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 import json # For parsing arguments from OpenAI's string format
 

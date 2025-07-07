@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
 # Assuming llm_response_types.py is available
-from ai_managers.llm_clients.llm_response_types import LLMResponse, FunctionCallDetails, TextMessageDetails
+from ai_managers.llm_clients.llm_response_types import LLMResponse
 
 class AbstractLLMClient(ABC):
     """

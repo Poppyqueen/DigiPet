@@ -49,10 +49,12 @@ config_selected_provider = main_config['AI']['general_ai_provider']
 available_providers = {
     "gemini": {
         "client":gemini_client.GeminiClient,
-        "api_key":gemini_api_key},
+        "api_key":gemini_api_key
+        },
     "openai": {
         "client":openai_client.OpenAIClient,
-        "api_key":None},
+        "api_key":None
+        },
     "groq":{
         "client":groq_client.GroqClient,
         "api_key":groq_api_key
@@ -66,7 +68,7 @@ available_providers = {
 # 4. Use the mapping dictionary to get the actual JSON structure
 if config_selected_provider in available_providers:
     config_client = available_providers[config_selected_provider]["client"]
-    print(f"Loaded state: {config_selected_provider}")
+    #print(f"Loaded state: {config_selected_provider}")
     print(config_client)
     api_key_selected=available_providers[config_selected_provider]["api_key"]
 
@@ -79,9 +81,9 @@ else:
 
 
 # Default filepaths 
-DEFAULT_MEMORY_DB = "cli_memory.json"
-DEFAULT_DEEP_MEMORY_DB = "cli_deep_memory.json"
-DEFAULT_AI_LOG = "cli_ai_log.txt"
+DEFAULT_MEMORY_DB = "memory.json"
+DEFAULT_DEEP_MEMORY_DB = "deep_memory.json"
+DEFAULT_AI_LOG = "ai_log.txt"
 DEFAULT_INVENTORY_FOLDER = "inventory" 
 
 class CLIChatbot:
@@ -285,7 +287,7 @@ class CLIChatbot:
                 # Save the function *result* to memory so the AI can see it
                 # Use 'system' or similar role if your AI model supports it,
 
-                print(f"DEBUG: We are sending this as the tool call response: {response_content}")
+                #print(f"DEBUG: We are sending this as the tool call response: {response_content}")
 
                 # We have changed this to the system tag
                 if isinstance(response_content,list):
