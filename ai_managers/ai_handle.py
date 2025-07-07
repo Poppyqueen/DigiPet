@@ -78,14 +78,15 @@ class ai_bot:
                     function_array = {
                         "function_name": fc_details.name,
                         "arguments": fc_details.arguments, # Arguments are already parsed dict
-                        "result": "Function call processing failed"
+                        "result": "Function call processing failed",
+                        "call_id": None
                     }
 
                     try:
-                        #self.memory_manager.save_to_memory(function_message_array, "short_term", "system")
-                        #print(f"Trying to save the following data into memory: \n{function_request_array}")
+                    
                         function_result = await self.call_function(fc_details.name, fc_details.arguments)
                         function_array["result"] = str(function_result)
+                        function_array["call_id"] = fc_details.call_id
                         signal_message = {"type": "function_called", "function_name": f"{fc_details.name}", "function_result": f"{function_result}"}
                         self._send_signal(signal_message)
                     except Exception as e:
@@ -93,6 +94,7 @@ class ai_bot:
                         function_array["result"] = f"Error executing function: {e}"
                     finally:
                         functions_list.append(function_array)
+                        print(f"This is our functions list returned from the last action: {functions_list}")
                 
                 # IMPORTANT: Return exactly as before
                 return True, functions_list

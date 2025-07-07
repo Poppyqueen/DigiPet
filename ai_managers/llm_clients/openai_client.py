@@ -80,7 +80,7 @@ class OpenAIClient(AbstractLLMClient):
                             FunctionCallDetails(
                                 name=item.name,
                                 arguments=parsed_args,
-                                call_id=item.call_id # Retain call_id if available
+                                call_id=item.id # Retain call_id if available
                             )
                         )
                     except json.JSONDecodeError as e:

@@ -3,8 +3,6 @@
 
 import os
 import sys
-import subprocess
-import sys # Often needed for standard streams
 
 
 # Import AI framework
@@ -24,6 +22,10 @@ from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
 from ai_managers.llm_clients import openai_client
 from ai_managers.llm_clients import gemini_client
+from ai_managers.llm_clients import groq_client
+from ai_managers.llm_clients import ollama_client
+
+
 
 import configparser
 
@@ -35,6 +37,7 @@ load_dotenv()
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 openai_api_key = os.getenv("OPENAI_API_KEY")
+groq_api_key = os.getenv("GROQ_API_KEY")
 
 # load provider for the selected main AI model
 
@@ -49,7 +52,15 @@ available_providers = {
         "api_key":gemini_api_key},
     "openai": {
         "client":openai_client.OpenAIClient,
-        "api_key":None}
+        "api_key":None},
+    "groq":{
+        "client":groq_client.GroqClient,
+        "api_key":groq_api_key
+    },
+    "ollama":{
+        "client":ollama_client.OllamaClient,
+        "api_key":None
+    }
 }
 
 # 4. Use the mapping dictionary to get the actual JSON structure
@@ -265,17 +276,16 @@ class CLIChatbot:
                 # elif depth >= self.max_recursion_depth/2:
                 #     depth_message="Depth of function calling reached half way to the limit, please consider outputting your final message"
 
-                function_result = f"{response_content}" # Assuming response_content is the function output/confirmation
 
 
-                # If deep memory active, we add the retrieved memories from it and append it to the function result of the agent.
-                if self.memory.deep_memory and self.deep_memory_flag:
-                    function_result = f"Deep memories retrieved: {deep_memory_context} Function response: {response_content}, Depth: {depth}" # Assuming response_content is the function output/confirmation
+                # # If deep memory active, we add the retrieved memories from it and append it to the function result of the agent.
+                # if self.memory.deep_memory and self.deep_memory_flag:
+                #     function_result = f"Deep memories retrieved: {deep_memory_context} Function response: {response_content}, Depth: {depth}" # Assuming response_content is the function output/confirmation
 
                 # Save the function *result* to memory so the AI can see it
                 # Use 'system' or similar role if your AI model supports it,
 
-                print(f"DEBUG: We are sending this as the tool call response: {function_result}")
+                print(f"DEBUG: We are sending this as the tool call response: {response_content}")
 
                 # We have changed this to the system tag
                 if isinstance(response_content,list):
@@ -284,7 +294,7 @@ class CLIChatbot:
                         self.memory.save_to_memory(result, "short_term", "system")
                         print(f"✅ Saved function result to memory. Getting next AI response...")
                 else:
-                    self.memory.save_to_memory(response_content, "short_term", "system")
+                    self.memory.save_to_memory(str(response_content), "short_term", "system")
 
 
                 # Get the updated memory structure after saving the function result
@@ -308,7 +318,7 @@ class CLIChatbot:
 
 
                 # Clean up tool context from memory after generating last response
-                self.memory.process_short_term_system(11) # This now gives the system message a time-life to system messages of 11 ticks in 'global' memory
+                self.memory.process_short_term_system(110) # This now gives the system message a time-life to system messages of 11 ticks in 'global' memory
 
 
                 # Remove system messages from memories after tool process is done

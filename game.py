@@ -3,10 +3,9 @@ from pygame_int import config
 from pygame_int import state
 from pygame_int import gui
 from pygame_int import animation
-from pygame_int.juke_box import jukebox 
 from pygame_int import gui_lore_panel
-
 from pygame_int import gui_color_selector
+from pygame_int.juke_box import jukebox 
 
 import pygame
 import sys
@@ -19,7 +18,7 @@ import configparser
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 
 if mock_running:
@@ -1139,7 +1138,7 @@ while running:
                 # if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
                 # if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
 
-                #if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(20); continue
+                # if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(20); continue
 
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
 

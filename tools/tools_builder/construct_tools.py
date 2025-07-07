@@ -242,7 +242,7 @@ class FunctionBuilder:
              "computer_room": {
                 "functions": {
                      "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
-                     "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
+                     #"get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
                      "random_wikipedia": self.room_tools.computer.random_wikipedia
                 },
                 "definitions": computer_room_tools,
@@ -587,6 +587,7 @@ class FunctionBuilder:
         context = []
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
+        context.append("MAIN SOURCE OF UNIVERSAL TRUTH:")
         context.append("#############")
         context.append("Current State:")
         context.append(f"Current time: {f}")
@@ -613,6 +614,7 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())
+        context.append("\n#############\n")
 
         # Add weather context ONLY if the room type is "garden"
         if "garden" in current_room_types:
@@ -627,6 +629,9 @@ class FunctionBuilder:
                  context.append("Could not retrieve current outdoor weather.")
 
 
+
+        context.append("#############")
+        context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")
         string_context = "\n".join(context)
         return string_context
 

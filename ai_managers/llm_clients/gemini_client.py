@@ -82,27 +82,31 @@ class GeminiClient(AbstractLLMClient):
         
         return [types.Tool(function_declarations=gemini_function_declarations)] if gemini_function_declarations else []
 
-    def _normalize_gemini_messages(self, messages: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _normalize_gemini_messages(self, messages: Dict[str, Any], tools_state) -> List[Dict[str, Any]]:
         """
         Normalizes our structured memory format (from construct_data) to Gemini's expected content format.
         This method is now more of a 'final stage conversion' from our structured internal format.
         """
         gemini_contents = []
 
+        
+
         # Handle the system_context as an initial 'user' message
         system_context = messages.get("system_context")
-        if system_context:
-            gemini_contents.append({
-                "role": "user",
-                "parts": [types.Part(text=system_context)]
-            })
+
+        if tools_state == "NONE":
+            system_context  = system_context + "Please output a textual and narrative message without any more function calls to close the latest round of actions. Make sure to not include any more function calls as they will be ignored."
+        # if system_context:
+        #     gemini_contents.append({
+        #         "role": "user",
+        #         "parts": [types.Part(text=system_context)]
+        #     })
 
         # Process conversation_history
         conversation_history = messages.get("conversation_history", [])
         for msg in conversation_history:
             original_type = msg.get("type")
             content = msg.get("content")
-            # tool_call_id = msg.get("tool_call_id") # Not directly used for Gemini's function_response format
 
             gemini_role = "user"  # Default for unknown or user messages
             gemini_parts = []
@@ -126,6 +130,7 @@ class GeminiClient(AbstractLLMClient):
                 # directly from the 'msg' dictionary, as populated by construct_data.
                 function_name = msg.get("function_name")
                 function_args = msg.get("arguments", {})
+                function_id = msg.get("call_id")
                 function_result_content = msg.get("content") # This is the result string from construct_data
 
                 if function_name:
@@ -136,7 +141,9 @@ class GeminiClient(AbstractLLMClient):
                         types.Part(
                             function_call=types.FunctionCall(
                                 name=function_name,
-                                args=function_args # These are the arguments used in the original call
+                                args=function_args, # These are the arguments used in the original call
+                                id=function_id
+                                       
                             )
                         )
                     )
@@ -156,7 +163,8 @@ class GeminiClient(AbstractLLMClient):
                         types.Part(
                             function_response=types.FunctionResponse(
                                 name=function_name,
-                                response=function_result_content
+                                response=function_result_content,
+                                id=function_id
                             )
                         )
                     )
@@ -182,7 +190,7 @@ class GeminiClient(AbstractLLMClient):
                     "parts": gemini_parts
                 })
 
-        return gemini_contents
+        return gemini_contents, system_context
 
     # The rest of GeminiClient class is the same:
     async def generate_response(
@@ -194,22 +202,45 @@ class GeminiClient(AbstractLLMClient):
         **kwargs
     ) -> LLMResponse:
         try:
+
+
+            if tool_choice == "auto":
+                tools_state="AUTO"
+            else:
+                tools_state="NONE"
+
             gemini_tools = self._convert_tools_to_gemini_format(tools) if tools else []
-            gemini_contents = self._normalize_gemini_messages(messages)
+            gemini_contents, system_context = self._normalize_gemini_messages(messages, tools_state)
 
             print(f"DEBUG: Gemini contents sent: {gemini_contents}")
             print(f"DEBUG: Gemini tools sent: {gemini_tools}")
 
-            config = types.GenerateContentConfig(
-                tools=gemini_tools
+
+            tool_config = types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(
+                    mode=tools_state
+                )
             )
+            if tools_state == "AUTO":
+                config = types.GenerateContentConfig(
+                    tools=gemini_tools,
+                    tool_config=tool_config,
+                    system_instruction=system_context
+
+                )
+            else:
+                config = types.GenerateContentConfig(
+                    system_instruction=system_context
+
+                )
 
             response = self.client.models.generate_content(
                 model=model,
                 contents=gemini_contents,
-                config=config,
-            )
-            print(f"📮📮📮📮📮📮Raw Gemini response: {response}")
+                config=config            
+                )
+            
+            #print(f"📮📮📮📮📮📮Raw Gemini response: {response}")
 
             normalized_function_calls: List[FunctionCallDetails] = []
             normalized_text_content: Optional[str] = None
@@ -220,11 +251,16 @@ class GeminiClient(AbstractLLMClient):
                 for part in candidate_content.parts:
                     if hasattr(part, 'function_call') and part.function_call:
                         function_call = part.function_call
+                        # print(f"📮📮📮📮📮📮Function full: {function_call}")
+
+                        # print(f"📮📮📮📮📮📮Function call name: {function_call.name}")
+
+                        # print(f"📮📮📮📮📮📮Function call ID: {function_call.id}")
                         normalized_function_calls.append(
                             FunctionCallDetails(
                                 name=function_call.name,
                                 arguments=dict(function_call.args),
-                                call_id=None
+                                call_id=function_call.id
                             )
                         )
                     elif hasattr(part, 'text') and part.text:

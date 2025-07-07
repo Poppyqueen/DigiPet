@@ -6,27 +6,45 @@
 # and create new items based on a given process.
 # The current implementation is being used by an AI agent to manage crafting tasks.
 
-from openai import OpenAI
-from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 from utils.pydantic_models import ItemDefinitionListContainer
 
+from utils.utils_ai_providers.gemini_provider import GeminiProv
+from utils.utils_ai_providers.openai_provider import OpenAIProv
+from utils.utils_ai_providers.groq_provider import GroqProv
+from utils.utils_ai_providers.ollama_provider import OllamaProv
+
 import configparser
-import os
-from dotenv import load_dotenv
-
-load_dotenv()  # This loads variables from .env into os.environ
-
-api_key = os.getenv("OPENAI_API_KEY")
-
-if api_key is None:
-    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
-    exit(1)
-
 
 main_config = configparser.ConfigParser()
 main_config.read('main_config.ini')
 config_model = main_config['AI']['cook_model']
+selected_config_client = main_config['AI']['cook_provider']
+
+available_providers = {
+    "gemini": {
+        "client": GeminiProv
+    },
+    "openai": {
+        "client": OpenAIProv
+    },
+    "groq": {
+        "client": GroqProv
+    },
+    "ollama": {
+        "client": OllamaProv
+    }
+}
+
+# 4. Use the mapping dictionary to get the actual JSON structure
+if selected_config_client in available_providers:
+    config_client = available_providers[selected_config_client]["client"]
+    print(f"Loaded state: {selected_config_client}")
+    print(config_client)
+
+else:
+    print(f"Error: '{selected_config_client}' is not a recognized state.")
+    # Handle the error, perhaps by falling back to a default state
 
 
 # # --- Structure for the fixed stats_edit dictionary ---
@@ -70,69 +88,10 @@ config_model = main_config['AI']['cook_model']
 
 
 class cook:
-    client=OpenAI(api_key=api_key)  # client is correctly set up here at the class level
 
     def __init__(self):
-        pass
+        self.client=config_client(config_model)
 
-
-    def _call_openai(self, role, system, input_content): # Renamed 'input' to 'input_content' for clarity
-        """
-        Calls the OpenAI API for unstructured text generation.
-        (This method is not used by process() but kept from the original code).
-        """
-        try:
-            completion = self.client.chat.completions.create(
-                model=config_model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {
-                        "role": role,
-                        "content": input_content
-                    }
-                ]
-            )
-
-            response_content = completion.choices[0].message.content
-
-            return response_content
-
-        except Exception as e:
-            print(f"Error calling OpenAI API (unstructured): {e}")
-            return None
-
-    def _calls_structured(self, system, input_content, structure):
-        """
-        Calls the OpenAI API with a structured response format (e.g., JSON guided by Pydantic).
-        Assumes the API client method or library usage supports specifying a structure.
-        Note: Standard OpenAI client uses `response_format={'type': 'json_object'}`
-        and relies heavily on the system prompt + tool calls/function calling
-        or prompt engineering to produce valid JSON matching a schema.
-        This implementation uses a conceptual 'parse' method as in the original code.
-        """
-        try:
-
-            # Keeping the original 'parse' method signature as per original code:
-            completion = self.client.beta.chat.completions.parse( # Functional 'parse' method from the most recent API
-                 # Note: gpt-4.1-nano is now a standard OpenAI model name.
-
-                model=config_model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {
-                        "role": "user",
-                        "content": input_content
-                    }
-                ],
-                response_format=structure # It assures the API to return structured data
-            )
-            # Access the parsed content which is expected to be an instance of 'structure'
-            response_content = completion.choices[0].message.parsed
-            return response_content
-        except Exception as e:
-            print(f"Error calling OpenAI API for structured output: {e}")
-            return None
-        
     def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]:
         """
         Calls the cooking AI, retrieves structured item definitions,
@@ -154,9 +113,9 @@ class cook:
         print("\n--- Calling AI ---")
         print(f"Prompt: {process_prompt}")
 
-        response: ItemDefinitionListContainer | None = self._calls_structured(
+        response: ItemDefinitionListContainer | None = self.client.structured_output(
             system=system,
-            input_content=process_prompt,
+            user=process_prompt,
             structure=ItemDefinitionListContainer
         )
 

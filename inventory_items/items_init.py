@@ -1289,11 +1289,13 @@ dev_room={
             "next_room_id": ROOM_ID_START_COUNTER,
             "current_room_id": 0, # Default starting room ID (must match one below)
             "rooms": [
+
+
                 {
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["discogs", "youtube_playlists", "musicbrainz"],
+                    "room_types": ["kitchen"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
@@ -1326,8 +1328,67 @@ dev_room={
         "The deep blue light dominates, creating an atmospheric calm."
     ]
 },
-                    "items": []
+                    "items": [
+
+                    ]
+                },
+
+{
+        "name": "white_room",
+        "image": "white_room",
+        "room_types": [
+            "white_room"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "The room pulses with an eerie stillness, its white surfaces glowing faintly under an unseen, ghostly light.",
+                "Shadows barely form in the seamless white, the silence thick and unsettling in the deep night."
+            ],
+            "early morning": [
+                "A pale, diffused light creeps invisibly, lending the whiteness a cold, clinical chill.",
+                "The room's emptiness feels sharper as faint light hints at the hollow space without revealing its boundaries."
+            ],
+            "morning": [
+                "Soft, neutral light pervades the space, making the seamless whiteness almost blinding in its emptiness.",
+                "The stark white room feels vast and hollow, empty but strangely expectant under morning\u2019s glow."
+            ],
+            "noon": [
+                "Bright, unyielding whiteness envelopes the space, erasing any sense of depth or formality.",
+                "The room\u2019s seamless whiteness blazes with midday light, sterile and disorienting without any features."
+            ],
+            "afternoon": [
+                "The uniform white continues to dominate, now softer with the slight warmth of afternoon, but no less vacant.",
+                "Diffuse light washes the room, the walls seemingly swallowing any sound or movement in the eerie quiet."
+            ],
+            "late afternoon": [
+                "The light fades subtly, casting no shadows yet thickening the room\u2019s oppressive sterility.",
+                "A faint yellowish tint seeps into the white, deepening the unsettling emptiness as day wanes."
+            ],
+            "night": [
+                "The white emptiness dims to a spectral pale glow, as if bioluminescent, amplifying the room\u2019s ghostly silence.",
+                "Darkness encroaches invisibly, leaving the room an endless void wrapped in an unsettling, muted light."
+            ]
+        },
+        "items": [
+                {
+                    "name": "stark_white_pedestal",
+                    "descriptions": [
+                        "A cubic pedestal made of the same seamless white material as the room."
+                    ],
+                    "static": True,
+                    "type": ["furniture"]
+                },
+                {
+                    "name": "faint_symbol",
+                    "descriptions": [
+                        "A symbol faintly etched into the white surface of the pedestal. It seems to pulse slightly."
+                    ],
+                    "static": True,
+                    "type": ["misc"]
                 }
+            ]
+    },
             ],
             "inventory": [
     #             {
@@ -1348,6 +1409,10 @@ dev_room={
                     "static": False,
                     "type": ["book"],
                     "chapters": [
+                        {
+                    "title": "The Key",
+                    "content": "The grand key, the secret is 'Purple Penguin'."
+                },
                     ]
                 }
     ],

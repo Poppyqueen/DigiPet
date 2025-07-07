@@ -5,7 +5,7 @@
 # It helps you set up a JSON database, to do different kinds of querries for memory management, the memory manager class contains functions to save
 # memories into different sections and engage in a 'check' to summarize memories above our thesholds.
 
-# Needs revamp
+# Revamp at work
 
 import json
 import os
@@ -20,10 +20,13 @@ from memory.deep_memory import DeepMemory # <--- Import DeepMemory here
 
 from utils.tokens_handle import token_manager
 
+from memory.memory_configs import (short_term_prompt, long_term_prompt)
 
-from memory.memory_providers.openai_memory_ai_provider import OpenAIMemoryAI
-from memory.memory_providers.gemini_memory_ai_provider import GeminiMemoryAI
+# from memory.memory_providers.openai_memory_ai_provider import OpenAIMemoryAI
+# from memory.memory_providers.gemini_memory_ai_provider import GeminiMemoryAI
 
+from utils.utils_ai_providers.gemini_provider import GeminiProv
+from utils.utils_ai_providers.openai_provider import OpenAIProv
 
 import configparser
 
@@ -34,12 +37,21 @@ selected_model= config['AI']['memory_model']
 config_selected_provider = config['AI']['memory_ai_provider']
 
 
+# available_providers = {
+#     "gemini": {
+#         "client":GeminiMemoryAI},
+#     "openai": {
+#         "client":OpenAIMemoryAI}
+# }
+
+
 available_providers = {
     "gemini": {
-        "client":GeminiMemoryAI},
+        "client":GeminiProv},
     "openai": {
-        "client":OpenAIMemoryAI}
+        "client":OpenAIProv}
 }
+
 
 # 4. Use the mapping dictionary to get the actual JSON structure
 if config_selected_provider in available_providers:
@@ -104,7 +116,7 @@ class memory_manager:
 
         # Use provided bot instance or create a new one if needed
 
-        self.bot_instance = config_client(self.text_capture, selected_model)
+        self.bot_instance = config_client(selected_model)
 
         # Initialize DeepMemory - AFTER bot_instance is set
         if self.bot_instance and self.deep_memory_flag:
@@ -295,7 +307,7 @@ class memory_manager:
                       "system_context": "...",
                       "conversation_history": [
                           {"type": "user", "content": "hello there! can you please move to the garden"},
-                          {"type": "tool_output", "tool_call_id": "tool_call_1751576848", "content": "Available rooms: living_room (ID:000001), kitchen (ID:000002), bathroom (ID:000003), bedroom (ID:000000), computer_room (ID:000004), garden (ID:000005), white_room (ID:000006), lab_room (ID:000007)"},
+                          {"type": "tool_output", "call_id": "tool_call_1751576848", "content": "Available rooms: living_room (ID:000001), kitchen (ID:000002), bathroom (ID:000003), bedroom (ID:000000), computer_room (ID:000004), garden (ID:000005), white_room (ID:000006), lab_room (ID:000007)"},
                           {"type": "assistant", "content": "Error communicating with OpenAI: Error code: 400 - {'error': {'message': \"Invalid type for 'input[2].content': expected one of an array of objects or string, but got an object instead.\", 'type': 'invalid_request_error', 'param': 'input[2].content', 'code': 'invalid_type'}}"}
                       ]
                   }
@@ -340,14 +352,11 @@ class memory_manager:
                 if isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
                     # This is a tool output message from a previous function call
                     tool_output_content = str(text_or_object["result"])
-                    # Generate a tool_call_id. For consistency with your system messages being tool outputs,
-                    # we derive it from the timestamp or generate a UUID if needed.
-                    tool_call_id_from_key = key.split('_')[-1]
-                    unique_tool_call_id = f"tool_call_{tool_call_id_from_key}" # Or str(uuid.uuid4())
+
                     
                     structured_memory["conversation_history"].append({
                         "type": "tool_output",
-                        "tool_call_id": unique_tool_call_id,
+                        "call_id": text_or_object["call_id"],
                         "content": tool_output_content,
                         "function_name":text_or_object["function_name"],
                         "arguments":text_or_object["arguments"]
@@ -355,11 +364,11 @@ class memory_manager:
                     })
                 elif isinstance(text_or_object, str):
                     # Per your instruction, plain string system messages also become tool messages.
-                    # We generate a unique tool_call_id for them.
-                    print(f"Warning: Plain string system message found for key '{key}'. Assigning a new tool_call_id for 'tool' role.")
+                    # We generate a unique call_id for them.
+                    print(f"Warning: Plain string system message found for key '{key}'. Assigning a new call_id for 'tool' role.")
                     structured_memory["conversation_history"].append({
                         "type": "tool_output", # Treated as a generic tool output for a system message
-                        "tool_call_id": f"", # Unique ID for this synthetic tool message
+                        "call_id": f"", # Unique ID for this synthetic tool message
                         "content": text_or_object
                     })
             else:
@@ -701,7 +710,7 @@ class memory_manager:
             if structured_short_term:
                 print("DEBUG: Calling AI to summarize short-term memory...")
                 try:
-                    summary_short_term = self.bot_instance.summarize_memories(structured_short_term, "short_term")
+                    summary_short_term = self.bot_instance.response_output(system=short_term_prompt, message=structured_short_term)
                     if summary_short_term:
                         print(f"DEBUG: Short-term summary created: {summary_short_term[:100]}...")
                         # Add summary to long-term memory
@@ -751,7 +760,7 @@ class memory_manager:
             if structured_long_term:
                 print("DEBUG: Calling AI to summarize long-term memory into base memory...")
                 try:
-                    summary_long_term_base = self.bot_instance.summarize_memories(structured_for_ai, "long_term")
+                    summary_long_term_base = self.bot_instance.response_output(system=long_term_prompt, message=structured_for_ai)
                     if summary_long_term_base:
                         print(f"DEBUG: Base memory summary created: {summary_long_term_base[:100]}...")
                         memory_data["base_memory"] = summary_long_term_base
