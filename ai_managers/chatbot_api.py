@@ -258,14 +258,14 @@ class CLIChatbot:
                 # self.text_capture.dump_text(f"**************")
 
 
-                # We have changed this to the system tag
+                # We have changed this to the tool tag
                 if isinstance(response_content,list):
                     for result in response_content:
                         
-                        self.memory.save_to_memory(result, "short_term", "system")
+                        self.memory.save_to_memory(result, "short_term", "tool")
                         print(f"✅ Saved function result to memory. Getting next AI response...")
                 else:
-                    self.memory.save_to_memory(str(response_content), "short_term", "system")
+                    self.memory.save_to_memory(str(response_content), "short_term", "tool")
 
 
                 # Get the updated memory structure after saving the function result

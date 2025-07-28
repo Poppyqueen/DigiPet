@@ -153,16 +153,16 @@ class GeminiClient(AbstractLLMClient):
                         # along with the function_response in the same turn.
 
 
-                    gemini_aaaa.append(types.Part(text=str("."))) # This is a silly solution to a larger issue:
-                                                                # The gemini API expects a user message or function response before a function call, 
-                                                                # this is appending an "empty" message behind any function call object we have
-                                                                # this seems to break particularly when we remove entries from the structure and it stays on a state
-                                                                # where the order is not compatible with Gemini API
+                    # gemini_aaaa.append(types.Part(text=str("."))) # This is a silly solution to a larger issue:
+                    #                                             # The gemini API expects a user message or function response before a function call, 
+                    #                                             # this is appending an "empty" message behind any function call object we have
+                    #                                             # this seems to break particularly when we remove entries from the structure and it stays on a state
+                    #                                             # where the order is not compatible with Gemini API
 
-                    gemini_contents.append({
-                        "role": "user",
-                        "parts": gemini_aaaa
-                    })
+                    # gemini_contents.append({
+                    #     "role": "user",
+                    #     "parts": gemini_aaaa
+                    # })
 
                     gemini_requests.append(
                         types.Part(

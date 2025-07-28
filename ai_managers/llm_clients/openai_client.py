@@ -42,12 +42,18 @@ class OpenAIClient(AbstractLLMClient):
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
             elif entry["type"] == "tool_output":
-                # As per your requirement: "for the system messages you want to apply them as tool messages"
-                # This directly implements: messages.append({"role": "system" "content": str(result)})
+                
+                # correct way to point at tool calls and results
                 l_messages.append({
-                    "role": "user", 
-                    #"tool_call_id": entry["call_id"],
-                    "content": entry["content"]
+                    "type": "function_call",
+                    "call_id": entry["call_id"],
+                    "name": entry["function_name"],
+                    "arguments": str(entry["arguments"]) # Arguments are expected as JSON string
+                })
+                l_messages.append({
+                    "type": "function_call_output",
+                    "call_id": entry["call_id"],
+                    "output": str(entry["content"]) # Output is expected to be a string
                 })
         
 

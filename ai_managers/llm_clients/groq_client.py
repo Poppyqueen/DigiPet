@@ -99,8 +99,20 @@ class GroqClient(AbstractLLMClient):
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
             elif entry["type"] == "tool_output":
-                # As per your requirement: "for the system messages you want to apply them as tool messages"
-                # This directly implements: messages.append({"role": "system" "content": str(result)})
+
+
+                l_messages.append({
+                    "role": "assistant",
+                    "tool_calls": [{
+                        "id": entry["call_id"],
+                        "type": "function",
+                        "function": {
+                            "name": entry["function_name"],
+                            "arguments": str(entry["arguments"])
+                        }
+                    }]
+                })
+
                 l_messages.append({
                     "role": "tool",
                     "content": entry["content"],
@@ -116,7 +128,7 @@ class GroqClient(AbstractLLMClient):
             settings["tools"] = functions_list
             settings["tool_choice"] = tool_choice
 
-        reasoning_model=True
+        reasoning_model=False
         if reasoning_model:
             settings["reasoning_format"] = "hidden"
             #settings["reasoning_effort"] = "none"

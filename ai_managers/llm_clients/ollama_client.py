@@ -124,11 +124,26 @@ class OllamaClient(AbstractLLMClient):
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
             elif entry["type"] == "tool_output":
-                # As per your requirement: "for the system messages you want to apply them as tool messages"
-                # This directly implements: messages.append({"role": "system" "content": str(result)})
+
+
+                l_messages.append({
+                    "role": "assistant",
+                    "tool_calls": [{
+                        "id": entry["call_id"],
+                        "type": "function",
+                        "function": {
+                            "name": entry["function_name"],
+                            "arguments": entry["arguments"]
+                        }
+                    }]
+                })
+
                 l_messages.append({
                     "role": "tool", # Using 'tool' role for tool output.
-                    "content": str(entry)
+                    "content": str(entry["content"]),
+                    "tool_name": entry["function_name"],
+                    "tool_call_id": entry["call_id"]
+
                 })
         
         # DEBUG: Log the final constructed 'l_messages' list that will be sent to the LLM.

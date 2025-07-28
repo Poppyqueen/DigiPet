@@ -4,23 +4,17 @@ import time
 from datetime import datetime
 from typing import Optional, Dict, Any
 import re
-import uuid # <--- NEW: Import uuid for unique IDs
+import uuid
 
 # Import extra memory module
-
 from utils.tokens_handle import token_manager
-
 from memory.memory_configs import (short_term_prompt, long_term_prompt)
-
 from utils.utils_ai_providers.gemini_provider import GeminiProv
 from utils.utils_ai_providers.openai_provider import OpenAIProv
 from utils.utils_ai_providers.groq_provider import GroqProv
 from utils.utils_ai_providers.ollama_provider import OllamaProv
-
 from memory.deep_memory import DeepMemory
 import configparser
-
-
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
@@ -28,38 +22,24 @@ DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.db"
 
 class memory_manager:
 
-
-    # New token-based retention budgets
-
-
-    # # Memory summarizarion thresholds for individual token lenghts for each category
-
+    # # # # New token-based retention budgets
+    # # # # Memory summarizarion thresholds for individual token lenghts for each category
     SHORT_TERM_TOKEN_THRESHOLD = 22000
     LONG_TERM_TOKEN_THRESHOLD = 22000
 
-
     # Determines how much of the recent entries in tokens are kept after summarization
-
     SHORT_TERM_RETAIN_TOKEN_BUDGET = 4000
     LONG_TERM_RETAIN_TOKEN_BUDGET = 4000
 
-
     # "Line in the sand", if any system message is above our token "line in the sand", it will check if there is a summarization needed for it
-    # the idea is that it is a point where the conversation might be too old for this specifc message to be relevant anymore 
+    # the idea is that it is a point where the conversation might be too old for this specifc message to be relevant anymore
     # a smarter system would get info on what specifics to retain after summarization, right now it is a simple contextless summarization process
-
     SYSTEM_MESSAGE_LINE_THRESHOLD = 6000
     # Individual message token threshold: if a system message is above this, try to summarize it
-
     SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD = 3000
 
 
     # # # Test settings
-
-
-
-
-
     # # Memory summarizarion thresholds for individual token lenghts for each category
     # SHORT_TERM_TOKEN_THRESHOLD = 11000
     # LONG_TERM_TOKEN_THRESHOLD = 11000
@@ -72,14 +52,12 @@ class memory_manager:
     # # Individual message token threshold: if a system message is above this, try to summarize it
     # SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD = 1500
 
-#   ///////////////
+    # ##########
+    # SHORT_TERM_RETAIN_TOKEN_BUDGET = 300
+    # LONG_TERM_RETAIN_TOKEN_BUDGET = 300
 
-
-    # SHORT_TERM_RETAIN_TOKEN_BUDGET = 700
-    # LONG_TERM_RETAIN_TOKEN_BUDGET = 700
-
-    # SHORT_TERM_TOKEN_THRESHOLD = 2000
-    # LONG_TERM_TOKEN_THRESHOLD = 2000
+    # SHORT_TERM_TOKEN_THRESHOLD = 1000
+    # LONG_TERM_TOKEN_THRESHOLD = 1000
 
     # SYSTEM_MESSAGE_LINE_THRESHOLD = 1200
     # # Individual message token threshold: if a system message is above this, try to summarize it
@@ -98,9 +76,7 @@ class memory_manager:
         self.sub_directory=sub_directory
         self.token_counters_cache = {} # <--- NEW: Cache for token counts
 
-
     ### ///////// Init config  /////////  #####
-
         available_providers = {
             "gemini": {
                 "client":GeminiProv},
@@ -112,30 +88,26 @@ class memory_manager:
                 "client":OllamaProv}
         }
 
-
         config = configparser.ConfigParser()
         config.read('main_config.ini')
         system_prompt = config['AI']['sys_prompt']
         selected_model= config['AI']['memory_model']
         config_selected_provider = config['AI']['memory_ai_provider']
 
-
         # 4. Use the mapping dictionary to get the actual JSON structure
         if config_selected_provider in available_providers:
             config_client = available_providers[config_selected_provider]["client"]
             print(f"Loaded provider for memory: {config_selected_provider}")
-            #print(config_client)
-
         else:
             print(f"Error: '{config_selected_provider}' is not a recognized state.")
             # Handle the error, perhaps by falling back to a default state
+            config_client = None
 
-        self.bot_instance = config_client(selected_model)
+        self.bot_instance = config_client(selected_model) if config_client else None
 
         if self.bot_instance and self.deep_memory_flag:
             try:
-                self.deep_memory = DeepMemory(deep_memory_filepath, self.text_capture) 
-                
+                self.deep_memory = DeepMemory(deep_memory_filepath, self.text_capture)
             except Exception as e:
                 print(f"Error initializing DeepMemory: {e}")
                 self.deep_memory = None
@@ -169,7 +141,7 @@ class memory_manager:
         # --- Process Short-Term Memory ---
         if memory_type == "all" or memory_type == "short_term":
             if "short_term" in memory_structure and isinstance(memory_structure["short_term"], dict):
-                # Iterate through each tag (e.g., 'user', 'assistant', 'system')
+                # Iterate through each tag (e.g., 'user', 'assistant', 'system', 'tool')
                 for tag, entries_list in memory_structure["short_term"].items():
                     if isinstance(entries_list, list):
                         for entry in entries_list:
@@ -190,7 +162,7 @@ class memory_manager:
                                     string_memory += str(content_data) + "\n"
                             elif isinstance(entry, str): # Handle older string entries if they exist
                                 string_memory += entry + "\n"
-        
+
         # --- Process Long-Term Memory ---
         if memory_type == "all" or memory_type == "long_term":
             if "long_term" in memory_structure and isinstance(memory_structure["long_term"], list):
@@ -206,9 +178,7 @@ class memory_manager:
                 string_memory += memory_structure["base_memory"]
 
         total_tokens = self.token_manager.num_tokens_from_string(string_memory)
-
         print(f"Current memory tokens ({memory_type}): {total_tokens}")
-
         return total_tokens
 
     def _check_and_create_db(self):
@@ -219,10 +189,11 @@ class memory_manager:
         os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
         if not os.path.exists(self.filepath):
             initial_memory = {
-                "short_term": { # <--- CHANGED: short_term is a dict of lists
+                "short_term": {
                     "user": [],
                     "assistant": [],
-                    "system": []
+                    "system": [],
+                    "tool": []  # <--- UPDATED: Added new tool tag
                 },
                 "long_term": [],
                 "base_memory": ""
@@ -245,7 +216,7 @@ class memory_manager:
                 if not content:
                     print(f"Warning: Main memory file {self.filepath} is empty. Returning default structure.")
                     return {
-                        "short_term": {"user": [], "assistant": [], "system": []}, # <--- CHANGED: Default short_term
+                        "short_term": {"user": [], "assistant": [], "system": [], "tool": []}, # <--- UPDATED: Default short_term
                         "long_term": [],
                         "base_memory": ""
                     }
@@ -274,7 +245,7 @@ class memory_manager:
 
         Creates an initial 'system_context' containing time, base prompt, base memory,
         and long-term memory. Then, processes short-term memory entries, categorizing
-        them into 'conversation_turns' (user, assistant) and 'tool_outputs' (from system_ messages).
+        them into 'conversation_turns' (user, assistant) and 'tool_outputs' (from system/tool messages).
         Messages are added in chronological order based on short-term keys.
 
         Args:
@@ -313,7 +284,7 @@ class memory_manager:
 
         # --- Process Short-Term Memory entries ---
         short_term_memory_by_tag = memory_structure.get("short_term", {})
-        
+
         all_short_term_entries = []
         for tag, entries_list in short_term_memory_by_tag.items():
             if isinstance(entries_list, list):
@@ -323,9 +294,7 @@ class memory_manager:
                     entry_with_tag['original_tag'] = tag
                     all_short_term_entries.append(entry_with_tag)
             else:
-                # Handle old format or unexpected data if necessary (optional)
                 print(f"Warning: Unexpected short_term memory format for tag '{tag}'. Expected list, got {type(entries_list)}.")
-                # You might add logic here to convert old format if needed for migration
 
         # Sort all entries based on their 'timestamp'. 'unique_id' as secondary sort for stability.
         all_short_term_entries.sort(key=lambda x: (x.get('timestamp', 0), x.get('unique_id', '')))
@@ -333,13 +302,13 @@ class memory_manager:
         for entry in all_short_term_entries:
             text_or_object = entry["content"]
             key_tag = entry["original_tag"]
-            
-            # Use the original_tag for determining type, similar to how key.startswith was used
-            if key_tag == "system":
+
+            # --- UPDATED: Handle 'system' and 'tool' tags for tool outputs ---
+            if key_tag in ["system", "tool"]:
                 if isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
                     tool_output_content = str(text_or_object["result"])
                     call_id = text_or_object.get("call_id")
-                    
+
                     structured_memory["conversation_history"].append({
                         "type": "tool_output",
                         "call_id": call_id,
@@ -347,18 +316,14 @@ class memory_manager:
                         "function_name": text_or_object.get("function_name"),
                         "arguments": text_or_object.get("arguments")
                     })
-                # elif isinstance(text_or_object, dict) and "context" in text_or_object:
-                #     pass
                 elif isinstance(text_or_object, str):
-                    print(f"Warning: Plain string system message found for tag '{key_tag}'. Assigning a new call_id for 'tool' role.")
+                    print(f"Warning: Plain string system message found for tag '{key_tag}'. Treating as 'user'")
                     structured_memory["conversation_history"].append({
-                        "type": "tool_output",
-                        "call_id": f"synthetic_tool_{entry.get('unique_id', str(uuid.uuid4()))}", # Use unique_id for synthetic call_id
+                        "type": "user",
                         "content": text_or_object
                     })
             else:
                 role = key_tag
-
                 valid_roles = ["user", "assistant"]
                 if role in valid_roles:
                     structured_memory["conversation_history"].append({
@@ -378,8 +343,9 @@ class memory_manager:
         return random_data
 
     def save_to_memory(self, string_to_save, memory_type: str, tag: Optional[str] = None):
-        """Saves a string or dict to the specified memory section (short_term, long_term, base_memory).
-           For 'short_term', entries are appended to a list under their tag, including timestamp and unique ID.
+        """Saves a string or dict to the specified memory section.
+           For 'short_term', a tag ('user', 'assistant', 'system', 'tool') is required.
+           Entries are appended to a list under their tag, including timestamp and unique ID.
         """
         memory_data = self._load_memory()
         if memory_data is None:
@@ -387,7 +353,7 @@ class memory_manager:
             return
 
         memory_type = memory_type.lower()
-        current_time = int(time.time()) # Used for long_term, and as base for short_term entry timestamp
+        current_time = int(time.time())
 
         if memory_type == "short_term":
             if tag is None:
@@ -395,28 +361,22 @@ class memory_manager:
                 return
 
             tag = tag.lower()
-            
-            # Ensure 'short_term' exists and is a dict
-            if "short_term" not in memory_data or not isinstance(memory_data["short_term"], dict):
-                memory_data["short_term"] = {}
 
-            # Ensure the specific tag exists and is a list
+            if "short_term" not in memory_data or not isinstance(memory_data["short_term"], dict):
+                memory_data["short_term"] = {"user": [], "assistant": [], "system": [], "tool": []}
+
             if tag not in memory_data["short_term"] or not isinstance(memory_data["short_term"][tag], list):
                 memory_data["short_term"][tag] = []
-            
-            # Create a unique entry that includes both the content and a precise timestamp
-            entry = {
-                "timestamp": time.time(), # <--- Use float for precise sorting
-                "content": string_to_save,
-                "unique_id": str(uuid.uuid4()) # <--- NEW: Ensure absolute uniqueness for the entry itself
-            }
-            
-            memory_data["short_term"][tag].append(entry)
-            #print(f"data saved to short_term[{tag}]: {string_to_save}")
 
+            entry = {
+                "timestamp": time.time(),
+                "content": string_to_save,
+                "unique_id": str(uuid.uuid4())
+            }
+
+            memory_data["short_term"][tag].append(entry)
 
         elif memory_type == "long_term":
-             # Ensure 'long_term' exists and is a list
             if "long_term" not in memory_data or not isinstance(memory_data["long_term"], list):
                 memory_data["long_term"] = []
 
@@ -434,8 +394,7 @@ class memory_manager:
             return
 
         self._save_memory(memory_data)
-        # print(f"data saved {memory_data}") # This can be verbose, uncomment for detailed debug
-        print(f"Saved to '{memory_type}' memory.")
+        print(f"Saved to '{memory_type}' memory under tag '{tag}'.")
 
     def get_memory_structure(self, formatted: bool = False) -> Optional[Dict[str, Any] | str]:
         """
@@ -449,7 +408,7 @@ class memory_manager:
             return json.dumps(memory_data, indent=4)
         else:
             return memory_data
-        
+
     def relevance_process(self):
         """
         This function is a placeholder for future semantic relevance processing.
@@ -458,15 +417,13 @@ class memory_manager:
         """
         print("Relevance process is a placeholder and not currently active.")
 
-
-
     def process_short_term_system(self) -> int:
         """
         Processes short-term memory by creating a "token timeline" of the entire
-        conversation. It identifies system messages that appear after a specific
+        conversation. It identifies system and tool messages that appear after a specific
         token position (SYSTEM_MESSAGE_LINE_THRESHOLD) and summarizes them if they are
         individually large enough (SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD).
-        
+
         This function should be run periodically as it has no internal "total token" trigger.
         """
         memory_data = self._load_memory()
@@ -495,60 +452,52 @@ class memory_manager:
         for entry in all_entries:
             start_token_position = cumulative_tokens
             content_data = entry.get("content", "")
-            
+
             # --- The Core Logic ---
-            # First, check if the entry is a system message with the specific function/result structure
-            is_structured_system_message = (
-                entry.get('original_tag') == 'system' and
+            # --- UPDATED: Check if the entry is a structured system OR tool message ---
+            is_structured_tool_message = (
+                entry.get('original_tag') in ['system', 'tool'] and
                 isinstance(content_data, dict) and
                 "result" in content_data
             )
 
-            if is_structured_system_message:
+            if is_structured_tool_message:
                 result_text = str(content_data.get("result", ""))
                 result_tokens = self.token_manager.num_tokens_from_string(result_text)
 
                 # Now check if it meets the criteria for summarization
                 if (start_token_position > self.SYSTEM_MESSAGE_LINE_THRESHOLD and
                     result_tokens > self.SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD):
-                    
-                    print(f"System message (ID: {entry.get('unique_id')}) at token position {start_token_position} is a candidate for summarization.")
-                    
+
+                    print(f"Tool/System message (ID: {entry.get('unique_id')}) at token position {start_token_position} is a candidate for summarization.")
+
                     try:
                         summarized_content_raw = self.bot_instance.response_output(
                             system="You are a helpful assistant. Summarize the following tool output concisely, retaining key information:",
                             message=result_text
                         )
-                        
-                        # CORRECTLY RECONSTRUCT: Create a new content dict with the summarized result
+
                         new_content = content_data.copy()
                         new_content["result"] = f"Summarized from original tool output: {summarized_content_raw}"
 
-                        # Create the final entry, preserving original metadata
                         summarized_entry = {
                             "timestamp": entry.get("timestamp"),
                             "content": new_content,
                             "unique_id": entry.get("unique_id"),
-                            "original_tag": "system"
+                            "original_tag": entry.get('original_tag')
                         }
-                        
+
                         final_entries.append(summarized_entry)
                         summarized_count += 1
-                        
-                        # Update the timeline with the tokens of the *entire* new summarized entry
+
                         cumulative_tokens += self.token_manager.num_tokens_from_string(json.dumps(new_content))
-                        continue # Skip to the next message in the loop
+                        continue
 
                     except Exception as e:
                         print(f"Error during summarization: {e}. Keeping original message.")
-            
+
             # --- Pass-Through Logic ---
-            # If the code reaches here, it means the message was NOT summarized.
-            # It's either a user/assistant message, or a system message that didn't meet the criteria.
-            # We add it to our final list and update the token timeline.
             final_entries.append(entry)
-            
-            # Calculate tokens for the entire content to keep the timeline accurate
             if isinstance(content_data, dict):
                 timeline_tokens = self.token_manager.num_tokens_from_string(json.dumps(content_data))
             else:
@@ -558,21 +507,22 @@ class memory_manager:
 
         # --- Step 3: Rebuild and save the short-term memory if changes were made ---
         if summarized_count > 0:
-            print(f"Summarized {summarized_count} system message(s). Rebuilding memory.")
-            
-            new_short_term_memory = {"user": [], "assistant": [], "system": []}
+            print(f"Summarized {summarized_count} system/tool message(s). Rebuilding memory.")
+
+            # --- UPDATED: Initialize with 'tool' tag ---
+            new_short_term_memory = {"user": [], "assistant": [], "system": [], "tool": []}
             for entry in final_entries:
-                tag = entry.pop('original_tag') # Use .pop() to get the tag and remove it in one step
+                tag = entry.pop('original_tag')
                 if tag in new_short_term_memory:
                     new_short_term_memory[tag].append(entry)
 
             memory_data["short_term"] = new_short_term_memory
             self._save_memory(memory_data)
         else:
-            print("No system messages met the criteria for summarization.")
+            print("No system or tool messages met the criteria for summarization.")
 
         return summarized_count
-    
+
     def _archive_memory(self, memory_data, trigger_type):
         """
         Archives the current memory state to a timestamped file
@@ -586,25 +536,19 @@ class memory_manager:
 
         archive_dir_name = "memory_archive"
         archive_full_path = os.path.join(main_directory, archive_dir_name)
-
         timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"memory_archive_{trigger_type}_{timestamp_str}.json"
-
         archive_file_path = os.path.join(archive_full_path, filename)
 
         try:
             if not os.path.exists(archive_full_path):
                 os.makedirs(archive_full_path)
                 print(f"Created memory archive directory: {archive_full_path}")
-
             with open(archive_file_path, 'w', encoding='utf-8') as f:
                 json.dump(memory_data, f, indent=4)
-
             print(f"Archived memory state before {trigger_type} summarization to {archive_file_path}")
-
         except Exception as e:
             print(f"Error archiving memory before {trigger_type} summarization: {e}")
-
 
     def check(self):
         """
@@ -627,19 +571,15 @@ class memory_manager:
         token_count = self.current_memory_tokens("short_term")
 
         if token_count >= self.SHORT_TERM_TOKEN_THRESHOLD:
-
             message=f"\n--- Short-Term Memory Check Triggered ({token_count} >= {self.SHORT_TERM_TOKEN_THRESHOLD}) ---"
             print(message)
             self.text_capture.dump_text(message)
-
 
             self._archive_memory(memory_data, "short_term")
 
             if self.deep_memory_flag:
                 self.create_deep_memory()
 
-            # --- Step 1: Prepare short-term data for summarization and purging ---
-            # This part remains mostly the same, gathering all entries and their formatted text
             all_short_term_entries = []
             for tag, entries_list in memory_data.get("short_term", {}).items():
                 if not isinstance(entries_list, list):
@@ -650,8 +590,7 @@ class memory_manager:
 
                     formatted_time = datetime.fromtimestamp(entry["timestamp"]).strftime('%Y-%m-%d %H:%M:%S')
                     content_data = entry["content"]
-                    
-                    # Logic to prepare content for token counting (and AI summarization)
+
                     if isinstance(content_data, dict):
                         temp_content_data = content_data.copy()
                         if "context" in temp_content_data:
@@ -662,20 +601,17 @@ class memory_manager:
 
                     all_short_term_entries.append({
                         "timestamp": entry["timestamp"],
-                        "unique_id": entry.get("unique_id", str(uuid.uuid4())), # Ensure unique_id
-                        "text_for_ai": f"[{tag.upper()} - {formatted_time}] {text_for_tokens}", # Text used for AI summarization
+                        "unique_id": entry.get("unique_id", str(uuid.uuid4())),
+                        "text_for_ai": f"[{tag.upper()} - {formatted_time}] {text_for_tokens}",
                         "original_tag": tag,
                         "original_entry": entry,
-                        "tokens": self.token_counters_cache.get(entry.get("unique_id"), self.token_manager.num_tokens_from_string(text_for_tokens)) # Pre-calculate/cache tokens
+                        "tokens": self.token_counters_cache.get(entry.get("unique_id"), self.token_manager.num_tokens_from_string(text_for_tokens))
                     })
-                    # Cache the token count if not already present
                     if entry.get("unique_id") not in self.token_counters_cache:
                         self.token_counters_cache[entry.get("unique_id")] = all_short_term_entries[-1]["tokens"]
 
-            # Sort all entries chronologically (oldest first)
             all_short_term_entries.sort(key=lambda x: x["timestamp"])
 
-            # --- Step 2: Summarize using the prepared text ---
             structured_short_term_for_ai = "\n".join([item["text_for_ai"] for item in all_short_term_entries])
             print(f"Summarizing short-term memory (Tokens: {token_count})...")
 
@@ -694,38 +630,28 @@ class memory_manager:
             memory_data["long_term"].append(f"[{summary_timestamp_str}] Summary of recent activity: {summarized_content}")
             needs_save = True
 
-            # --- Step 3: Purge short-term memory based on a token budget ---
-            # This part remains the same as before, purging all short-term memory
-            # to fit the SHORT_TERM_RETAIN_TOKEN_BUDGET, keeping newest.
             entries_to_keep = []
             current_retained_tokens = 0
-            
-            # Iterate backwards (from newest to oldest) through the sorted entries
+
             for entry_item in reversed(all_short_term_entries):
                 unique_id = entry_item.get("unique_id")
-                
-                # Use cache if available, otherwise calculate and store
                 if unique_id and unique_id in self.token_counters_cache:
                     entry_tokens = self.token_counters_cache[unique_id]
                 else:
-                    # We calculate tokens based on the text that was sent to the AI for summarization
                     entry_tokens = self.token_manager.num_tokens_from_string(entry_item["text_for_ai"])
                     if unique_id:
                         self.token_counters_cache[unique_id] = entry_tokens
 
-                # Check if adding this entry exceeds the budget
                 if current_retained_tokens + entry_tokens <= self.SHORT_TERM_RETAIN_TOKEN_BUDGET:
                     entries_to_keep.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:
-                    # Stop once the budget is full
                     break
-            
-            # The list is currently newest-to-oldest, so we reverse it to restore chronological order
+
             entries_to_keep.reverse()
 
-            # Rebuild the short_term memory from the original objects we decided to keep
-            new_short_term_memory = {"user": [], "assistant": [], "system": []}
+            # --- UPDATED: Initialize with 'tool' tag for rebuilding ---
+            new_short_term_memory = {"user": [], "assistant": [], "system": [], "tool": []}
             for item in entries_to_keep:
                 tag = item["original_tag"]
                 original_entry = item["original_entry"]
@@ -734,7 +660,6 @@ class memory_manager:
 
             memory_data["short_term"] = new_short_term_memory
             print(f"Short-term memory purged, keeping latest {len(entries_to_keep)} entries ({current_retained_tokens} tokens).")
-
 
         # --- Long-Term Memory Check ---
         long_term_token_count = self.current_memory_tokens("long_term")
@@ -745,7 +670,6 @@ class memory_manager:
 
             self._archive_memory(memory_data, "long_term")
 
-            # --- Step 1: Summarize the entire long-term memory ---
             long_term_content_for_ai = "\n".join(memory_data.get("long_term", []))
             print(f"Summarizing long-term memory (Tokens: {long_term_token_count})...")
 
@@ -760,7 +684,6 @@ class memory_manager:
 
             new_base_memory_summary = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Comprehensive summary of past long-term memory: {summarized_content_raw}"
 
-            # --- Step 2: Purge long-term memory based on a token budget ---
             parsed_long_term = []
             for entry_str in memory_data.get("long_term", []):
                 match = re.match(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.*)$', entry_str)
@@ -770,29 +693,24 @@ class memory_manager:
 
             parsed_long_term.sort(key=lambda x: x["timestamp"])
 
-            # Iterate backwards (newest to oldest) to fill the token budget
             kept_long_term_entries = []
             current_retained_tokens = 0
             for entry_item in reversed(parsed_long_term):
                 entry_tokens = self.token_manager.num_tokens_from_string(entry_item["original_string"])
-                
+
                 if current_retained_tokens + entry_tokens <= self.LONG_TERM_RETAIN_TOKEN_BUDGET:
                     kept_long_term_entries.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:
                     break
-            
-            # Restore chronological order
+
             kept_long_term_entries.reverse()
-            
             new_long_term_list = [item["original_string"] for item in kept_long_term_entries]
 
-            # --- Step 3: Update the main memory data ---
             memory_data["long_term"] = new_long_term_list
             memory_data["base_memory"] = new_base_memory_summary
             print(f"Long-term memory purged, keeping latest {len(new_long_term_list)} entries ({current_retained_tokens} tokens). New summary moved to base memory.")
             needs_save = True
-
 
         if needs_save:
             self._save_memory(memory_data)
