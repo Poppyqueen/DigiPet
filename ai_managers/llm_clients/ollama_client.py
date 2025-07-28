@@ -127,8 +127,8 @@ class OllamaClient(AbstractLLMClient):
                 # As per your requirement: "for the system messages you want to apply them as tool messages"
                 # This directly implements: messages.append({"role": "system" "content": str(result)})
                 l_messages.append({
-                    "role": "user", # Using 'system' role for tool output.
-                    "content": entry["content"]
+                    "role": "tool", # Using 'tool' role for tool output.
+                    "content": str(entry)
                 })
         
         # DEBUG: Log the final constructed 'l_messages' list that will be sent to the LLM.
@@ -141,11 +141,13 @@ class OllamaClient(AbstractLLMClient):
         }
         
         # --- FIX: Transform tools to Ollama's expected format before passing them ---
-        if tools:
+        if tools and tool_choice=="auto":
             # DEBUG: Tools detected. Calling transform_tools to convert format.
             print("DEBUG: Tools provided. Transforming them to Ollama's required format.")
             transformed_tools = self.transform_tools(tools)
             settings["tools"] = transformed_tools
+            #settings["tool_choice"] = tool_choice
+
             # The 'tool_choice' parameter is commented out in your original code.
             # If you intend to use it, uncomment this line.
             # settings["tool_choice"] = tool_choice

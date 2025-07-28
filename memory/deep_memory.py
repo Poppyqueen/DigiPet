@@ -1,322 +1,627 @@
 # deep_memory.py
 
-import os
-
+from typing import List
 import json
-from typing import List, TYPE_CHECKING # Import TYPE_CHECKING
-import time
-import random
+
 
 # Import utils
-from utils.pydantic_models import look_ner_structure, save_ner_structure # Import from pydantic_models.py
+from utils.pydantic_models import save_ner_structure # Import from pydantic_models.py
 
-# Use TYPE_CHECKING to allow type hint without circular import at runtime
-if TYPE_CHECKING:
-    from memory.memory_handle import memory_manager # This import only happens for type checkers
+from utils.embeddings_providers.openai_embeddings import OpenAIEmbeddingProvider
+from utils.embeddings_providers.google_embeddings import GoogleEmbeddingProvider
+from utils.embeddings_providers.ollama_embeddings import OllamaEmbeddingProvider
+
+
+from utils.utils_ai_providers.gemini_provider import GeminiProv
+from utils.utils_ai_providers.openai_provider import OpenAIProv
+from utils.utils_ai_providers.groq_provider import GroqProv
+from utils.utils_ai_providers.ollama_provider import OllamaProv
+
+
+# --- We will now use both the DatabaseManager and EmbeddingOperations ---
+from memory.deep_memory_db_managers.deep_memory_database import DatabaseManager
+from memory.deep_memory_db_managers.embedding_operations import EmbeddingOperations
+import configparser
+
+
+
 
 class DeepMemory:
     """
-    A class to manage a deep memory system for an LLM agent.
-    This module is designed to handle a "deep memory" system for an LLM agent,
-    the concept is based on associative memory, where a global memory is used to
-    store and retrieve information not readily available in the current context window.
+    A class to manage a deep memory system for an LLM agent using an SQLite backend.
+    This module handles the storage and retrieval of structured information (entities and their
+    characteristics) identified via semantic similarity of their embeddings.
     """
-    # Add type hint using string literal or TYPE_CHECKING
-    def __init__(self, filepath: str, ai_bot_instance=None, memory_instance: 'memory_manager' = None):
+    def __init__(self, filepath: str, logger=None):
         """
         Initialize the DeepMemory instance.
 
         Args:
-            filepath (str): Path to the JSON file where deep memory data is stored.
-            ai_bot_instance: An instance of the AI bot for processing.
-            memory_instance ('memory_manager'): An instance of the memory_manager.
+            filepath (str): Path to the SQLite database file.
         """
-        if memory_instance is None:
-             # If you absolutely need a default, it makes coupling tighter.
-             # Consider requiring it to be passed in.
-             # from memory_handle import memory_manager # Avoid this if possible
-             # print("Warning: No memory_instance provided to DeepMemory. Functionality may be limited.")
-             # self.memory = memory_manager() # Creates a default, potentially unwanted memory manager
-             raise ValueError("DeepMemory requires a memory_manager instance.") # Better to enforce
+        self.log=logger
+
+
+        self.db_manager = DatabaseManager(filepath)
+        # --- Initialize EmbeddingOperations to handle similarity searches ---
+        self.embedding_op = EmbeddingOperations(filepath)
+        
+        self.db_manager.create_tables()
+
+    ### ///////// Init config  /////////  #####
+        main_config = configparser.ConfigParser()
+        main_config.read('main_config.ini')
+        embeddings_config_selected_provider = main_config['AI_DeepMemory']['deep_memory_embeddings_provider']
+
+        embeddings_available_providers = {
+            "google": {"client": GoogleEmbeddingProvider},
+            "openai": {"client": OpenAIEmbeddingProvider},
+            "ollama": {"client": OllamaEmbeddingProvider}
+        }
+
+        if embeddings_config_selected_provider in embeddings_available_providers:
+            embeddings_config_client = embeddings_available_providers[embeddings_config_selected_provider]["client"]
+            print(f"Deep Memory using embedding provider: {embeddings_config_selected_provider}")
         else:
-            self.memory = memory_instance
+            print(f"Error: '{embeddings_config_selected_provider}' is not a recognized provider. Falling back to OpenAI.")
+            embeddings_config_client = OpenAIEmbeddingProvider
 
-        self.filepath = filepath
-        self._check_and_create_db() # Check/create deep memory file
-        self.memory_data = self._load_memory() # Load deep memory data
 
-        # Use provided bot instance or create a new one if needed
-        if ai_bot_instance:
-            self.bot_instance = ai_bot_instance
-        elif self.memory and hasattr(self.memory, 'bot_instance'): # Try to get bot from memory_manager
-             self.bot_instance = self.memory.bot_instance
+
+        ai_config_model_name = main_config['AI_DeepMemory']['deep_memory_ai']
+        ai_config_model_provider = main_config['AI_DeepMemory']['deep_memory_ai_provider']
+
+        ai_bot_providers = {
+            "gemini": {
+                "client": GeminiProv
+            },
+            "openai": {
+                "client": OpenAIProv
+            },
+            "groq": {
+                "client": GroqProv
+            },
+            "ollama": {
+                "client": OllamaProv
+            }
+        }
+
+        # 4. Use the mapping dictionary to get the actual JSON structure
+        if ai_config_model_provider in ai_bot_providers:
+            ai_config_client = ai_bot_providers[ai_config_model_provider]["client"]
+            print(f"Loaded state: {ai_config_model_provider}")
+            print(ai_config_client)
+
         else:
-            raise ValueError("DeepMemory could not obtain an ai_bot instance.")
+            print(f"Error: '{ai_config_model_provider}' is not a recognized state.")
+            # Handle the error, perhaps by falling back to a default state
 
-        if not self.bot_instance:
-             raise ValueError("DeepMemory could not obtain an ai_bot instance.")
 
-    def _check_and_create_db(self):
+        self.bot_instance = ai_config_client(selected_model=ai_config_model_name)
+
+        self.embeddings_ai = embeddings_config_client()
+
+        self._message_embeddings_cache = {}
+
+
+    def _concatenate_n_strings(self, string_list, num_to_grab, insert="\n"):
         """
-        Internal function to check if the JSON database file exists and create it if not.
-        """
-        # Create directory if it doesn't exist
-        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
-        if not os.path.exists(self.filepath):
-             # Initialize with an empty entity list structure
-            initial_deep_memory = {"entities": []}
-            with open(self.filepath, 'w') as f:
-                json.dump(initial_deep_memory, f, indent=4)
-                print(f"Deep memory database file created at: {self.filepath}")
-        else:
-            print(f"Deep memory database file already exists at: {self.filepath}")
+        Concatenates a specified number of strings from the beginning of a list.
+        Allows a special "all" tag for num_to_grab to concatenate all strings.
 
-
-    def _load_memory(self):
-        """
-        Internal function to load deep memory data from the JSON file.
-        """
-        if not os.path.exists(self.filepath):
-            self._check_and_create_db() # Ensure file exists before trying to load
-
-        try:
-            with open(self.filepath, 'r') as f:
-                # Handle empty file case
-                content = f.read()
-                if not content:
-                    print(f"Warning: Deep memory file {self.filepath} is empty. Initializing.")
-                    return {"entities": []}
-                return json.loads(content)
-        except FileNotFoundError:
-            # Should be handled by _check_and_create_db, but as a fallback
-            print(f"Error: Database file not found at {self.filepath}.")
-            return {"entities": []} # Return default structure
-        except json.JSONDecodeError:
-            print(f"Error: Could not decode JSON from {self.filepath}. File might be corrupted. Re-initializing.")
-            return {"entities": []} # Return default structure
-
-    def _save_memory(self, memory_data):
-        """
-        Internal function to save deep memory data to the JSON file.
-        """
-        try:
-            if memory_data is not None:
-                with open(self.filepath, 'w') as f:
-                    json.dump(memory_data, f, indent=4)
-            else:
-                print("Warning: No deep memory data to save (memory_data is None).")
-        except Exception as e:
-            print(f"Error saving to deep memory database file: {e}")
-
-    def create_memory(self):
-        """
-        Creates memory by extracting NER from the associated memory_manager's
-        structure and updating the deep memory database.
-        """
-        import json # Import here to only use when needed
-
-        if not self.memory:
-            print("Error: DeepMemory has no associated memory_manager instance.")
-            return
-
-        structure = self.memory.get_memory_structure() # Use the injected instance
-        #print("DEBUG: Calling save_ner_process with structure:", json.dumps(structure, indent=2))
-        ner_response_pydantic = self.bot_instance.save_ner_process(structure)
-
-        if ner_response_pydantic is None:
-            #print("No NER response received from save_ner_process, skipping deep memory update.")
-            return
-        if not isinstance(ner_response_pydantic, save_ner_structure):
-             #print(f"Error: Expected save_ner_process to return save_ner_structure, got {type(ner_response_pydantic)}")
-             return
-
-        ner_response_dict = ner_response_pydantic.model_dump()
-        new_entities = ner_response_dict.get("entities", [])
-        #print(f"DEBUG: New entities extracted: {new_entities}")
-
-        # Load the current state of deep memory *before* merging
-        existing_memory_data = self._load_memory()
-
-        if existing_memory_data is None:
-            print("Could not load existing deep memory, creating new deep memory file.")
-            memory_to_save = {"entities": new_entities} # Initialize structure correctly
-        else:
-            memory_to_save = existing_memory_data # Start with existing memory
-            existing_entities = memory_to_save.get("entities", [])
-
-            if not isinstance(existing_entities, list):
-                print("Warning: 'entities' in existing deep memory is not a list. Resetting.")
-                existing_entities = []
-
-            # --- Merging Logic ---
-            entity_map = {entity.get("Named_Entity").lower(): entity for entity in existing_entities if entity.get("Named_Entity")} # Use lowercased keys
-
-            for new_entity in new_entities:
-                entity_name = new_entity.get("Named_Entity")
-                new_excerpts = new_entity.get("excerpts", [])
-
-                if not entity_name: # Skip entities without a name
-                    #print(f"Warning: Skipping new entity without a 'Named_Entity': {new_entity}")
-                    continue
-
-                if entity_name.lower() in entity_map: # Case-insensitive check
-                    # Entity exists, merge excerpts
-                    existing_entity = entity_map[entity_name.lower()] # Retrieve using lowercase key
-                    existing_excerpts = existing_entity.get("excerpts", [])
-                    if not isinstance(existing_excerpts, list): # Ensure excerpts is a list
-                        existing_excerpts = []
-                    # Add only unique new excerpts
-                    for excerpt in new_excerpts:
-                        if excerpt not in existing_excerpts:
-
-                            existing_excerpts.append(f"{excerpt}. (added on {time.strftime('%Y-%m-%d %H:%M:%S')})") # Add timestamp
-                    existing_entity["excerpts"] = existing_excerpts
-                else:
-                    # Entity is new, add it to the map and the list
-                    # Do not store lowercase key in the list, keep original entity for saving
-                    existing_entities.append(new_entity)
-            # --- End Merging Logic ---
-
-            memory_to_save["entities"] = existing_entities # Update the entities list
-
-        #print("DEBUG: Deep Memory state after merge:", json.dumps(memory_to_save, indent=2))
-        self._save_memory(memory_to_save)
-        self.memory_data = memory_to_save # Update in-memory cache
-        self.summarize_deep_memory()
-        #print("Deep memory updated.")
-
-    def summarize_deep_memory(self):
-        """
-        Based on threasholds, this function looks for individual entities in the deep memory structure and summarizes them if necessary.
-        """
-        # Load the latest deep memory data for searching
-        current_deep_memory = self._load_memory()
-        if current_deep_memory is None:
-            print("Deep memory data not loaded, cannot perform search.")
-            return []
-
-        entities_in_memory = current_deep_memory.get("entities", [])
-        if not isinstance(entities_in_memory, list):
-            print("Warning: 'entities' in deep memory data is not a list, search might fail.")
-            return []
-
-        updated_entities = False # Flag to track if any entity was updated
-
-        for entity in entities_in_memory:
-            entity_name = entity.get("Named_Entity")
-            excerpts = entity.get("excerpts", [])
-            if isinstance(excerpts, list):
-                # Check if the number of excerpts exceeds a threshold
-                if len(excerpts) > 5:
-                    # Summarize the excerpts
-                    summarized_excerpts = self.bot_instance.summarize_excerpts(excerpts, entity_name)
-                    # Update the entity with the summarized excerpts
-                    entity["excerpts"] = summarized_excerpts
-                    #print(f"Summarized excerpts for entity '{entity_name}'.")
-                    updated_entities = True # Set flag to True because an entity was updated
-                else:
-                    #print(f"Entity '{entity_name}' has {len(excerpts)} excerpts, no summarization needed.")
-                    continue
-
-        if updated_entities: # Only save if something was actually updated
-            self._save_memory(current_deep_memory) # Save the modified deep memory back to file
-            self.memory_data = current_deep_memory # Update in-memory cache
-            print("Deep memory summarized entities saved.")
-        else:
-            print("No entities needed summarization, deep memory not saved.")
-
-
-    def random_access(self):
-        """
-        Provides a random access of a random entity and its excerpts from deep memory.
-        Returns it as a dictionary.
-        """
-        # Load the latest deep memory data for searching
-        current_deep_memory = self._load_memory()
-        if current_deep_memory is None:
-            print("Deep memory data not loaded, cannot perform search.")
-            return {}
-
-        entities_in_memory = current_deep_memory.get("entities", [])
-        if not isinstance(entities_in_memory, list):
-            print("Warning: 'entities' in deep memory data is not a list, search might fail.")
-            return {}
-
-        if not entities_in_memory:
-            print("No entities found in deep memory.")
-            return {}
-
-        random_entity = random.choice(entities_in_memory)
-        random_excerpts = random_entity.get("excerpts", [])
-        if not isinstance(random_excerpts, list):
-            print(f"Warning: Excerpts for entity '{random_entity.get('Named_Entity')}' is not a list: {random_excerpts}")
-            return {}
-        #print(f"Randomly selected entity: {random_entity.get('Named_Entity')}")
-        #print(f"Excerpts: {random_excerpts}")
-        return random_entity
-
-
-
-    def search_memory_excerpts(self) -> List[str]:
-        """
-        Searches deep memory for entities matching the NER terms extracted
-        from the associated memory_manager's current structure.
+        Args:
+            string_list (list): A list of strings.
+            num_to_grab (int or str): The number of strings to grab from the beginning
+                                    of the list to concatenate. Can be an integer or
+                                    the string "all" (case-insensitive) to grab all entries.
+            insert (str): The string to insert between concatenated strings. Defaults to a newline.
 
         Returns:
-            List[str]: A list of relevant excerpts found.
+            str: A single string formed by concatenating the specified number
+                of strings, or an empty string if num_to_grab is 0 or less (and not "all"),
+                or if the list is empty.
         """
-        if not self.memory:
-            print("Error: DeepMemory has no associated memory_manager instance.")
-            return []
+        if not isinstance(string_list, list):
+            raise TypeError("Input 'string_list' must be a list.")
+        if not all(isinstance(s, str) for s in string_list):
+            raise TypeError("All elements in 'string_list' must be strings.")
 
-        structure = self.memory.get_memory_structure() # Use the injected instance
-        #print("DEBUG: Calling look_ner_process with structure:", json.dumps(structure, indent=2))
-        ner_pydantic = self.bot_instance.look_ner_process(structure)
+        # Validate num_to_grab
+        if not (isinstance(num_to_grab, int) or (isinstance(num_to_grab, str) and num_to_grab.lower() == "all")):
+            raise TypeError("Input 'num_to_grab' must be an integer or the string 'all'.")
 
-        if ner_pydantic is None:
-            print("No NER response received from look_ner_process, cannot perform deep memory search.")
-            return []
-        if not isinstance(ner_pydantic, look_ner_structure):
-             print(f"Error: Expected look_ner_process to return look_ner_structure, got {type(ner_pydantic)}")
-             return []
+        if not string_list:
+            return ""
 
-        search_ner_strings = ner_pydantic.named_entities
-        #print(f"DEBUG: NER terms to search in deep memory: {search_ner_strings}")
+        if isinstance(num_to_grab, int):
+            if num_to_grab < 0:
+                print("Warning: num_to_grab is negative. Returning an empty string.")
+                return ""
+            if num_to_grab == 0:
+                return ""
+            # Ensure we don't try to grab more strings than available
+            actual_num_to_grab = min(num_to_grab, len(string_list))
+        else:  # num_to_grab is "all"
+            actual_num_to_grab = len(string_list)
 
-        # Load the latest deep memory data for searching
-        current_deep_memory = self._load_memory()
-        if current_deep_memory is None:
-            print("Deep memory data not loaded, cannot perform search.")
-            return []
-
-        entities_in_memory = current_deep_memory.get("entities", [])
-        if not isinstance(entities_in_memory, list):
-            print("Warning: 'entities' in deep memory data is not a list, search might fail.")
-            return []
-
-        found_excerpts = []
-        if not search_ner_strings:
-            #print("DEBUG: No NER terms provided for search.")
-            return []
-
-        #print(f"DEBUG: Searching {len(entities_in_memory)} entities in deep memory.")
-        for search_ner_string in search_ner_strings:
-            search_lower = search_ner_string.lower() # Case-insensitive search
-            for entity in entities_in_memory:
-                entity_name = entity.get("Named_Entity")
-                if entity_name and entity_name.lower() == search_lower: # Case-insensitive comparison already here
-                    excerpts = entity.get("excerpts", [])
-                    if isinstance(excerpts, list):
-                        # Add excerpts that are not already found
-                        for excerpt in excerpts:
-                             if excerpt not in found_excerpts:
-                                 found_excerpts.append(excerpt)
-                        #print(f"DEBUG: Found {len(excerpts)} excerpts for entity '{entity_name}'.")
-                    else:
-                        print(f"Warning: Excerpts for entity '{entity_name}' is not a list: {excerpts}")
-                    # Assuming entity names are unique, break inner loop once found
-                    break
+        # Use slice notation to get the desired number of strings and then join them
+        final_string = insert.join(string_list[:actual_num_to_grab])
+        return final_string
 
 
-        #print(f"DEBUG: Total unique excerpts found: {len(found_excerpts)}")
-        return found_excerpts
+    def _search_entities(self, memory_structure)->save_ner_structure:
+
+        """
+        This function searches the current memory structure for entities and their characteristics, returns a pydantic structure
+        with the nested entities and characteristics, aswell as a map of sources from messages with their message UID
+        """
+
+        # Define the threshold for considering two entities the same
+
+        # 1. Format and persist messages from short-term memory
+        all_messages = []
+        for source, messages in memory_structure.get("short_term", {}).items():
+            for msg in messages:
+                msg_copy = msg.copy()
+                msg_copy['source'] = source
+                all_messages.append(msg_copy)
+
+        all_messages.sort(key=lambda x: x['timestamp'])
+
+        if not all_messages:
+            print("No messages in short-term memory to process.")
+            return
+
+        formatted_memory_list = [
+            f"####\ntimestamp: {msg['timestamp']}\nsource: {msg['source']}\nunique_id: {msg['unique_id']}\ncontent: {json.dumps(msg['content']) if isinstance(msg['content'], dict) else msg['content']}\n####"
+            for msg in all_messages
+        ]
+        formatted_memory_string = "\n\n".join(formatted_memory_list)
+
+        # 2. Call LLM for structured data extraction
+        system_message = (
+            "You are a sophisticated data extraction agent. Analyze the provided memory transcript. "
+            "Identify key named entities (objects, people, projects, concepts, etc.). For each entity, "
+            "consolidate all related information into a list of distinct 'INTRINSIC' textual description or mention of specific characteristics. "
+            "Intrinsic qualities are properties that an object has in itself, independently of anything else—they don't depend on the object's relationship to other things."
+            "For each characteristic, list the 'unique_id' of the source message(s)."
+            "Examples include observable and quantifiable qualities such as specific materials, colors or shapes for objects:"
+            "Red rubber, Bouncy and stiff, Has a particular shine to it, It has the ID 000020"
+            "You also have to extract entities from contextual clues, exchanges, and patterns observed in behaviors or mentioned qualities."
+            "If possible, also extract associative or symbolic meaning as characteristics of the entities, specially if quantifiable qualities are missing"
+        )
+
+        try:
+            ner_response_pydantic = self.bot_instance.structured_output(
+                system=system_message,
+                user=formatted_memory_string,
+                structure=save_ner_structure
+            )
+        except Exception as e:
+            print(f"An error occurred during the LLM call: {e}")
+            return
+
+        if not ner_response_pydantic or not isinstance(ner_response_pydantic, save_ner_structure):
+            print(f"Failed to get a valid structured response from the LLM. Type: {type(ner_response_pydantic)}")
+            return
+        
+        print(f"LLM processing complete. Found {len(ner_response_pydantic.entities)} potential entities to process.")
+        
+        return ner_response_pydantic
+    
+
+
+
+    def _process_similar_results(self, similar_results, threshold, entity_name=""):
+        """Helper to process similar results and format them."""
+        memory_results = []
+        if similar_results:
+            for result in similar_results:
+                if result['similarity_score'] >= threshold:
+                    print(f"\nFound similar entity (ID: {result['entity_id']}) for '{entity_name}' with score {result['similarity_score']:.4f}. Saving info for context.")
+                    
+                    # Safely get entity name
+                    name_record = self.db_manager.get_entity_by_id(result['entity_id'])
+                    result_name = name_record.get('name') if name_record else "Unknown Entity"
+
+                    raw_qualities = result['raw_text']
+                    
+                    # Get messages, which are expected to be list of dictionaries from the DB
+                    messages_dicts = self.db_manager.get_messages_for_entity_current_characteristic(result['entity_id'])
+
+                    # Ensure messages_dicts is a list; if not, initialize as empty list
+                    if not isinstance(messages_dicts, list):
+                        print(f"Warning: get_messages_for_entity_current_characteristic for entity {result['entity_id']} did not return a list. Received type: {type(messages_dicts)}. Treating as empty list.")
+                        messages_dicts = []
+
+                    # Transform list of dictionaries into a list of strings (message contents)
+                    messages_contents = []
+                    for msg_dict_from_db in messages_dicts:
+                        # The key for the original message data is 'raw_json'
+                        if isinstance(msg_dict_from_db, dict) and 'raw_json' in msg_dict_from_db:
+                            try:
+                                # The 'raw_json' field is already a dictionary when retrieved from the DB,
+                                # so json.loads() is not needed here.
+                                original_msg_data = msg_dict_from_db['raw_json']
+
+                                if not isinstance(original_msg_data, dict):
+                                    print(f"Warning: 'raw_json' content is not a dictionary as expected for message ID {msg_dict_from_db.get('id', 'N/A')}: {original_msg_data}. Skipping.")
+                                    continue # Skip this message if raw_json isn't a dictionary
+
+                                # The 'content' field within original_msg_data can be a string or a dict
+                                if 'content' in original_msg_data:
+                                    content = original_msg_data['content']
+                                    # Ensure content is a string before appending
+                                    messages_contents.append(json.dumps(content) if isinstance(content, dict) else str(content))
+                                else:
+                                    print(f"Warning: 'content' key missing in original_msg_data for message ID {msg_dict_from_db.get('id', 'N/A')}: {original_msg_data}. Skipping.")
+                            except Exception as e: # Catch any other unexpected errors during processing
+                                print(f"Error processing message from DB (ID: {msg_dict_from_db.get('id', 'N/A')}): {original_msg_data} - {e}. Skipping this message.")
+                        else:
+                            # This block will now only be hit if the top-level dict is malformed or 'raw_json' is missing
+                            print(f"Warning: Message dictionary from DB format unexpected or 'raw_json' key missing (ID: {msg_dict_from_db.get('id', 'N/A')}): {msg_dict_from_db}. Skipping this message.")
+
+                    # Now pass the list of strings to _concatenate_n_strings
+                    concat = self._concatenate_n_strings(messages_contents, 5)
+                    
+                    result_message = f"Entity name:{result_name}\nRaw qualities of Identified object:{raw_qualities}\nSource messages for memories:{concat}"
+                    memory_results.append(result_message)
+        return memory_results
+    
+    def quick_search(self, memory_structure: dict, characteristics_flag=False) -> str:
+        """
+        This function performs a quick search within the current memory structure,
+        either by processing entities and their characteristics using LLM embeddings
+        (if characteristics_flag is True) or by directly embedding individual messages
+        for similarity comparison.
+
+        It searches the current memory structure for entities/messages and compares them
+        with entities/messages in the DB using cosine similarity of embeddings.
+
+        Returns a well-structured, formatted string for injection into an LLM context window.
+        """
+        self.log.dump_text("###########")
+
+        init_message = f"DEEP MEMORIES QUICK SEARCH INITIALIZED"
+        print(init_message)
+        self.log.dump_text(init_message)
+
+        # Define the threshold for finding entities that might be relatively similar
+        CHARACTERISTICS_SIMILARITY_THRESHOLD = 0.6
+        NO_CHAR_SIMILARITY_THRESHOLD = 0.5
+
+        memory_results = ["\n"]
+        memory_context = ""
+        
+        # New set to store unique characteristic IDs to avoid duplicates
+        processed_characteristic_ids = set()
+
+        # Check if the database has entries
+        db_has_data = self.db_manager.has_data()  # Assuming this returns True if has data.
+
+        if not db_has_data:
+            message = "Database is empty. No search can be performed."
+            print(message)
+            self.log.dump_text(message)
+            self.log.dump_text("\nDEEP MEMORIES QUICK SEARCH ENDED ")
+            self.log.dump_text("\n###########")
+            return ""
+
+        if characteristics_flag:
+            message = "Process for Characteristics search"
+            print(message)
+            self.log.dump_text(message)
+            entities_result = self._search_entities(memory_structure)  # Renamed to avoid conflict with list 'entities'
+
+            if not entities_result or not entities_result.entities:
+                message = "No entities found for characteristics search."
+                print(message)
+                self.log.dump_text(message)
+                return ""
+
+            # 3. Process each potential entity from the LLM response
+            for entity_data in entities_result.entities:
+                entity_name = entity_data.named_entity.strip()
+                if not entity_name:
+                    message = "  Entity name is empty. Skipping."
+                    print(message)
+                    self.log.dump_text(message)
+                    continue
+
+                # Consolidate new characteristics and generate a query embedding
+                new_characteristics_text = ". ".join([char.characteristic for char in entity_data.characteristics])
+                new_characteristics_text = f"{entity_name}. {new_characteristics_text}"
+                if not new_characteristics_text:
+                    message = f"  No characteristics text for '{entity_name}'. Skipping."
+                    print(message)
+                    self.log.dump_text(message)
+                    continue
+
+                try:
+                    query_embedding = self.embeddings_ai.make_embeddings(new_characteristics_text)
+                    query_embedding = query_embedding.squeeze()
+                    message = f"  Successfully generated embedding for '{entity_name}'."
+                    print(message)
+                    self.log.dump_text(message)
+                except Exception as e:
+                    message = f"  Error generating embedding for '{entity_name}': {e}"
+                    print(message)
+                    self.log.dump_text(message)
+                    continue
+
+                # Search for similar entities
+                similar_results = self.embedding_op.search_similar_characteristics(query_embedding, top_n=6)
+
+                # Process and format similar results, now adding deduplication
+                for result in similar_results:
+                    # Only add if the characteristic ID hasn't been processed yet and meets threshold
+                    if result["characteristic_id"] not in processed_characteristic_ids and \
+                       result["similarity_score"] >= CHARACTERISTICS_SIMILARITY_THRESHOLD:
+                        memory_results.extend(self._process_similar_results(
+                            [result], CHARACTERISTICS_SIMILARITY_THRESHOLD, entity_name
+                        ))
+                        processed_characteristic_ids.add(result["characteristic_id"])
+
+
+            memory_context = self._concatenate_n_strings(memory_results, "all")
+
+        else:  # No characteristics search (direct message embedding comparison)
+            message = "Process for No characteristics search:"
+            print(message)
+            self.log.dump_text(message)
+
+            # 1. Format and persist messages from short-term memory
+            all_messages = []
+            for source, messages in memory_structure.get("short_term", {}).items():
+                for msg in messages:
+                    msg_copy = msg.copy()
+                    msg_copy['source'] = source
+                    all_messages.append(msg_copy)
+
+            all_messages.sort(key=lambda x: x['timestamp'])
+
+            if not all_messages:
+                message = "No messages in short-term memory to process."
+                print(message)
+                self.log.dump_text(message)
+                return ""
+                        # Use an internal cache for message embeddings within this method call
+            # This cache is cleared with each call to quick_search for `else` block
+
+# Using the instance-level cache for message embeddings
+            for msg in all_messages:
+                # Use a unique identifier for the message for caching.
+                # A combination of 'source' and 'unique_id' is robust.
+                message_key = f"{msg['source']}-{msg['unique_id']}"
+
+                query_embedding = None
+                if message_key in self._message_embeddings_cache: # <-- NOW USING INSTANCE CACHE
+                    query_embedding = self._message_embeddings_cache[message_key]
+                    message = f"  Using cached embedding for message: {message_key}"
+                    print(message)
+                    self.log.dump_text(message)
+                else:
+                    try:
+                        # Ensure content is string for embedding
+                        content_to_embed = json.dumps(msg['content']) if isinstance(msg['content'], dict) else str(msg['content'])
+                        query_embedding = self.embeddings_ai.make_embeddings(content_to_embed)
+                        query_embedding = query_embedding.squeeze()
+                        self._message_embeddings_cache[message_key] = query_embedding # <-- NOW STORING IN INSTANCE CACHE
+                        message = f"  Generated and cached embedding for message: {message_key}"
+                        print(message)
+                        self.log.dump_text(message)
+                    except Exception as e:
+                        message = f"  Error generating embedding for message {message_key}: {e}"
+                        print(message)
+                        self.log.dump_text(message)
+                        continue
+
+                # Search for similar entities (or messages, depending on your DB indexing)
+                similar_results = self.embedding_op.search_similar_characteristics(query_embedding, top_n=4)
+
+                # Process and format similar results. Here, we don't have a specific 'entity_name'
+                # from the original message, so it will be an empty string in the print statement.
+                for result in similar_results:
+                    # Apply deduplication here as well, based on characteristic_id
+                    if result["characteristic_id"] not in processed_characteristic_ids and \
+                       result["similarity_score"] >= NO_CHAR_SIMILARITY_THRESHOLD:
+                        memory_results.extend(self._process_similar_results(
+                            [result], NO_CHAR_SIMILARITY_THRESHOLD
+                        ))
+                        processed_characteristic_ids.add(result["characteristic_id"])
+
+            memory_context = self._concatenate_n_strings(memory_results, "all")
+
+        debug_message = f"DEBUG MEMORIES EXTRACTED FROM QUICK SEARCH: \n - {memory_context}"
+        print(debug_message)
+        self.log.dump_text(f"MEMORIES EXTRACTED FROM QUICK SEARCH: \n - {memory_context}")
+        self.log.dump_text("DEEP MEMORIES QUICK SEARCH ENDED")
+        self.log.dump_text("###########")
+
+        return memory_context
+        
+    def create_memory(self, memory_structure: dict):
+        """
+        Processes a memory structure to extract entities, and based on embedding similarity,
+        either creates a new entity or merges information with an existing one.
+
+        Args:
+            memory_structure (dict): A dictionary containing the agent's short-term memory.
+        """
+        self.log.dump_text("############")
+
+        message = "Starting deep memory creation process with similarity-based identification..."
+        print(message)
+        self.log.dump_text(message)
+        
+        SIMILARITY_THRESHOLD = 0.85
+
+        self._message_embeddings_cache={} # Drop the messages cache as some will removed when this is called
+
+        # 1. Format and persist messages from short-term memory
+        all_messages = []
+        for source, messages in memory_structure.get("short_term", {}).items():
+            for msg in messages:
+                msg_copy = msg.copy()
+                msg_copy['source'] = source
+                all_messages.append(msg_copy)
+
+        all_messages.sort(key=lambda x: x['timestamp'])
+
+        if not all_messages:
+            message = "No messages in short-term memory to process."
+            print(message)
+            self.log.dump_text(message)
+            return
+
+        message_id_map = {}
+        for msg in all_messages:
+            message_pk = self.db_manager.add_message(
+                source_unique_id=msg['unique_id'],
+                source_tag=msg['source'],
+                msg_type="short_term_context",
+                raw_data_dict=msg
+            )
+            if message_pk:
+                message_id_map[msg['unique_id']] = message_pk
+
+
+        ner_response_pydantic=self._search_entities(memory_structure)
+
+        if not ner_response_pydantic or not isinstance(ner_response_pydantic, save_ner_structure):
+            message = f"Failed to get a valid structured response from the LLM. Type: {type(ner_response_pydantic)}"
+            print(message)
+            self.log.dump_text(message)
+            return
+        
+        message = f"LLM processing complete. Found {len(ner_response_pydantic.entities)} potential entities to process."
+        print(message)
+        self.log.dump_text(message)
+
+        # 3. Process each potential entity from the LLM response
+        for entity_data in ner_response_pydantic.entities:
+            entity_name = entity_data.named_entity.strip()
+            message = f"Processing entity: '{entity_name}'"
+            print(message)
+            self.log.dump_text(message)
+            if not entity_name:
+                message = "  Entity name is empty. Skipping."
+                print(message)
+                self.log.dump_text(message)
+                continue
+
+            new_characteristics_text = ". ".join([char.characteristic for char in entity_data.characteristics])
+            new_characteristics_text = f"{entity_name}. {new_characteristics_text}"
+            message = f"  Consolidated characteristics text: '{new_characteristics_text}'"
+            print(message)
+            self.log.dump_text(message)
+            if not new_characteristics_text:
+                message = f"  No characteristics text for '{entity_name}'. Skipping."
+                print(message)
+                self.log.dump_text(message)
+                continue
+
+            try:
+                query_embedding = self.embeddings_ai.make_embeddings(new_characteristics_text)
+                query_embedding = query_embedding.squeeze()
+                message = f"  Successfully generated embedding for '{entity_name}'."
+                print(message)
+                self.log.dump_text(message)
+            except Exception as e:
+                message = f"  Error generating embedding for '{entity_name}': {e}"
+                print(message)
+                self.log.dump_text(message)
+                continue
+
+            entity_id = None
+            final_text_to_embed = new_characteristics_text
+            
+            similar_results = self.embedding_op.search_similar_characteristics(query_embedding, top_n=1)
+
+            if similar_results:
+                top_match = similar_results[0]
+                if top_match['similarity_score'] > SIMILARITY_THRESHOLD:
+                    message = f"\nFound similar entity (ID: {top_match['entity_id']}) for '{entity_name}' with score {top_match['similarity_score']:.4f}. Merging info."
+                    print(message)
+                    self.log.dump_text(message)
+                    entity_id = top_match['entity_id']
+                    existing_char_text = top_match['raw_text']
+                    final_text_to_embed = existing_char_text + ". " + new_characteristics_text
+                    message = "Re-generating embedding for merged text."
+                    print(message)
+                    self.log.dump_text(message)
+                    query_embedding = self.embeddings_ai.make_embeddings(final_text_to_embed)
+                    query_embedding = query_embedding.squeeze()
+                else:
+                    message = f"\nTop match for '{entity_name}' is below threshold (score: {top_match['similarity_score']:.4f}). Creating new entity."
+                    print(message)
+                    self.log.dump_text(message)
+            else:
+                message = f"\nNo existing entities found. Creating new entity for '{entity_name}'."
+                print(message)
+                self.log.dump_text(message)
+
+            if entity_id is None:
+                entity_id = self.db_manager.add_entity(name=entity_name)
+                if not entity_id:
+                    message = f"Error: Failed to create new entity '{entity_name}'. Skipping."
+                    print(message)
+                    self.log.dump_text(message)
+                    continue
+                message = f"Created new entity '{entity_name}' with ID: {entity_id}"
+                print(message)
+                self.log.dump_text(message)
+
+            latest_version = self.db_manager.get_latest_characteristic_version(entity_id)
+            new_version = latest_version + 1
+
+            characteristic_id = self.db_manager.add_characteristics(
+                entity_id=entity_id,
+                raw_text=final_text_to_embed,
+                version=new_version,
+                embeddings_array=query_embedding
+            )
+
+            if not characteristic_id:
+                message = f"Error: Failed to save characteristics for entity ID {entity_id}. Skipping."
+                print(message)
+                self.log.dump_text(message)
+                continue
+            
+            message = f"Saved new characteristics (v{new_version}) with ID: {characteristic_id}"
+            print(message)
+            self.log.dump_text(message)
+
+            self.db_manager.update_entity_current_characteristics(entity_id, characteristic_id)
+            
+            all_source_message_uids = {uid for char in entity_data.characteristics for uid in char.messages_sources_ids}
+            
+            for uid in all_source_message_uids:
+                message_pk = message_id_map.get(uid)
+                if message_pk:
+                    self.db_manager.link_characteristic_to_message(characteristic_id, message_pk, score=1.0)
+                else:
+                    message = f"Warning: Could not find database message ID for source unique_id '{uid}' to link."
+                    print(message)
+                    self.log.dump_text(message)
+        
+        message = "\nDeep memory update process finished."
+        print(message)
+        self.log.dump_text(message)
+        self.log.dump_text("\n############")
+
+
+    # --- The functions below are the OLD versions and need a complete rewrite to work with SQLite. ---
+    # They are kept as placeholders or for future implementation.
+    
+    def summarize_deep_memory(self):
+        print("Function 'summarize_deep_memory' needs to be updated for SQLite integration.")
+        pass
+
+    def random_access(self):
+        print("Function 'random_access' needs to be updated for SQLite integration.")
+        return {}
+
+    def search_memory_excerpts(self) -> List[str]:
+        print("Function 'search_memory_excerpts' needs to be updated for SQLite integration.")
+        return []

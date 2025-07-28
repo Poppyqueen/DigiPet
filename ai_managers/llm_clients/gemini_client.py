@@ -112,19 +112,32 @@ class GeminiClient(AbstractLLMClient):
             gemini_role = "user"  # Default for unknown or user messages
             gemini_parts = []
             gemini_requests = []
+            gemini_user_msgs = []
+            gemini_model_msgs = []
+            gemini_results=[]
+            gemini_aaaa=[]
+            gemini_misc=[]
 
             if original_type == "user":
                 gemini_role = "user"
-                gemini_parts.append(types.Part(text=str(content)))
+                gemini_user_msgs.append(types.Part(text=str(content)))
+                gemini_contents.append({
+                    "role": gemini_role,
+                    "parts": gemini_user_msgs
+                })
             elif original_type == "assistant":
                 gemini_role = "model"
                 # Filter out internal error messages if they are present in assistant content
                 if isinstance(content, str) and "Error communicating with" in content:
                     print(f"DEBUG: Filtering out internal error message from history: {content[:100]}...")
                     continue # Skip this message entirely if it's an error
-                gemini_parts.append(types.Part(text=str(content)))
+                gemini_model_msgs.append(types.Part(text=str(content)))
+                gemini_contents.append({
+                    "role": gemini_role,
+                    "parts": gemini_model_msgs
+                })
             elif original_type == "tool_output":
-                gemini_role = "user" # Tool responses are sent from the 'user' role
+                gemini_role = "user" # 
 
                 # --- FIX STARTS HERE ---
                 # Retrieve function_name, arguments, and the result (which is in 'content')
@@ -137,7 +150,20 @@ class GeminiClient(AbstractLLMClient):
                 if function_name:
                     # This is a tool output representing a function call result.
                     # Gemini expects the original function_call to be reiterated by the user
-                    # along with the function_response in the same turn.
+                        # along with the function_response in the same turn.
+
+
+                    gemini_aaaa.append(types.Part(text=str("."))) # This is a silly solution to a larger issue:
+                                                                # The gemini API expects a user message or function response before a function call, 
+                                                                # this is appending an "empty" message behind any function call object we have
+                                                                # this seems to break particularly when we remove entries from the structure and it stays on a state
+                                                                # where the order is not compatible with Gemini API
+
+                    gemini_contents.append({
+                        "role": "user",
+                        "parts": gemini_aaaa
+                    })
+
                     gemini_requests.append(
                         types.Part(
                             function_call=types.FunctionCall(
@@ -148,7 +174,6 @@ class GeminiClient(AbstractLLMClient):
                             )
                         )
                     )
-
                     gemini_contents.append({
                     "role": "model",
                     "parts": gemini_requests
@@ -160,7 +185,7 @@ class GeminiClient(AbstractLLMClient):
                     if not isinstance(function_result_content, dict):
                         function_result_content = {"result": str(function_result_content)}
 
-                    gemini_parts.append(
+                    gemini_results.append(
                         types.Part(
                             function_response=types.FunctionResponse(
                                 name=function_name,
@@ -169,13 +194,22 @@ class GeminiClient(AbstractLLMClient):
                             )
                         )
                     )
+                    gemini_contents.append({
+                    "role": "user",
+                    "parts": gemini_results
+                })
                 else:
                     # This is a 'tool_output' that is not associated with a specific function_name,
                     # likely a plain string system message from construct_data.
                     # Gemini doesn't have a direct 'system' role for intermediate messages.
                     # The most appropriate fallback is to treat it as a user text message.
                     if function_result_content: # Ensure there's actual content to add
-                        gemini_parts.append(types.Part(text=str(function_result_content)))
+                        gemini_misc.append(types.Part(text=str(function_result_content)))
+
+                        gemini_contents.append({
+                        "role": "user",
+                        "parts": gemini_misc
+                    })
                     else:
                         print(f"Warning: Tool output message of type 'plain string' had no content. Skipping.")
                         continue # Skip if no content and not a function call response
@@ -185,11 +219,11 @@ class GeminiClient(AbstractLLMClient):
                 print(f"Warning: Unrecognized message type in conversation history: {original_type}. Skipping message.")
                 continue
 
-            if gemini_parts:  # Only add if there are actual parts to avoid empty content blocks
-                gemini_contents.append({
-                    "role": gemini_role,
-                    "parts": gemini_parts
-                })
+            # if gemini_parts:  # Only add if there are actual parts to avoid empty content blocks
+            #     gemini_contents.append({
+            #         "role": gemini_role,
+            #         "parts": gemini_parts
+            #     })
 
         return gemini_contents, system_context
 
@@ -213,8 +247,8 @@ class GeminiClient(AbstractLLMClient):
             gemini_tools = self._convert_tools_to_gemini_format(tools) if tools else []
             gemini_contents, system_context = self._normalize_gemini_messages(messages, tools_state)
 
-            print(f"DEBUG: Gemini contents sent: {gemini_contents}")
-            print(f"DEBUG: Gemini tools sent: {gemini_tools}")
+            # print(f"DEBUG: Gemini contents sent: {gemini_contents}")
+            # print(f"DEBUG: Gemini tools sent: {gemini_tools}")
 
 
             tool_config = types.ToolConfig(
@@ -269,7 +303,7 @@ class GeminiClient(AbstractLLMClient):
                 
                 if all_text_parts:
                     normalized_text_content = "\n".join(all_text_parts).strip()
-                    print(f"📮📮📮📮📮📮Normalized Text Content: {normalized_text_content}")
+                    #print(f"📮📮📮📮📮📮Normalized Text Content: {normalized_text_content}")
 
             return LLMResponse(
                 function_calls=normalized_function_calls if normalized_function_calls else None,

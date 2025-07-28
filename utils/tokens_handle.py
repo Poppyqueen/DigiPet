@@ -1,32 +1,50 @@
-import tiktoken
+
+from utils.token_providers.gemini_tokenizer import GeminiTokenizer
+from utils.token_providers.openai_tokenizer import OpenAITokenizer
+from utils.token_providers.opensource_tokenizer import OpenSourceTokenizer
+
+
+import sys
+import configparser
+
+main_config = configparser.ConfigParser()
+main_config.read('main_config.ini')
+config_selected_provider = main_config['AI']['general_ai_provider']
+
+print(f"DEBUG: Value of config_selected_provider from INI: '{config_selected_provider}'")
+
+
+available_providers = {
+    "gemini": {
+        "client":GeminiTokenizer,
+        },
+    "openai": {
+        "client":OpenAITokenizer,
+        },
+    "groq":{
+        "client":OpenSourceTokenizer,
+    },
+    "ollama":{
+        "client":OpenSourceTokenizer,
+    }
+}
+
+# 4. Use the mapping dictionary to get the actual JSON structure
+if config_selected_provider in available_providers:
+    config_client = available_providers[config_selected_provider]["client"]
+    #print(f"Loaded state: {config_selected_provider}")
+    print(config_client)
+
+else:
+    print(f"Error: '{config_selected_provider}' is not a recognized provider.")
+    sys.exit(0)
 
 
 class token_manager():
     def __init__(self):
-        pass
-
+        self.tokenizer_selected=config_client()
     def num_tokens_from_string(self, string: str, encoding_name: str = "o200k_base") -> int:
         """Returns the number of tokens in a text string."""
-        #encoding_n = tiktoken.encoding_for_model(encoding_name).name  # returns str 
-        #encoding = tiktoken.get_encoding(encoding_n)
-
-        encoding = tiktoken.get_encoding(encoding_name)
-        num_tokens = len(encoding.encode(string))
-        return num_tokens
+        return self.tokenizer_selected.count_tokens(string)
     
 
-# Example 
-
-
-if __name__ == "__main__":
-
-    tokenizer=token_manager()
-
-
-    f = open("test_tokens.txt")
-    text= f.read()
-
-    num=tokenizer.num_tokens_from_string(text, "cl100k_base")
-    print(num)
-
-    f.close()

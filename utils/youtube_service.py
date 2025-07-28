@@ -116,7 +116,7 @@ class YouTubeTools:
                 raise # Re-raise for other types of errors
         return {}
     
-    def search_video(self, query: str, max_results: int = 10, category_id: str = '10') -> str:
+    def search_video(self, query: str, max_results: int = 5, category_id: str = '10') -> str:
             """
             Searches YouTube for videos matching a given query and returns a structured string
             of the top N matching videos, including their titles and IDs.
@@ -157,6 +157,8 @@ class YouTubeTools:
                 )
 
                 search_response = self._execute_with_retry(search_request_builder)
+
+                #print(f"THIS IS OUR YT SEARCH RESPONSE: {search_response}")
                 
                 # Extract video ID and title for each item and format into a string
                 results_string = []
@@ -164,7 +166,9 @@ class YouTubeTools:
                     if 'videoId' in item['id']: # Ensure it's a video result
                         video_info = {
                             'video_id': item['id']['videoId'],
-                            'title': item['snippet']['title']
+                            'title': item['snippet']['title'],
+                            'channel': item['snippet']['channelTitle'],
+                            'description': item['snippet']['description']
                         }
                         results_string.append(f"Video {i+1}: {video_info}")
                 

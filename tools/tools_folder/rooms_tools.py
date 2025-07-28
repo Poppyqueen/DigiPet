@@ -13,7 +13,7 @@
 import asyncio
 import math
 
-from utils import open_meteo_handle, tv_handle, wiki_handle, random_object
+from utils import open_meteo_handle, tv_handle, random_object
 
 from utils.ai_cook import cook
 
@@ -130,6 +130,13 @@ class room_kitchen:
                     if "consumable" in item_data.get("type", []):
                         # Item is found, in inventory, and consumable - looks good!
                         valid_ingredient_details.append(item_data)
+                    if "tool" in item_data.get("type",[]):
+                        # If the item is a tool, allow it too alongside the ingredients details
+                        # this will take some decitions. Do we want to pass this tool to the AI crafter?
+                        # we need to preferably return the tool, so... we don't want to take it out from the inventory
+                        # this adds a lot of complexity, we don't have containers for food that are now "tools"
+                        # 
+                        continue
                     else:
                         # Item is not consumable
                         validation_errors.append(f"Item '{item_name}' (ID: {item_id}) is of type '{item_type}', but only 'consumable' items can be used as ingredients.")

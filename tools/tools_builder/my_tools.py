@@ -301,7 +301,7 @@ youtube_playlister_tools=[
     {
         "type": "function",
         "name": "youtube_create_playlist",
-        "description": " Creates a new private YouTube playlist and returns a natural language message describing the outcome and details of the created playlist. This playlist will initially be empty. To add videos, use the `add_video_to_playlist` tool.",
+        "description": " Creates a new private YouTube playlist and returns a natural language message describing the outcome and details of the created playlist. This playlist will initially be empty and will not be populated. To add videos, use the `add_video_to_playlist` tool.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -321,7 +321,7 @@ youtube_playlister_tools=[
     {
         "type": "function",
         "name": "youtube_add_video_to_playlist",
-        "description": "Adds a single YouTube video to an existing private playlist.",
+        "description": "Adds a single YouTube video to an existing private playlist. It required a valid Playlist ID which can be obtained by creating a playlist with the 'youtube_create_playlist' function.",
         "parameters": {
             "type": "object",
             "properties": {

@@ -31,6 +31,7 @@ else:
 main_config = configparser.ConfigParser()
 main_config.read('main_config.ini')
 system_prompt = main_config['AI']['sys_prompt']
+print(f"System prompt: {system_prompt}")
 memory_model = main_config['AI']['memory_model']
 general_model = main_config['AI']['general_model']
 pet_name = main_config['AI']['pets_folder'] # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
@@ -274,7 +275,7 @@ if mock_running: # Mock configuration, leave as is
         chatbot = MockChatbot( # Use the mock class
             signal_callback=handle_chatbot_signal,
             system_prompt= system_prompt,
-            sub_directory="bots/"+pet_name, # 
+            sub_directory="bots/"+pet_name,
             deep_memory=False,
             base_model=general_model,
             select_memory_model=memory_model,
@@ -287,6 +288,8 @@ if mock_running: # Mock configuration, leave as is
         print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
         chatbot_available = False
         chatbot = None
+
+
 else:
     # Actual chatbot initialization
     # --- Chatbot Initialization ---
@@ -296,10 +299,10 @@ else:
         chatbot = CLIChatbot(
             signal_callback=handle_chatbot_signal,
             system_prompt= system_prompt,
-            sub_directory="bots/"+pet_name, # Change this Bot_circle_pet_scientist_run
-            deep_memory=False, # Seriously, leave as false until deep memory is reworked
-            base_model=general_model, # Set as needed
-            select_memory_model=memory_model, # Set as needed
+            sub_directory="bots/"+pet_name, # Set as needed on config file
+            deep_memory=False, # Working on it
+            base_model=general_model, # Set as needed on config file
+            select_memory_model=memory_model, # Set as needed on config file
             tts_provider_id="macos_say", # Set to "macos_say", "espeak_ng", or None
             voice="Storm" # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
         )
@@ -1142,7 +1145,7 @@ while running:
 
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
 
-                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL:start_chatbot_request("The following should be an autonomous action.", "system"); continue
+                if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL:start_chatbot_request("Automated internal message: The following should be an autonomous action.", "user"); continue
 
 
 
@@ -1237,7 +1240,7 @@ while running:
 
         # Start the autonomous action request. This sets state.chatbot_is_processing = True
         # The response event CHATBOT_RESPONSE_EVENT will set it back to False later.
-        if start_chatbot_request("The following should be an autonomous action.", "system"):
+        if start_chatbot_request("Automated internal message: The following should be an autonomous action.", "user"):
             # last_activity_time is NOT reset here immediately, it's reset when the bot *responds*
             # This prevents spamming requests if the bot is slow to respond.
             pass # Do nothing here, last_activity_time is reset on CHATBOT_RESPONSE_EVENT

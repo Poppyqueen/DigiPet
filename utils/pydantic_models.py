@@ -3,42 +3,25 @@ from typing import List
 from pydantic import BaseModel
 
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from typing import List
 
-class response_strucuture(BaseModel):
-    thinking: str
-    response: str
+
+### ///// Classes (Deep memory entities)
+
+
+class characteristic_structure(BaseModel):
+    characteristic: str = Field(description="The distinguishable intrinsic characteristic or propertie of this entity, I.E, colors, shapes, materials, sensations, interests, etc. You have to directly write the characteristics identified as an individual")
+    messages_sources_ids: List[str] = Field(description="A list of IDs from the message where this specific characteristic for the entity is mentioned or extracted from.")
 
 class entity_dict(BaseModel):
-    Named_Entity: str
-    excerpts: List[str]
-
-class look_ner_structure(BaseModel):
-    named_entities: List[str]
+    named_entity: str = Field(description="The entity identified in the memory structure")
+    characteristics: List[characteristic_structure] = Field(description="A list of  distinguishable intrinsic characteristics or properties of this entity")
 
 class save_ner_structure(BaseModel):
-    entities: List[entity_dict]
-
-class individual_item(BaseModel):
-    name: str
-    descriptions: List[str]
-
-class edited_item(BaseModel):
-    name: str
-    description: str
-
-class crafter_structure(BaseModel):
-    names: List[individual_item]
-
-class event_crafter(BaseModel):
-    event: str
-    edited_items: List[edited_item]
-    created_items: List[individual_item]
-    
+    entities: List[entity_dict] = Field(description="A collection of important identified entities in memory, accompanied by their intrinsic characteristics and specific information recognized and the messages ID sources for the origins of these qualities and details extracted.")
 
 
-
-### ///// New Classes
+### ///// Classes (Items)
 
 
 # --- Structure for the fixed stats_edit dictionary ---

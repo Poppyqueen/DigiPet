@@ -3,7 +3,7 @@
 
 import os
 import sys
-
+import time
 
 # Import AI framework
 
@@ -30,59 +30,13 @@ from ai_managers.llm_clients import ollama_client
 import configparser
 
 
-import os
 from dotenv import load_dotenv
-
-load_dotenv()
-
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-openai_api_key = os.getenv("OPENAI_API_KEY")
-groq_api_key = os.getenv("GROQ_API_KEY")
-
-# load provider for the selected main AI model
-
-main_config = configparser.ConfigParser()
-main_config.read('main_config.ini')
-config_selected_provider = main_config['AI']['general_ai_provider']
-
-
-available_providers = {
-    "gemini": {
-        "client":gemini_client.GeminiClient,
-        "api_key":gemini_api_key
-        },
-    "openai": {
-        "client":openai_client.OpenAIClient,
-        "api_key":None
-        },
-    "groq":{
-        "client":groq_client.GroqClient,
-        "api_key":groq_api_key
-    },
-    "ollama":{
-        "client":ollama_client.OllamaClient,
-        "api_key":None
-    }
-}
-
-# 4. Use the mapping dictionary to get the actual JSON structure
-if config_selected_provider in available_providers:
-    config_client = available_providers[config_selected_provider]["client"]
-    #print(f"Loaded state: {config_selected_provider}")
-    print(config_client)
-    api_key_selected=available_providers[config_selected_provider]["api_key"]
-
-else:
-    print(f"Error: '{config_selected_provider}' is not a recognized state.")
-    # Handle the error, perhaps by falling back to a default state
-
-
 
 
 
 # Default filepaths 
 DEFAULT_MEMORY_DB = "memory.json"
-DEFAULT_DEEP_MEMORY_DB = "deep_memory.json"
+DEFAULT_DEEP_MEMORY_DB = "deep_memory.db"
 DEFAULT_AI_LOG = "ai_log.txt"
 DEFAULT_INVENTORY_FOLDER = "inventory" 
 
@@ -105,10 +59,57 @@ class CLIChatbot:
         self._signal_callback = signal_callback # Store the callback
 
         # Add a recursion depth limit to prevent infinite loops
-        self.max_recursion_depth = 10 # Allow up to 10 consecutive AI calls (including function calls and final response)
+        self.max_recursion_depth = 8 # Allow up to 10 consecutive AI calls (including function calls and final response)
 
         # REMOVED: self.tts = tts_flag
         self.last_response = None # Store the last response for potential use
+
+
+    ### ///////// Init config  /////////  #####
+
+        load_dotenv()
+
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        groq_api_key = os.getenv("GROQ_API_KEY")
+
+        # load provider for the selected main AI model
+
+        main_config = configparser.ConfigParser()
+        main_config.read('main_config.ini')
+        config_selected_provider = main_config['AI']['general_ai_provider']
+
+
+        available_providers = {
+            "gemini": {
+                "client":gemini_client.GeminiClient,
+                "api_key":gemini_api_key
+                },
+            "openai": {
+                "client":openai_client.OpenAIClient,
+                "api_key":None
+                },
+            "groq":{
+                "client":groq_client.GroqClient,
+                "api_key":groq_api_key
+            },
+            "ollama":{
+                "client":ollama_client.OllamaClient,
+                "api_key":None
+            }
+        }
+
+        # 4. Use the mapping dictionary to get the actual JSON structure
+        if config_selected_provider in available_providers:
+            config_client = available_providers[config_selected_provider]["client"]
+            #print(f"Loaded state: {config_selected_provider}")
+            print(config_client)
+            api_key_selected=available_providers[config_selected_provider]["api_key"]
+
+        else:
+            print(f"Error: '{config_selected_provider}' is not a recognized state.")
+            # Handle the error, perhaps by falling back to a default state
+
 
 
         #selected_client=openai_client.OpenAIClient()
@@ -191,7 +192,7 @@ class CLIChatbot:
         os.system('cls' if os.name == 'nt' else 'clear')
 
 
-    async def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str, depth: int = 0) -> str:
+    async def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str=None, depth: int = 0) -> str:
         """
         Recursively gets responses from the AI, handling function calls until a text response is received.
 
@@ -204,6 +205,14 @@ class CLIChatbot:
             The final text response from the AI after processing any function calls.
             Returns an error message string if max depth is reached or an error occurs.
         """
+        time.sleep(2)
+
+        if current_full_prompt:
+            context_memory={
+                "context": current_full_prompt
+            }
+            self.memory.save_to_memory(context_memory, "short_term", "system")
+
         if depth >= self.max_recursion_depth:
             print(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached.")
             stats_to_monitor = ["fullness", "hydration", "energy"]
@@ -228,31 +237,11 @@ class CLIChatbot:
             # Returns a function_flag if any message was a tool call, for us to process here
             function_flag, response_content = await self.ai.ai_response(
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
-                current_full_prompt, depth, self.max_recursion_depth
+                depth, self.max_recursion_depth, developer_message=self.sys_prompt
             )
 
 
-            # add a deep memory search here to enhance the system context with relevant entries to the events in the chain of tool calls?
-            # 2. Search Deep Memory based on current context (from the latest function call)
-            # (This system needs improvements, and I am not sure if it improves or worsens the system)
-            #print("Searching deep memory for relevant context...") # Redundant print
-            deep_memory_context = ""
-            if self.deep_memory_flag:
-                # search_deep_memory is assumed to return List[str]
-                found_excerpts_list = self.memory.search_deep_memory()
-                if found_excerpts_list:
-                    # Deduplicate using a set
-                    unique_excerpts_list = list(set(found_excerpts_list))
 
-                    print(f"Found {len(unique_excerpts_list)} relevant excerpts (after deduplication).")
-                    # Create a formatted string with a clear header
-                    deep_memory_context = "\n\nRelevant information from deep memory:\n"
-                    deep_memory_context += "\n".join([f"- {excerpt}" for excerpt in unique_excerpts_list])
-                    # Add the random excerpts to the context *only if deep memory is enabled*
-                    deep_memory_context += "\n\n"
-                    print(f"Deep memory context inside tools: {deep_memory_context}")
-                else:
-                    print("No relevant excerpts found.")
 
             if function_flag:
                 print("*** Function call, decreasing wellness stats")
@@ -264,30 +253,10 @@ class CLIChatbot:
                     print(f"decreased stat: {stat_name} by: 1")
 
                 print(f"⚙️ Function call detected (Depth: {depth}). Processing...")
-                self.text_capture.dump_text(f"Function Call (Depth {depth}):")
-                self.text_capture.dump_text(f"{response_content}") # response_content contains the function call payload
-                self.text_capture.dump_text(f"**************")
+                # self.text_capture.dump_text(f"Function Call (Depth {depth}):")
+                # self.text_capture.dump_text(f"{response_content}") # response_content contains the function call payload
+                # self.text_capture.dump_text(f"**************")
 
-
-            # Change this, we will pass the recursion depth to adventure response, and remove tools from it when we reach a limit
-
-                # depth_message=""
-                # if depth == self.max_recursion_depth-3:
-                #     depth_message="Depth of function calling reached the limit, your next message must not contain any function call."
-
-                # elif depth >= self.max_recursion_depth/2:
-                #     depth_message="Depth of function calling reached half way to the limit, please consider outputting your final message"
-
-
-
-                # # If deep memory active, we add the retrieved memories from it and append it to the function result of the agent.
-                # if self.memory.deep_memory and self.deep_memory_flag:
-                #     function_result = f"Deep memories retrieved: {deep_memory_context} Function response: {response_content}, Depth: {depth}" # Assuming response_content is the function output/confirmation
-
-                # Save the function *result* to memory so the AI can see it
-                # Use 'system' or similar role if your AI model supports it,
-
-                #print(f"DEBUG: We are sending this as the tool call response: {response_content}")
 
                 # We have changed this to the system tag
                 if isinstance(response_content,list):
@@ -306,49 +275,19 @@ class CLIChatbot:
                      updated_mem_structure = {} # Provide default empty fallback
 
                 # Recursively call self to get the next response in the chain
-                return await self._get_ai_response_sequence(updated_mem_structure, current_full_prompt, depth + 1)
+                return await self._get_ai_response_sequence(current_mem_structure=updated_mem_structure, depth=depth + 1)
 
             else:
 
                 # Not a function call - this is the final text response
                 print(f"✅ No function call detected (Depth: {depth}). This is the final response.")
                 print("Cleaning context...") # Added context cleaning step
-                self.text_capture.dump_text("*******")
-                #self.text_capture.dump_text("Removing system messages from memory...") # Log the removal of system messages
-
-
+   
 
 
                 # Clean up tool context from memory after generating last response
-                self.memory.process_short_term_system(110) # This now gives the system message a time-life to system messages of 11 ticks in 'global' memory
+                self.memory.process_short_term_system() # This system now changed to instead of using a lifespan for the entries, it uses tokens to decide if it is necesary to sumarize
 
-
-                # Remove system messages from memories after tool process is done
-
-                # This creates an interesting effect, while it does help reduce tokenage usage, the information in system context is a lot
-                # of the times lost and does not get into regular system processing. 
-                # An specific example, room IDs, the system agent will manage to get this information, but the main agent doesn't broadcast
-                # back the IDs out of system messages, an the IDs are then lost and never "learnt", as they are removed from context
-                # maybe with better prompting this could be kept, but it seems better to simply keep the system messages to enter into long term memories
-
-                # For now we will keep removing them, it is just much more optimized, and prompting will probs fix it
-
-                # Probably some prompt telling the agent to always verbalize specific and functional learnt knowledge 
-                # The memory summarizer might also need some more prompting
-
-
-
-                self.text_capture.dump_text("*******")
-                # This is optional but keeps the token usage low and context clean
-
-
-                #print(f"\n🤖 Response:\n{response_content}")
-
-
-
-                self.text_capture.dump_text(f"AI Response (Depth {depth}):")
-                self.text_capture.dump_text(f"{response_content}") # response_content is the text response
-                self.text_capture.dump_text(f"**************")
 
 
                 # Save the final AI text response to memory
@@ -505,27 +444,29 @@ class CLIChatbot:
         joined_random_entity = ""
 
         # Capture  input to logger
+        self.text_capture.dump_text(f"##########")
+        self.text_capture.dump_text(f"Input Message:")
         self.text_capture.dump_text(f"{role}:")
         self.text_capture.dump_text(f"{message}")
-        self.text_capture.dump_text(f"**************")
+        self.text_capture.dump_text(f"##########")
 
         # 1. Save  input to short-term memory
         self.memory.save_to_memory(message, "short_term", f"{role}")
 
         # 2. Search Deep Memory based on current context (before generating response)
         deep_memory_context = ""
-        if self.deep_memory_flag:
-            found_excerpts_list = self.memory.search_deep_memory()
-            if found_excerpts_list:
-                unique_excerpts_list = list(set(found_excerpts_list))
+        # if self.deep_memory_flag:
+        #     found_excerpts_list = self.memory.search_deep_memory()
+        #     if found_excerpts_list:
+        #         unique_excerpts_list = list(set(found_excerpts_list))
 
-                print(f"Found {len(unique_excerpts_list)} relevant excerpts (after deduplication).")
-                deep_memory_context = "\n\nRelevant information from deep memory:\n"
-                deep_memory_context += "\n".join([f"- {excerpt}" for excerpt in unique_excerpts_list])
-                deep_memory_context += joined_random_entity
-                deep_memory_context += "\n\n"
-            else:
-                print("No relevant excerpts found.")
+        #         print(f"Found {len(unique_excerpts_list)} relevant excerpts (after deduplication).")
+        #         deep_memory_context = "\n\nRelevant information from deep memory:\n"
+        #         deep_memory_context += "\n".join([f"- {excerpt}" for excerpt in unique_excerpts_list])
+        #         deep_memory_context += joined_random_entity
+        #         deep_memory_context += "\n\n"
+        #     else:
+        #         print("No relevant excerpts found.")
 
         # 3. Get current standard memory structure
         mem_structure = self.memory.get_memory_structure() # This structure should include the user input we just added
@@ -536,19 +477,19 @@ class CLIChatbot:
         # 4. Construct the dynamic prompt including deep memory context
         tools_context=self.functions_builder.construct_context()
 
-        base_prompt = self.sys_prompt
-        full_prompt = base_prompt + tools_context
-        if deep_memory_context:
-             full_prompt += f"\n\n{deep_memory_context}\nUse any relevant information above to inform your response."
+        # base_prompt = ""
+        # full_prompt = base_prompt + tools_context
+        # if deep_memory_context:
+        #      full_prompt += f"\n\n{deep_memory_context}\nUse any relevant information above to inform your response."
 
-        steps=self.get_steps()
+        # steps=self.get_steps()
 
-        full_prompt += f"\n\n You have been in your digital home for: {steps} steps. Your own size is relative to this!"
+        # full_prompt += f"\n\n You have been in your digital home for: {steps} steps. Your own size is relative to this!"
 
         # 5. Get AI response (now handled recursively)
         final_ai_response = await self._get_ai_response_sequence(
-            mem_structure if isinstance(mem_structure, dict) else {},
-            full_prompt
+            current_mem_structure=mem_structure if isinstance(mem_structure, dict) else {},
+            depth=0
         )
 
         self.add_steps(1) # add a step to the counter

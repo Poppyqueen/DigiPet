@@ -112,9 +112,14 @@ class GroqClient(AbstractLLMClient):
             "model": model,
             "messages": l_messages, # 
         }
-        if functions_list:
+        if functions_list and tool_choice != "none":
             settings["tools"] = functions_list
             settings["tool_choice"] = tool_choice
+
+        reasoning_model=True
+        if reasoning_model:
+            settings["reasoning_format"] = "hidden"
+            #settings["reasoning_effort"] = "none"
         
         # Merge any additional kwargs
         settings.update(kwargs)

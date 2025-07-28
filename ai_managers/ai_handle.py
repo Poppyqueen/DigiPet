@@ -41,11 +41,29 @@ class ai_bot:
         return result
 
     # Rename to ai_response
-    async def ai_response(self, mem_structure, prompt, depth, max_depth):
-            our_room = self.state_manager.get_current_room_name()
-            extra_context = self.functions_builder.construct_context()
-            final_prompt = prompt + extra_context
+    async def ai_response(self, mem_structure, depth, max_depth, developer_message=None):
+            extra_context=""
+            if developer_message:
+                extra_context=developer_message
+            extra_context = f"{extra_context}\n{str(self.functions_builder.construct_context())}"
+
+            # this is logging
+            extra_context_message=f"##########\n Current system state: \n{extra_context}"
+            self.text_capture.dump_text(extra_context_message)
+            extra_context_message=f"\n##########\n"
+            ##
+
+            if self.memory_manager.deep_memory_flag:
+                print("Deep Memory Flag detected")
+                deep_memory_context=self.memory_manager.deep_memory.quick_search(mem_structure, False) # Leave as false, set as false will use a quick method of memory using embeddings that is much more efficient than using the LLM from the setting on True
+
+                extra_context=f"#####Deep past memories: \n{deep_memory_context}\n End of deep past memories.#####" + extra_context
+
+            final_prompt = extra_context
+
             messages_data = self.memory_manager.construct_data(mem_structure, final_prompt)
+
+
             tools = self.functions_builder.construct_tools()
 
             # Determine tool_choice based on depth
@@ -62,6 +80,12 @@ class ai_bot:
                     tool_choice=tool_choice # Pass tool_choice to the client
                 )
                 time.sleep(1) # Still keep the delay if desired
+                self.text_capture.dump_text("########\n")
+                self.text_capture.dump_text("LLM RESPONSE:\n")
+                self.text_capture.dump_text(str(llm_response))
+                self.text_capture.dump_text("\n########")
+
+
             except Exception as e:
                 print(f"Error generating LLM response: {e}")
                 return False, f"Error communicating with model: {e}"
@@ -87,6 +111,14 @@ class ai_bot:
                         function_result = await self.call_function(fc_details.name, fc_details.arguments)
                         function_array["result"] = str(function_result)
                         function_array["call_id"] = fc_details.call_id
+
+                        self.text_capture.dump_text("########\n")
+                        self.text_capture.dump_text("FUNCTION RESPONSE:\n")
+                        self.text_capture.dump_text(F"Function Name:\n{fc_details.name}")
+                        self.text_capture.dump_text(F"Result:\n")
+                        self.text_capture.dump_text(str(function_result))
+                        self.text_capture.dump_text("\n########\n")
+
                         signal_message = {"type": "function_called", "function_name": f"{fc_details.name}", "function_result": f"{function_result}"}
                         self._send_signal(signal_message)
                     except Exception as e:

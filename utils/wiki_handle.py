@@ -4,9 +4,11 @@ import textwrap  # Helps wrap long text snippets nicely
 import re        # Import regular expressions for tag stripping
 import html      # Import html module for entity decoding
 
+from dotenv import load_dotenv
+import os
+
 #import tokens_handle
 
-wiki_url = "https://en.wikipedia.org/w/api.php"
 
 class Wikipedia_handle:
     """
@@ -14,8 +16,15 @@ class Wikipedia_handle:
     and fetching random articles, with built-in memory management.
     """
 
+
     def __init__(self, memory_manager):
         self.memory = memory_manager
+
+        self.wiki_url = "https://en.wikipedia.org/w/api.php"
+        load_dotenv()  # Load environment variables from .env file
+        self.app_name = os.environ.get("WIKIPEDIA_APP_NAME") # set your app name
+        self.wikipedia_contact = os.environ.get("WIKIPEDIA_CONTACT") # set your contact info for wikipedia, i.e email
+
 
     def _call_wiki_api(self, params: dict) -> dict:
         """
@@ -37,12 +46,12 @@ class Wikipedia_handle:
 
         # Add a user agent string - recommended practice for APIs
         headers = {
-            'User-Agent': 'YourAppName/1.0 (Your Contact Info or purpose here)'  # User-Agent is from your last version
+            'User-Agent': f'{self.app_name}/1.0 ({self.wikipedia_contact})'  # User-Agent is from your last version
         }
 
         try:
             # print(f"Calling API with params: {params}")  # Optional: for debugging
-            response = requests.get(wiki_url, params=params, headers=headers)
+            response = requests.get(self.wiki_url, params=params, headers=headers)
             response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
 
             # Good practice: sleep *after* the successful call to respect API rate limits
@@ -225,7 +234,7 @@ class Wikipedia_handle:
         # First check memory constraints to determine if we should fetch full content or just excerpt
         mem_tokens = self.memory.current_memory_tokens()
         print(mem_tokens)
-        use_excerpt_only = mem_tokens >= 700000
+        use_excerpt_only = mem_tokens >= 6000
 
         content_params = {
             "action": "query",

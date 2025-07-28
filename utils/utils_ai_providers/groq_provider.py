@@ -35,7 +35,7 @@ class GroqProv(SimpleAI):
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            response_model=structure
+            response_format=structure
         )
 
         return response_model
