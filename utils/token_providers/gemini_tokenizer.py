@@ -29,6 +29,6 @@ class GeminiTokenizer(ABC):
         )
         total_tokens = response_object.total_tokens 
 
-        print("total_tokens: ", total_tokens)
+        #print("total_tokens: ", total_tokens)
         # ( e.g., total_tokens: 10 )
         return int(total_tokens)

@@ -3,3 +3,4 @@
 *.pyc
 bots/
 .cache.sqlite
+.DS_Store

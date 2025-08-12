@@ -90,7 +90,6 @@ class memory_manager:
 
         config = configparser.ConfigParser()
         config.read('main_config.ini')
-        system_prompt = config['AI']['sys_prompt']
         selected_model= config['AI']['memory_model']
         config_selected_provider = config['AI']['memory_ai_provider']
 

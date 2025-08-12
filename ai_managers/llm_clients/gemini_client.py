@@ -16,6 +16,32 @@ class GeminiClient(AbstractLLMClient):
         """
         self.client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
+
+    # You must also adapt the _merge_consecutive_messages to be more careful.
+    # It should ONLY merge simple text messages.
+    def _merge_consecutive_messages(self, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if not history:
+            return []
+
+        merged_history = [history[0]]
+
+        for msg in history[1:]:
+            last_msg = merged_history[-1]
+            
+            # This condition is now more strict and correct.
+            # It only merges if BOTH are simple text content messages of the same type.
+            if msg.get("type") == last_msg.get("type") and \
+            msg["type"] in ["user", "assistant"] and \
+            isinstance(msg.get("content"), str) and \
+            isinstance(last_msg.get("content"), str) and \
+            "function_name" not in msg and "function_name" not in last_msg: # Ensure they are not function calls/responses
+                
+                last_msg["content"] += "\n" + msg["content"]
+            else:
+                merged_history.append(msg)
+                
+        return merged_history
+
     def _convert_tools_to_gemini_format(self, tools: List[Dict[str, Any]]) -> List[types.Tool]:
         """
         Converts tools from our format to Gemini's expected format by explicitly
@@ -97,134 +123,82 @@ class GeminiClient(AbstractLLMClient):
 
         if tools_state == "NONE":
             system_context  = system_context + "Please output a textual and narrative message without any more function calls to close the latest round of actions. Make sure to not include any more function calls as they will be ignored."
-        # if system_context:
-        #     gemini_contents.append({
-        #         "role": "user",
-        #         "parts": [types.Part(text=system_context)]
-        #     })
 
-        # Process conversation_history
+
+
         conversation_history = messages.get("conversation_history", [])
-        for msg in conversation_history:
+        
+        # We still need this for simple consecutive user/assistant text messages.
+        conversation_history = self._merge_consecutive_messages(conversation_history)
+
+        i = 0
+        while i < len(conversation_history):
+            msg = conversation_history[i]
             original_type = msg.get("type")
             content = msg.get("content")
 
-            gemini_role = "user"  # Default for unknown or user messages
-            gemini_parts = []
-            gemini_requests = []
-            gemini_user_msgs = []
-            gemini_model_msgs = []
-            gemini_results=[]
-            gemini_aaaa=[]
-            gemini_misc=[]
-
             if original_type == "user":
-                gemini_role = "user"
-                gemini_user_msgs.append(types.Part(text=str(content)))
                 gemini_contents.append({
-                    "role": gemini_role,
-                    "parts": gemini_user_msgs
-                })
-            elif original_type == "assistant":
-                gemini_role = "model"
-                # Filter out internal error messages if they are present in assistant content
-                if isinstance(content, str) and "Error communicating with" in content:
-                    print(f"DEBUG: Filtering out internal error message from history: {content[:100]}...")
-                    continue # Skip this message entirely if it's an error
-                gemini_model_msgs.append(types.Part(text=str(content)))
-                gemini_contents.append({
-                    "role": gemini_role,
-                    "parts": gemini_model_msgs
-                })
-            elif original_type == "tool_output":
-                gemini_role = "user" # 
-
-                # --- FIX STARTS HERE ---
-                # Retrieve function_name, arguments, and the result (which is in 'content')
-                # directly from the 'msg' dictionary, as populated by construct_data.
-                function_name = msg.get("function_name")
-                function_args = msg.get("arguments", {})
-                function_id = msg.get("call_id")
-                function_result_content = msg.get("content") # This is the result string from construct_data
-
-                if function_name:
-                    # This is a tool output representing a function call result.
-                    # Gemini expects the original function_call to be reiterated by the user
-                        # along with the function_response in the same turn.
-
-
-                    # gemini_aaaa.append(types.Part(text=str("."))) # This is a silly solution to a larger issue:
-                    #                                             # The gemini API expects a user message or function response before a function call, 
-                    #                                             # this is appending an "empty" message behind any function call object we have
-                    #                                             # this seems to break particularly when we remove entries from the structure and it stays on a state
-                    #                                             # where the order is not compatible with Gemini API
-
-                    # gemini_contents.append({
-                    #     "role": "user",
-                    #     "parts": gemini_aaaa
-                    # })
-
-                    gemini_requests.append(
-                        types.Part(
-                            function_call=types.FunctionCall(
-                                name=function_name,
-                                args=function_args, # These are the arguments used in the original call
-                                id=function_id
-                                       
-                            )
-                        )
-                    )
-                    gemini_contents.append({
-                    "role": "model",
-                    "parts": gemini_requests
-                })
-
-                    # Ensure function_result_content is structured as a dictionary for types.FunctionResponse.
-                    # Gemini's `response` field expects a dictionary.
-                    # We wrap the string content from construct_data into a dictionary.
-                    if not isinstance(function_result_content, dict):
-                        function_result_content = {"result": str(function_result_content)}
-
-                    gemini_results.append(
-                        types.Part(
-                            function_response=types.FunctionResponse(
-                                name=function_name,
-                                response=function_result_content,
-                                id=function_id
-                            )
-                        )
-                    )
-                    gemini_contents.append({
                     "role": "user",
-                    "parts": gemini_results
+                    "parts": [types.Part(text=str(content))]
                 })
-                else:
-                    # This is a 'tool_output' that is not associated with a specific function_name,
-                    # likely a plain string system message from construct_data.
-                    # Gemini doesn't have a direct 'system' role for intermediate messages.
-                    # The most appropriate fallback is to treat it as a user text message.
-                    if function_result_content: # Ensure there's actual content to add
-                        gemini_misc.append(types.Part(text=str(function_result_content)))
 
-                        gemini_contents.append({
-                        "role": "user",
-                        "parts": gemini_misc
+            elif original_type == "assistant":
+                # This logic correctly handles model text responses and requests for function calls.
+                # When the model wants to call a function, the 'content' is often empty,
+                # and the function call details are in a separate key. Let's assume your
+                # structure handles this by creating a FunctionCall part.
+                # For simplicity, we'll re-create the logic to be explicit.
+
+                parts = []
+                # Check for a text response from the model
+                if content and isinstance(content, str):
+                    parts.append(types.Part(text=content))
+                
+                # Check for a function call request from the model
+                # Your structure seems to imply the function call is a standalone message,
+                # but let's assume it could be part of an assistant message.
+                # Based on your logs, the FunctionCall is the ONLY thing in the model turn.
+                if msg.get("function_name"): # Assuming a model request has this structure
+                    parts.append(types.Part(function_call=types.FunctionCall(
+                        name=msg.get("function_name"),
+                        args=msg.get("arguments", {})
+                    )))
+                
+                gemini_contents.append({
+                    "role": "model",
+                    "parts": parts
+                })
+
+            elif original_type == "tool_output":
+                # This is the most critical part. A tool_output MUST follow a model's function_call request.
+                function_name = msg.get("function_name")
+                function_result = {"result": str(msg.get("content"))}
+
+                # We need to ensure the previous turn was a model asking for a function call.
+                if gemini_contents and gemini_contents[-1]["role"] == "model" and \
+                any(hasattr(p, 'function_call') for p in gemini_contents[-1]["parts"]):
+                    
+                    gemini_contents.append({
+                        "role": "user", # The function response is a 'user' turn
+                        "parts": [
+                            types.Part(function_response=types.FunctionResponse(
+                                name=function_name,
+                                response=function_result
+                            ))
+                        ]
                     })
-                    else:
-                        print(f"Warning: Tool output message of type 'plain string' had no content. Skipping.")
-                        continue # Skip if no content and not a function call response
-                # --- FIX ENDS HERE ---
+                else:
+                    # This tool_output is out of place. This is a sign of a deeper history issue.
+                    # We'll treat it as a plain user message to avoid crashing, but log a warning.
+                    #print(f"Warning: Found an orphaned 'tool_output' message. Converting to plain text. History might be inconsistent.")
+                    gemini_contents.append({
+                        "role": "user",
+                        "parts": [types.Part(text=f"Tool Output ({function_name}): {function_result['result']}")]
+                    })
 
-            else:
-                print(f"Warning: Unrecognized message type in conversation history: {original_type}. Skipping message.")
-                continue
-
-            # if gemini_parts:  # Only add if there are actual parts to avoid empty content blocks
-            #     gemini_contents.append({
-            #         "role": gemini_role,
-            #         "parts": gemini_parts
-            #     })
-
+            i += 1
+            
         return gemini_contents, system_context
 
     # The rest of GeminiClient class is the same:

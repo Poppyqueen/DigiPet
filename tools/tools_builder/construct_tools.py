@@ -87,6 +87,7 @@ discogs_enabled = enabled_tools.getboolean('enable_discogs', fallback=False)
 musicbrainz_enabled = enabled_tools.getboolean('enable_musicbrainz', fallback=False)
 bluesky_enabled = enabled_tools.getboolean('enable_bluesky', fallback=False)
 
+
 # print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
 # print(f"DEBUG: Discogs enabled (config): {discogs_enabled}")
 # print(f"DEBUG: MusicBrainz enabled (config): {musicbrainz_enabled}")

@@ -126,11 +126,13 @@ class room_kitchen:
                 item_name = item_data.get('name', f'ID {item_id}') # Get name for clearer errors
 
                 if item_location == "inventory":
-                    # Item is in inventory, now check if it's consumable
-                    if "consumable" in item_data.get("type", []):
+                    item_type_list = item_data.get("type", [])
+                    
+                    if "consumable" in item_type_list:
                         # Item is found, in inventory, and consumable - looks good!
                         valid_ingredient_details.append(item_data)
-                    if "tool" in item_data.get("type",[]):
+
+                    elif "tool" in item_data.get("type",[]):
                         # If the item is a tool, allow it too alongside the ingredients details
                         # this will take some decitions. Do we want to pass this tool to the AI crafter?
                         # we need to preferably return the tool, so... we don't want to take it out from the inventory
@@ -423,7 +425,7 @@ class room_bedroom:
         constant = 1
         # Using square root:
         energy_gain = constant * math.sqrt(seconds)
-        self.memory.save_to_memory("You beggin your sleep process.", "short_term", "system")
+        # self.memory.save_to_memory("You beggin your sleep process.", "short_term", "user")
         self._send_signal({"type": "show_message_popup", "message": "Entering sleep!"})
         #int_gain=int(energy_gain)
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})

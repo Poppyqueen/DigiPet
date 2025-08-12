@@ -35,7 +35,8 @@ print(f"System prompt: {system_prompt}")
 memory_model = main_config['AI']['memory_model']
 general_model = main_config['AI']['general_model']
 pet_name = main_config['AI']['pets_folder'] # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
-
+selected_tts_provider_id=main_config['game_settings']['tts_provider']
+selected_voice=main_config['game_settings']['selected_voice']
 
 # --- Pygame Initialization ---
 pygame.init()
@@ -128,7 +129,7 @@ def trigger_lore_panel_update():
 # --- Callback function to receive signals from the chatbot ---
 def handle_chatbot_signal(signal_data):
     """Receives a signal dict from the chatbot and posts a Pygame event."""
-    trigger_lore_panel_update() # <--- ADD THIS LINE
+    trigger_lore_panel_update() 
 
     if isinstance(signal_data, dict):
         action_type = signal_data.get("type")
@@ -302,9 +303,8 @@ else:
             sub_directory="bots/"+pet_name, # Set as needed on config file
             deep_memory=False, # Working on it
             base_model=general_model, # Set as needed on config file
-            select_memory_model=memory_model, # Set as needed on config file
-            tts_provider_id="macos_say", # Set to "macos_say", "espeak_ng", or None
-            voice="Storm" # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
+            tts_provider_id=selected_tts_provider_id, # Set to "macos_say", "espeak_ng", or None
+            voice=selected_voice # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
@@ -314,7 +314,7 @@ else:
         chatbot = None # Ensure chatbot is None if initialization failed
 
 
-steps=chatbot.get_steps()
+steps=chatbot.state_manager.get_steps()
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 state.current_radius=size
 print(f"setting up pets size as {size}")
@@ -364,11 +364,11 @@ else:
 # --- Initial Background Load ---
 # Determine starting location based on chatbot if available, otherwise use default
 starting_location_name = "bedroom" # Default
-if chatbot_available and chatbot and hasattr(chatbot, 'get_current_location'):
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_current_room_name'):
      try:
         # Call get_current_location only if the method exists and is callable
-        if callable(getattr(chatbot, 'get_current_location', None)):
-             loc = chatbot.get_current_location()
+        if callable(getattr(chatbot.state_manager, 'get_current_room_name', None)):
+             loc = chatbot.state_manager.get_current_room_name()
              if loc: # Use chatbot location if it returned something
                   starting_location_name = loc
                   print("found starting location!")
@@ -389,11 +389,11 @@ else:
 
 
 # --- NEW: Initial Wellness State Load ---
-if chatbot_available and chatbot and hasattr(chatbot, 'get_wellness_states'):
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'):
     try:
         # Call get_wellness_states only if the method exists and is callable
-        if callable(getattr(chatbot, 'get_wellness_states', None)):
-             stats_data = chatbot.get_wellness_states()
+        if callable(getattr(chatbot.state_manager, 'get_stats', None)):
+             stats_data = chatbot.state_manager.get_stats(True)
              if isinstance(stats_data, dict):
                   # Check if the expected keys are present and values are numbers
                   all_keys_present = all(key in stats_data for key in state.pet_stats.keys())
@@ -405,17 +405,17 @@ if chatbot_available and chatbot and hasattr(chatbot, 'get_wellness_states'):
                            state.pet_stats[stat_name.lower()] = max(0.0, min(200.0, value))
                        print(f"Getting initial wellness states from chatbot: {state.pet_stats}")
                   else:
-                       print(f"Chatbot get_wellness_states returned unexpected data format: {stats_data}. Using default state.")
+                       print(f"Chatbot get_stats returned unexpected data format: {stats_data}. Using default state.")
              elif stats_data is None:
-                  print("Chatbot get_wellness_states returned None. Using default state.")
+                  print("Chatbot get_stats returned None. Using default state.")
              else:
-                  print(f"Chatbot get_wellness_states returned non-dict data: {stats_data}. Using default state.")
+                  print(f"Chatbot get_stats returned non-dict data: {stats_data}. Using default state.")
         else:
-             print("Chatbot instance does not have a callable 'get_wellness_states' method. Using default state.")
+             print("Chatbot instance does not have a callable 'get_stats' method. Using default state.")
     except Exception as e:
         print(f"Error getting initial wellness states from chatbot: {e}. Using default state.")
 else:
-    print("Chatbot instance not available or does not have 'get_wellness_states'. Using default state.")
+    print("Chatbot instance not available or does not have 'get_stats'. Using default state.")
 
 
 def add_items(items_list, room):
@@ -434,9 +434,9 @@ def add_items(items_list, room):
     try:
         if chatbot_available and chatbot and hasattr(chatbot, 'add_items_room') and callable(chatbot.add_items_room):
             chatbot.add_items_room(room, items_list) # Adds items to the specified room and triggers signals to update the GUI
-            room_name=chatbot.get_room_name_out(room)
+            room_name=chatbot.state_manager.get_room_name(room)
             # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
-            chatbot.add_message_out(f"A package of helpful items has been delivered for you in the room {room_name}. Sent by the user for you!.", "system")
+            chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
 
             # Append the text into GUI chat window
             gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
@@ -480,7 +480,7 @@ history_display_area = current_gui_rects['history_display_area']
 try:
     if chatbot_available and chatbot and hasattr(chatbot, 'get_inventories') and callable(getattr(chatbot, 'get_inventories', None)):
          print("Attempting to get initial inventories from chatbot...")
-         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.get_inventories()
+         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories()
 
          # MODIFIED: Check and pre-calculate initial data
          if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
@@ -673,7 +673,7 @@ while running:
     # current_location_info=chatbot.functions_builder.get_current_room_info() # This is getting an updated state every frame
 
     # pygame.event.Event(config.LORE_PANEL_CONTENT_EVENT,current_location_info) # This is posting an event every frame
-    #steps=chatbot.get_steps()
+    #steps=chatbot.state_manager.get_steps()
     #size=state.size
     #size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 
@@ -761,7 +761,7 @@ while running:
         elif event.type == config.CHATBOT_RESPONSE_EVENT:
              response_text = getattr(event, 'text', None)
              message_type = getattr(event, 'msg_type', 'bot')
-             steps=chatbot.get_steps()
+             steps=chatbot.state_manager.get_steps()
              size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
              state.current_radius=size
              if response_text:
@@ -1075,7 +1075,7 @@ while running:
                                             current_room_id=chatbot.state_manager.get_current_room_id()
                                             add_items(package_info["package"], current_room_id )
                                             
-                                            room_name=chatbot.get_room_name_out(current_room_id)
+                                            room_name=chatbot.state_manager.get_room_name(current_room_id)
                                             message=f"Items placed in: {room_name}"
                                             color=(0,255,120)
                                             gui.gui_popups.show_popup_message(message)
@@ -1141,10 +1141,12 @@ while running:
                 # if event.key == pygame.K_8 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_happy_animation(); continue
                 # if event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_sad_animation(); continue
 
-                # if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.add_steps(20); continue
+                # if event.key == pygame.K_7 and pygame.key.get_mods() & pygame.KMOD_CTRL: chatbot.state_manager.add_steps(20); continue
 
                 # if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL: animation.start_; continue
 
+
+                # We might want a more user friendly way to call this, while using it as a dev command I realize how nice is it to be able to call the autonomous action whenever one wants.
                 if event.key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL:start_chatbot_request("Automated internal message: The following should be an autonomous action.", "user"); continue
 
 

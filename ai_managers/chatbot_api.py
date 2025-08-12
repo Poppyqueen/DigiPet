@@ -42,7 +42,7 @@ DEFAULT_INVENTORY_FOLDER = "inventory"
 
 class CLIChatbot:
     # MODIFIED: Changed tts_flag to tts_provider_id
-    def __init__(self, system_prompt="You are a helpful assistant.", sub_directory="default_convo", deep_memory=False, base_model="gpt-4.1-nano", select_memory_model="gpt-4.1-nano", tts_provider_id: str | None = None, signal_callback=None, voice=None, lang="en"):
+    def __init__(self, system_prompt="You are a helpful assistant.", sub_directory="default_convo", deep_memory=False, base_model="gpt-4.1-nano", tts_provider_id: str | None = None, signal_callback=None, voice=None):
         """Initialize the CLI chatbot with AI bot and memory systems."""
         # --- Use the subdirectory structure ---
         # Ensure the directory exists
@@ -70,7 +70,6 @@ class CLIChatbot:
         load_dotenv()
 
         gemini_api_key = os.getenv("GEMINI_API_KEY")
-        openai_api_key = os.getenv("OPENAI_API_KEY")
         groq_api_key = os.getenv("GROQ_API_KEY")
 
         # load provider for the selected main AI model
@@ -79,6 +78,7 @@ class CLIChatbot:
         main_config.read('main_config.ini')
         config_selected_provider = main_config['AI']['general_ai_provider']
 
+        
 
         available_providers = {
             "gemini": {
@@ -221,7 +221,7 @@ class CLIChatbot:
             for stat_name in stats_to_monitor:
                 self.state_manager.adjust_stat(stat_name, -10)
 
-            self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) You have been heavily penalized with some of your wellness stats", "short_term", "system")
+            self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) You have been heavily penalized with some of your wellness stats", "short_term", "user")
             #self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
             return "Error: Max recursion depth reached while processing AI response chain."
 
@@ -239,8 +239,6 @@ class CLIChatbot:
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
                 depth, self.max_recursion_depth, developer_message=self.sys_prompt
             )
-
-
 
 
             if function_flag:
@@ -264,8 +262,8 @@ class CLIChatbot:
                         
                         self.memory.save_to_memory(result, "short_term", "tool")
                         print(f"✅ Saved function result to memory. Getting next AI response...")
-                else:
-                    self.memory.save_to_memory(str(response_content), "short_term", "tool")
+                # else:
+                #     self.memory.save_to_memory(str(response_content), "short_term", "tool")
 
 
                 # Get the updated memory structure after saving the function result
@@ -412,7 +410,7 @@ class CLIChatbot:
                     for threshold, message in wellness_threshold_messages[stat_name]:
                         if current_value <= threshold:
                             # If the current value is at or below this threshold, save the associated message
-                            self.memory.save_to_memory(message, "short_term", "system")
+                            self.memory.save_to_memory(message, "short_term", "user")
                             
                             # If this specific threshold is the critical pass-out threshold,
                             # set the flag to trigger a pass-out event after checking all stats.
@@ -429,8 +427,8 @@ class CLIChatbot:
             self._send_signal({"type": "sleep", "duration": 900}) # 15 minutes = 900 seconds
 
             # Save pass-out specific messages to the agent's memory
-            self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "system")
-            self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "system")
+            self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "user")
+            self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "user")
 
             # 4. Increase the stats for recovery after passing out
             for stat_name in stats_to_monitor:
@@ -492,7 +490,7 @@ class CLIChatbot:
             depth=0
         )
 
-        self.add_steps(1) # add a step to the counter
+        self.state_manager.add_steps(1) # add a step to the counter
 
 
 # --- wellness stats check -----
@@ -514,19 +512,6 @@ class CLIChatbot:
 
 
 # Bridge to inventory manager
-
-    def get_steps(self):
-        return self.state_manager.get_steps()
-    
-    def set_steps(self, count: int):
-        return self.state_manager.set_steps(count)
-    
-    def add_steps(self, amount: int):
-        return self.state_manager.add_steps(amount)
-
-    def get_wellness_states(self):
-        return self.state_manager.get_stats(True)
-
     def get_inventories(self):
         """
         Delegated.

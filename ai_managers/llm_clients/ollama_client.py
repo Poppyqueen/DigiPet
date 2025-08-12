@@ -19,7 +19,7 @@ class OllamaClient(AbstractLLMClient):
         though Ollama typically runs locally without one.
         """
         # DEBUG: Confirming OllamaClient initialization.
-        print("DEBUG: OllamaClient initialized.")
+        # print("DEBUG: OllamaClient initialized.")
         pass
 
     @staticmethod
@@ -54,10 +54,10 @@ class OllamaClient(AbstractLLMClient):
         """
         transformed_tools = []
         # DEBUG: Starting tool transformation process. Incoming tools count: {len(tools)}
-        print(f"DEBUG: transform_tools: Starting transformation for {len(tools)} tools.")
+        # print(f"DEBUG: transform_tools: Starting transformation for {len(tools)} tools.")
         for tool in tools:
             # DEBUG: Processing tool: {json.dumps(tool, indent=2)}
-            print(f"DEBUG: transform_tools: Processing tool named '{tool.get('name', 'UNKNOWN')}'.")
+            # print(f"DEBUG: transform_tools: Processing tool named '{tool.get('name', 'UNKNOWN')}'.")
             if tool.get("type") == "function":
                 # Construct the nested 'function' dictionary as required by Ollama.
                 transformed_tool = {
@@ -69,19 +69,19 @@ class OllamaClient(AbstractLLMClient):
                     }
                 }
                 transformed_tools.append(transformed_tool)
-                print(f"DEBUG: transform_tools: Successfully transformed tool '{tool['name']}'.")
-            else:
-                # DEBUG: Log if an unsupported tool type is encountered.
-                print(f"WARNING: transform_tools: Tool type '{tool.get('type')}' not supported for transformation and will be skipped: {tool.get('name', 'N/A')}.")
-        # DEBUG: Completed tool transformation. Transformed tools count: {len(transformed_tools)}
-        print(f"DEBUG: transform_tools: Completed transformation. Transformed {len(transformed_tools)} tools.")
+                # print(f"DEBUG: transform_tools: Successfully transformed tool '{tool['name']}'.")
+        #     else:
+        #         # DEBUG: Log if an unsupported tool type is encountered.
+        #         # print(f"WARNING: transform_tools: Tool type '{tool.get('type')}' not supported for transformation and will be skipped: {tool.get('name', 'N/A')}.")
+        # # DEBUG: Completed tool transformation. Transformed tools count: {len(transformed_tools)}
+        # # print(f"DEBUG: transform_tools: Completed transformation. Transformed {len(transformed_tools)} tools.")
         return transformed_tools
 
     async def generate_response(
         self,
         messages: Dict[str, Any], # Now expects the structured memory from construct_data
         tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to functions_builder.construct_tools
-        model: str = "gemma3:4b-it-qat", # Default Ollama model
+        model: str = "qwen3:4b", # Default Ollama model
         tool_choice: str = "auto", # 'auto' lets the model decide; 'none' disables tools; {'type': 'function', 'function': {'name': 'my_tool'}} for specific tool
         **kwargs # For any additional provider-specific settings
     ) -> LLMResponse:
@@ -103,17 +103,16 @@ class OllamaClient(AbstractLLMClient):
 
         l_messages = []
         # DEBUG: Log the incoming raw messages and tools for initial inspection.
-        print(f"DEBUG: Incoming 'messages' for LLM generation: {json.dumps(messages, indent=2)}")
-        print(f"DEBUG: Incoming 'tools' for LLM generation: {json.dumps(tools, indent=2) if tools else 'None'}")
+        # print(f"DEBUG: Incoming 'messages' for LLM generation: {json.dumps(messages, indent=2)}")
+        # print(f"DEBUG: Incoming 'tools' for LLM generation: {json.dumps(tools, indent=2) if tools else 'None'}")
 
         # 1. Add the main system message from the structured_memory's system_context
-        # This becomes your original 'developer' message.
         if messages.get("system_context"):
             l_messages.append({
-                "role": "system", # Using 'developer' role as per your original message structure
+                "role": "system", 
                 "content": messages["system_context"]
             })
-            print(f"DEBUG: Added 'system' (system) message: '{messages['system_context'][:100]}...'")
+            # print(f"DEBUG: Added 'system' (system) message: '{messages['system_context'][:100]}...'")
 
         # 2. Process conversation history from the structured memory
         for entry in messages.get("conversation_history", []):
@@ -147,7 +146,7 @@ class OllamaClient(AbstractLLMClient):
                 })
         
         # DEBUG: Log the final constructed 'l_messages' list that will be sent to the LLM.
-        print(f"DEBUG: Constructed 'messages' list for LLM API call: {json.dumps(l_messages, indent=2)}")
+        # print(f"DEBUG: Constructed 'messages' list for LLM API call: {json.dumps(l_messages, indent=2)}")
 
         settings = {
             "model": model,
@@ -158,7 +157,7 @@ class OllamaClient(AbstractLLMClient):
         # --- FIX: Transform tools to Ollama's expected format before passing them ---
         if tools and tool_choice=="auto":
             # DEBUG: Tools detected. Calling transform_tools to convert format.
-            print("DEBUG: Tools provided. Transforming them to Ollama's required format.")
+            # print("DEBUG: Tools provided. Transforming them to Ollama's required format.")
             transformed_tools = self.transform_tools(tools)
             settings["tools"] = transformed_tools
             #settings["tool_choice"] = tool_choice
@@ -166,22 +165,22 @@ class OllamaClient(AbstractLLMClient):
             # The 'tool_choice' parameter is commented out in your original code.
             # If you intend to use it, uncomment this line.
             # settings["tool_choice"] = tool_choice
-        else:
-            print("DEBUG: No tools provided for the LLM call.")
+        # else:
+        #     # print("DEBUG: No tools provided for the LLM call.")
         
         # Merge any additional kwargs provided. These will be passed directly to ollama.chat.
         settings.update(kwargs)
         # DEBUG: Log the final 'settings' dictionary before making the API call.
-        print(f"DEBUG: Final 'settings' for LLM API call: {json.dumps(settings, indent=2)}")
+        # print(f"DEBUG: Final 'settings' for LLM API call: {json.dumps(settings, indent=2)}")
 
         llm_response = None # Initialize response variable to None
         try:
             # DEBUG: Making the actual ollama.chat API call.
-            print("DEBUG: Calling ollama.chat with specified settings...")
+            # print("DEBUG: Calling ollama.chat with specified settings...")
             llm_response = ollama.chat(**settings)
             # DEBUG: Raw response received from Ollama.
-            print(f"DEBUG: Raw LLM response received. Type: {type(llm_response)}")
-            print(f"DEBUG: Raw LLM response content: {llm_response}")
+            # print(f"DEBUG: Raw LLM response received. Type: {type(llm_response)}")
+            # print(f"DEBUG: Raw LLM response content: {llm_response}")
 
         except Exception as e:
             # DEBUG: Detailed error logging for any exceptions during the API call.
@@ -196,22 +195,22 @@ class OllamaClient(AbstractLLMClient):
         normalized_text_content: Optional[str] = None
 
         if llm_response:
-            print(f"DEBUG: LLM response received, attempting to parse.")
+            # print(f"DEBUG: LLM response received, attempting to parse.")
 
             # Access the 'message' attribute directly from the ChatResponse object.
             # This 'message' itself is an 'ollama._types.Message' object.
             message_obj = llm_response.message
-            print(f"DEBUG: Accessed message object from ChatResponse. Type: {type(message_obj)}")
+            # print(f"DEBUG: Accessed message object from ChatResponse. Type: {type(message_obj)}")
 
             if message_obj:
                 # 1. Check for tool calls first
                 # Access the 'tool_calls' attribute from the message object.
                 # This will be None if no tools were called, or a list of tool call objects.
                 tool_calls_list = message_obj.tool_calls
-                print(f"DEBUG: Tool calls attribute from message: {tool_calls_list}. Type: {type(tool_calls_list)}")
+                # print(f"DEBUG: Tool calls attribute from message: {tool_calls_list}. Type: {type(tool_calls_list)}")
 
                 if tool_calls_list: # If tool_calls_list is not None and not empty
-                    print(f"DEBUG: Processing {len(tool_calls_list)} tool call(s).")
+                    # print(f"DEBUG: Processing {len(tool_calls_list)} tool call(s).")
                     for tool_call in tool_calls_list:
                         # DEBUG: Processing individual tool call: {tool_call}. Type: {type(tool_call)}"
                         try:
@@ -222,7 +221,7 @@ class OllamaClient(AbstractLLMClient):
                             # --- FIX: Removed json.loads() here ---
                             # As per debug, tool_call.function.arguments is already a dictionary ({}), not a JSON string.
                             parsed_args = tool_call.function.arguments
-                            print(f"DEBUG: Arguments directly from tool_call.function.arguments: {parsed_args}. Type: {type(parsed_args)}")
+                            # print(f"DEBUG: Arguments directly from tool_call.function.arguments: {parsed_args}. Type: {type(parsed_args)}")
                             
                             # Ollama's tool calls often have an 'id', retrieve it safely.
                             call_id = getattr(tool_call, 'id', None) 
@@ -234,7 +233,7 @@ class OllamaClient(AbstractLLMClient):
                                     call_id=call_id # Retain call_id if available
                                 )
                             )
-                            print(f"DEBUG: Parsed FunctionCall: Name='{function_name}', Arguments='{parsed_args}', Call ID='{call_id}'")
+                            # print(f"DEBUG: Parsed FunctionCall: Name='{function_name}', Arguments='{parsed_args}', Call ID='{call_id}'")
                         except AttributeError as ae:
                             print(f"ERROR: AttributeError accessing tool call details (e.g., missing .function or .name/.arguments): {ae}. Tool call object: {tool_call}")
                         except Exception as e:
@@ -244,13 +243,13 @@ class OllamaClient(AbstractLLMClient):
                 # 2. Get the text content if no tool calls were made or if content is present alongside.
                 # Access the 'content' attribute directly from the message object. This will be a string or None.
                 text_content = message_obj.content
-                print(f"DEBUG: Text content from message object: '{text_content[:100] if text_content else 'None'}'. Type: {type(text_content)}")
+                # print(f"DEBUG: Text content from message object: '{text_content[:100] if text_content else 'None'}'. Type: {type(text_content)}")
 
                 if text_content is not None and not normalized_function_calls: # Only set text content if no function calls detected and content exists
                     normalized_text_content = text_content.strip() # Strip any leading/trailing whitespace
-                    print(f"DEBUG: Normalized text content: '{normalized_text_content}'")
-                elif text_content is not None and normalized_function_calls:
-                    print(f"DEBUG: Text content present but function calls also detected. Text content might be a thinking process or brief instruction: '{text_content[:100]}...'")
+                #     # print(f"DEBUG: Normalized text content: '{normalized_text_content}'")
+                # elif text_content is not None and normalized_function_calls:
+                #     # print(f"DEBUG: Text content present but function calls also detected. Text content might be a thinking process or brief instruction: '{text_content[:100]}...'")
 
             else:
                 print("WARNING: 'message' attribute not found in LLM ChatResponse object or was None. Cannot parse message content.")
@@ -264,5 +263,5 @@ class OllamaClient(AbstractLLMClient):
             text_content=normalized_text_content if normalized_text_content else None
         )
         # DEBUG: Log the final standardized LLMResponse object that will be returned.
-        print(f"DEBUG: Final standardized LLMResponse object: Function Calls={final_llm_response.function_calls}, Text Content='{final_llm_response.text_content}'")
+        # print(f"DEBUG: Final standardized LLMResponse object: Function Calls={final_llm_response.function_calls}, Text Content='{final_llm_response.text_content}'")
         return final_llm_response

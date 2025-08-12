@@ -4,7 +4,7 @@ mapped_models={
     "llama-3.1-8b-instant":"meta-llama/Llama-3.1-8B",
     "gemma2-9b-it":"google/gemma-2-9b-it",
     "deepseek-r1-distill-llama-70b":"deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
-    "":"",
+    "openai/gpt-oss-120b":"openai/gpt-oss-120b",
 
     "qwen3:4b":"Qwen/Qwen3-4B", # ollama 4b models, none really effective at autonomous behaviors
     "granite3.3:2b":"ibm-granite/granite-3.3-2b-instruct",

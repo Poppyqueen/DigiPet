@@ -5,7 +5,6 @@
 import json
 import sys
 import random
-import math
 import datetime # Import datetime for timestamping
 
 import configparser
