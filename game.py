@@ -131,7 +131,7 @@ def handle_chatbot_signal(signal_data):
                 print(f"Signal type 'change_background' received with path: {image_path}, posting event.")
                 pygame.event.post(pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_path=image_path))
 
-                current_room = chatbot.state_manager._find_room_by_id(chatbot.state_manager._state.get("current_room_id"))
+                current_room = chatbot.state_manager.room_manager._find_room_by_id(chatbot.state_manager.get_current_room_id())
 
                 loc_music = current_room.get("music")
 
@@ -444,7 +444,7 @@ gui.gui_core.init_gui_elements(font, line_height, 200)
 def get_current_room_image():
     """Retrieves the list of types for the current room."""
     current_id = chatbot.state_manager.get_current_room_id()
-    room = chatbot.state_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
+    room = chatbot.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
     if room and "image" in room:
         print(f"DEBUG: Current room image: {room['image']}")
         return room["image"]
@@ -1278,7 +1278,7 @@ while running:
             if pygame.mixer.get_init():
                 print("Initial popup phase has ended. Jukebox is None. Attempting to initialize jukebox.") # Debug
                 try:
-                    current_room = chatbot.state_manager._find_room_by_id(chatbot.state_manager._state.get("current_room_id"))
+                    current_room = chatbot.state_manager.room_manager._find_room_by_id(chatbot.state_manager.get_current_room_id())
                     loc_music = current_room.get("music")
                     music_player = jukebox(f"style/sounds/music/rooms/{loc_music}.mp3") # Initialize ONLY ONCE
                 except Exception as e:

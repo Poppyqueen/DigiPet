@@ -458,7 +458,7 @@ class FunctionBuilder:
     def get_current_room_types(self):
         """Retrieves the list of types for the current room."""
         current_id = self.state_manager.get_current_room_id()
-        room = self.state_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
+        room = self.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
         if room and "room_types" in room:
             #print(f"DEBUG: Current room types: {room['room_types']}")
             return room["room_types"]
@@ -624,7 +624,7 @@ class FunctionBuilder:
         including room-type-specific functions for information retrieval.
         """
         current_room_id = self.state_manager.get_current_room_id()
-        full_room = self.state_manager._find_room_by_id(current_room_id)
+        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
 
         if not full_room:
             print(f"Error: Could not find room with ID: {current_room_id}")

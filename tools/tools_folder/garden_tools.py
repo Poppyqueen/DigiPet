@@ -92,8 +92,7 @@ class Garden_Mananger(GenericJsonTool):
         It will add new gardens if they don't exist or adjust plot counts if changed.
         Existing plant data in plots will be preserved where possible.
         """
-        rooms_list = self.state_manager._state.get("rooms", [])
-
+        rooms_list = self.state_manager._state_store.get_state_section("rooms", [])
         # Make a copy to modify safely, then assign back to self._state.
         # This preserves non-garden specific keys like "_last_rain_applied_timestamp" and "_garden_logical_tick_counter".
         updated_gardens_in_state = self._state.copy() 
@@ -438,7 +437,7 @@ class Garden_Mananger(GenericJsonTool):
             return f"Error: You are not in a garden room. Cannot plant here."
 
         # Find the item by its ID
-        attempt_item = self.state_manager._find_item_info_by_id(item_id)
+        attempt_item = self.state_manager.inventory_service._find_item_info_by_id(item_id)
 
         print(f"📌📌📌📌{attempt_item}, {type(attempt_item)}")
 
@@ -665,7 +664,7 @@ class Garden_Mananger(GenericJsonTool):
                 if item_def and quantity > 0:
                     # RE-EVALUATE current inventory length inside the loop
                     # This ensures we get the most up-to-date count of occupied slots
-                    current_inventory = self.state_manager._state.get("inventory", [])
+                    current_inventory = self.state_manager._state_store.get_state_section("inventory", [])
                     current_inventory_length = len(current_inventory)
                     
                     # Check if there's enough space in inventory for this specific item quantity
@@ -833,7 +832,7 @@ class Garden_Mananger(GenericJsonTool):
         garden_data = self._state[current_room_id]
         
         # Attempt to get room name from state manager, fallback to ID if not available
-        room_name_info = self.state_manager._state.get("rooms", [])
+        room_name_info = self.state_manager._state_store.get_state_section("rooms", [])
         room_name = next((room.get("name") for room in room_name_info if str(room.get("id")) == current_room_id), current_room_id)
 
         summary_lines = [f"--- Garden Summary for {room_name} (ID: {current_room_id}) ---"]
