@@ -514,6 +514,7 @@ def run_config_creation_ui(screen, font, config_manager):
     title_surface, title_rect = draw_section_title(font, "AI_DeepMemory", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     ai_providers = ["gemini", "openai", "groq", "ollama"]
+    enable_deep_memory_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable Deep Memory", font); elements.append(enable_deep_memory_checkbox); current_y += 30
     current_y = draw_labeled_dropdown_or_input(font, "deep_memory_ai_provider", "Provider:", current_y, screen_width, elements, options=ai_providers)
     current_y = draw_labeled_dropdown_or_input(font, "deep_memory_ai", "Model Name:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "deep_memory_embeddings_provider", "Embeddings Provider:", current_y, screen_width, elements, options=["gemini", "openai", "ollama"]) # No Groq Embeddings model
@@ -565,6 +566,7 @@ def run_config_creation_ui(screen, font, config_manager):
                         else:
                             config_name = text_inputs['config_name'].text
                             
+                            config_manager.set_config("AI_DeepMemory", "deep_memory_flag", enable_deep_memory_checkbox.checked)
                             config_manager.set_config("AI_DeepMemory", "deep_memory_ai_provider", dropdowns['deep_memory_ai_provider'].selected_option)
                             config_manager.set_config("AI_DeepMemory", "deep_memory_ai", text_inputs['deep_memory_ai'].text)
                             config_manager.set_config("AI_DeepMemory", "deep_memory_embeddings_provider", dropdowns['deep_memory_embeddings_provider'].selected_option)

@@ -309,8 +309,8 @@ print(f"setting up pets size as {size}")
 # Ensure state.pet_color is initialized to the default before potential load/selection
 state.pet_color = config.GREEN # Or use the default from state.py (which is already green)
 
-if chatbot_available and chatbot and hasattr(chatbot, 'is_color_configured') and callable(chatbot.is_color_configured):
-    if not chatbot.is_color_configured():
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_color_configured') and callable(chatbot.state_manager.is_color_configured):
+    if not chatbot.state_manager.is_color_configured():
         # --- Run Color Selection UI ---
         print("Color not configured. Starting color selection UI...")
         # Call the blocking UI function
@@ -319,8 +319,8 @@ if chatbot_available and chatbot and hasattr(chatbot, 'is_color_configured') and
         if selected_color is not None:
             # Color was selected, save it via the chatbot
             print(f"Color selected: {selected_color}. Saving configuration...")
-            chatbot.set_pet_color(selected_color)
-            chatbot.set_color_configured(True)
+            chatbot.state_manager.set_pet_color(selected_color)
+            chatbot.state_manager.set_color_configured(True)
             # Update runtime state with the selected color
             state.pet_color = selected_color
             print("Color configuration saved and applied.")
@@ -333,7 +333,7 @@ if chatbot_available and chatbot and hasattr(chatbot, 'is_color_configured') and
         # --- Load Configured Color ---
         print("Color already configured. Loading saved color...")
         # Load the saved color from the chatbot's state manager
-        loaded_color = chatbot.get_pet_color()
+        loaded_color = chatbot.state_manager.get_pet_color()
         if loaded_color: # Check if get_pet_color returned a valid color
             state.pet_color = loaded_color # Update runtime state
             print(f"Loaded pet color: {state.pet_color}")
@@ -418,8 +418,8 @@ def add_items(items_list, room):
 
     gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
     try:
-        if chatbot_available and chatbot and hasattr(chatbot, 'add_items_room') and callable(chatbot.add_items_room):
-            chatbot.add_items_room(room, items_list) # Adds items to the specified room and triggers signals to update the GUI
+        if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'create_item') and callable(chatbot.state_manager.create_item):
+            chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
             room_name=chatbot.state_manager.get_room_name(room)
             # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
             chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
@@ -464,7 +464,7 @@ history_display_area = current_gui_rects['history_display_area']
 
 # --- Initial Inventory Load ---
 try:
-    if chatbot_available and chatbot and hasattr(chatbot, 'get_inventories') and callable(getattr(chatbot, 'get_inventories', None)):
+    if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'list_inventories') and callable(getattr(chatbot.state_manager, 'list_inventories', None)):
          print("Attempting to get initial inventories from chatbot...")
          list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories()
 

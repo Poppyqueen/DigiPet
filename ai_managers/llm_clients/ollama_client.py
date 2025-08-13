@@ -117,7 +117,7 @@ class OllamaClient(AbstractLLMClient):
         # 2. Process conversation history from the structured memory
         for entry in messages.get("conversation_history", []):
             # DEBUG: Processing conversation history entry: type and content/name.
-            print(f"DEBUG: Processing conversation history entry: Type='{entry['type']}', Content/Name='{entry.get('content', entry.get('name'))[:100]}...'")
+            # print(f"DEBUG: Processing conversation history entry: Type='{entry['type']}', Content/Name='{entry.get('content', entry.get('name'))[:100]}...'")
             if entry["type"] == "user":
                 l_messages.append({"role": "user", "content": entry["content"]})
             elif entry["type"] == "assistant":

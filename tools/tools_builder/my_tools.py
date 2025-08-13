@@ -28,7 +28,7 @@ musicbrainz_tools=[
     {
         "type": "function",
         "name": "musicbrainz_search_by_raw_lucene",
-        "description": "Performs an advanced search against the MusicBrainz database for a specified entity type using a raw Lucene query string. Make sure to use VALID Lucene and no deviations. This is completely unrelated to the rest of the tools and using hashtags to list arguments will NOT work like the other functions. This is RAW Lucene.",
+        "description": "Performs an advanced search against the MusicBrainz database for a specified entity type using a raw Lucene query syntax string.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -38,7 +38,7 @@ musicbrainz_tools=[
                 },
                 "raw_lucene": {
                     "type": "string",
-                    "description": "The OFFICIAL Lucene query syntax query string to be used directly for the search. Example: 'artist:\"The Beatles\" AND country:GB'"
+                    "description": "The Lucene query syntax string to be used directly for the search. Example: 'artist:\"The Beatles\" AND country:GB'"
                 },
                 "offset": {
                     "type": "integer",
@@ -104,47 +104,7 @@ musicbrainz_tools=[
             "required": ["artist_id"],
             "additionalProperties": False
         }
-    },
-    {
-        "type": "function",
-        "name": "musicbrainz_search_albums_by_tags",
-        "description": "Searches for albums (release groups) associated with one or more folksonomy tags, with pagination support.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tags_string": {
-                    "type": "string",
-                    "description": "Tags are expected as a single string, separated by '#' (e.g., 'concept album#live'). The search will return albums that have ALL specified tags."
-                },
-                "offset": {
-                    "type": "number",
-                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
-                }
-            },
-            "required": ["tags_string"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "musicbrainz_search_artists_by_tags",
-        "description": "Searches for artists associated with one or more folksonomy tags, with pagination support.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tags_string": {
-                    "type": "string",
-                    "description": "A string of tags separated by '#'. Example: 'rock#gothic metal'. The search will return albums that have ALL specified tags."
-                },
-                "offset": {
-                    "type": "number",
-                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
-                }
-            },
-            "required": ["tags_string"],
-            "additionalProperties": False
-        }
-    },
+    }
 ]
 #discogs_get_wantlist_unique_artists
 discogs_tools=[

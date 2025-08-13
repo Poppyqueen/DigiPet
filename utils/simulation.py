@@ -1363,8 +1363,8 @@ class ALifeSimulation:
             try:
                 max_ticks_int = int(max_ticks)
                 # Apply clamping limits immediately after successful conversion
-                if max_ticks_int >= 50:
-                    settings_max_ticks = 50
+                if max_ticks_int >= 30:
+                    settings_max_ticks = 30
                     config_notes.append(f"Max ticks clamped to 50 (requested {max_ticks}).")
                 elif max_ticks_int <= 0:
                     settings_max_ticks = 1

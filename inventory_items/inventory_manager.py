@@ -547,6 +547,9 @@ class InventoryHouseManager(GenericJsonTool):
             print(f"Correcting state based on validation warnings for {self.__class__.__name__}. Saving state.")
             self._write_json(self._state)
 
+
+
+
     def get_sim_state(self):
         """
         Retrieves the current simulation state.
