@@ -27,7 +27,6 @@ from ai_managers.llm_clients import ollama_client
 
 
 
-import configparser
 
 
 from dotenv import load_dotenv
@@ -42,10 +41,15 @@ DEFAULT_INVENTORY_FOLDER = "inventory"
 
 class CLIChatbot:
     # MODIFIED: Changed tts_flag to tts_provider_id
-    def __init__(self, system_prompt="You are a helpful assistant.", sub_directory="default_convo", deep_memory=False, base_model="gpt-4.1-nano", tts_provider_id: str | None = None, signal_callback=None, voice=None):
+    def __init__(self, config_manager, signal_callback=None):
         """Initialize the CLI chatbot with AI bot and memory systems."""
         # --- Use the subdirectory structure ---
         # Ensure the directory exists
+        voice = config_manager.get_config('game_settings','selected_voice')
+        tts_provider_id = config_manager.get_config('game_settings','tts_provider')
+        pet_name = config_manager.get_config('AI','pets_folder') # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
+
+        sub_directory=f"bots/{pet_name}"
         os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
 
         # Construct full paths within the subdirectory
@@ -54,8 +58,8 @@ class CLIChatbot:
         ai_data_filepath = os.path.join(sub_directory, DEFAULT_AI_LOG)
         inventory_filepath = os.path.join(sub_directory, DEFAULT_INVENTORY_FOLDER) # Assuming you have an inventory subdirectory
         # --- End subdirectory structure ---
-        self.sys_prompt = system_prompt
-        self.deep_memory_flag = deep_memory
+        self.sys_prompt = config_manager.get_config('AI','sys_prompt')
+        self.deep_memory_flag = False
         self._signal_callback = signal_callback # Store the callback
 
         # Add a recursion depth limit to prevent infinite loops
@@ -74,9 +78,7 @@ class CLIChatbot:
 
         # load provider for the selected main AI model
 
-        main_config = configparser.ConfigParser()
-        main_config.read('main_config.ini')
-        config_selected_provider = main_config['AI']['general_ai_provider']
+        config_selected_provider = config_manager.get_config('AI','general_ai_provider')
 
         
 
@@ -112,7 +114,6 @@ class CLIChatbot:
 
 
 
-        #selected_client=openai_client.OpenAIClient()
         selected_client=config_client(api_key_selected)
 
         # NEW: TTS Provider Initialization
@@ -140,17 +141,19 @@ class CLIChatbot:
             self.memory = memory_manager(
                 filepath=memory_filepath,
                 deep_memory_filepath=deep_memory_filepath,
-                deep_memory=deep_memory, # Pass the deep memory flag
+                deep_memory= self.deep_memory_flag, # Pass the deep memory flag
                 text_capture=self.text_capture,
-                sub_directory=sub_directory
+                sub_directory=sub_directory,
+                config_manager=config_manager
+
             )
             # Add tools that need usage of the memory structure
 
-            self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, self.memory)
+            self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, self.memory, config_manager)
 
-            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory)  # Initialize the function builder
+            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager)  # Initialize the function builder
 
-            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=base_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
+            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model= config_manager.get_config('AI','general_model'), functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
             # REMOVED: self.tts = tts_flag # Set to True if you want to enable text-to-speech output
             # REMOVED: self._current_tts_process = None
 

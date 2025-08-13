@@ -6,37 +6,24 @@ from pygame_int import animation
 from pygame_int import gui_lore_panel
 from pygame_int import gui_color_selector
 from pygame_int.juke_box import jukebox 
-
+from pygame_int.config_gui import run_config_main_menu_ui
 import pygame
 import sys
 import threading
 import asyncio
 
 
-import configparser
+from utils.config_manager import ConfigManager
 
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
 mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
-
 if mock_running:
     from ai_managers.mock_chatbot import MockChatbot
 else:
-    from ai_managers.chatbot_api import CLIChatbot # There are interesting settings in the initialization of this class.
-
-
-
-main_config = configparser.ConfigParser()
-main_config.read('main_config.ini')
-system_prompt = main_config['AI']['sys_prompt']
-print(f"System prompt: {system_prompt}")
-memory_model = main_config['AI']['memory_model']
-general_model = main_config['AI']['general_model']
-pet_name = main_config['AI']['pets_folder'] # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
-selected_tts_provider_id=main_config['game_settings']['tts_provider']
-selected_voice=main_config['game_settings']['selected_voice']
+    from ai_managers.chatbot_api import CLIChatbot 
 
 # --- Pygame Initialization ---
 pygame.init()
@@ -58,6 +45,10 @@ except pygame.error:
     print("Warning: Default font not found, using a fallback.")
     font = pygame.font.SysFont("Arial", 20) # Fallback font
     line_height = font.get_linesize() # Get line height from fallback font
+
+
+config_manager = ConfigManager("bots")
+run_config_main_menu_ui(screen, font, config_manager)
 
 
 def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=config.STEP_SIZE_LIMIT): # 250
@@ -275,11 +266,11 @@ if mock_running: # Mock configuration, leave as is
     try:
         chatbot = MockChatbot( # Use the mock class
             signal_callback=handle_chatbot_signal,
-            system_prompt= system_prompt,
-            sub_directory="bots/"+pet_name,
+            system_prompt= "test",
+            sub_directory="bots/"+"test",
             deep_memory=False,
-            base_model=general_model,
-            select_memory_model=memory_model,
+            base_model="test",
+            select_memory_model="test",
             tts_flag=True
         )
         chatbot_available = True
@@ -299,12 +290,7 @@ else:
     try:
         chatbot = CLIChatbot(
             signal_callback=handle_chatbot_signal,
-            system_prompt= system_prompt,
-            sub_directory="bots/"+pet_name, # Set as needed on config file
-            deep_memory=False, # Working on it
-            base_model=general_model, # Set as needed on config file
-            tts_provider_id=selected_tts_provider_id, # Set to "macos_say", "espeak_ng", or None
-            voice=selected_voice # If using espeak_ng you can set a prefered voice, it will use a default if set to None. It should allow the usage of mbrola, someone should test that
+            config_manager=config_manager
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")

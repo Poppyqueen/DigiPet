@@ -2486,8 +2486,6 @@ dev_room={
             "next_room_id": ROOM_ID_START_COUNTER,
             "current_room_id": 0, # Default starting room ID (must match one below)
             "rooms": [
-
-
                 {
                     "name": "dev_room",
                     "id": 0,

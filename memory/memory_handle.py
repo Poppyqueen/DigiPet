@@ -14,7 +14,6 @@ from utils.utils_ai_providers.openai_provider import OpenAIProv
 from utils.utils_ai_providers.groq_provider import GroqProv
 from utils.utils_ai_providers.ollama_provider import OllamaProv
 from memory.deep_memory import DeepMemory
-import configparser
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
@@ -66,8 +65,8 @@ class memory_manager:
 
 
 
-    def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None):
-        self.token_manager = token_manager()
+    def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None, config_manager=None):
+        self.token_manager = token_manager(config_manager)
         self.text_capture=text_capture
         self.filepath = filepath
         self.deep_memory_filepath = deep_memory_filepath
@@ -88,10 +87,8 @@ class memory_manager:
                 "client":OllamaProv}
         }
 
-        config = configparser.ConfigParser()
-        config.read('main_config.ini')
-        selected_model= config['AI']['memory_model']
-        config_selected_provider = config['AI']['memory_ai_provider']
+        selected_model= config_manager.get_config('AI','memory_model')
+        config_selected_provider = config_manager.get_config('AI','memory_ai_provider')
 
         # 4. Use the mapping dictionary to get the actual JSON structure
         if config_selected_provider in available_providers:
@@ -106,7 +103,7 @@ class memory_manager:
 
         if self.bot_instance and self.deep_memory_flag:
             try:
-                self.deep_memory = DeepMemory(deep_memory_filepath, self.text_capture)
+                self.deep_memory = DeepMemory(deep_memory_filepath, self.text_capture, config_manager)
             except Exception as e:
                 print(f"Error initializing DeepMemory: {e}")
                 self.deep_memory = None

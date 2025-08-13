@@ -27,6 +27,30 @@ musicbrainz_tools=[
     },
     {
         "type": "function",
+        "name": "musicbrainz_search_by_raw_lucene",
+        "description": "Performs an advanced search against the MusicBrainz database for a specified entity type using a raw Lucene query string. Make sure to use VALID Lucene and no deviations. This is completely unrelated to the rest of the tools and using hashtags to list arguments will NOT work like the other functions. This is RAW Lucene.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "entity_type": {
+                    "type": "string",
+                    "description": "The type of entity to search for. Must be 'artist', 'release-group', or 'recording'."
+                },
+                "raw_lucene": {
+                    "type": "string",
+                    "description": "The OFFICIAL Lucene query syntax query string to be used directly for the search. Example: 'artist:\"The Beatles\" AND country:GB'"
+                },
+                "offset": {
+                    "type": "integer",
+                    "description": "The starting point of the result set, used for pagination."
+                }
+            },
+            "required": ["entity_type", "raw_lucene"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
         "name": "musicbrainz_get_album_tracklist",
         "description": "Retrieves the tracklist for an album (Release Group) identified by its MusicBrainz ID.",
         "parameters": {
@@ -608,7 +632,7 @@ kitchen_room_tools=[
             "properties": {
                     "process": {
                     "type": "string",
-                    "description": "A detailed description of the process to apply into these items to prepare or cook something to eat."
+                    "description": "A full and detailed recipe, complete description of the process to apply into these items to prepare or cook something to eat."
                 },
                     "items_list": {
                     "type": "string",

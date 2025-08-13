@@ -112,7 +112,6 @@ class bundles_maker:
             "containing a list of item dictionaries. Each item dictionary MUST strictly follow these rules:\n"
             "- Include 'name' (string), 'descriptions' (List[str]), 'static' (bool), and 'type' (List[str]). "
             "The 'type' list MUST contain at least one primary category: 'consumable', 'misc', 'furniture', or 'seed'. "
-            "It can also include other descriptive types (e.g., 'tool', 'weapon', 'wearable', 'container').\n"
             "- IF the 'type' list contains 'consumable', you MUST include 'effects' (List[str]) and 'stats_edit' (a dictionary with keys 'fullness', 'hydration', 'energy' as floats).\n"
             "- IF the 'type' list does NOT contain 'consumable', you MUST NOT include the 'effects' or 'stats_edit' keys.\n"
             "- IF the 'type' list contains 'seed', you MUST include 'plant_type' (string) with one of the following exact values: 'lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry'.\n"

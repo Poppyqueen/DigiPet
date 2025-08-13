@@ -1,5 +1,6 @@
 import pygame
 import math
+import sys
 from pygame_int import gui_config # For INPUT_BOX_HEIGHT, GRID_COLS, etc.
 from pygame_int.colors_config import _color_selection_options # For the list of colors
 # gui_core might not be needed if font is passed as an argument and no other core elements are directly accessed.
@@ -130,7 +131,8 @@ def run_color_selection_ui(screen, font):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                continue
+                pygame.quit()
+                sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Left click

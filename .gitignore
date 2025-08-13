@@ -4,3 +4,4 @@
 bots/
 .cache.sqlite
 .DS_Store
+*secrets/

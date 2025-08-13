@@ -27,7 +27,8 @@ import os.path
 import json
 import inspect
 
-import configparser
+import traceback
+
 
 
 # Import the tool definitions lists
@@ -64,72 +65,57 @@ from tools.tools_folder.async_test_tool import simulate_data_fetch
 from tools.tools_folder.thinking_tool import emit_inner_thought
 
 
-# --- Global Configuration Loading (Happens once when the module is imported) ---
-tools_config = configparser.ConfigParser()
-# Attempt to read the config file. Consider providing a default path or making it configurable.
-config_file_path = "main_config.ini"
-if os.path.exists(config_file_path):
-    tools_config.read(config_file_path)
-    print(f"Config file '{config_file_path}' loaded.")
-else:
-    print(f"Warning: Config file '{config_file_path}' not found. Using default 'disabled' for optional tools.")
-
-# Use a default section if 'Tools' is not found, to prevent KeyError
-if 'Tools' not in tools_config:
-    tools_config['Tools'] = {} # Create an empty section to safely use .getboolean
-
-enabled_tools = tools_config['Tools']
-
-# These booleans will dictate if the tools are *attempted* to be imported and initialized.
-# We will then use the instance itself (e.g., self.youtube is not None) to determine if it truly succeeded.
-youtube_enabled = enabled_tools.getboolean('enable_youtube', fallback=False)
-discogs_enabled = enabled_tools.getboolean('enable_discogs', fallback=False)
-musicbrainz_enabled = enabled_tools.getboolean('enable_musicbrainz', fallback=False)
-bluesky_enabled = enabled_tools.getboolean('enable_bluesky', fallback=False)
-
-
-# print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
-# print(f"DEBUG: Discogs enabled (config): {discogs_enabled}")
-# print(f"DEBUG: MusicBrainz enabled (config): {musicbrainz_enabled}")
-# print(f"DEBUG: Bluesky enabled (config): {bluesky_enabled}")
-
-# --- Conditional Imports (Only import if enabled in config) ---
-# This saves memory and avoids NameErrors if external libraries aren't installed.
-# We assign these to global variables only if they are imported successfully.
-# This pattern ensures that the 'from utils import x' lines are only executed when needed.
-if youtube_enabled:
-    try:
-        from utils import youtube_service
-    except ImportError as e:
-        print(f"Warning: Could not import youtube_service, disabling YouTube tools. Error: {e}")
-        youtube_enabled = False # Mark as disabled if import fails
-if discogs_enabled:
-    try:
-        from utils import discogs
-    except ImportError as e:
-        print(f"Warning: Could not import discogs, disabling Discogs tools. Error: {e}")
-        discogs_enabled = False
-if musicbrainz_enabled:
-    try:
-        from utils import musicbrainz
-    except ImportError as e:
-        print(f"Warning: Could not import musicbrainz, disabling MusicBrainz tools. Error: {e}")
-        musicbrainz_enabled = False
-if bluesky_enabled:
-    try:
-        from tools.tools_folder.bluesky_handle import bluesky_bot
-    except ImportError as e:
-        print(f"Warning: Could not import bluesky_bot, disabling Bluesky tools. Error: {e}")
-        bluesky_enabled = False
-
-
 class FunctionBuilder:
-    def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None):
+    def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None):
+
+
+        # These booleans will dictate if the tools are *attempted* to be imported and initialized.
+        # We will then use the instance itself (e.g., self.youtube is not None) to determine if it truly succeeded.
+        youtube_enabled = config_manager.get_config('Tools', "enable_youtube")
+        discogs_enabled = config_manager.get_config('Tools', "enable_discogs")
+        musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
+        bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
+
+
+        print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
+        print(f"DEBUG: Discogs enabled (config): {discogs_enabled}")
+        print(f"DEBUG: MusicBrainz enabled (config): {musicbrainz_enabled} {type(musicbrainz_enabled)}")
+        print(f"DEBUG: Bluesky enabled (config): {bluesky_enabled}")
+
+        # --- Conditional Imports (Only import if enabled in config) ---
+        # This saves memory and avoids NameErrors if external libraries aren't installed.
+        # We assign these to global variables only if they are imported successfully.
+        # This pattern ensures that the 'from utils import x' lines are only executed when needed.
+        if youtube_enabled:
+            try:
+                from utils import youtube_service
+            except ImportError as e:
+                print(f"Warning: Could not import youtube_service, disabling YouTube tools. Error: {e}")
+                youtube_enabled = False # Mark as disabled if import fails
+        if discogs_enabled:
+            try:
+                from utils import discogs
+            except ImportError as e:
+                print(f"Warning: Could not import discogs, disabling Discogs tools. Error: {e}")
+                discogs_enabled = False
+        if musicbrainz_enabled:
+            try:
+                from utils import musicbrainz
+            except ImportError as e:
+                print(f"Warning: Could not import musicbrainz, disabling MusicBrainz tools. Error: {e}")
+                musicbrainz_enabled = False
+        if bluesky_enabled:
+            try:
+                from tools.tools_folder.bluesky_handle import bluesky_bot
+            except ImportError as e:
+                print(f"Warning: Could not import bluesky_bot, disabling Bluesky tools. Error: {e}")
+                bluesky_enabled = False
+
         self.memory = memory_manager
         self.sub_directory = subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
-        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory)
+        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager)
         self.A_Life = None # Initialized by _init_alife
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback)
         self._init_alife() # ALIFE is always initialized
@@ -146,44 +132,35 @@ class FunctionBuilder:
         if youtube_enabled:
             try:
                 # Check if the module was actually imported (prevent NameError if import failed silently)
-                if 'youtube_service' in globals():
                     self.youtube = youtube_service.YouTubeTools()
                     print("YouTubeTools instance created.")
-                else:
-                    print("YouTubeTools not imported due to previous error; skipping instantiation.")
             except Exception as e:
                 print(f"Error instantiating YouTubeTools: {e}")
                 self.youtube = None # Ensure it's None if instantiation fails
 
         if discogs_enabled:
             try:
-                if 'discogs' in globals():
                     self.discogs_handle = discogs.DiscogsTools()
                     print("DiscogsTools instance created.")
-                else:
-                    print("DiscogsTools not imported due to previous error; skipping instantiation.")
             except Exception as e:
                 print(f"Error instantiating DiscogsTools: {e}")
                 self.discogs_handle = None
 
-        if musicbrainz_enabled:
+        if musicbrainz_enabled: # This flag correctly indicates if the import was successful
             try:
-                if 'musicbrainz' in globals():
-                    self.musicbrainz_ = musicbrainz.MusicBrainzSearchTools()
-                    print("MusicBrainzSearchTools instance created.")
-                else:
-                    print("MusicBrainzSearchTools not imported due to previous error; skipping instantiation.")
+                # Directly use the 'musicbrainz' object here, as it's available in the local scope
+                # if the 'from utils import musicbrainz' statement above succeeded.
+                self.musicbrainz_ = musicbrainz.MusicBrainzSearchTools()
+                print("MusicBrainzSearchTools instance created.")
             except Exception as e:
                 print(f"Error instantiating MusicBrainzSearchTools: {e}")
+                #traceback.print_exc()
                 self.musicbrainz_ = None
 
         if bluesky_enabled:
             try:
-                if 'bluesky_bot' in globals():
                     self.bluesky = bluesky_bot(self.state_manager, self._signal_callback)
                     print("BlueskyBot instance created.")
-                else:
-                    print("BlueskyBot not imported due to previous error; skipping instantiation.")
             except Exception as e:
                 print(f"Error instantiating BlueskyBot: {e}")
                 self.bluesky = None
@@ -293,12 +270,13 @@ class FunctionBuilder:
         if self.musicbrainz_: # Check if the instance was successfully created
             self._room_type_data["musicbrainz"] = {
                 "functions": {
-                    "musicbrainz_search_artists_by_tags": self.musicbrainz_.search_artists_by_tags,
-                    "musicbrainz_search_albums_by_tags": self.musicbrainz_.search_albums_by_tags,
+                    #"musicbrainz_search_artists_by_tags": self.musicbrainz_.search_artists_by_tags,
+                    #"musicbrainz_search_albums_by_tags": self.musicbrainz_.search_albums_by_tags,
                     "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
                     "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
                     "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
-                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name
+                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
+                    "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
                 },
                 "definitions": musicbrainz_tools
             }

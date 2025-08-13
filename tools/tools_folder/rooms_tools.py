@@ -54,12 +54,12 @@ def _send_signal(self, signal_data):
 
 
 class room_kitchen:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, config_manager=None):
         self._signal_callback=signal
 
         # Store the state_manager reference
         self.state = state_manager
-        self.cook = cook()
+        self.cook = cook(config_manager)
         #print("Kitchen initialized.")
 
     # Add the helper method
@@ -294,7 +294,7 @@ class room_kitchen:
         # --- Add signal call for successful preparation ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png", "popup_type": 2})
         # --------------------------------------------------
-        return f"Preparation successful! Items created and placed in {creation_location_type}: {', '.join(created_item_names)}."
+        return f"Preparation successful! All used consumable items in the preparation have been removed. New items created and placed in {creation_location_type}: {', '.join(created_item_names)}."
 
 
     def _rollback_preparation(self, removed_ingredients_data, created_items_info):
@@ -637,7 +637,7 @@ class room_white:
 
 # Define the main handler class
 class main_tools_handle:
-    def __init__(self, state_manager, signal=None, memory_manager=None):
+    def __init__(self, state_manager, signal=None, memory_manager=None, config_manager=None):
         self.memory=memory_manager
         self.wiki=Wikipedia_handle(self.memory)
         print("Main tools handler initialized.")
@@ -655,7 +655,7 @@ class main_tools_handle:
         # --- Fix: Removed the extra 'self' argument here ---
         self.white_room = room_white(self.state, self._signal_callback)
         # ---------------------------------------------------
-        self.kitchen = room_kitchen(self.state, self._signal_callback)
+        self.kitchen = room_kitchen(self.state, self._signal_callback, config_manager)
 
     # You already have _send_signal in main_tools_handle, but it's not currently used
     # by the room methods. The approach above adds it *to* the room instances.

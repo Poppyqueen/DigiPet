@@ -21,7 +21,6 @@ from utils.utils_ai_providers.ollama_provider import OllamaProv
 # --- We will now use both the DatabaseManager and EmbeddingOperations ---
 from memory.deep_memory_db_managers.deep_memory_database import DatabaseManager
 from memory.deep_memory_db_managers.embedding_operations import EmbeddingOperations
-import configparser
 
 
 
@@ -32,7 +31,7 @@ class DeepMemory:
     This module handles the storage and retrieval of structured information (entities and their
     characteristics) identified via semantic similarity of their embeddings.
     """
-    def __init__(self, filepath: str, logger=None):
+    def __init__(self, filepath: str, logger=None, config_manager=None):
         """
         Initialize the DeepMemory instance.
 
@@ -40,6 +39,8 @@ class DeepMemory:
             filepath (str): Path to the SQLite database file.
         """
         self.log=logger
+
+        config_manager
 
 
         self.db_manager = DatabaseManager(filepath)
@@ -49,9 +50,8 @@ class DeepMemory:
         self.db_manager.create_tables()
 
     ### ///////// Init config  /////////  #####
-        main_config = configparser.ConfigParser()
-        main_config.read('main_config.ini')
-        embeddings_config_selected_provider = main_config['AI_DeepMemory']['deep_memory_embeddings_provider']
+
+        embeddings_config_selected_provider = config_manager.get_config('AI_DeepMemory','deep_memory_embeddings_provider')
 
         embeddings_available_providers = {
             "google": {"client": GoogleEmbeddingProvider},
@@ -68,8 +68,8 @@ class DeepMemory:
 
 
 
-        ai_config_model_name = main_config['AI_DeepMemory']['deep_memory_ai']
-        ai_config_model_provider = main_config['AI_DeepMemory']['deep_memory_ai_provider']
+        ai_config_model_name = config_manager.get_config('AI_DeepMemory','deep_memory_ai')
+        ai_config_model_provider = config_manager.get_config('AI_DeepMemory','deep_memory_ai_provider')
 
         ai_bot_providers = {
             "gemini": {

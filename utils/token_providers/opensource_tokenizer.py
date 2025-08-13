@@ -2,31 +2,18 @@ from tokenizers import Tokenizer
 from abc import ABC
 from utils.token_providers.opensource_dict import mapped_models
 import sys
-import configparser
 
 import os
 from dotenv import load_dotenv
 
 
 class OpenSourceTokenizer(ABC):
-    def __init__(self):
+    def __init__(self, select_model):
 
         load_dotenv()
         self.HuggingFace_Key = os.getenv("HUGGING_ACCESS_TOKEN")
 
-        # Move the config reading and model mapping logic into __init__
-        # This code will ONLY execute when an OpenSourceTokenizer object is created.
-        main_config = configparser.ConfigParser()
-        main_config.read('main_config.ini')
-
-        # Check for 'general_model' existence in config
-        general_model = None # Initialize to None
-        if 'AI' in main_config and 'general_model' in main_config['AI']:
-            general_model = main_config['AI']['general_model']
-        else:
-            # Handle the case where general_model is missing in config
-            print("Error: 'general_model' key missing in [AI] section of main_config.ini. This is required for OpenSourceTokenizer.")
-            sys.exit(1) # Exit with an error code
+        general_model = select_model
 
         if general_model in mapped_models:
             self.hugging_ID = mapped_models[general_model]

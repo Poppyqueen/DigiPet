@@ -3,6 +3,8 @@ from musicbrainzngs import WebServiceError, UsageError
 from dotenv import load_dotenv
 import os
 # Set a default hostname for all operations.
+
+
 musicbrainzngs.set_hostname("musicbrainz.org")
 
 class MusicBrainzSearchTools:
@@ -477,3 +479,108 @@ class MusicBrainzSearchTools:
             return f"An error occurred while searching for albums: {e}"
         except Exception as e:
             return f"An unexpected error occurred: {e}"
+        
+    def search_by_raw_lucene(self, entity_type: str, raw_lucene: str, limit: int = 10, offset: int = 0) -> str:
+        """
+        Performs a search against the MusicBrainz database for a specified entity type
+        using a raw Lucene query string. This function assumes the query is
+        correctly formatted Lucene syntax and will not perform any validation or transformation.
+        
+        This tool is useful for advanced users who want to construct complex
+        queries that are not possible with the other tools.
+
+        Args:
+            entity_type (str): The type of entity to search for. Must be 'artist', 'release-group', or 'recording'.
+            raw_lucene (str): The Lucene query string to be used directly for the search.
+                            Example: 'artist:"The Beatles" AND country:GB'
+            limit (int, optional): The number of results to return per page. Max 100. Defaults to 10.
+            offset (int, optional): The starting point of the result set, used for pagination.
+                                    Defaults to 0.
+
+        Returns:
+            str: A paginated, natural language summary of search results, including total count and
+                relevant details for the specified entity type. Results will also include associated
+                tags (genres, styles) if available.
+        """
+        valid_entities = ['artist', 'release-group', 'recording']
+        if entity_type not in valid_entities:
+            return f"Invalid entity_type: '{entity_type}'. Please use one of: {', '.join(valid_entities)}."
+        
+        if not raw_lucene:
+            return "No raw_lucene query provided. Please provide a valid Lucene query string."
+
+        try:
+            search_function = None
+            result_key = None
+            
+            if entity_type == 'artist':
+                search_function = musicbrainzngs.search_artists
+                result_key = 'artist-list'
+            elif entity_type == 'release-group':
+                search_function = musicbrainzngs.search_release_groups
+                result_key = 'release-group-list'
+            elif entity_type == 'recording':
+                search_function = musicbrainzngs.search_recordings
+                result_key = 'recording-list'
+
+            if not search_function:
+                return "An internal error occurred: No search function mapped to the entity type."
+
+            # The search endpoint includes tags by default if they exist
+            result = search_function(query=raw_lucene, limit=limit, offset=offset)
+            entity_list = result.get(result_key, [])
+            total_count = result.get(f'{entity_type}-count', 0)
+
+            if not entity_list:
+                return f"No {entity_type}s found matching the raw Lucene query '{raw_lucene}' at the current page."
+
+            page_info = f"Showing results {offset + 1}-{offset + len(entity_list)} of {total_count} total {entity_type}s"
+            summary = f"{page_info} matching your query:\n"
+            
+            for i, entity in enumerate(entity_list):
+                name = entity.get('title', entity.get('name', 'N/A'))
+                entity_id = entity.get('id', 'N/A')
+                
+                # This list will hold all descriptive parts of the result string
+                details = []
+                
+                # Add entity-specific details
+                if entity_type == 'artist':
+                    disambiguation = entity.get('disambiguation', '')
+                    if disambiguation:
+                        details.append(f"({disambiguation})")
+                elif entity_type == 'release-group':
+                    artist_name = entity.get('artist-credit-phrase', 'N/A')
+                    details.append(f"by {artist_name}")
+                elif entity_type == 'recording':
+                    artist_name = entity.get('artist-credit-phrase', 'N/A')
+                    details.append(f"by {artist_name}")
+                    release_list = entity.get('release-list')
+                    if release_list:
+                        release_title = release_list[0].get('title', 'N/A')
+                        details.append(f"on '{release_title}'")
+                
+                # NEW: Add tags (genres, styles, etc.) if they exist
+                tag_list = entity.get('tag-list', [])
+                if tag_list:
+                    # Filter for tags that have been voted on and get their names
+                    tag_names = [tag['name'] for tag in tag_list if tag.get('count', 0) > 0]
+                    if tag_names:
+                        details.append(f"[Tags: {', '.join(tag_names)}]")
+                
+                detail_string = " ".join(details)
+                
+                summary += f"{offset + i + 1}. {name}"
+                if detail_string:
+                    summary += f" {detail_string}"
+                summary += f" - Use ID: {entity_id}\n"
+
+            if total_count > offset + len(entity_list):
+                summary += f"\nNote: More results are available. To get the next page, call this tool again with `offset={offset + limit}`."
+
+            return summary.strip()
+
+        except WebServiceError as e:
+            return f"An error occurred while searching: {e}"
+        except UsageError as e:
+            return f"An error occurred with the query. The Lucene syntax might be incorrect. Error: {e}"

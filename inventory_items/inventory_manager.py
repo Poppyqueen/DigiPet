@@ -7,7 +7,6 @@ import sys
 import random
 import datetime # Import datetime for timestamping
 
-import configparser
 
 from utils.time_manager import get_time_tag_from_now
 
@@ -34,30 +33,6 @@ except ImportError:
     sys.exit(1)
 
 
-# 1. Create a mapping dictionary
-available_states = {
-    "base_state": base_state,
-    "dev_room": dev_room,
-}
-
-# 2. Load the configuration from the INI file
-config = configparser.ConfigParser()
-config.read('main_config.ini') # Assuming your INI file is named main_config.ini
-
-# 3. Get the selected state name from the INI file
-selected_state_name = config['game_settings']['initial_state'] # e.g., "base_state"
-
-# 4. Use the mapping dictionary to get the actual JSON structure
-if selected_state_name in available_states:
-    selected_state = available_states[selected_state_name]
-    print(f"Loaded state: {selected_state_name}")
-    #print(selected_state)
-
-else:
-    print(f"Error: '{selected_state_name}' is not a recognized state.")
-    # Handle the error, perhaps by falling back to a default state
-
-
 
 class InventoryHouseManager(GenericJsonTool):
     """
@@ -73,7 +48,7 @@ class InventoryHouseManager(GenericJsonTool):
     ROOM_ID_START_COUNTER = 1
     MAX_INVENTORY_SLOTS = 30 # You can set this number to whatever you like
 
-    def __init__(self, base_path, signal=None, memory=None):
+    def __init__(self, base_path, signal=None, memory=None, config_manager=None):
         """
         Initializes the InventoryHouseManager, integrating state for inventory,
         rooms, and emotes using IDs and a single JSON file.
@@ -83,11 +58,36 @@ class InventoryHouseManager(GenericJsonTool):
             signal (callable, optional): A callback function to send signals.
                                         Expected signature: `signal(data_dict)`.
         """
+
+        # 1. Create a mapping dictionary
+        available_states = {
+            "base_state": base_state,
+            "dev_room": dev_room,
+        }
+
+        # 2. Load the configuration from the INI file
+
+        # 3. Get the selected state name from the INI file
+        selected_state_name = config_manager.get_config("game_settings","initial_state") # e.g., "base_state"
+
+        # 4. Use the mapping dictionary to get the actual JSON structure
+        if selected_state_name in available_states:
+            selected_state = available_states[selected_state_name]
+            print(f"Loaded state: {selected_state_name}")
+            #print(selected_state)
+
+        else:
+            print(f"Error: '{selected_state_name}' is not a recognized state.")
+            # Handle the error, perhaps by falling back to a default state
+
+
         # --- IMPORTANT: Override attributes BEFORE calling super().__init__() ---
         self.json_filename = 'house_inventory_state_id.json'
         self.memory=memory
         self.base_path=base_path
         # Define the default state structure, now moved to items_init
+        print("DEBUG INVENTORY MANAGER INIT")
+        print(config_manager.get_config("game_settings","initial_state"))
         self._default_state = selected_state # custom_state, base_state, dev_room this should be more configurable
         # --- End of override ---
 

@@ -6,13 +6,14 @@ mapped_models={
     "deepseek-r1-distill-llama-70b":"deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
     "openai/gpt-oss-120b":"openai/gpt-oss-120b",
 
-    "qwen3:4b":"Qwen/Qwen3-4B", # ollama 4b models, none really effective at autonomous behaviors
+    "qwen3:4b":"Qwen/Qwen3-4B", # ollama 4b models, improving the pet system allows for these models to be a lot more competent now
     "granite3.3:2b":"ibm-granite/granite-3.3-2b-instruct",
     "cogito:3b":"deepcogito/cogito-v1-preview-llama-3B",
     "phi4-mini:3.8b":"microsoft/Phi-4-mini-instruct",
     "llama3.2:3b":"meta-llama/Llama-3.2-3B-Instruct",
+    "llama-bizarre:latest": "meta-llama/Llama-3.2-3B-Instruct",
 
-    "qwen3:8b-q4_K_M":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", # 8b models, which I probably can't run...
+    "qwen3:8b-q4_K_M":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", 
 }
 
 # This should map the models to use from Groq or Ollama (or other opensource provider)

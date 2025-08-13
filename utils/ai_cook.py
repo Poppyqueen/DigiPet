@@ -14,37 +14,6 @@ from utils.utils_ai_providers.openai_provider import OpenAIProv
 from utils.utils_ai_providers.groq_provider import GroqProv
 from utils.utils_ai_providers.ollama_provider import OllamaProv
 
-import configparser
-
-main_config = configparser.ConfigParser()
-main_config.read('main_config.ini')
-config_model = main_config['AI']['cook_model']
-selected_config_client = main_config['AI']['cook_provider']
-
-available_providers = {
-    "gemini": {
-        "client": GeminiProv
-    },
-    "openai": {
-        "client": OpenAIProv
-    },
-    "groq": {
-        "client": GroqProv
-    },
-    "ollama": {
-        "client": OllamaProv
-    }
-}
-
-# 4. Use the mapping dictionary to get the actual JSON structure
-if selected_config_client in available_providers:
-    config_client = available_providers[selected_config_client]["client"]
-    print(f"Loaded state: {selected_config_client}")
-    print(config_client)
-
-else:
-    print(f"Error: '{selected_config_client}' is not a recognized state.")
-    # Handle the error, perhaps by falling back to a default state
 
 
 # # --- Structure for the fixed stats_edit dictionary ---
@@ -89,7 +58,36 @@ else:
 
 class cook:
 
-    def __init__(self):
+    def __init__(self, config_manager):
+
+        config_model = config_manager.get_config("AI","cook_model")
+        selected_config_client = config_manager.get_config("AI","cook_provider")
+
+        available_providers = {
+            "gemini": {
+                "client": GeminiProv
+            },
+            "openai": {
+                "client": OpenAIProv
+            },
+            "groq": {
+                "client": GroqProv
+            },
+            "ollama": {
+                "client": OllamaProv
+            }
+        }
+
+        # 4. Use the mapping dictionary to get the actual JSON structure
+        if selected_config_client in available_providers:
+            config_client = available_providers[selected_config_client]["client"]
+            print(f"Loaded state: {selected_config_client}")
+            print(config_client)
+
+        else:
+            print(f"Error: '{selected_config_client}' is not a recognized state.")
+            # Handle the error, perhaps by falling back to a default state
+
         self.client=config_client(config_model)
 
     def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]:
@@ -107,7 +105,7 @@ class cook:
             with 'effects' and 'stats_edit' removed for 'misc' type items.
             Returns an empty list if the AI call fails.
         """
-        system=f"You are a cooking AI, given a set of items and a process, you will return a list of item definitions. You should identify the main resulting item(s) which are likely 'consumable' and any byproducts or scraps which should be 'misc'. Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, make detailed and evocative descriptions and effects for the items, deescribe then, and in effects, write text directed to whomever just consumed this item, i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', you can make 2 to 3 effects for each item. The stats for the items you create should be high, minimum 20 points of replenishment for small items, up to 80 points for big food items."
+        system=f"You are a cooking AI, given a set of items and a process, you will return a list of food item definitions that would result from applying such process into these items. You should identify the main resulting item(s) which are likely 'consumable' and any byproducts or scraps which should be 'misc'. Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, make detailed and evocative descriptions and effects for the items, deescribe then, and in effects, write text directed to whomever just consumed this item, i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', you can make 2 to 3 effects for each item. The stats for the items you create should be high, minimum 20 points of replenishment for small items, up to 80 points for big food items."
         process_prompt=f"Using the items: {items}, and applying the process: {process}, design a set of items that would result from it."
 
         print("\n--- Calling AI ---")
