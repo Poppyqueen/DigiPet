@@ -92,14 +92,14 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def is_inventory_full(self):
         return self.inventory_service.is_inventory_full()
 
-    def pickup_item(self, item_id: int):
-        return self.inventory_service.pickup_item(item_id)
+    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
+        return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
 
-    def list_inventories(self):
-        return self.inventory_service.list_inventories()
+    def list_inventories(self, formatted=False):
+        return self.inventory_service.list_inventories(formatted=formatted)
 
-    def drop_item(self, item_id: int):
-        return self.inventory_service.drop_item(item_id)
+    def drop_item(self, item_id: int, quantity_to_drop: int = 1):
+        return self.inventory_service.drop_item(item_id, quantity_to_drop)
 
     def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, internal, quantity)

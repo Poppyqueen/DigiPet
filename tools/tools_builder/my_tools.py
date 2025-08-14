@@ -892,7 +892,12 @@ base_tools=[
                 "item_id": {
                     "type": "number",
                     "description": "The unique ID of the item in your inventory to drop into the current room."
+                },
+                "quantity_to_drop":{
+                    "type": "number",
+                    "description": "The quantity of items to drop from your current inventory stack. Defaults to 1."
                 }
+                
             },
             "required": ["item_id"],
             "additionalProperties": False
@@ -908,6 +913,10 @@ base_tools=[
                 "item_id": {
                     "type": "number",
                     "description": "The unique ID of the item in the current room to pick up."
+                },
+                "quantity_to_pickup":{
+                    "type": "number",
+                    "description": "The quantity of objects to take from any existing stack. Defaults to 1."
                 }
             },
             "required": ["item_id"],

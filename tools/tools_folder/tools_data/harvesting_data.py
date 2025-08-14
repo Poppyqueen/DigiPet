@@ -9,6 +9,7 @@ _lettuce_item = {
     ],
     "static": False,
     "type": ["consumable"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 10,
         "hydration": 10,
@@ -27,6 +28,7 @@ _carrot_item = {
     ],
     "static": False,
     "type": ["consumable"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 15,
         "hydration": 5,
@@ -44,6 +46,7 @@ _cactus_fruit_item = {
     ],
     "static": False,
     "type": ["consumable"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 5,
         "hydration": 20,
@@ -60,6 +63,7 @@ _lettuce_seed = {
         "A seed, promises a refreshing lettuce."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "lettuce" # This key links the seed to its plant type
 }
@@ -70,6 +74,7 @@ _carrot_seed = {
         "A tiny brownish seed, for a carrot!"
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "carrot"
 } 
@@ -80,6 +85,7 @@ _cactus_seed = {
         "A round, hardy seed, for a resilient cactus."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "cactus"
 }
@@ -94,6 +100,7 @@ _tomato_item = {
         "A ripe, red and juicy tomato, good for eating raw or cooking."
     ],
     "static": False,
+    "stackable": True,
     "type": ["consumable"],
     "stats_edit": {
         "fullness": 12,
@@ -112,6 +119,7 @@ _tomato_seed = {
         "Small, flat seeds from a tomato, ready to grow."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "tomato"
 }
@@ -124,6 +132,7 @@ _potato_item = {
     ],
     "static": False,
     "type": ["consumable", "seed"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 25,
         "hydration": -20,
@@ -143,6 +152,7 @@ _strawberry_item = {
         "A small, sweet, and fragrant red berry."
     ],
     "static": False,
+    "stackable": True,
     "type": ["consumable"],
     "stats_edit": {
         "fullness": 8,
@@ -161,6 +171,7 @@ _strawberry_seed = {
         "Tiny seeds from a strawberry, promising more sweetness."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "strawberry"
 }
@@ -175,6 +186,7 @@ _rose_flower_item = {
         "A beautiful, fragrant rose, perfect for decoration.",
         "Its delicate petals and sweet scent can brighten any room."
     ],
+    "stackable": True,
     "static": False,
     "type": ["misc"]
 }
@@ -184,6 +196,7 @@ _rose_seed = {
     "descriptions": [
         "A small, hard seed that promises a beautiful rose."
     ],
+    "stackable": True,
     "static": False,
     "type": ["seed"],
     "plant_type": "rose"
@@ -196,6 +209,7 @@ _sunflower_head_item = {
         "The large, iconic head of a sunflower, full of potential seeds.",
         "A majestic bloom, often turning to follow the sun."
     ],
+    "stackable": True,
     "static": False,
     "type": ["misc"]
 
@@ -208,6 +222,7 @@ _sunflower_seed = {
         "A single, dark sunflower seed, ready to grow into a giant."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "sunflower"
 }
@@ -222,6 +237,7 @@ _mint_leaves_item = {
     ],
     "static": False,
     "type": ["consumable"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 3,
         "hydration": 5,
@@ -239,6 +255,7 @@ _mint_seed = {
         "Tiny, dark seeds from a mint plant."
     ],
     "static": False,
+    "stackable": True,
     "type": ["seed"],
     "plant_type": "mint"
 }
@@ -252,6 +269,7 @@ _basil_leaves_item = {
     ],
     "static": False,
     "type": ["consumable"],
+    "stackable": True,
     "stats_edit": {
         "fullness": 2,
         "hydration": 3,
@@ -265,6 +283,7 @@ _basil_leaves_item = {
 
 _basil_seed = {
     "name": "basil seed",
+    "stackable": True,
     "descriptions": [
         "Small, black seeds from a basil plant."
     ],

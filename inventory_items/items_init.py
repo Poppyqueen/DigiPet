@@ -1373,6 +1373,7 @@ base_state={
                         "A small ceramic bowl filled with mixed nuts."
                     ],
                     "static": False,
+                    "stackable": True,
                     "type": ["consumable"],
                     "stats_edit": {
                         "fullness": 5,
@@ -1479,6 +1480,7 @@ base_state={
                     "descriptions": [
                         "A fresh, shiny red apple."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -1496,6 +1498,7 @@ base_state={
                     "descriptions": [
                         "A sharp chef's knife on a magnetic strip."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["tool"]
                 },
@@ -1505,6 +1508,7 @@ base_state={
                         "A crusty, fresh loaf of bread."
                     ],
                     "static": False,
+                    "stackable": True,
                     "type": ["consumable"],
                     "stats_edit": {
                         "fullness": 25,
@@ -1522,6 +1526,7 @@ base_state={
                         "A tasty-looking wedge of cheddar cheese."
                     ],
                     "static": False,
+                    "stackable": True,
                     "type": ["consumable"],
                     "stats_edit": {
                         "fullness": 20,
@@ -1538,6 +1543,7 @@ base_state={
                     "descriptions": [
                         "A simple can of tomato soup."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -1556,6 +1562,7 @@ base_state={
                         "A clear plastic bottle of clean water."
                     ],
                     "static": False,
+                    "stackable": True,
                     "type": ["consumable"],
                     "stats_edit": {
                         "fullness": 0,
@@ -1572,6 +1579,7 @@ base_state={
                     "descriptions": [
                         "A bag of aromatic coffee grounds."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -1589,6 +1597,7 @@ base_state={
                     "descriptions": [
                         "A standard rubber spatula."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["tool"]
                 },
@@ -1894,6 +1903,7 @@ base_state={
                     "descriptions": [
                         "A bar of fragrant lavender soap."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -1911,6 +1921,7 @@ base_state={
                     "descriptions": [
                         "A simple plastic toothbrush."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["tool"]
                 },
@@ -1921,6 +1932,7 @@ base_state={
                     ],
                     "static": False,
                     "type": ["consumable"],
+                    "stackable": True,
                     "stats_edit": {
                         "fullness": 0,
                         "hydration": 8,
@@ -1936,6 +1948,7 @@ base_state={
                     "descriptions": [
                         "A fluffy white towel hanging on a rack."
                     ],
+
                     "static": False,
                     "type": ["misc"]
                 },
@@ -1952,6 +1965,7 @@ base_state={
                     "descriptions": [
                         "A bottle of common pain relievers."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -2010,7 +2024,7 @@ base_state={
                     "descriptions": [
                         "A soft, fluffy pillow on the bed."
                     ],
-                    "static": True,
+                    "static": False,
                     "type": ["furniture"]
                 },
                 {
@@ -2047,9 +2061,9 @@ base_state={
                 {
                     "name": "alarm_clock",
                     "descriptions": [
-                        "A digital alarm clock on the nightstand."
+                        "A digital alarm clock."
                     ],
-                    "static": True,
+                    "static": False,
                     "type": ["furniture"]
                 },
                 {
@@ -2058,6 +2072,7 @@ base_state={
                         "A glass of water on the nightstand."
                     ],
                     "static": False,
+                    "stackable": True,
                     "type": ["consumable"],
                     "stats_edit": {
                         "fullness": 2,
@@ -2139,6 +2154,7 @@ base_state={
                     "descriptions": [
                         "A can of sugary, brightly colored energy drink."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -2270,6 +2286,7 @@ base_state={
                     "descriptions": [
                         "A cluster of plump, red berries on a bush."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -2287,6 +2304,7 @@ base_state={
                     "descriptions": [
                         "A small bunch of fragrant herbs (looks like mint and basil)."
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -2320,6 +2338,7 @@ base_state={
                     "descriptions": [
                         "Refreshing ice cold tea"
                     ],
+                    "stackable": True,
                     "static": False,
                     "type": ["consumable"],
                     "stats_edit": {
@@ -2332,12 +2351,12 @@ base_state={
                         "You feel slightly invigorated."
                     ]
                 },
-                {'name': 'rose_seeds', 'descriptions': ['Seeds of a beautiful rose plant.', 'Produces fragrant and colorful roses.'], 'static': False, 'type': ['seed'], 'plant_type': 'rose'},
-                {'name': 'basil_seeds', 'descriptions': ['Seeds of the aromatic basil herb.', 'Grows fresh basil leaves for cooking.'], 'static': False, 'type': ['seed'], 'plant_type': 'basil'},
-                {'name': 'mint_seeds', 'descriptions': ['Seeds of the refreshing mint herb.', 'Grows mint leaves used in teas and recipes.'], 'static': False, 'type': ['seed'], 'plant_type': 'mint'},
-                {'name': 'sunflower_seeds', 'descriptions': ['Seeds of a tall sunflower plant.', 'Produces large yellow flowers and edible seeds.'], 'static': False, 'type': ['seed'], 'plant_type': 'sunflower'},
-                {'name': 'strawberry_seeds', 'descriptions': ['Seeds of the sweet strawberry plant.', 'Grows delicious red strawberries.'], 'static': False, 'type': ['seed'], 'plant_type': 'strawberry'},
-                {'name': 'cactus_seeds', 'descriptions': ['Seeds of the resilient cactus plant.', 'Grows tall and spiky cactus.'], 'static': False, 'type': ['seed'], 'plant_type': 'cactus'}
+                {'name': 'rose_seeds', "stackable": True, 'descriptions': ['Seeds of a beautiful rose plant.', 'Produces fragrant and colorful roses.'], 'static': False, 'type': ['seed'], 'plant_type': 'rose'},
+                {'name': 'basil_seeds', "stackable": True, 'descriptions': ['Seeds of the aromatic basil herb.', 'Grows fresh basil leaves for cooking.'], 'static': False, 'type': ['seed'], 'plant_type': 'basil'},
+                {'name': 'mint_seeds', "stackable": True, 'descriptions': ['Seeds of the refreshing mint herb.', 'Grows mint leaves used in teas and recipes.'], 'static': False, 'type': ['seed'], 'plant_type': 'mint'},
+                {'name': 'sunflower_seeds', "stackable": True, 'descriptions': ['Seeds of a tall sunflower plant.', 'Produces large yellow flowers and edible seeds.'], 'static': False, 'type': ['seed'], 'plant_type': 'sunflower'},
+                {'name': 'strawberry_seeds',"stackable": True,  'descriptions': ['Seeds of the sweet strawberry plant.', 'Grows delicious red strawberries.'], 'static': False, 'type': ['seed'], 'plant_type': 'strawberry'},
+                {'name': 'cactus_seeds', "stackable": True, 'descriptions': ['Seeds of the resilient cactus plant.', 'Grows tall and spiky cactus.'], 'static': False, 'type': ['seed'], 'plant_type': 'cactus'}
 
 
             ]
@@ -2490,7 +2509,7 @@ dev_room={
                     "name": "dev_room",
                     "id": 0,
                     "image": "lab_room",
-                    "room_types": ["youtube_playlists", "musicbrainz"],
+                    "room_types": ["youtube_playlists", "musicbrainz", "planting_garden"],
                     "plot_number": 3, # if it is a planting garden it needs plot number
                     "music": "white_room",
                     "descriptions": {
@@ -2586,15 +2605,16 @@ dev_room={
     },
             ],
             "inventory": [
-    #             {
-    #     "name": "lettuce seed",
-    #     "descriptions": [
-    #         "A tiny seed, promises a refreshing lettuce."
-    #     ],
-    #     "static": False,
-    #     "type": ["seed"],
-    #     "plant_type": "lettuce" # This key links the seed to its plant type
-    # }
+                {
+        "name": "lettuce seed",
+        "descriptions": [
+            "A tiny seed, promises a refreshing lettuce."
+        ],
+        "stackable": True,
+        "static": False,
+        "type": ["seed"],
+        "plant_type": "lettuce" # This key links the seed to its plant type
+    },
 
             #    {
             #         "name": "notepad", # This is a book item, it needs the base information alongside a chapters structure with any ammount of chapters you like. 

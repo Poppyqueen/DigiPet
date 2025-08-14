@@ -12,7 +12,7 @@ from google.auth.transport.requests import Request
 
 # --- Configuration Constants ---
 YOUTUBE_API_SCOPES = ["https://www.googleapis.com/auth/youtube"]
-TOKEN_FILE = "bots/secrets/youtube_token.json" # bots is a secret folder protected by gitignore, make sure yours is the same
+TOKEN_FILE = "secrets/youtube_token.json" # moved into a dir 'secrets' in main root, it is ignored by gitignore
 
 class YouTubeTools:
     """
@@ -28,7 +28,7 @@ class YouTubeTools:
     returns informative natural language string outputs.
     """
 
-    def __init__(self, client_secrets_file: str = "bots/secrets/client_secrets.json"):
+    def __init__(self, client_secrets_file: str = "secrets/client_secrets.json"): #  moved into a dir 'secrets' in main root, it is ignored by gitignore
         """
         Initializes the YouTubeTools service by authenticating with the YouTube Data API.
 
@@ -360,7 +360,7 @@ class YouTubeTools:
             return error
 
 
-# --- IMPORTANT SETUP INSTRUCTIONS FOR THE USER ---
+# --- IMPORTANT SETUP INSTRUCTIONS ---
 # To use this `YouTubeTools` class, you need to perform the following steps:
 #
 # 1.  Enable the YouTube Data API v3 in your Google Cloud Project:

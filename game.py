@@ -466,7 +466,7 @@ history_display_area = current_gui_rects['history_display_area']
 try:
     if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'list_inventories') and callable(getattr(chatbot.state_manager, 'list_inventories', None)):
          print("Attempting to get initial inventories from chatbot...")
-         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories()
+         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories(formatted=True)
 
          # MODIFIED: Check and pre-calculate initial data
          if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
