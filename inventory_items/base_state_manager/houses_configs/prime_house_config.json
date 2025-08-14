@@ -1,0 +1,80 @@
+{
+    "initial_room":"kitchen",
+
+    "living_room":[
+        "Potted houseplant",
+        "three-seater sofa",
+        "arc floor lamp",
+        "TV remote control"
+    ],
+    "kitchen":[
+        "soy jar candle (vanilla & cedar)",
+        "small walnut side table",
+        "Copper Utensil Holder",
+        "Ceramic Fruit Bowl",
+        "Classic Two-Slot Toaster",
+        "Bottled Water",
+        "Dried Fruit Mix Sachet",
+        "Iced Tea Bottle (400ml)",
+        "Drinkable Yogurt Bottle (200ml)"
+        ],
+    "library":[
+        "tall oak bookshelf",
+        "overstuffed reading armchair",
+        "adjustable brass floor lamp",
+        "plate of shortbread cookies",
+        "potted ficus"
+    ],
+    "bathroom":[
+        "Scented soy candle in tin",
+        "Ceramic soap dish",
+        "Heated towel rail (wall-mounted)",
+        "Wall-mounted vanity mirror with slim shelf"
+    ],
+    "bedroom":[
+        "Oversized bean bag chair", 
+        "large bed", 
+        "Bottled Water", 
+        "Indoor Plant Stand with Terracotta Pots",
+        "pillow",
+        "Nightstand",
+        "Bedside lamp",
+        "knitted throw blanket"
+    ],
+    "computer_room":[
+        "potted rubber plant",
+        "desktop computer (tower)",
+        "monitor",
+        "adjustable office chair",
+        "sturdy wooden desk"
+    ],
+    "garden":[
+        "ceramic cup of chamomile tea",
+        "tomato seed packet",
+        "rustic lantern (candle)",
+        "birdhouse (wooden)",
+        "warm desk lamp",
+        "mug of coffee (fresh)",
+        "wooden garden bench"
+    ],
+    "white_room":[
+        "Whiteboard Wall Panel",
+        "Wall-Mounted White Picture Frame (empty)",
+        "Built-in Narrow White Bookshelf",
+        "Soft White Throw Blanket",
+        "Slice of Plain White Bread",
+        "Matte White Side Table",
+        "Circular White Wool Rug",
+        "Minimal White Armchair",
+        "Small Ceramic Planter (dried white branches)"
+    ],
+    "lab_room":[
+        "A-LIFE Terminal Interface",
+        "Stainless Steel Lab Workbench",
+        "Adjustable Ergonomic Lab Chair",
+        "Bowl of Mixed Nuts"
+    ],
+    "inventory":[
+        ""
+    ]
+}

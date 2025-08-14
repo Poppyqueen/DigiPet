@@ -1,0 +1,466 @@
+[
+    {
+        "name": "Mid-Century Modern Armchair",
+        "descriptions": [
+            "Slim walnut legs and a gently curved wooden frame, inspired by 1950s design.",
+            "Button-tufted seat cushion with durable wool-blend upholstery in a bold accent color.",
+            "Comfortable for reading or an occasional lounge, balances vintage flair with everyday use."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Victorian Wingback Chair",
+        "descriptions": [
+            "High-backed winged silhouette with carved mahogany legs and ornate detailing.",
+            "Deep seat and firm padding wrapped in brocade or damask fabric for a formal parlor feel.",
+            "Evokes late 19th-century elegance; sturdy and meant to be a focal piece of a room."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Art Deco Chaise Lounge",
+        "descriptions": [
+            "Low, elongated seat with sweeping lines and geometric inlay accents.",
+            "Plush velvet upholstery and a single sloped arm make it ideal for reclining in style.",
+            "Reflects 1920s\u20131930s glamour; a dramatic statement piece for a living room or bedroom."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Scandinavian Minimalist Lounge Chair",
+        "descriptions": [
+            "Clean lines, light oak frame, and a modestly padded neutral fabric seat.",
+            "Designed for simplicity and ergonomic comfort\u2014fits well in modern, airy spaces.",
+            "Lightweight visual presence but built solidly for everyday seating."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Overstuffed Leather Club Chair",
+        "descriptions": [
+            "Deep, enveloping seat with aged leather upholstery and rounded arms.",
+            "Dense cushioning and a low profile create a cozy, well-worn feel reminiscent of 1920s clubs.",
+            "Durable and comfortable\u2014pairs well with a small side table and lamp."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Zero-Gravity Recliner",
+        "descriptions": [
+            "Contemporary recliner with adjustable back and leg support for a near-weightless position.",
+            "Padded headrest, lumbar support, and a sturdy metal frame make it ideal for long relaxation.",
+            "Modern tech-friendly piece for living rooms or home theaters."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Rustic Farmhouse Rocking Chair",
+        "descriptions": [
+            "Turned spindles, slightly weathered paint, and a gently curved rocker base.",
+            "Simple, sturdy construction meant for porches or cozy corners indoors.",
+            "Offers a soothing rocking motion and a handcrafted, country vibe."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Papasan Bowl Chair",
+        "descriptions": [
+            "Large rattan bowl seat with a thick, removable cushion for a relaxed, bohemian look.",
+            "Deep, rounded seating that swivels slightly and cradles the sitter.",
+            "Casual and comfortable for lounging, reading, or a relaxed nap."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Beanbag Lounger",
+        "descriptions": [
+            "Oversized, memory-foam filled beanbag with a wipeable outer cover.",
+            "Molds to the body for informal lounging; great in dens, dorms, or playrooms.",
+            "Casual, flexible seating that suits contemporary and youth-focused spaces."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Adirondack Outdoor Chair",
+        "descriptions": [
+            "Slatted, low-slung wooden chair with angled back and wide armrests, designed for outdoor relaxation.",
+            "Typically made of weather-resistant wood or composite; suitable for patios, decks, and gardens.",
+            "Comfortable for long sits; the wide arms double as small surfaces for drinks or books."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Director's Folding Chair",
+        "descriptions": [
+            "Canvas-seat chair with a lightweight wooden or metal X-frame and a simple, classic silhouette.",
+            "Portable-looking design that still functions as a casual indoor or outdoor seating piece.",
+            "Practical for short-term seating needs and adds a cinematic, utilitarian aesthetic."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Tufted Storage Ottoman",
+        "descriptions": [
+            "Square padded ottoman with a tufted top and hidden interior storage for blankets or magazines.",
+            "Serves as a footrest, extra seating, or a low coffee-table surface depending on placement.",
+            "Classic upholstery finish that fits traditional and transitional interiors."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Mid-century walnut lounge chair",
+        "descriptions": [
+            "Low-profile lounge chair with curved walnut frame and tapered legs, inspired by 1950s design.",
+            "Seat and back upholstered in dense foam with woven cotton or leather option; supportive but slightly reclined for reading.",
+            "Compact footprint (approximately 28in wide) suitable for living rooms or study corners; pairs well with a small ottoman."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Victorian tufted wingback",
+        "descriptions": [
+            "High-backed wingchair with deep button tufting, rolled arms, and carved wooden legs \u2014 classic late-19th-century silhouette.",
+            "Generous padding and tall wings provide wind-shielded comfort near a fireplace or in a formal parlor.",
+            "Typically upholstered in heavy woven fabric or leather; substantial and ornate, needs a stable floor position."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Industrial metal-framed recliner",
+        "descriptions": [
+            "Sturdy recliner with exposed steel frame, rivet details and distressed leather cushion for a workshop-to-loft look.",
+            "Mechanically reclining back and a pull-out footrest; designed for durability and heavy use.",
+            "Chunky presence and slightly angular lines make it suitable for industrial or rustic-modern interiors."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Scandinavian minimalist armchair",
+        "descriptions": [
+            "Simple, light-framed armchair with pale wood legs and a gently contoured seat; emphasis on clean lines and function.",
+            "Medium-firm foam cushion covered in neutral linen; compact proportions work well in small apartments.",
+            "Designed to feel airy and calm \u2014 pairs with wooden coffee tables and soft textiles for a Nordic aesthetic."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Overstuffed sectional loveseat",
+        "descriptions": [
+            "Plush two-seat sectional with deep seats, loose back cushions and overstuffed armrests for maximum comfort.",
+            "Upholstered in durable microfiber or chenille; modular pieces allow rearrangement into different layouts.",
+            "Large and soft \u2014 ideal for lounging, TV rooms, or family spaces that prioritize coziness."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Art Deco curved settee",
+        "descriptions": [
+            "Elegant settee with sweeping curved back, low profile and geometric inlay details, reflecting 1920s glamour.",
+            "Usually upholstered in velvet or satin with brass or lacquered trim; visual centerpiece for an entry or parlor.",
+            "Compact seating for two; more decorative than heavily cushioned, best used as accent seating."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Zero-gravity modern recliner",
+        "descriptions": [
+            "Ergonomic recliner designed to distribute weight evenly, often with multi-stage recline and lumbar support.",
+            "Sleek synthetic upholstery and hidden mechanisms for a contemporary look; sometimes includes small manual or electric controls.",
+            "Ideal for relaxation or recovery; moderate footprint and recommended to place near a power outlet if motorized."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Rattan outdoor chaise lounge",
+        "descriptions": [
+            "Weather-resistant woven rattan chaise with adjustable backrest, designed for patios, poolside or sunrooms.",
+            "Foam cushion with removable cover for washing; lightweight but intended to remain stationary during use.",
+            "Natural texture fits informal outdoor settings and tropical or coastal design schemes."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Convertible sleeper sofa",
+        "descriptions": [
+            "Two- or three-seater sofa with hidden pull-out mattress or fold-flat mechanism for occasional overnight guests.",
+            "Upholstery options vary from durable synthetics to mid-grade fabrics; cushions are firmer to accommodate conversion.",
+            "Space-saving multi-use furniture ideal for studio apartments or guest rooms."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Oversized bean bag chair",
+        "descriptions": [
+            "Large, soft-filled seating that conforms to the sitter's shape; typically filled with polystyrene beads or shredded foam.",
+            "Casual, informal seating suited to lounges, game rooms or children's areas; cover zippered for cleaning.",
+            "Lightweight but considered furniture; best kept in a consistent spot to avoid scattering beads when opened."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Orthopedic recliner with footrest",
+        "descriptions": [
+            "Chair engineered for back support with adjustable lumbar settings, dense cushioning and a built-in footrest.",
+            "Often used for recovery or by those with mobility needs; may include gentle lift assist in some models.",
+            "Sturdy construction and slightly larger footprint; positioned best in living areas where support is required."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Folding director's chair",
+        "descriptions": [
+            "Lightweight folding seat with wooden frame and canvas seat/back; portable yet functions as occasional furniture.",
+            "Folds flat for storage or transport; preferred for temporary seating on patios or at events.",
+            "Simple, utilitarian aesthetic \u2014 not for long-term heavy use but convenient for extra guests."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Heirloom rocking chair",
+        "descriptions": [
+            "Traditional wooden rocking chair with curved rockers, supportive slatted back and contoured seat.",
+            "Often crafted from oak or maple and finished with stain or paint; built to last generations and suitable for nurseries or porches.",
+            "Gentle rocking motion promotes relaxation; requires stable floor and appropriate spacing to rock freely."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Victorian Canopy Bed",
+        "descriptions": [
+            "Ornately carved mahogany frame with a high headboard and four tall posts supporting a fabric canopy.",
+            "Heavy drapery and turned finials give it a 19th\u2011century, formal parlor feel\u2014best for a room that leans traditional or historic.",
+            "Solid, stately presence that reads as luxurious and ceremonial rather than minimal or modern."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Mid\u2011Century Platform Bed",
+        "descriptions": [
+            "Low\u2011profile platform with a long, linear headboard in warm teak tones and tapered legs.",
+            "Clean silhouette and minimal ornamentation reflect 1950s modern design\u2014pairs well with simple textiles and graphic art.",
+            "Feels light and airy in a room, emphasizing horizontal planes and functional elegance."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Sleigh Bed (Empire Revival)",
+        "descriptions": [
+            "Curved headboard and footboard reminiscent of French Empire and Federal styles, typically in polished cherry or walnut.",
+            "Robust, sculptural silhouette that brings warmth and a dramatic focal point to a bedroom.",
+            "Balances classic formality with the comfort of a substantial wooden frame."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Japanese Futon Platform Bed",
+        "descriptions": [
+            "Very low wooden platform with slatted support and a streamlined pine finish, designed for futon or thin mattress use.",
+            "Minimalist, calming aesthetic influenced by traditional Japanese interiors\u2014emphasizes floor proximity and openness.",
+            "Lightweight visual impact, suitable for small or zen\u2011inspired spaces."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Four\u2011Poster Farmstead Bed",
+        "descriptions": [
+            "Constructed from reclaimed, rough\u2011hewn beams with simple mortise\u2011and\u2011tenon joinery for a rustic farmhouse feel.",
+            "Generous proportions and visible wood grain create a lived\u2011in, cozy appearance\u2014ideal for country or cottage d\u00e9cors.",
+            "Sturdy and tactile, this bed reads as handcrafted and utilitarian with a warm patina."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Murphy Wall Bed",
+        "descriptions": [
+            "Space\u2011saving bed that folds up into a shallow cabinet, finished in a neutral lacquer for modern apartments.",
+            "Mechanism is engineered for regular use; when closed it reads as shelving or a media unit\u2014practical and efficient.",
+            "Ideal for multipurpose rooms or small footprints where floor space must be reclaimed during the day."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Industrial Iron Frame Bed",
+        "descriptions": [
+            "Blackened wrought\u2011iron frame with exposed rivets and pipe\u2011like posts, channeling warehouse and factory aesthetics.",
+            "Simple slatted headboard and footboard create an honest, utilitarian look that pairs with raw materials like concrete and leather.",
+            "Feels sturdy and no\u2011nonsense\u2014works well in lofts or eclectic interiors that mix metals with reclaimed wood."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Scandinavian Minimalist Bed",
+        "descriptions": [
+            "Pale birch frame with simple slats, rounded corners, and an understated headboard\u2014emphasizes light and functionality.",
+            "Designed for airy, clutter\u2011free bedrooms; aesthetic evokes hygge and natural materials.",
+            "Neutral and adaptable, it complements soft textiles and plants for a calm morning light feel."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Art Deco Upholstered Bed",
+        "descriptions": [
+            "Velvet\u2011tufted headboard with geometric wood veneer details and brass inlay accents, channeling 1920s glamour.",
+            "Bold, stylish silhouette that serves as a statement piece\u2014pairs with luxe textiles and mirrored or lacquered surfaces.",
+            "Feels opulent and theatrical, ideal for interiors seeking vintage glamour or boutique\u2011hotel vibes."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Storage Divan Bed",
+        "descriptions": [
+            "Contemporary upholstered base with integrated drawers and lift\u2011top storage\u2014practical for family bedrooms and small homes.",
+            "Neutral upholstery and compact profile make it versatile; built to maximize under\u2011bed space without sacrificing comfort.",
+            "Functional, modern, and designed around everyday convenience rather than decorative flourish."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "large bed",
+        "descriptions": [
+            "A large, comfortable bed with clean sheets."
+        ],
+        "static": true,
+        "type": ["furniture"],
+        "stackable": false
+    }
+]

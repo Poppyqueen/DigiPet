@@ -1,0 +1,371 @@
+[
+    {
+        "name": "Dry Pasta (500g)",
+        "descriptions": [
+            "A 500g bag of dried durum wheat pasta (penne).",
+            "Staple dry ingredient \u2014 cooks quickly and stores well.",
+            "Used as a base for many meals when combined with sauce or olive oil."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a substantial base of calories when cooked or eaten as-is in a pinch.",
+            "Combines well with sauces, oils, and seasonings to form a complete meal."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": -40.0,
+            "energy": -20.0
+        }
+    },
+    {
+        "name": "Raw Long-Grain Rice (1kg)",
+        "descriptions": [
+            "A 1kg bag of long-grain white rice.",
+            "Versatile dry grain \u2014 filling and neutral-flavored.",
+            "Good for stretching meals and pairing with canned goods or sauces."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Filling carbohydrate source; pairs with proteins or vegetables.",
+            "Useful for bulk meals and porridge when extra hydration is available."
+        ],
+        "stats_edit": {
+            "fullness": 38.0,
+            "hydration": -10.0,
+            "energy": -30.0
+        }
+    },
+    {
+        "name": "All-Purpose Flour (1kg bag)",
+        "descriptions": [
+            "A one-kilogram sack of all-purpose wheat flour.",
+            "Used for baking, thickening, and making doughs and batters.",
+            "Large single bag \u2014 useful but slightly bulky to store."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": false,
+        "effects": [
+            "Raw flour is an ingredient rather than a finished meal; can be used to make bread or batter.",
+            "Provides modest calories if consumed as part of prepared food."
+        ],
+        "stats_edit": {
+            "fullness": 56.0,
+            "hydration": -60.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "Granulated Sugar (500g)",
+        "descriptions": [
+            "A 500g bag of granulated white sugar.",
+            "Sweetener for baking, preserves, and beverages.",
+            "Concentrated energy source when added to foods or eaten sparingly."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Quick energy boost when consumed or used in cooking.",
+            "Useful for preserves, baking and sweetening drinks."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": -30.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Sea Salt Shaker (250g)",
+        "descriptions": [
+            "A 250g container of coarse sea salt.",
+            "Essential seasoning for cooking and preserving flavors.",
+            "Not typically eaten alone; used to improve taste in dishes."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Extra Virgin Olive Oil (500ml)",
+        "descriptions": [
+            "A 500ml bottle of extra virgin olive oil.",
+            "High-quality cooking oil for dressings, saut\u00e9s, and finishing dishes.",
+            "Provides concentrated calories and a smooth flavor profile."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Adds richness and calories to meals; can be used raw or for cooking.",
+            "A little goes a long way for flavor and energy."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": -30.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "Canned Tomatoes (400g)",
+        "descriptions": [
+            "A 400g tin of chopped canned tomatoes.",
+            "Ready-to-use for sauces, stews, and soups.",
+            "Adds acidity and body to many recipes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides hydration and a savory base for cooking.",
+            "Easy to combine with pasta, rice, or canned proteins."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 6.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Pasta Sauce Jar (680g)",
+        "descriptions": [
+            "A large 680g jar of ready-made tomato pasta sauce.",
+            "Seasoned and ready to heat; convenient for quick meals.",
+            "Contains herbs and oil to round out flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Conveniently turns pasta or rice into a more complete meal.",
+            "Provides both flavor and modest hydration when eaten."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": -18.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Honey Jar (250g)",
+        "descriptions": [
+            "A 250g jar of raw honey.",
+            "Natural sweetener, long shelf life and concentrated calories.",
+            "Useful for tea, toast, or as a baking ingredient."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a sweet, quick source of energy and soothes when added to tea.",
+            "Can act as a preservative in some preserves and glazes."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": -20.0,
+            "energy": 28.0
+        }
+    },
+    {
+        "name": "Peanut Butter (340g)",
+        "descriptions": [
+            "A 340g jar of creamy peanut butter.",
+            "Calorie-dense spread high in fats and protein.",
+            "Good for sandwiches, sauces, and adding richness to meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Highly filling and energy-dense; excellent for quick sustenance.",
+            "Pairs with bread, crackers, or fruit preserves for a complete snack."
+        ],
+        "stats_edit": {
+            "fullness": 22.0,
+            "hydration": 0.0,
+            "energy": 32.0
+        }
+    },
+    {
+        "name": "Canned Tuna in Oil (160g)",
+        "descriptions": [
+            "A 160g can of tuna preserved in oil.",
+            "Ready-to-eat protein that pairs well with pasta, rice, or bread.",
+            "Shelf-stable and nutrient-dense."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a solid source of protein and fats; can make meals more satisfying.",
+            "Convenient for salads, sandwiches, or warmed dishes."
+        ],
+        "stats_edit": {
+            "fullness": 22.0,
+            "hydration": 6.0,
+            "energy": 24.0
+        }
+    },
+    {
+        "name": "Dried Lentils (500g)",
+        "descriptions": [
+            "A 500g bag of dried lentils (red/brown mix).",
+            "Cook quickly relative to other legumes; nutritious and filling.",
+            "Good base for soups, stews, and purees."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "High in fiber and protein; makes hearty meals when cooked.",
+            "Can be used to stretch meat or act as the main protein in vegetarian dishes."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 0.0,
+            "energy": 14.0
+        }
+    },
+    {
+        "name": "Strawberry Jam Jar (340g)",
+        "descriptions": [
+            "A 340g jar of strawberry jam.",
+            "Sweet fruit preserve used on bread, pastries, or as a sweetener.",
+            "Long shelf life once sealed; best refrigerated after opening."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Adds sweetness and quick energy to simple staples like toast or crackers.",
+            "Useful for making simple snacks or boosting calorie content of meals."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 6.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Canned Beans (400g)",
+        "descriptions": [
+            "A 400g can of ready-to-eat beans (e.g., kidney or cannellini).",
+            "Protein- and fiber-rich; can be added to stews, salads, or served alone.",
+            "Hearty and filling with long shelf stability."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Filling and nutritious \u2014 makes a simple meal when combined with rice or bread.",
+            "Provides steady energy and satiety."
+        ],
+        "stats_edit": {
+            "fullness": 24.0,
+            "hydration": 10.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Dried Mixed Herbs Packet (20g)",
+        "descriptions": [
+            "Small packet of dried mixed herbs (oregano, basil, thyme).",
+            "Used to season sauces, soups, and dry mixes.",
+            "Small but potent \u2014 a little elevates many dishes."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "White Vinegar (500ml)",
+        "descriptions": [
+            "A 500ml bottle of distilled white vinegar.",
+            "Used for pickling, dressings, cleaning, and flavor balancing.",
+            "Sharp acidic liquid \u2014 used more as an ingredient than a standalone food."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Baking Powder Tin (100g)",
+        "descriptions": [
+            "A 100g tin of baking powder (leavening agent).",
+            "Essential for quick breads, cakes, and many baked goods.",
+            "Small container lasts for many bakes if kept dry."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Soy Sauce Bottle (150ml)",
+        "descriptions": [
+            "A 150ml bottle of soy sauce \u2014 salty and umami-rich.",
+            "Common seasoning for Asian and general cooking.",
+            "Adds depth to soups, marinades, and stir-fries."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Enhances savory flavor; small amount needed to season a dish.",
+            "Can be used as a condiment or a cooking ingredient."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 2.0,
+            "energy": 0.5
+        }
+    }
+]

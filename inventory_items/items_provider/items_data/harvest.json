@@ -1,0 +1,276 @@
+[
+    {
+        "name": "lettuce head",
+        "descriptions": [
+            "A full head of crisp green lettuce, just harvested from the plant.",
+            "Great for salads or tearing into leaves for immediate snacking."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A cool, crunchy bite that slightly quenches thirst and fills the stomach.",
+            "Can be torn into leaves for small snacks or used as a base for meals."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 10.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "lettuce leaf",
+        "descriptions": [
+            "A single crisp leaf pulled from a lettuce head.",
+            "Light, refreshing and good as a tiny snack or garnish."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A small, hydrating nibble \u2014 good for a short-lived refresh.",
+            "Useful for wrapping tiny fillings or adding crunch to a bite."
+        ],
+        "stats_edit": {
+            "fullness": 1.5,
+            "hydration": 2.5,
+            "energy": 0.5
+        }
+    },
+    {
+        "name": "carrot",
+        "descriptions": [
+            "A freshly harvested carrot \u2014 firm, orange, and sweet.",
+            "Crunchy and packed with natural sugars and fiber."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A satisfying, crunchy snack that restores energy and fullness.",
+            "Good raw or cooked, provides a steady little boost."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 2.0,
+            "energy": 9.0
+        }
+    },
+    {
+        "name": "ripe tomato",
+        "descriptions": [
+            "A juicy, sun-ripened tomato still warm from the plant.",
+            "Bursting with tangy flavor and lots of juice."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Juicy bite that refreshes and restores some energy.",
+            "Can be eaten raw, added to meals, or squeezed for liquid."
+        ],
+        "stats_edit": {
+            "fullness": 4.5,
+            "hydration": 6.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "potato (tuber)",
+        "descriptions": [
+            "A freshly dug potato tuber straight from the soil.",
+            "Can be used to grow other potatoes",
+            "Starchy and dense; commonly cooked but technically edible raw in small amounts."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "seed"
+        ],
+        "stackable": true,
+        "effects": [
+            "A fresh crunch, it is quite plain.",
+            "Your stomach churns as you finish eating it. That was not great.",
+            "You feel a bit sick after eating that raw."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 2.0,
+            "energy": -25.0
+        },
+        "plant_type": "potato"
+    },
+    {
+        "name": "strawberry",
+        "descriptions": [
+            "A bright red strawberry, sweet and fragrant from the plant.",
+            "Easy to eat whole; seeds are small and embedded in the flesh."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Sweet, energizing fruit that restores energy and provides a small amount of fullness.",
+            "Refreshing and good for a quick sugar boost."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 2.5,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "cactus pad",
+        "descriptions": [
+            "A harvested paddle-shaped green cactus pad, cleaned of spines.",
+            "Used in many cuisines; has a mild, slightly tangy flavor and viscous texture when raw."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides hydration and fiber; slightly slimy texture but refreshing.",
+            "Often cooked, but edible raw if prepared properly."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 8.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "prickly pear (cactus fruit)",
+        "descriptions": [
+            "A sweet, juice-filled fruit that grows on certain cactus species.",
+            "Typically harvested carefully and peeled to avoid tiny glochids."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Very juicy and hydrating; a sweet snack that restores both hydration and energy.",
+            "Must be handled and cleaned before eating to remove spines."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 9.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Edible Rose Petals",
+        "descriptions": [
+            "A small pouch of freshly picked rose petals, fragrant and lightly sweet.",
+            "Suitable for tea, garnishes, or infusing into syrups and desserts."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Adds a delicate floral taste when eaten or brewed into tea.",
+            "Slightly uplifting aroma can calm nerves and brighten mood."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.5,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Fresh Mint Sprig",
+        "descriptions": [
+            "A short stem with several bright green mint leaves, fragrant and cooling.",
+            "Ideal for teas, cocktails, or to add a fresh burst of flavor to dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A cool, refreshing flavor that can soothe the stomach and freshen breath.",
+            "Adds a pleasant aroma and slight cooling sensation when chewed or brewed."
+        ],
+        "stats_edit": {
+            "fullness": 0.5,
+            "hydration": 1.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Basil Leaf Bunch",
+        "descriptions": [
+            "A small bundle of tender basil leaves, aromatic and savory.",
+            "Perfect for cooking (pesto, salads, sauces) or garnishing warm dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Adds a rich, herbaceous flavor to food; comforting in warm dishes.",
+            "Fresh scent can be mildly invigorating and appetite-stimulating."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 0.2,
+            "energy": 1.5
+        }
+    },
+    {
+        "name": "Rose Stem",
+        "descriptions": [
+            "A freshly cut rose stem with a single bloom, a few glossy leaves, and a couple of small thorns along the stalk.",
+            "Commonly placed in a small vase or used as an accent in bouquets. Harvested directly from a rose plant."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Cut Rose Head",
+        "descriptions": [
+            "A  freshly cut whole flower, scented and delicate to the touch.",
+            "Decorative, it has a deep garnet color reminicent of a sharp glass of wine."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Cut Sunflower Head",
+        "descriptions": [
+            "A large, vibrant sunflower head with a sturdy short stem. The face is full of tightly packed seeds and bright yellow petals.",
+            "A heavy decorative piece often displayed on tabletops or hung as a rustic accent. Harvested directly from a sunflower plant."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    }
+]

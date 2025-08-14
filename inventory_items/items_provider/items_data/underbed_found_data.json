@@ -1,0 +1,252 @@
+[
+    {
+      "name": "Dust Bunny (Large)",
+      "descriptions": [
+        "A surprisingly large clump of felted dust, hair, and small fibers.",
+        "Surprisingly solid to the touch.",
+        "The natural accumulation of forgotten corners."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Single Lost Sock",
+      "descriptions": [
+        "A lone sock, slightly dusty and misshapen.",
+        "Its mate is nowhere to be found.",
+        "A common casualty of laundry and inertia."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Stray Coin (Low Denomination)",
+      "descriptions": [
+        "A single, dusty coin.",
+        "Looks like it rolled and settled here long ago.",
+        "A minor piece of lost wealth."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Small Plastic Toy Animal",
+      "descriptions": [
+        "A miniature plastic figure of an animal.",
+        "Scuffed and perhaps missing paint.",
+        "Escaped from a toy box or pocket."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Bent Paperclip",
+      "descriptions": [
+        "A standard metal paperclip, twisted out of shape.",
+        "Seems to have served a purpose beyond holding paper.",
+        "A small, forgotten tool."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Empty Pen",
+      "descriptions": [
+        "A plastic ballpoint pen.",
+        "Clicker still works, but the ink is long gone.",
+        "Reached the end of its useful life under here."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Crumpled Tissue",
+      "descriptions": [
+        "A used paper tissue, dried and dusty.",
+        "Indicates a moment of sniffles or spills.",
+        "An ephemeral artifact."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Hair Tie (Stretched)",
+      "descriptions": [
+        "A fabric hair tie, pulled out of shape.",
+        "No longer has much elasticity.",
+        "Slipped off a wrist or out of hair."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Bobby Pin",
+      "descriptions": [
+        "A simple metal bobby pin.",
+        "Small and easily lost.",
+        "Fell during dressing or undressing."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Small Button (Plastic)",
+      "descriptions": [
+        "A loose plastic button.",
+        "Probably fell off clothing worn in bed.",
+        "A tiny part detached from a whole."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Bottle Cap (Plastic)",
+      "descriptions": [
+        "A plastic cap from a drink bottle.",
+        "Surprisingly clean despite its location.",
+        "Rolled away after a late-night drink."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Faded Remote Control",
+      "descriptions": [
+        "A small remote control, dusty and worn.",
+        "Buttons might be sticky or unresponsive.",
+        "Lost utility under the bed."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Piece of Lego/Building Block",
+      "descriptions": [
+        "A single plastic building block.",
+        "Sharp edges, vibrant color.",
+        "Escaped from a child's construction project."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Cracked Phone Screen Protector",
+      "descriptions": [
+        "A sheet of plastic or glass with a prominent crack.",
+        "Saved a phone screen, but was discarded here.",
+        "Evidence of a close call."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Dried Up Eraser",
+      "descriptions": [
+        "A small rubber eraser.",
+        "Hardened and no longer effective.",
+        "Rolled off a desk or nightstand."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Small Battery (AA/AAA)",
+      "descriptions": [
+        "A single cylindrical battery.",
+        "Likely depleted.",
+        "Fell out of a remote or toy."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Tiny Screw or Nail",
+      "descriptions": [
+        "A very small piece of metal hardware.",
+        "Seems out of place.",
+        "Dropped during a repair or assembly."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Used Cotton Swab",
+      "descriptions": [
+        "A cotton swab.",
+        "Slightly discolored or bent.",
+        "Carelessly discarded and rolled away."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Empty Candy Wrapper",
+      "descriptions": [
+        "A crinkled wrapper from candy or snack.",
+        "Suggests clandestine late-night eating.",
+        "Left behind as evidence."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Broken Crayon Stub",
+      "descriptions": [
+        "A short piece of a colored crayon.",
+        "Might have snapped or been worn down.",
+        "Fell from a creative session."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Shopping List Fragment",
+      "descriptions": [
+        "A torn piece of paper with a few words written on it.",
+        "Hard to discern the full message.",
+        "A discarded reminder."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Plastic Bread Tag",
+      "descriptions": [
+        "The small plastic clip from a bread bag.",
+        "Simple and often overlooked.",
+        "A mundane tagalong."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Small Key (Unidentified)",
+      "descriptions": [
+        "A single, small metal key.",
+        "Doesn't seem to belong to anything obvious nearby.",
+        "Unlocks a forgotten box or drawer?"
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Lost Earring Back",
+      "descriptions": [
+        "A tiny metal or plastic backing for an earring.",
+        "Essential for securing jewelry.",
+        "Separated from its purpose."
+      ],
+      "static": false,
+      "type": ["misc"]
+    },
+    {
+      "name": "Chapstick Cap",
+      "descriptions": [
+        "The plastic cap from a tube of lip balm.",
+        "Often comes loose in pockets or bags.",
+        "Lost protection for dry lips."
+      ],
+      "static": false,
+      "type": ["misc"]
+    }
+  ]

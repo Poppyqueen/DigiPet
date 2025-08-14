@@ -1,5 +1,42 @@
 [
     {
+        "name": "lab_room",
+        "image": "lab_room",
+        "room_types": ["ALIFE_research"],
+        "music": "white_room",
+        "descriptions": {
+        "late night": [
+            "A modern laboratory dedicated to A-Life research. The lab is quiet at this late hour.",
+            "The light in here is of a deep blue tone, casting long shadows."
+        ],
+        "early morning": [
+            "The lab is just beginning to stir, with a faint hum of machinery.",
+            "A cool, crisp light filters through the blinds."
+        ],
+        "morning": [
+            "Activity in the lab is picking up, researchers are at their stations.",
+            "Bright, natural light fills the room."
+        ],
+        "noon": [
+            "The lab is bustling with activity.",
+            "The overhead lights are at their brightest."
+        ],
+        "afternoon": [
+            "The afternoon slump seems to have hit, some researchers are taking a break.",
+            "The blue light feels a bit softer now."
+        ],
+        "late afternoon": [
+            "The lab is starting to wind down, but experiments are still running.",
+            "The light outside is beginning to dim, contrasting with the lab's blue glow."
+        ],
+        "night": [
+            "Only a few dedicated researchers remain, the lab is peaceful.",
+            "The deep blue light dominates, creating an atmospheric calm."
+        ]
+        },  
+        "items": []
+    },
+    {
         "name": "living_room",
         "image": "living_room",
         "room_types": [
@@ -237,8 +274,10 @@
         "name": "garden",
         "image": "garden",
         "room_types": [
-            "garden"
+            "garden",
+            "planting_garden"
         ],
+        "plot_number": 6,
         "music": "garden",
         "descriptions": {
             "late night": [

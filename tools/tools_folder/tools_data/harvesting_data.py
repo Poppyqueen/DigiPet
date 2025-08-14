@@ -1,297 +1,9 @@
 # --- Item Definitions for Harvest and Seeds ---
 # These items will be created and added to the inventory upon harvest or used for planting.
+from inventory_items.items_provider.item_store import ItemStore
 
-# Existing Items
-_lettuce_item = {
-    "name": "lettuce",
-    "descriptions": [
-        "A refreshing lettuce"
-    ],
-    "static": False,
-    "type": ["consumable"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 10,
-        "hydration": 10,
-        "energy": 2
-    },
-    "effects": [
-        "You feel the crunch of the lettuce, it is wattery",
-        "A refreshing snack"
-    ]
-} 
-
-_carrot_item = {
-    "name": "carrot",
-    "descriptions": [
-        "A crunchy, sweet orange carrot."
-    ],
-    "static": False,
-    "type": ["consumable"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 15,
-        "hydration": 5,
-        "energy": 3
-    },
-    "effects": [
-        "You bite into the sweet crunch of the carrot, feeling healthier."
-    ]
-}
-
-_cactus_fruit_item = {
-    "name": "cactus fruit",
-    "descriptions": [
-        "A surprisingly juicy fruit from a cactus, often prickly but hydrating."
-    ],
-    "static": False,
-    "type": ["consumable"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 5,
-        "hydration": 20,
-        "energy": 1
-    },
-    "effects": [
-        "A burst of sweet water in your mouth, watch out for the tiny spines!"
-    ]
-}
-
-_lettuce_seed = {
-    "name": "lettuce seed",
-    "descriptions": [
-        "A seed, promises a refreshing lettuce."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "lettuce" # This key links the seed to its plant type
-}
-
-_carrot_seed = {
-    "name": "carrot seed",
-    "descriptions": [
-        "A tiny brownish seed, for a carrot!"
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "carrot"
-} 
-
-_cactus_seed = {
-    "name": "cactus seed",
-    "descriptions": [
-        "A round, hardy seed, for a resilient cactus."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "cactus"
-}
-
-
-# --- NEW ITEM DEFINITIONS ---
-
-# Tomato
-_tomato_item = {
-    "name": "tomato",
-    "descriptions": [
-        "A ripe, red and juicy tomato, good for eating raw or cooking."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["consumable"],
-    "stats_edit": {
-        "fullness": 12,
-        "hydration": 15,
-        "energy": 2
-    },
-    "effects": [
-        "The sweet tang of the tomato refreshes you.",
-        "A juicy and versatile fruit."
-    ]
-}
-
-_tomato_seed = {
-    "name": "tomato seed",
-    "descriptions": [
-        "Small, flat seeds from a tomato, ready to grow."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "tomato"
-}
-
-# Potato
-_potato_item = {
-    "name": "potato",
-    "descriptions": [
-        "A starchy, earthy potato, excellent for baking or boiling. It is still raw! It needs cooking or will be harmful to eat. Can be used to grow another potato while raw."
-    ],
-    "static": False,
-    "type": ["consumable", "seed"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 25,
-        "hydration": -20,
-        "energy": -20
-    },
-    "effects": [
-        "The raw potato makes your stomach hurt",
-        "You powered through all that raw potato, amazing.",
-        "You feel tired after that whole situation."
-    ]
-}
-
-# Strawberry
-_strawberry_item = {
-    "name": "strawberry",
-    "descriptions": [
-        "A small, sweet, and fragrant red berry."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["consumable"],
-    "stats_edit": {
-        "fullness": 8,
-        "hydration": 12,
-        "energy": 2
-    },
-    "effects": [
-        "A delightful burst of sweet fruit, juicy and refreshing.",
-        "You enjoy the delicate taste of the berry."
-    ]
-}
-
-_strawberry_seed = {
-    "name": "strawberry seed",
-    "descriptions": [
-        "Tiny seeds from a strawberry, promising more sweetness."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "strawberry"
-}
-
-
-# --- NEW ITEM DEFINITIONS ---
-
-# Rose (Ornamental Flower)
-_rose_flower_item = {
-    "name": "rose flower",
-    "descriptions": [
-        "A beautiful, fragrant rose, perfect for decoration.",
-        "Its delicate petals and sweet scent can brighten any room."
-    ],
-    "stackable": True,
-    "static": False,
-    "type": ["misc"]
-}
-
-_rose_seed = {
-    "name": "rose seed",
-    "descriptions": [
-        "A small, hard seed that promises a beautiful rose."
-    ],
-    "stackable": True,
-    "static": False,
-    "type": ["seed"],
-    "plant_type": "rose"
-}
-
-# Sunflower (Ornamental and Edible Seeds)
-_sunflower_head_item = {
-    "name": "sunflower head",
-    "descriptions": [
-        "The large, iconic head of a sunflower, full of potential seeds.",
-        "A majestic bloom, often turning to follow the sun."
-    ],
-    "stackable": True,
-    "static": False,
-    "type": ["misc"]
-
-}
-
-
-_sunflower_seed = {
-    "name": "sunflower seed",
-    "descriptions": [
-        "A single, dark sunflower seed, ready to grow into a giant."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "sunflower"
-}
-
-
-# Mint (Herb)
-_mint_leaves_item = {
-    "name": "mint leaves",
-    "descriptions": [
-        "Fresh, fragrant mint leaves, perfect for tea or flavoring.",
-        "Cool and refreshing, a common culinary herb."
-    ],
-    "static": False,
-    "type": ["consumable"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 3,
-        "hydration": 5,
-        "energy": 1
-    },
-    "effects": [
-        "A cool, tingling sensation spreads through your mouth.",
-        "You feel a slight revitalization from the mint."
-    ]
-}
-
-_mint_seed = {
-    "name": "mint seed",
-    "descriptions": [
-        "Tiny, dark seeds from a mint plant."
-    ],
-    "static": False,
-    "stackable": True,
-    "type": ["seed"],
-    "plant_type": "mint"
-}
-
-# Basil (Herb)
-_basil_leaves_item = {
-    "name": "basil leaves",
-    "descriptions": [
-        "Aromatic basil leaves, commonly used in cooking.",
-        "Sweet and slightly peppery, a staple in many cuisines."
-    ],
-    "static": False,
-    "type": ["consumable"],
-    "stackable": True,
-    "stats_edit": {
-        "fullness": 2,
-        "hydration": 3,
-        "energy": 1
-    },
-    "effects": [
-        "The fragrant aroma of basil fills your senses.",
-        "A subtle, savory taste lingers on your tongue."
-    ]
-}
-
-_basil_seed = {
-    "name": "basil seed",
-    "stackable": True,
-    "descriptions": [
-        "Small, black seeds from a basil plant."
-    ],
-    "static": False,
-    "type": ["seed"],
-    "plant_type": "basil"
-}
-
+# Existing Items. Now from the store.
+cc=ItemStore("inventory_items/items_provider/items_data")
 
 # --- Plant Definitions ---
 
@@ -321,8 +33,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
         ],
         "harvest_items": [
-            {"item": _lettuce_item, "base_harvest_yield": 7},
-            {"item": _lettuce_seed, "base_harvest_yield": 2}
+            {"item": cc.get_item("lettuce head"), "base_harvest_yield": 7},
+            {"item": cc.get_item("Lettuce Seeds"), "base_harvest_yield": 2}
         ],
         "life_cycle": "annual",
         "water_depletion_rate_per_tick": 0.002
@@ -336,8 +48,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.7)}
         ],
         "harvest_items": [
-            {"item": _carrot_item, "base_harvest_yield": 10},
-            {"item": _carrot_seed, "base_harvest_yield": 4}
+            {"item": cc.get_item("carrot"), "base_harvest_yield": 10},
+            {"item": cc.get_item("Carrot Seeds"), "base_harvest_yield": 4}
         ],
         "life_cycle": "biennial" 
     },
@@ -349,8 +61,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.1, 0.45)}
         ],
         "harvest_items": [
-            {"item": _cactus_fruit_item, "base_harvest_yield": 7},
-            {"item": _cactus_seed, "base_harvest_yield": 3}
+            {"item": cc.get_item("cactus pad"), "base_harvest_yield": 7},
+            {"item": cc.get_item("Cactus Seeds"), "base_harvest_yield": 3}
 
         ],
         "life_cycle": "perennial",
@@ -369,8 +81,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.75)}
         ],
         "harvest_items": [
-            {"item": _tomato_item, "base_harvest_yield": 6},
-            {"item": _tomato_seed, "base_harvest_yield": 2}
+            {"item": cc.get_item("ripe tomato"), "base_harvest_yield": 6},
+            {"item": cc.get_item("Tomato Seeds"), "base_harvest_yield": 2}
         ],
         "life_cycle": "annual"
     },
@@ -382,7 +94,7 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.6)}
         ],
         "harvest_items": [
-            {"item": _potato_item, "base_harvest_yield": 8},
+            {"item": cc.get_item("potato (tuber)"), "base_harvest_yield": 8},
         ],
         "life_cycle": "annual"
     },
@@ -396,8 +108,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
         "harvest_items": [
-            {"item": _strawberry_item, "base_harvest_yield": 6},
-            {"item": _strawberry_seed, "base_harvest_yield": 2}
+            {"item": cc.get_item("strawberry"), "base_harvest_yield": 6},
+            {"item": cc.get_item("Strawberry Seeds"), "base_harvest_yield": 2}
         ],
         "life_cycle": "perennial"
     },
@@ -413,8 +125,10 @@ plant_types = {
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [
-        {"item": _rose_flower_item, "base_harvest_yield": 3},
-        {"item": _rose_seed, "base_harvest_yield": 1}
+        {"item": cc.get_item("Rose Stem"), "base_harvest_yield": 3},
+        {"item": cc.get_item("Cut Rose Head"), "base_harvest_yield": 1},
+        {"item": cc.get_item("rose seed"), "base_harvest_yield": 1}
+
     ],
     "life_cycle": "perennial"
 },
@@ -427,8 +141,8 @@ plant_types = {
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [
-        {"item": _sunflower_head_item, "base_harvest_yield": 1},
-        {"item": _sunflower_seed, "base_harvest_yield": 3}
+        {"item": cc.get_item("Cut Sunflower Head"), "base_harvest_yield": 1},
+        {"item": cc.get_item("sunflower seed"), "base_harvest_yield": 3}
     ],
     "life_cycle": "annual"
 },
@@ -442,8 +156,8 @@ plant_types = {
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
     ],
     "harvest_items": [
-        {"item": _mint_leaves_item, "base_harvest_yield": 8},
-        {"item": _mint_seed, "base_harvest_yield": 2}
+        {"item": cc.get_item("Fresh Mint Sprig"), "base_harvest_yield": 8},
+        {"item": cc.get_item("mint seed"), "base_harvest_yield": 2}
     ],
     "life_cycle": "perennial"
 },
@@ -455,8 +169,8 @@ plant_types = {
         {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
     ],
     "harvest_items": [
-        {"item": _basil_leaves_item, "base_harvest_yield": 7},
-        {"item": _basil_seed, "base_harvest_yield": 2}
+        {"item": cc.get_item("Basil Leaf Bunch"), "base_harvest_yield": 7},
+        {"item": cc.get_item("basil seed"), "base_harvest_yield": 2}
     ],
     "life_cycle": "annual"
 }

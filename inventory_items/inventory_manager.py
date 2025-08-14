@@ -1,6 +1,5 @@
 
 # inventory_house_manager.py (UPDATED)
-from inventory_items.items_init import base_state, dev_room
 
 # Import the new StateStore
 from inventory_items.services.state_store import StateStore
@@ -14,6 +13,8 @@ from inventory_items.services.pet_state_manager import PetStateManager
 from inventory_items.services.simulation_state_service import SimulationStateService
 
 
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
+
 class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     MAX_INVENTORY_SLOTS = 30 # This constant can stay here or move to InventoryService
 
@@ -21,14 +22,15 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self.base_path = base_path
         self._signal_callback = signal
         self.config_manager = config_manager
+        self.initial_state_manager=InitialStateConst()
 
         # 1. Determine the initial state to load
         available_states = {
-            "base_state": base_state,
-            "dev_room": dev_room,
+            "base_state": self.initial_state_manager.create_state("base_state"),
+            #"dev_room": self.initial_state_manager.create_state("dev_room"),
         }
         selected_state_name = config_manager.get_config("game_settings", "initial_state")
-        selected_state = available_states.get(selected_state_name, base_state) # Fallback if name not found
+        selected_state = available_states.get(selected_state_name, self.initial_state_manager.create_state("base_state")) # Fallback if name not found
 
         # 2. Initialize the central StateStore
         print(f"DEBUG INVENTORY MANAGER INIT: Initializing StateStore with {selected_state_name}")

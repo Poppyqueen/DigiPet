@@ -5,18 +5,22 @@ import math
 
 # --- Data Imports ---
 # Import specific care package data structures
-from world_data.care_packages import (
-    care_package_1_general_survival, care_package_2_hydration_refreshment,
-    care_package_3_hearty_meal_kit, care_package_4_quick_snacks_energy,
-    care_package_friend_comfort_food, care_package_6_extreme_hydration,
-    care_package_7_hearty_survival_rations, care_package_8_utility_mix,
-    care_package_9_basic_hygiene, care_package_2_cooking_kit, a_bundle_for_hydration_some_misc_items,
-    the_most_epic_and_complete_bundle_for_cooking_raw_, a_bundle_for_energy_and_snacks,
-    a_bundle_for_outdoor_survival, kitchen_pantry_bottled_goods_spices_etc_all_consum,
-    salty_and_hardy_foods, fresh_vegetables, bread_package_all_kinds_of_food_implements_ingredi,
-    raw_protein_package, more_raw_protein_package, cheat_bundles_items_that_replenish_stats_by_150_co,
-    gardener_s_starter_kit
-)
+
+# this will change with the new items store and use a CareConstructor class
+# from world_data.care_packages import (
+#     care_package_1_general_survival, care_package_2_hydration_refreshment,
+#     care_package_3_hearty_meal_kit, care_package_4_quick_snacks_energy,
+#     care_package_friend_comfort_food, care_package_6_extreme_hydration,
+#     care_package_7_hearty_survival_rations, care_package_8_utility_mix,
+#     care_package_9_basic_hygiene, care_package_2_cooking_kit, a_bundle_for_hydration_some_misc_items,
+#     the_most_epic_and_complete_bundle_for_cooking_raw_, a_bundle_for_energy_and_snacks,
+#     a_bundle_for_outdoor_survival, kitchen_pantry_bottled_goods_spices_etc_all_consum,
+#     salty_and_hardy_foods, fresh_vegetables, bread_package_all_kinds_of_food_implements_ingredi,
+#     raw_protein_package, more_raw_protein_package, cheat_bundles_items_that_replenish_stats_by_150_co,
+#     gardener_s_starter_kit
+# )
+
+from world_data.care_packages import CareConstructor
 
 
 # --- General Configuration ---
@@ -343,34 +347,38 @@ color_code={
 }
 
 
-# Reordered list based on the 'color' key
-CARE_PACKAGES =   [
-        {"package": care_package_1_general_survival,"color": "combo"},
-        {"package": care_package_8_utility_mix, "color": "combo"},
+# # Reordered list based on the 'color' key
+# CARE_PACKAGES =   [
+#         {"package": care_package_1_general_survival,"color": "combo"},
+#         {"package": care_package_8_utility_mix, "color": "combo"},
 
-        {"package": care_package_3_hearty_meal_kit,"color": "fullness"},
-        {"package": care_package_4_quick_snacks_energy, "color": "fullness"},
-        {"package": care_package_friend_comfort_food, "color": "fullness"},
-        {"package": care_package_7_hearty_survival_rations,"color": "fullness"},
-        {"package": a_bundle_for_energy_and_snacks,"color": "fullness"},
-        {"package": a_bundle_for_outdoor_survival, "color": "fullness"},
-        {"package": salty_and_hardy_foods,"color": "fullness"},
-        {"package": fresh_vegetables,"color": "fullness"},
+#         {"package": care_package_3_hearty_meal_kit,"color": "fullness"},
+#         {"package": care_package_4_quick_snacks_energy, "color": "fullness"},
+#         {"package": care_package_friend_comfort_food, "color": "fullness"},
+#         {"package": care_package_7_hearty_survival_rations,"color": "fullness"},
+#         {"package": a_bundle_for_energy_and_snacks,"color": "fullness"},
+#         {"package": a_bundle_for_outdoor_survival, "color": "fullness"},
+#         {"package": salty_and_hardy_foods,"color": "fullness"},
+#         {"package": fresh_vegetables,"color": "fullness"},
 
-        {"package": care_package_2_hydration_refreshment,"color": "hydration"},
-        {"package": care_package_6_extreme_hydration,"color": "hydration"},
-        {"package": a_bundle_for_hydration_some_misc_items,"color": "hydration"},
+#         {"package": care_package_2_hydration_refreshment,"color": "hydration"},
+#         {"package": care_package_6_extreme_hydration,"color": "hydration"},
+#         {"package": a_bundle_for_hydration_some_misc_items,"color": "hydration"},
 
-        {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "ingredient"},
-        {"package": care_package_2_cooking_kit,"color": "ingredient"},
-        {"package": the_most_epic_and_complete_bundle_for_cooking_raw_,"color": "ingredient"},
-        {"package": bread_package_all_kinds_of_food_implements_ingredi,"color": "ingredient"},
-        {"package": raw_protein_package,"color": "ingredient"},
-        {"package": more_raw_protein_package,"color": "ingredient"},
+#         {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "ingredient"},
+#         {"package": care_package_2_cooking_kit,"color": "ingredient"},
+#         {"package": the_most_epic_and_complete_bundle_for_cooking_raw_,"color": "ingredient"},
+#         {"package": bread_package_all_kinds_of_food_implements_ingredi,"color": "ingredient"},
+#         {"package": raw_protein_package,"color": "ingredient"},
+#         {"package": more_raw_protein_package,"color": "ingredient"},
 
-        {"package": cheat_bundles_items_that_replenish_stats_by_150_co, "color": "cheat"},
-        {"package": gardener_s_starter_kit, "color": "cheat"}
-    ]
+#         {"package": cheat_bundles_items_that_replenish_stats_by_150_co, "color": "cheat"},
+#         {"package": gardener_s_starter_kit, "color": "cheat"}
+#     ]
+
+
+CARE_PACKAGES = CareConstructor().create_full_data()
+
 
 # --- Event Configuration ---
 # Use pygame.event.custom_type() for unique event IDs

@@ -1,0 +1,1829 @@
+[
+    {
+        "name": "mid-century wooden nightstand",
+        "descriptions": [
+            "Compact two-drawer nightstand with warm walnut veneer and tapered legs.",
+            "Top has a small lip to keep a mug or book from sliding off; drawer lined with felt for jewelry.",
+            "Designed to sit beside a bed; sturdy but simple enough to suit many decor styles."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "soft knit throw blanket",
+        "descriptions": [
+            "Oversized, chunky-knit blanket in a muted oatmeal tone for layering on the bed.",
+            "Lightweight but insulating \u2014 great for curling up with a book without overheating.",
+            "Machine-washable fibers designed for frequent use in a cozy bedroom corner."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "plush lumbar pillow",
+        "descriptions": [
+            "Small rectangular pillow with a soft velvet cover and supportive down-fill.",
+            "Provides extra lower-back support while reading or lounging in bed; removable cover for washing."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "warm LED floor lamp",
+        "descriptions": [
+            "Tall floor lamp with a dimmable warm LED and a fabric shade that softens light for late-night reading.",
+            "Slim metal frame that fits beside a bedside chair or at the foot of the bed; cord included with an inline switch."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "hand-thrown ceramic mug",
+        "descriptions": [
+            "Stoneware mug with a matte glaze and a slightly oversized handle for a cozy grip.",
+            "Holds a generous cup of tea or cocoa; dishwasher-safe and slightly irregular shape from wheel-thrown process."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "scented soy candle (vanilla & cedar)",
+        "descriptions": [
+            "Small soy wax candle in a frosted glass jar, scented with warm vanilla and a hint of cedar.",
+            "Designed for short burns; adds a subtle cozy aroma without overpowering the room."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "hand-tufted bedside rug",
+        "descriptions": [
+            "Low-pile bedside rug in a soft neutral shade that feels warm under bare feet.",
+            "Sized to tuck under the bed edge so stepping out onto it feels gentle and grounding."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "potted snake plant",
+        "descriptions": [
+            "Medium-sized snake plant in a simple ceramic pot; low-maintenance and good for bedroom air.",
+            "Lightweight pot with drainage tray; easy to move when rearranging but usually stays on a bedside shelf or floor."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Queen bed with headboard",
+        "descriptions": [
+            "A sturdy queen-size bed frame with a soft upholstered headboard for back support.",
+            "Central piece of the bedroom that anchors the cozy layout and provides restful sleep."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Nightstand",
+        "descriptions": [
+            "A small bedside table with a drawer for essentials like glasses or a book.",
+            "Keeps a lamp, alarm clock, and nighttime items within arm's reach."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Dresser",
+        "descriptions": [
+            "A four-drawer dresser for folded clothes and personal items.",
+            "Provides closed storage to keep the room tidy and uncluttered."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Bedside lamp",
+        "descriptions": [
+            "A warm-toned lamp sized for reading in bed without harsh overhead light.",
+            "Creates a cozy, dimmable glow for winding down in the evening."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Area rug",
+        "descriptions": [
+            "A soft rug placed beside the bed to warm cold feet and define the sleeping area.",
+            "Adds texture and a cozy layer underfoot."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Curtains",
+        "descriptions": [
+            "Thick blackout curtains to block morning light and improve sleep quality.",
+            "Also add softness and privacy to the room."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Plush pillows (pair)",
+        "descriptions": [
+            "A pair of soft pillows for sleeping and propping up while reading.",
+            "Removable covers make them easy to wash and keep fresh."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Down comforter (duvet)",
+        "descriptions": [
+            "A warm, breathable comforter with a removable duvet cover for coziness.",
+            "Provides insulation without feeling bulky for a comfortable night's sleep."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Sheets set",
+        "descriptions": [
+            "Fitted sheet, flat sheet, and pillowcases in a soft, breathable fabric.",
+            "Essential for hygiene and comfort; easy to change and wash regularly."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Alarm clock",
+        "descriptions": [
+            "A simple bedside alarm clock with adjustable volume and a gentle alarm tone.",
+            "Helps establish a reliable wake-up routine without depending solely on a phone."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Phone charger (USB)",
+        "descriptions": [
+            "A compact phone charger and cable kept on the nightstand for overnight charging.",
+            "Convenient and essential for preserving battery and keeping devices nearby."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Laundry basket",
+        "descriptions": [
+            "A breathable basket for collecting clothes that need washing.",
+            "Keeps dirty laundry contained and the room looking neater."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Scented candle",
+        "descriptions": [
+            "A small scented candle with a calming aroma, used for short periods while present.",
+            "Adds a soft flicker and subtle scent to create a cozy atmosphere (burn safely)."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Potted houseplant",
+        "descriptions": [
+            "A small, low-maintenance potted plant to bring life and a bit of fresh air to the room.",
+            "Serves as a natural, calming decor element that improves the room's ambience."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "three-seater sofa",
+        "descriptions": [
+            "A roomy, low-profile three-seater with plush cushions and a soft fabric cover in a neutral tone.",
+            "Centerpiece seating for the living room, designed for lounging and sharing; deep seats and supportive backrests.",
+            "Durable wooden frame with removable cushion covers for easy cleaning."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "wooden coffee table",
+        "descriptions": [
+            "Low rectangular table in warm wood, sized for a sofa-facing layout.",
+            "Surface for drinks, books, and a small decorative tray; a lower shelf provides extra storage.",
+            "Sturdy legs and a sealed finish to resist coffee rings and minor spills."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "soft area rug",
+        "descriptions": [
+            "Plush area rug large enough to anchor the seating area, with a tactile pile that softens footsteps.",
+            "Neutral pattern that hides light wear and ties together furniture colors.",
+            "Provides warmth and acoustic dampening for a cozier room feel."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "arc floor lamp",
+        "descriptions": [
+            "Tall arc lamp with a gently curved arm that casts focused, warm light over the sofa.",
+            "Foot switch and dimmable bulb compatibility for ambient evening lighting.",
+            "Slim base to fit beside furniture without taking much floor space."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "bookshelf (four-shelf)",
+        "descriptions": [
+            "Vertical wooden bookshelf with four open shelves for books, decor, and storage baskets.",
+            "Anchoring brackets included for safety; adjustable shelf heights for versatility.",
+            "A mix of display and practical storage to keep the living room tidy."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "media console",
+        "descriptions": [
+            "Low media cabinet sized to hold a TV, game consoles, and media accessories.",
+            "Closed compartments to hide devices and cords and open shelves for airflow.",
+            "Durable surface for remotes and small decor; cable-routing features at the back."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "flat-screen TV",
+        "descriptions": [
+            "40\u201355 inch flat-screen television for movies and casual viewing.",
+            "Wall-mount or stand placement options; energy-saving display modes available.",
+            "Remote and simple on-screen menu for basic smart features."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "set of throw pillows (3)",
+        "descriptions": [
+            "Three decorative cushions in mixed sizes and textures to add comfort and color to seating.",
+            "Removable covers for washing; soft fill that keeps shape with regular fluffing.",
+            "Mix-and-match patterns for a layered, cozy look."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "knitted throw blanket",
+        "descriptions": [
+            "Large, soft knitted throw for curling up on the sofa during chilly evenings.",
+            "Machine-washable and lightweight yet warm; neutral color that layers with decor.",
+            "Easily folded over the arm of a sofa or stored in a basket when not in use."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "potted rubber plant",
+        "descriptions": [
+            "Medium-sized indoor plant in a ceramic pot that brings greenery and a fresh feel to the room.",
+            "Low-to-moderate light needs and easy care; glossy foliage that masks dust when wiped.",
+            "Placed on a stand or side table to add height variety to the decor."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "scented candle trio",
+        "descriptions": [
+            "Three small scented candles in glass jars with complementary warm fragrances.",
+            "Used to add soft mood lighting and a subtle, inviting aroma during gatherings.",
+            "Place on a heat-resistant tray or coaster and never leave unattended when lit."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "ceramic coaster set",
+        "descriptions": [
+            "Set of four absorbent ceramic coasters to protect the coffee table from rings and heat.",
+            "Simple geometric design that blends with most table finishes.",
+            "Easy to wipe clean and store in a small tray when not in use."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "TV remote control",
+        "descriptions": [
+            "Standard remote for the flat-screen TV with large, well-spaced buttons.",
+            "Soft-touch finish and a small wrist area to help keep it from sliding off cushions.",
+            "Housed in a small holder or tray when not in use to avoid getting lost in the sofa."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "woven storage basket",
+        "descriptions": [
+            "Medium woven basket for stashing throws, magazines, or children's toys to keep the living room tidy.",
+            "Lightweight but sturdy; handles for easy carrying to another room.",
+            "Natural fiber finish that adds texture to the decor."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "framed wall art (landscape print)",
+        "descriptions": [
+            "Single framed landscape print to hang above the sofa and create a focal point.",
+            "Matte frame and non-reflective glass for a calm, gallery-style presentation.",
+            "Sized to balance the seating area and complement the room's color palette."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "round side table",
+        "descriptions": [
+            "Small round side table that fits next to an armchair for a lamp or a cup of tea.",
+            "Compact footprint with a stable base and a smooth top surface.",
+            "Often used to hold a coaster, candle, or the TV remote."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "tall oak bookshelf",
+        "descriptions": [
+            "A floor-to-ceiling bookshelf made of warm-stained oak with adjustable shelves.",
+            "Holds a mix of reference volumes, novels, and a few decorative objects.",
+            "Anchors the room and gives the library its classic, cozy atmosphere."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "overstuffed reading armchair",
+        "descriptions": [
+            "A deep, overstuffed armchair with soft fabric upholstery and supportive arms.",
+            "Perfect for long reading sessions; it slopes slightly to cradle the sitter.",
+            "Often paired with a small side table for a cup of tea or a notebook."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "adjustable brass floor lamp",
+        "descriptions": [
+            "A tall floor lamp with a flexible neck and a warm-toned shade for focused reading light.",
+            "Dimmable switch so the light can be softened for a relaxed evening glow.",
+            "Brass finish adds a slightly vintage touch to the cozy setting."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "small walnut side table",
+        "descriptions": [
+            "A compact walnut table sized for a teacup, a book, and a pair of reading glasses.",
+            "Drawer for a few small items like pens or spare bookmarks.",
+            "Sturdy surface and low profile so it doesn't crowd the chair."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "cozy wool throw blanket",
+        "descriptions": [
+            "A chunky-knit wool blanket in muted tones, soft against the skin.",
+            "Lightweight warmth for chilly reading evenings without being bulky.",
+            "Folded over the armchair or draped across the back for a lived-in look."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "soy jar candle (vanilla & cedar)",
+        "descriptions": [
+            "A hand-poured soy candle in a small jar with a gentle vanilla and cedar scent.",
+            "Provides soft ambient light and a subtle, calming fragrance when lit.",
+            "Comes with a metal lid to snuff it out and preserve the scent when not in use."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "ceramic cup of chamomile tea",
+        "descriptions": [
+            "A warm ceramic cup filled with chamomile tea, steam curling from the surface.",
+            "Mild, floral taste that soothes and calms before bedtime or during a long read.",
+            "Served slightly warm for comfort; the ceramic cup retains heat well."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": false,
+        "effects": [
+            "Calms nerves and reduces restlessness for a short while.",
+            "Slightly sharpens focus for relaxed, attentive reading.",
+            "Warms the hands and provides a small comfort boost."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 18.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "plate of shortbread cookies",
+        "descriptions": [
+            "A small ceramic plate holding a few buttery shortbread cookies.",
+            "Crisp at the edges with a tender center; mildly sweet and comforting.",
+            "Serves as a light snack that pairs well with tea or coffee during reading."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a satisfying, calming nibble that encourages slow, cozy pacing.",
+            "A quick morale boost during a long study or reading session."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 2.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "set of cloth bookmarks",
+        "descriptions": [
+            "A small bundle of fabric bookmarks in soft colors with stitched edges.",
+            "Gentle on book spines and easy to slip into place to save your page.",
+            "Lightweight and can be kept in a drawer or the spine of a current read."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "potted ficus",
+        "descriptions": [
+            "A medium potted ficus with glossy leaves that brings life and cleaner air to the room.",
+            "Sits on the windowsill or near the bookshelf to add a touch of green.",
+            "Low-maintenance indoor plant that complements the library's cozy vibe."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "soft braided area rug",
+        "descriptions": [
+            "A low pile, braided area rug in warm earth tones that defines the reading nook.",
+            "Adds acoustic dampening and a comfortable surface for feet or floor seating.",
+            "Anchors furniture visually and contributes to the overall snug atmosphere."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "wooden garden bench",
+        "descriptions": [
+            "A sturdy two-person bench made from weather-treated oak with a smooth, worn seat.",
+            "Perfect for sitting with a mug of tea and watching the garden \u2014 adds a cozy focal point to a patio or flower bed."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "small oak side table",
+        "descriptions": [
+            "Low, compact table with a rustic finish that pairs with seating to hold drinks or a lantern.",
+            "Lightweight but solid; intended to stay in place near seating areas for a cozy setup."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "string fairy lights (outdoor)",
+        "descriptions": [
+            "A 10-meter strand of warm LED bulbs on a weather-resistant cable for draping through branches or along fences.",
+            "Adds soft ambient light that makes evenings in the garden feel intimate and cozy."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "galvanized watering can (2L)",
+        "descriptions": [
+            "A classic 2-liter metal watering can with a narrow spout for gentle watering of potted plants and seedlings.",
+            "Comfortable handle and balanced pour to avoid disturbing soil around delicate roots."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "pair of gardening gloves",
+        "descriptions": [
+            "Durable canvas gloves with reinforced palms and a soft inner lining to protect hands while planting.",
+            "A cozy, essential item that keeps hands clean and comfortable while working in beds and pots."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "hand trowel",
+        "descriptions": [
+            "A small stainless-steel trowel with an ergonomic wooden handle for digging, transplanting, and mixing soil.",
+            "Lightweight and easy to store in a shed or basket beside a bench."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "bag of potting soil (10L)",
+        "descriptions": [
+            "A 10-liter bag of loamy potting mix enriched with compost for healthy container growth.",
+            "Useful for repotting, starting seedlings, and filling decorative planters around the garden."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "set of small clay pots (x3)",
+        "descriptions": [
+            "Three unglazed terracotta pots in graduated sizes ideal for herbs, succulents, or seedlings.",
+            "Classic, breathable pots that warm quickly in the sun and develop a patina over time."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "tomato seed packet",
+        "descriptions": [
+            "A small paper packet containing open-pollinated tomato seeds suitable for containers or garden beds.",
+            "Includes planting notes for sun, spacing, and watering to help beginners succeed."
+        ],
+        "static": false,
+        "type": [
+            "seed",
+            "misc"
+        ],
+        "stackable": true,
+        "plant_type": "tomato"
+    },
+    {
+        "name": "strawberry seed packet",
+        "descriptions": [
+            "Compact seed packet containing strawberry seeds for starting plants that produce small, sweet berries.",
+            "Perfect for a sunny patch or a hanging pot to add both fruit and charm to the garden."
+        ],
+        "static": false,
+        "type": [
+            "seed",
+            "misc"
+        ],
+        "stackable": true,
+        "plant_type": "strawberry"
+    },
+    {
+        "name": "chamomile tea tin (loose)",
+        "descriptions": [
+            "A small tin of dried chamomile blossoms meant for steeping into a soothing cup after garden work.",
+            "Light floral aroma and gentle calming effect \u2014 ideal for quiet moments on the bench at dusk."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a soothing warmth and reduces tension after outdoor work.",
+            "A small pick-me-up that promotes calm focus and a restful mood."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 3.5,
+            "energy": 1.5
+        }
+    },
+    {
+        "name": "potted fern (medium)",
+        "descriptions": [
+            "A medium potted fern with arching fronds that softens corners and adds lush greenery to an outdoor seating area.",
+            "Brings a lived-in, cozy look and helps create a sheltered microclimate for shade plants."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "outdoor throw blanket",
+        "descriptions": [
+            "A weather-resistant woven blanket for chilly evenings; compact enough to drape over a bench.",
+            "Adds immediate coziness and encourages lingering outdoors after sunset."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "rustic lantern (candle)",
+        "descriptions": [
+            "A metal-and-glass lantern for a candle or LED tealight that casts a welcoming glow on paths and tables.",
+            "Designed to be placed on tables or hung from shepherd hooks to enhance evening ambiance."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "birdhouse (wooden)",
+        "descriptions": [
+            "Small weatherproof wooden birdhouse with a cozy entrance hole; mounted to a post.",
+            "Invites feathered visitors that make the garden feel alive and homelike."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "compost bin (small)",
+        "descriptions": [
+            "A compact, ventilated compost bin for kitchen scraps and garden waste to produce nutrient-rich compost.",
+            "Practical and sustainable: keeps soil amendments close at hand and supports healthy planting."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "desktop computer (tower)",
+        "descriptions": [
+            "Mid-tower desktop case with a quiet fan, SSD, and a modest RGB glow for ambient color.",
+            "Primary workstation for coding, gaming, and media \u2014 typically sits under or beside the desk."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "monitor",
+        "descriptions": [
+            "Large flat-panel monitor with adjustable stand and warm color profile for comfortable long sessions.",
+            "Often placed on the desk as the main visual focus; raises ergonomics and reduces eye strain."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "mechanical keyboard and ergonomic mouse",
+        "descriptions": [
+            "Tactile mechanical keyboard paired with a comfortable, ergonomic mouse \u2014 core input tools for the computer room.",
+            "Keycaps are low-profile and backlit for a cozy evening typing experience."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "sturdy wooden desk",
+        "descriptions": [
+            "Solid wooden desk with cable management hole and enough surface area for monitor, keyboard, and a mug.",
+            "Designed to feel warm and cozy while providing stable workspace; anchors the room layout."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "adjustable office chair",
+        "descriptions": [
+            "Padded, height-adjustable chair with lumbar support and soft upholstery for long comfort.",
+            "Swivels gently and locks into ergonomic positions to support productive sessions."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "warm desk lamp",
+        "descriptions": [
+            "Small adjustable lamp that casts a warm, diffused light ideal for focused work and a cozy atmosphere.",
+            "Dimmable to reduce glare and create a calming evening ambience by the monitor."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "soft area rug",
+        "descriptions": [
+            "Low-pile rug placed under the desk area to add warmth and sound-dampening to the room.",
+            "Comfortable underfoot and ties the room's colors together for a homey feel."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "potted succulent",
+        "descriptions": [
+            "Small, low-maintenance succulent in a ceramic pot to bring a touch of life to the desk without extra fuss.",
+            "Adds a natural, calming accent and requires only occasional watering."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "mug of coffee (fresh)",
+        "descriptions": [
+            "Steaming mug of freshly brewed coffee to warm hands and sharpen focus during a session.",
+            "Comforting aroma and a typical morning pick-me-up in a computer room."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": false,
+        "effects": [
+            "Brief alertness boost and improved focus for about an hour.",
+            "Provides warmth to the hands and a mild comfort feeling."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 0.3,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "bowl of trail mix",
+        "descriptions": [
+            "Small bowl of mixed nuts, dried fruit, and seeds for quick snacking without heavy interruption.",
+            "Portable, easy to nibble while working and provides steady energy."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Small, sustained energy boost and a satisfying crunch to stave off hunger between meals.",
+            "Convenient grazing snack that keeps hands busy without greasy residue on keys."
+        ],
+        "stats_edit": {
+            "fullness": 0.7,
+            "hydration": 0.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "closed-back headphones",
+        "descriptions": [
+            "Comfortable over-ear headphones with good noise isolation for focus and privacy.",
+            "Ideal for music, calls, or blocking ambient noise during deep work sessions."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "small bookshelf",
+        "descriptions": [
+            "Compact bookshelf beside the desk to hold reference books, notebooks, and a couple of cozy decor items.",
+            "Keeps essentials organized and within reach while contributing to the room's warm aesthetic."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "coaster set",
+        "descriptions": [
+            "A set of four coasters to protect the desk surface from cups and mugs.",
+            "Small, stackable and usually stored near the mug for convenience."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "cable organizer (tray & clips)",
+        "descriptions": [
+            "Under-desk cable tray and a few adhesive clips to keep power and data cables tidy and out of sight.",
+            "Reduces clutter and makes the workspace feel calmer and more orderly."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "warm LED strip (bias lighting)",
+        "descriptions": [
+            "Low-intensity LED strip placed behind the monitor to provide soft bias lighting and reduce eye strain.",
+            "Adds a cozy accent glow that can be adjusted for color temperature and brightness."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "A-LIFE Terminal Interface",
+        "descriptions": [
+            "A mounted workstation with a curved display and tactile controls.",
+            "Allows for interaction for analysis of an A-Life simulation system.",
+            "Soft backlighting and an integrated footrest give it a surprisingly cozy workstation feel."
+        ],
+        "static": true,
+        "type": [
+            "misc",
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Stainless Steel Lab Workbench",
+        "descriptions": [
+            "A wide, durable bench with modular rails for clamps and instruments.",
+            "Scratch-resistant surface and integrated cable channels keep experiments tidy."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Adjustable Ergonomic Lab Chair",
+        "descriptions": [
+            "Padded seat with lumbar support and multiple height/tilt adjustments.",
+            "Caster base locks in place for stable microscopy or long simulation sessions."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Soft Area Rug (insulating)",
+        "descriptions": [
+            "Low-pile rug placed beneath the main workstation to dampen sound and warm the space.",
+            "Durable synthetic weave resists spills but offers a homey touch in the lab."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Adjustable Desk Lamp",
+        "descriptions": [
+            "Warm LED lamp with dimming knob and flexible arm for focused, eye-friendly lighting.",
+            "Provides steady illumination for fine work without harsh glare."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Insulated Coffee Mug",
+        "descriptions": [
+            "Double-walled steel mug that keeps drinks hot for hours.",
+            "A comforting staple for long runs of data analysis and simulation tuning."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": false,
+        "effects": [
+            "Sharpens focus and reduces jitter for a short time.",
+            "Comforting warmth that sustains concentration during long sessions."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 3.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Bottle of Filtered Water",
+        "descriptions": [
+            "Reusable bottle filled with cold, filtered water.",
+            "Simple hydration that keeps thinking crisp and steady."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Quickly reduces thirst and restores a clear head.",
+            "Helps maintain steady focus during iterative experiments."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": 30.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Bowl of Mixed Nuts",
+        "descriptions": [
+            "A small ceramic bowl filled with almonds, cashews, and walnuts.",
+            "Energy-dense snack for mid-session hunger without leaving sticky residue on equipment."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Sustained satiety and steady cognitive boost from healthy fats and protein."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 0.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Fresh Apple",
+        "descriptions": [
+            "Crisp apple that brightens the room with a light, pleasant aroma.",
+            "Easy, quick snack that doesn't leave hands greasy."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Provides a quick, healthy sugar lift and a refreshing bite between tasks."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 5.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Notebook and Pen",
+        "descriptions": [
+            "Soft-cover lab notebook with numbered pages and a smooth black pen clipped to it.",
+            "Perfect for sketching hypotheses, jotting observations, or doodling during simulation waits."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Noise-Canceling Headphones",
+        "descriptions": [
+            "Over-ear headphones with adjustable padding and a warm sound signature.",
+            "Helps create a cocoon of concentration while running long computational jobs."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Whiteboard Wall Panel",
+        "descriptions": [
+            "Large magnetic whiteboard spanning a section of wall for equations, diagrams, and to-do lists.",
+            "Comes with markers, eraser, and an attached tray for easy access."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Specimen Display Case",
+        "descriptions": [
+            "Lockable glass case with internal lighting for displaying samples, models, or delicate instruments.",
+            "Adds a museum-like warmth when arranged with curated objects and notes."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Potted Air Plant",
+        "descriptions": [
+            "Small terrarium with a hardy air plant that requires minimal care.",
+            "Adds a touch of green and softens the sterility of equipment-lined shelves."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Minimal White Armchair",
+        "descriptions": [
+            "A low, overstuffed armchair upholstered in matte white fabric \u2014 soft but impeccably clean.",
+            "Its edges are slightly rounded, offering a cocoon-like seat that absorbs sound in the room.",
+            "Faint impressions on the cushion suggest it is used often despite the room's clinical whiteness."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Tall Arched Floor Lamp",
+        "descriptions": [
+            "A slender white metal lamp with a wide, diffuse shade that casts warm, even light.",
+            "Its arched neck lets the light hover above seating without taking up table space.",
+            "The switch emits a soft click; when on, shadows soften and the room feels less hostile."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Circular White Wool Rug",
+        "descriptions": [
+            "A thick, circular rug of off-white wool that mutes footsteps and adds a tactile center to the floor.",
+            "Edges are seamless; it lies perfectly flat against the immaculate surface beneath.",
+            "The rug visually anchors the seating area and invites you to sit on the floor."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Matte White Side Table",
+        "descriptions": [
+            "A compact side table with a single shallow drawer and a broad top for a cup or a book.",
+            "Clean lines and a soft matte finish keep it visually quiet in the all-white room.",
+            "Its drawer holds a few essentials; the table's surface is deliberately empty."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Porcelain Tea Mug (plain white)",
+        "descriptions": [
+            "A simple, thick-walled white mug with a comfortable handle and a satin glaze.",
+            "Its interior is spotless; the mug feels warm against your fingers when filled.",
+            "Sturdy and unadorned \u2014 it belongs in the ritual of a quiet drink."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Steamed Chamomile Tea (serving)",
+        "descriptions": [
+            "A clear, pale infusion in a white mug; steam curls upward carrying a gentle floral scent.",
+            "Drinking it calms the jaw and slows breathing, an antidote to the room's edge.",
+            "Warm and mild \u2014 the tea is unsweetened and uncomplicated."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Soothes nerves and reduces perceived tension.",
+            "Warms the hands and encourages slower breathing.",
+            "Short-lived calm that eases into a gentle focus."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 8.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Clear Glass Bottle of Water",
+        "descriptions": [
+            "A simple clear bottle filled with still water; condensation beads on its outer surface if it is cold.",
+            "Drinking it is neutral and restoring, nothing added to alter its purity.",
+            "A reliable and necessary item for anyone spending time in the stark room."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Quickly relieves thirst and cools the mouth.",
+            "A neutral, immediate refresh that clears a dry throat."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": 25.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Slice of Plain White Bread",
+        "descriptions": [
+            "A single, soft slice of white bread \u2014 no crust embellishments, mild and slightly warm.",
+            "It tastes simple, familiar, and satisfying without strong flavor notes.",
+            "Useful for a quick bite when the room's silence makes larger meals feel wrong."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Fills immediate hunger with bland, steady comfort.",
+            "Easy to digest and unlikely to upset the stomach."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 0.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Soft White Throw Blanket",
+        "descriptions": [
+            "A generously sized throw in dense white knit, folded on the armchair.",
+            "It is plush and gently weighted, offering immediate warmth and the sensation of being tucked in.",
+            "Throws subtle creases into the otherwise absolute geometry of the room."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Scented White Candle (vanilla)",
+        "descriptions": [
+            "A short, wide white candle poured into a matte ceramic cup that matches the room.",
+            "When lit it provides soft flicker and a faint, comforting vanilla aroma.",
+            "The flame is small but steady, carving gentle shadows into the blankness."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Stack of Blank White Notebooks",
+        "descriptions": [
+            "Several thin, unmarked notebooks with white covers and ivory pages.",
+            "They invite lists, sketches, or the slow assembling of thoughts in an otherwise speechless space.",
+            "The stack is neatly aligned and almost clinical in its order."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Wall-Mounted White Picture Frame (empty)",
+        "descriptions": [
+            "A rectangular, lacquered white frame fixed to the wall \u2014 the glass is spotless and the mat left empty.",
+            "It reflects the room more than it frames anything else, making you the subject when you stand before it.",
+            "The emptiness feels deliberate, an invitation or a threat depending on the moment."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Built-in Narrow White Bookshelf",
+        "descriptions": [
+            "A tall, recessed bookshelf painted the same white as the walls, with shallow shelves for small objects.",
+            "Some shelves are intentionally sparse \u2014 a single object on each \u2014 maintaining the room's deliberate minimalism.",
+            "It provides storage and breaks an expanse of wall with quiet rhythm."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Small Ceramic Planter (dried white branches)",
+        "descriptions": [
+            "A low, white-glazed ceramic planter holding a few pale, dried branches bleached nearly to bone.",
+            "It suggests a plant without the unpredictability of living green growth \u2014 ornamental and quiet.",
+            "The texture contrasts softly with the smooth surfaces in the room."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Plush waffle-weave bath mat",
+        "descriptions": [
+            "Thick, absorbent mat with a low-profile waffle texture that dries quickly and feels soft underfoot.",
+            "Non-slip backing keeps it in place; neutral color to fit a range of decor styles."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Wall-mounted vanity mirror with slim shelf",
+        "descriptions": [
+            "Framed mirror designed to hang over a sink; integrated slim shelf for small items like toothpaste or a toothbrush holder.",
+            "Simple, moisture-resistant finish made for bathroom walls and lighting reflections."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Floating wood bathroom shelf (pair)",
+        "descriptions": [
+            "Two wall-mounted floating shelves in sealed wood; ideal for displaying candles, jars, or folded washcloths.",
+            "Compact depth to avoid taking up counter space while adding vertical storage."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Narrow freestanding linen cabinet",
+        "descriptions": [
+            "Tall, slim cabinet with a closed door and one adjustable shelf inside for extra toilet paper, towels, and toiletries.",
+            "Made for small bathrooms where floor footprint must remain minimal; moisture-resistant veneer."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Small teak shower stool",
+        "descriptions": [
+            "Compact teak stool resistant to splashes; useful as a seat or a place to rest toiletries.",
+            "Natural wood tone adds warmth and doubles as a small side table in the bathroom."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Heated towel rail (wall-mounted)",
+        "descriptions": [
+            "Slim electric towel rail that gently warms towels and helps reduce damp and mildew.",
+            "Hardwired or plug-in options; designed for bathroom environments with splash protection."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Ceramic soap dish",
+        "descriptions": [
+            "Glazed ceramic dish with slight drainage ridge to keep bar soap dry between uses.",
+            "Small and lightweight, easy to move for cleaning or rearranging."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Refillable ceramic pump soap dispenser",
+        "descriptions": [
+            "Elegant refillable dispenser with a wide mouth for easy filling from bulk soap bottles.",
+            "Durable pump mechanism and a neutral finish to blend with many sink styles."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Scented soy candle in tin",
+        "descriptions": [
+            "Small, low-soot soy candle offering a subtle scent for a relaxing atmosphere; tin container for safety.",
+            "Burn time designed for short sessions; useful to create a spa-like mood without overpowering the room."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Woven cotton towel basket",
+        "descriptions": [
+            "Open woven basket sized to hold rolled hand towels or washcloths; natural texture softens bathroom lines.",
+            "Lightweight and easy to relocate; doubles as an attractive storage solution."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Glass jar with cotton balls and swabs",
+        "descriptions": [
+            "Clear glass jar with lid for organized, visible storage of cotton products; keeps them dry and easy to reach.",
+            "Adds a clean, apothecary-style accent while keeping countertops tidy."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Faux potted leafy plant",
+        "descriptions": [
+            "Low-profile artificial plant in a ceramic pot that requires no maintenance but adds greenery and softness.",
+            "Moisture-safe finish and compact size make it suitable for countertops or shelves."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Hanging stainless steel shower caddy",
+        "descriptions": [
+            "Rust-resistant caddy that hangs from the showerhead or hooks over the door to organize bottles and soaps.",
+            "Perforated shelves allow water to drain and keep items accessible while showering."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Rustic Oak Kitchen Table",
+        "descriptions": [
+            "A solid oak dining table seating four comfortably, with a warm honey stain and visible grain.",
+            "Sturdy enough for meal prep or a small island \u2014 scuffs along the edges give it a lived-in charm."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Pair of Ladderback Chairs",
+        "descriptions": [
+            "Two classic ladderback chairs with woven rush seats; lightweight enough to reposition but considered part of the dining set.",
+            "Simple, comfortable seating that complements a cozy kitchen table."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Wall-Mounted Open Shelf (oak)",
+        "descriptions": [
+            "A shallow, wall-mounted open shelf in matching oak finish for displaying plates, jars, and small plants.",
+            "Easy to install and designed so items are visible and reachable while maximizing wall space."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Farmhouse Ceramic Sink Unit",
+        "descriptions": [
+            "Large white ceramic farmhouse sink set into a simple base unit \u2014 ideal for washing pots and vegetables.",
+            "Deep basin and smooth surface; staple of a cozy, functional kitchen."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Handwoven Kitchen Rug",
+        "descriptions": [
+            "Low-pile, handwoven runner made from durable fibers, placed in front of the sink to add warmth and catch drips.",
+            "Non-slip backing keeps it in place during busy kitchen tasks."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Wall-Mounted Pot Rack",
+        "descriptions": [
+            "A metal wall-mounted rack with hooks for hanging pans and ladles \u2014 clears cabinet space while keeping tools accessible.",
+            "Durable construction and rustic finish that suits a country-style kitchen."
+        ],
+        "static": true,
+        "type": [
+            "furniture"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Classic Two-Slot Toaster",
+        "descriptions": [
+            "Compact two-slot toaster with variable browning dial and a removable crumb tray.",
+            "Polished exterior that fits neatly on a countertop; small and easily moved for cleaning."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Cast-Iron Skillet (10\")",
+        "descriptions": [
+            "Pre-seasoned 10-inch cast-iron skillet \u2014 versatile for searing, baking, and stovetop cooking.",
+            "Heavy, durable, and built to last; not stackable with delicate cookware without protection."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Enamel Mug Set (4)",
+        "descriptions": [
+            "Set of four enamel-coated metal mugs in soft colors; lightweight and stackable for storage.",
+            "Chipped-proof rim and classic look, suitable for coffee, tea, or cocoa."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Ceramic Fruit Bowl",
+        "descriptions": [
+            "Hand-glazed ceramic bowl ideal for holding fruit or serving bread; medium sized and decorative.",
+            "Can be a centerpiece on the table or a practical storage vessel on the counter."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Copper Utensil Holder",
+        "descriptions": [
+            "Tall copper tin for storing spatulas, wooden spoons, and whisks within easy reach on the counter.",
+            "Adds a warm metallic accent while keeping frequently used utensils organized."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Wall Spice Rack (6 jars)",
+        "descriptions": [
+            "Small wall-mounted spice rack holding six labeled glass jars, perfect for essential spices and herbs.",
+            "Keeps flavors organized and off the counter while remaining within easy reach of the stove."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Mason Jar Strawberry Jam",
+        "descriptions": [
+            "Half-liter mason jar of homemade-style strawberry jam \u2014 sweet, spreadable, and great on toast.",
+            "Sealed and shelf-stable until opened; made from cooked fruit and sugar."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A quick sweet snack that brightens a breakfast or tea break.",
+            "Spread on toast or a scone to restore a little energy."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 0.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Box of Herbal Tea Bags (20)",
+        "descriptions": [
+            "Box contains 20 individually wrapped herbal tea bags (calming chamomile blend).",
+            "Brew a cup for a gentle warm drink that helps settle and hydrate."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A brewed cup soothes and provides light hydration and a small calming lift of energy.",
+            "Best enjoyed warm; is hydrating when prepared."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 8.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Jar of Honey",
+        "descriptions": [
+            "Small glass jar of raw honey \u2014 thick, sweet, and useful as a natural sweetener.",
+            "Shelf-stable and multipurpose: spreads, sweetens tea, or helps with quick energy."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A spoonful provides a compact sugar boost and pairs well with warm beverages or toast."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 0.0,
+            "energy": 10.0
+        }
+    }
+]

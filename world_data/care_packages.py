@@ -1,103 +1,94 @@
-care_package_1_general_survival = [
-    {
-        "name": "water_bottle",
-        "descriptions": ["A standard plastic water bottle", "Sealed and clean", "Essential hydration"],
-        "static": False,
-        "type": ["consumable"],
-        "stackable": True,
-        "stats_edit": {
-            "fullness": 5,
-            "hydration": 30,
-            "energy": 0
-        },
-        "effects": ["Quenches your thirst effectively", "Leaves you feeling refreshed"]
-    },
-    {
-        "name": "energy_bar",
-        "descriptions": ["A high-energy snack bar", "Compact and portable", "Sweet and chewy"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 5,
-            "hydration": -5,
-            "energy": 25
-        },
-        "effects": ["You feel a quick surge of energy", "It leaves a slight dryness in your mouth"]
-    },
-    {
-        "name": "canned_beans",
-        "descriptions": ["A can of hearty baked beans", "Provides sustained energy", "Best when heated"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 30,
-            "hydration": 10,
-            "energy": 15
-        },
-        "effects": ["Fills your stomach well", "Provides good, slow-release energy"]
-    },
-    {
-        "name": "crackers_pack",
-        "descriptions": ["A small pack of plain crackers", "Dry but filling", "Goes well with other foods"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 15,
-            "hydration": -10,
-            "energy": 5
-        },
-        "effects": ["Slightly dry on the palate", "Provides a basic crunchy snack"]
-    },
-    {
-        "name": "apple",
-        "descriptions": ["A fresh, crisp apple", "Natural energy source", "Good for a quick bite"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 10,
-            "hydration": 5,
-            "energy": 10
-        },
-        "effects": ["Refreshing and slightly sweet", "Gives you a small burst of energy"]
-    },
-    {
-        "name": "trail_mix",
-        "descriptions": ["A bag of nuts, seeds, and dried fruit", "High in calories and nutrients", "Great for sustained effort"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 20,
-            "hydration": -5,
-            "energy": 20
-        },
-        "effects": ["A good mix of textures and flavors", "Provides lasting energy"]
-    },
-     {
-        "name": "chocolate_bar",
-        "descriptions": ["A standard milk chocolate bar", "Quick sugar boost", "Comforting treat"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 5,
-            "hydration": -5,
-            "energy": 15
-        },
-        "effects": ["A sweet, temporary uplift", "Quickly melts away"]
-    },
-     {
-        "name": "water_bottle", # Repeat item for extra hydration
-        "descriptions": ["Another standard plastic water bottle", "Sealed and clean", "More essential hydration"],
-        "static": False,
-        "type": ["consumable"],
-        "stats_edit": {
-            "fullness": 5,
-            "hydration": 30,
-            "energy": 0
-        },
-        "effects": ["More thirst quenched", "Feeling even more hydrated"]
-    }
-]
+from inventory_items.items_provider.item_store import ItemStore
+import json
 
+    # "hydration": BLUE,
+    # "fullness": RED,
+    # "misc": PURPLE,
+    # "ingredient": ORANGE,
+    # "combo": BLACK,
+    # "cheat": GREEN
+
+class CareConstructor():
+    def __init__(self):
+        self.items_store=ItemStore("inventory_items/items_provider/items_data")
+        
+        self.care_dict={
+            "general_survival":{ 
+                "package_color": "combo",
+                "items": [
+                    "Bottled Water",
+                    "Sweet Breakfast Cereal (Snack Box)"
+                ],
+            },            
+            "gardening":{ 
+                "package_color": "cheat",
+                "items": [
+                    "basil seed",
+                    "mint seed",
+                    "sunflower seed",
+                    "rose seed",
+                    "Strawberry Seeds",
+                    "Tomato Seeds",
+                    "Cactus Seeds",
+                    "Carrot Seeds",
+                    "Lettuce Seeds",
+                    "potato (tuber)"
+                ],
+            }
+        }
+
+
+    def create_full_data(self)->list:
+        # Our final output list.
+        final_list = []
+        # Loop through each package name and its data in the care_dict.
+        for package_name, package_info in self.care_dict.items():
+            # Get the list of detailed item dictionaries for the package.
+            items = self.list_items(package_info["items"])
+            
+            # Create a dictionary in the exact format you requested.
+            package_dict = {
+                "package": items,  # The list of item structures
+                "color": package_info["package_color"]
+            }
+            final_list.append(package_dict)
+            
+        return final_list
+
+    def make_package(self, package_name: str) -> list:
+        # This method's purpose is now to just get the items for a specific package.
+        package_info = self.care_dict.get(package_name)
+
+        if not package_info:
+            print(f"Warning: Package '{package_name}' not found.")
+            return []
+        
+        item_names = package_info.get("items", [])
+        detailed_items = self.list_items(item_names)
+        
+        return detailed_items
+
+    def list_items(self, items_list=["Dry Pasta (500g)", "Granulated Sugar (500g)"]):
+        print("Items list request for base state constructor:")
+        list_items=self.items_store.get_item(items_list)
+        list_of_item_dicts = list(list_items.values())
+        return list_of_item_dicts
+    
+# Example usage:
+if __name__ == '__main__':
+    constructor = CareConstructor()
+    full_data = constructor.create_full_data()
+    
+    # This will now print the list in the format you requested.
+    # Note: `json.dumps` will handle the RGB tuples for a more readable output.
+    print(json.dumps(full_data, indent=4))
+
+
+
+
+#care_package_1_general_survival = []
+
+# Here, we want to replace this, we can load the list of items instead of defining them directly
 care_package_2_hydration_refreshment = [
     {
         "name": "water_bottle",
