@@ -150,7 +150,7 @@ class CLIChatbot:
             )
             # Add tools that need usage of the memory structure
 
-            self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, self.memory, config_manager)
+            self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, config_manager)
 
             self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager)  # Initialize the function builder
 
@@ -179,17 +179,6 @@ class CLIChatbot:
         else:
             print(f"Chatbot attempted to signal, but no callback registered: {signal_data}")
 
-
-    # def get_room_name_out(self, id):
-    #     """
-    #     Returns the name of the room tied to the ID passed
-    #     """
-    #     return self.state_manager.get_room_name(id)
-    # def get_current_location(self):
-    #     """
-    #     Returns the name of the current room, or an error string if current room is invalid.
-    #     """
-    #     return self.state_manager.get_current_room_name()
 
     def clear_screen(self):
         """Clear the terminal screen."""
@@ -305,41 +294,6 @@ class CLIChatbot:
             self.text_capture.dump_text(f"Error during AI response sequence (Depth {depth}): {e}")
             self.text_capture.dump_text(f"**************")
             return f"Error generating response: {e}" # Return error message
-
-    # def add_items_room(self, room_id, item):
-    #     result = self.state_manager.create_item("room", room_id ,item)
-    #     room_name = self.state_manager.get_room_name(room_id)
-    #     return result
-
-
-
-    # # --- NEW: Pet Theme Color Bridge Methods ---
-
-    # def get_pet_color(self) -> tuple[int, int, int] | None:
-    #     """Bridge to InventoryHouseManager.get_pet_color()."""
-    #     if self.state_manager: # Defensive check
-    #         return self.state_manager.get_pet_color()
-    #     return (100, 255, 100) # Fallback default if manager isn't ready
-
-    # def set_pet_color(self, color: tuple[int, int, int]):
-    #     """Bridge to InventoryHouseManager.set_pet_color()."""
-    #     if self.state_manager: # Defensive check
-    #         self.state_manager.set_pet_color(color)
-    #         # Optional: send a signal? Maybe not needed, game.py updates state directly
-    #         # self._signal_callback({"type": "pet_color_changed", "color": color})
-
-
-    # def is_color_configured(self) -> bool:
-    #     """Bridge to InventoryHouseManager.is_color_configured()."""
-    #     if self.state_manager: # Defensive check
-    #         return self.state_manager.is_color_configured()
-    #     return False # Default to not configured if manager isn't ready
-
-
-    # def set_color_configured(self, configured: bool):
-    #     """Bridge to InventoryHouseManager.set_color_configured()."""
-    #     if self.state_manager: # Defensive check
-    #         self.state_manager.set_color_configured(configured)
 
     # MODIFIED: Refactored to use TTS Provider
     def process_response_with_tts(self, final_ai_response):
@@ -513,20 +467,6 @@ class CLIChatbot:
 
         return final_ai_response # Return the final text response
 
-
-# # Bridge to inventory manager
-#     def get_inventories(self):
-#         """
-#         Delegated.
-#         Lists the items in the current room and inventory
-#         Returns:
-#             list_room_items_names, list_inventory_item_names
-#         """
-#         return self.state_manager.list_inventories()
-
-#     def add_message_out(self, message, role):
-#         self.memory.save_to_memory(message, "short_term", f"{role}")
-#         return
     
     def run(self):
         """loop for the chatbot as a CLI"""

@@ -46,8 +46,11 @@ except pygame.error:
     font = pygame.font.SysFont("Arial", 20) # Fallback font
     line_height = font.get_linesize() # Get line height from fallback font
 
+if mock_running:
+    config_manager = ConfigManager("bots", True)
+else:
+    config_manager = ConfigManager("bots")
 
-config_manager = ConfigManager("bots")
 run_config_main_menu_ui(screen, font, config_manager)
 
 
@@ -266,12 +269,7 @@ if mock_running: # Mock configuration, leave as is
     try:
         chatbot = MockChatbot( # Use the mock class
             signal_callback=handle_chatbot_signal,
-            system_prompt= "test",
-            sub_directory="bots/"+"test",
-            deep_memory=False,
-            base_model="test",
-            select_memory_model="test",
-            tts_flag=True
+            config_manager=config_manager
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")

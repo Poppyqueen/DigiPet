@@ -1,7 +1,5 @@
 
 # services/pet_state_manager.py
-import random
-
 class PetStateManager:
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store

@@ -25,7 +25,7 @@ class InventoryService:
         # then filter out non-stacking attributes.
         stacking_attrs = {}
         for k, v in item_data.items():
-            if k not in ["id", "quantity", "descriptions", "static", "stats_edit", "effects"]:
+            if k not in ["id", "quantity", "static", "stats_edit", "effects"]: # We need to decide what we will ignore
                 # last_modified and location_history are examples of other attributes
                 # that shouldn't affect stacking. Add or remove as needed.
                 stacking_attrs[k] = v
@@ -490,7 +490,7 @@ class InventoryService:
             # Save modified inventory
             self._state_store.update_state_section("inventory", inventory_list)
 
-            list_room_items_names, list_inventory_item_names = self.list_inventories(True)
+            list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
             self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"})
@@ -521,7 +521,7 @@ class InventoryService:
         list_inventory_item_names = []
         if isinstance(inventory_list, list):
             for item in inventory_list:
-                name = item.get("name")
+                name = self._format_item_for_display(item)
                 if name:
                     list_inventory_item_names.append(name)
         return list_room_items_names, list_inventory_item_names
@@ -639,7 +639,7 @@ class InventoryService:
             self._state_store.update_state_section("inventory", inventory_list) # Save modified inventory
             self._state_store.update_state_section("rooms", rooms_list) # Save modified rooms
 
-            list_room_items_names, list_inventory_item_names = self.list_inventories(True)
+            list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
             self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"})
@@ -805,7 +805,7 @@ class InventoryService:
         self._state_store.update_state_section("rooms", rooms_list)
 
         if overall_successful_creation_count > 0:
-            list_room_items_names, list_inventory_item_names = self.list_inventories(True)
+            list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
             self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
 

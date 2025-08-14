@@ -2,16 +2,53 @@ import os
 from utils.generic_json_tool import GenericJsonTool
 
 class ConfigManager(GenericJsonTool):
-    def __init__(self, base_path):
+    def __init__(self, base_path, mock=False):
         self.base_path = base_path
+        if mock:
+            self.base_path = os.path.join(base_path,"mock_configs/")
         
         self.json_filename = "bots_configs_archive.json"
+
         self._default_state = {}
         
-        super().__init__(base_path)
+        super().__init__(self.base_path)
         
         self.archive = self._state
         self.active_config = {}  # This is now a simple dictionary
+
+        mock_config = {
+                    "AI_DeepMemory": {
+                        "deep_memory_flag": True,
+                        "deep_memory_ai_provider": "mock_provider",
+                        "deep_memory_ai": "mock_bot",
+                        "deep_memory_embeddings_provider": "ollama"
+                    },
+                    "AI": {
+                        "general_ai_provider": "mock_provider",
+                        "memory_ai_provider": "mock_provider",
+                        "cook_provider": "mock_provider",
+                        "pets_folder": "mock_bot_folder",
+                        "general_model": "mock_bot",
+                        "memory_model": "mock_bot",
+                        "cook_model": "mock_bot",
+                        "sys_prompt": "Mock sys prompt"
+                    },
+                    "Tools": {
+                        "enable_youtube": False,
+                        "enable_discogs": False,
+                        "enable_musicbrainz": False,
+                        "enable_bluesky": False
+                    },
+                    "game_settings": {
+                        "initial_state": "base_state",
+                        "tts_provider": "macos_say",
+                        "selected_voice": ""
+                    }
+                }
+                    
+        if mock:
+            self.active_config = mock_config
+            self.save_config_to_archive("mock_bot_config")
         
         print("ConfigManager initialized. Archive managed by GenericJsonTool.")
 

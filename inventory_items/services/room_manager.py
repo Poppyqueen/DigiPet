@@ -1,6 +1,5 @@
 
 # services/room_manager.py
-import json # For json.loads(json.dumps()) if resetting mutable defaults
 from utils.time_manager import get_time_tag_from_now
 
 class RoomManager:
@@ -103,7 +102,7 @@ class RoomManager:
 
                 # Uses InventoryService for combined list
                 if self._inventory_service:
-                    list_room_items_names, _ = self._inventory_service.list_inventories()
+                    list_room_items_names, _ = self._inventory_service.list_inventories(formatted=True)
                     self._send_signal({"type": "room_inventory", "item_list": list_room_items_names})
                 else:
                     print("Warning: InventoryService not set in RoomManager, cannot send room_inventory signal.")

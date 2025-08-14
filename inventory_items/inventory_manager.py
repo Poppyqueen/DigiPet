@@ -17,10 +17,9 @@ from inventory_items.services.simulation_state_service import SimulationStateSer
 class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     MAX_INVENTORY_SLOTS = 30 # This constant can stay here or move to InventoryService
 
-    def __init__(self, base_path, signal=None, memory=None, config_manager=None):
+    def __init__(self, base_path, signal=None, config_manager=None):
         self.base_path = base_path
         self._signal_callback = signal
-        self.memory = memory
         self.config_manager = config_manager
 
         # 1. Determine the initial state to load
