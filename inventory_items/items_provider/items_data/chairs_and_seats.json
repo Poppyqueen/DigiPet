@@ -34,7 +34,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "chair"
         ],
         "stackable": false
     },
@@ -47,7 +48,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "chair"
         ],
         "stackable": false
     },
@@ -60,7 +62,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "chair"
         ],
         "stackable": false
     },

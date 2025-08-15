@@ -1,0 +1,16 @@
+{
+    "general_survival": {
+        "package_color": "combo",
+        "items": [
+            "Bottled Water",
+            "Sweet Breakfast Cereal (Snack Box)"
+        ]
+    },
+    "general_survival_2": {
+        "package_color": "cheat",
+        "items": [
+            "basil seed",
+            "mint seed"
+        ]
+    }
+}

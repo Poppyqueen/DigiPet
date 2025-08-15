@@ -6,7 +6,7 @@ import json
 
 class InventoryService:
     MAX_INVENTORY_SLOTS = 30
-    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed"]
+    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed", "chair"]
 
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store
@@ -510,7 +510,7 @@ class InventoryService:
             for item in room_data["items"]:
                 if formatted:
                     name=self._format_item_for_display(item)
-                    print(f"DEBUG FORMAT ITEMS {name}")
+                    #print(f"DEBUG FORMAT ITEMS {name}")
                 else:
                     name = item.get("name")
                 if name:
@@ -649,7 +649,7 @@ class InventoryService:
         
 
     def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
-        print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")
+        #print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")
 
         failed_items_info = []
         messages = []
@@ -730,7 +730,11 @@ class InventoryService:
                         amount_to_transfer = min(current_quantity_to_add, space_in_target)
 
                         if amount_to_transfer > 0:
-                            existing_stack["quantity"] += amount_to_transfer
+                            # Safely get the current quantity, defaulting to 0 if the key is missing
+                            current_qty = existing_stack.get("quantity", 0)
+                            # Set the new, updated quantity
+                            existing_stack["quantity"] = current_qty + amount_to_transfer
+                            
                             current_quantity_to_add -= amount_to_transfer
                             overall_successful_creation_count += amount_to_transfer
                             successfully_created_ids.append(existing_stack["id"]) # Add existing ID to list for tracking

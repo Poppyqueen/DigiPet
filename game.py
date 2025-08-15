@@ -18,7 +18,7 @@ from utils.config_manager import ConfigManager
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 if mock_running:
     from ai_managers.mock_chatbot import MockChatbot
@@ -802,7 +802,7 @@ while running:
                 print(f"Main loop processing PLAYER_INVENTORY_EVENT. Updating player inventory state.")
                 # MODIFIED: Pre-calculate data for each item
                 state.player_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in item_list_raw]
-                print(f"Prepared player inventory data for {len(state.player_inventory_list)} items.")
+                #print(f"Prepared player inventory data for {len(state.player_inventory_list)} items.")
                 state.player_inventory_scroll_y = 0 # Reset scroll
             else: print(f"PLAYER_INVENTORY_EVENT received with invalid data.")
             continue
@@ -1057,6 +1057,7 @@ while running:
                                             # The add_items function has its own lock check,
                                             # but we already checked is_currently_asleep above.
                                             current_room_id=chatbot.state_manager.get_current_room_id()
+                                            #print(f"Debug calling add items with {package_info["package"]}")
                                             add_items(package_info["package"], current_room_id )
                                             
                                             room_name=chatbot.state_manager.get_room_name(current_room_id)

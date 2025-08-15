@@ -40,7 +40,7 @@ class ConfigManager(GenericJsonTool):
                         "enable_bluesky": False
                     },
                     "game_settings": {
-                        "initial_state": "base_state",
+                        "initial_state": "dev_room",
                         "tts_provider": "macos_say",
                         "selected_voice": ""
                     }

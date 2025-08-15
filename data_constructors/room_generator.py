@@ -1,6 +1,18 @@
 #room_generator.py
 
 import os
+import re
+import sys
+
+# --- TEMPORARY FIX FOR DIRECT EXECUTION ---
+# This block allows the script to find the 'utils' package
+# when run directly from its current location.
+# Assuming 'utils' is in the parent directory of this script's location
+# This adds the parent directory to the Python path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+sys.path.append(parent_dir)
+# -------------------------------------------
 import json
 import time
 from pydantic import BaseModel, Field
@@ -90,7 +102,7 @@ class room_crafter:
         print(f"  Calling AI to generate descriptions for room concept: '{room_concept}'...")
         response = self.llm_client.structured_output(
             system=system_prompt,
-            input_content=user_prompt,
+            user=user_prompt,
             structure=RoomTimeDescriptions # The AI will generate data that fits this Pydantic model
         )
         return response
@@ -186,55 +198,12 @@ class room_crafter:
 # --- Example Usage ---
 if __name__ == "__main__":
     crafter = room_crafter()
-    room_data_file = "room_data.json" # Define the path to your room data file
+    room_data_file = "inventory_items/base_state_manager/houses_data/base_dev_room.json" # Define the path to your room data file
 
     # Define a list of room configurations. Each entry will generate one room.
     # The 'concept' is what the AI uses to generate descriptions.
     # 'name', 'image', 'types', 'music' are static metadata for the room.
     room_configs = [
-
-        {"concept": "A cozy living room, the heart of the house. Cozy.",
-         "name": "living_room",
-         "image": "living_room",
-         "types": ["living_room"],
-         "music": "living_room"},
-
-
-        {"concept": "A modern kitchen, gleaming with stainless steel appliances. The air smells faintly of spices and cleanliness. Wind streams through the window over the sink. Cozy.",
-         "name": "kitchen",
-         "image": "kitchen",
-         "types": ["kitchen"],
-         "music": "kitchen"},
-
-
-        {"concept": "A magnificent library, shelves stretching high towards the ceiling. The air is thick with the smell of aged paper and leather bindings. A quiet hush permeates the room. Cozy.",
-         "name": "library",
-         "image": "library",
-         "types": ["library"],
-         "music": "library"},
-
-
-        {"concept": "A clean, tiled bathroom with a large mirror. The air is slightly humid, smelling faintly of floral soap and toothpaste. Cozy.",
-         "name": "bathroom",
-         "image": "bathroom",
-         "types": ["bathroom"],
-         "music": "bathroom"},
-
-
-        {"concept": "A peaceful bedroom, dominated by a large, inviting bed. Soft wind sways the curtains, there is low light. Cozy.",
-         "name": "bedroom",
-         "image": "bedroom",
-         "types": ["bedroom"],
-         "music": "bedroom"},
-
-
-        {"concept": "A room filled with the quiet hum of electronic machines. Desks are covered in wires and monitors. The air smells faintly of ozone. Cozy.",
-         "name": "computer_room",
-         "image": "computer_room",
-         "types": ["computer_room"],
-         "music": "computer_room"},
-
-
         {"concept": "A lush garden, bursting with greenery and color. Cozy.",
          "name": "garden",
          "image": "garden",
@@ -242,10 +211,10 @@ if __name__ == "__main__":
          "music": "garden"},
 
 
-        {"concept": "An unsettlingly empty white room. The walls, floor, and ceiling are seamless and pure white. There are no windows or doors visible initially, just a uniform, featureless space.",
-         "name": "white_room",
-         "image": "white_room",
-         "types": ["white_room"],
+        {"concept": "A secluded, quiet laboratory with many vats full of liquid, a small glass trapdoor with a view to the outside on the roof, ",
+         "name": "DevRoom",
+         "image": "lab_room",
+         "types": ["planting_garden","library"],
          "music": "white_room"},
     ]
     total_rooms = len(room_configs)

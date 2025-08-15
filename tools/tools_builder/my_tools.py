@@ -4,6 +4,26 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
+
+
+seat_tools=[
+    {
+        "type": "function",
+        "name": "take_a_seat",
+        "description": "A function for you to sit on any seat, chair or valid item you see around.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The item ID you want to take a seat on."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    }
+]
 musicbrainz_tools=[ 
     {
         "type": "function",

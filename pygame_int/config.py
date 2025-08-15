@@ -377,7 +377,7 @@ color_code={
 #     ]
 
 
-CARE_PACKAGES = CareConstructor().create_full_data()
+CARE_PACKAGES = CareConstructor(care_directory="inventory_items/care_packages_data").create_full_data()
 
 
 # --- Event Configuration ---

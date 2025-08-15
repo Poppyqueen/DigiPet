@@ -50,7 +50,8 @@ from .my_tools import (
     youtube_playlister_tools,
     discogs_tools,
     musicbrainz_tools,
-    bluesky_tools # Ensure bluesky_tools is imported if it has definitions
+    bluesky_tools, # Ensure bluesky_tools is imported if it has definitions
+    seat_tools
 )
 
 from utils import open_meteo_handle, simulation
@@ -64,6 +65,8 @@ from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.async_test_tool import simulate_data_fetch
 from tools.tools_folder.thinking_tool import emit_inner_thought
 
+
+# Maybe update this to allow for certain item types to add functions to the room itself without needing to be in the pet's inventory
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None):
@@ -349,6 +352,24 @@ class FunctionBuilder:
             # as part of the dynamic _room_type_data for "bluesky_social"
         }
 
+        ## NEW: Define functions for environmental items (not in inventory) ##
+        self._environmental_item_functions = {
+            "chair": {
+                # We will place seat_tools, take_a_seat inside the living room instance which was used before as a 
+                # place for a specific living room in an environment, this change is just conceptual,
+                # making it now a place where it holds general living room functions instead of it being tied to 
+                # any specific room
+                "take_a_seat": self.room_tools.living_room.take_a_seat
+            }
+        }
+
+
+        ## NEW: Define definitions for environmental items ##
+        self._environmental_item_definitions = {
+            "chair": seat_tools
+        }
+
+
         # Item-specific functions (like books), defined separately as they depend on inventory
         self._item_specific_functions = {
             "book": { # Key can be an item type or identifier
@@ -464,98 +485,124 @@ class FunctionBuilder:
             return room["room_types"]
         #print("DEBUG: No room types found or room not found.")
         return [] # Return empty list if no types found
+    
+     
 
     def construct_map(self):
         """
-        Constructs the function mapping based on the current room's types
-        and the player's inventory, with base functions added last.
+        Constructs the function mapping based on the current room's types,
+        environmental items, and the player's inventory, with base functions added last.
         """
-        # Start with an empty map
         self.function_map = {}
         print(f"DEBUG: Initializing empty function map for dynamic construction.")
 
-        # 1. Add room-type specific functions FIRST
+        # 1. Add room-type specific functions
         current_types = self.get_current_room_types()
         for room_type in current_types:
-            # Only add if the room_type is actually in the _room_type_data map (which is now dynamic)
             if room_type in self._room_type_data and "functions" in self._room_type_data[room_type]:
                 self.function_map.update(self._room_type_data[room_type]["functions"])
                 print(f"DEBUG: Added functions for room type: {room_type}")
 
-        # 2. Add item-specific functions (these will overwrite room functions if names clash)
+        ## NEW: 2. Add functions for items present in the room (environmental) ##
+        # We need an internal method to get the raw item objects in the room.
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True)
+        if isinstance(items_in_room, list):
+            for item in items_in_room:
+                if isinstance(item, dict):
+                    item_types = item.get("type", [])
+                    if isinstance(item_types, list):
+                        for item_type in item_types:
+                            if item_type in self._environmental_item_functions:
+                                self.function_map.update(self._environmental_item_functions[item_type])
+                                print(f"DEBUG: Added environmental functions for item type: {item_type} from item '{item.get('name', 'Unknown Item')}' in room.")
+
+        # 3. Add item-specific functions from inventory
         inventory_items = self.state_manager.get_inventory_items(internal=True)
-        if isinstance(inventory_items, list): # Ensure it's a list
+        if isinstance(inventory_items, list):
             for item_in_inventory in inventory_items:
-                if isinstance(item_in_inventory, dict): # Ensure item is a dict
+                if isinstance(item_in_inventory, dict):
                     item_types_list = item_in_inventory.get("type", [])
-                    if isinstance(item_types_list, list): # Ensure types is a list
+                    if isinstance(item_types_list, list):
                         for individual_type_str in item_types_list:
                             if individual_type_str in self._item_specific_functions:
                                 self.function_map.update(self._item_specific_functions[individual_type_str])
-                                print(f"DEBUG: Added functions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
+                                print(f"DEBUG: Added inventory functions for item type: {individual_type_str}")
 
-        # 3. Finally, add base functions LAST.
-        # This means if a base function has the same name as a room or item function,
-        # the base function's implementation will be the one that is ultimately used.
+        # 4. Finally, add base functions
         self.function_map.update(self.base_function_map)
-        #print(f"DEBUG: Added base functions last. Final constructed function map keys: {list(self.function_map.keys())}")
+        print(f"DEBUG: Added base functions. Final map keys: {list(self.function_map.keys())}")
+
 
     def construct_tools(self):
         """
-        Constructs and returns the list of tool definitions (JSON-like structure)
-        available based on the current room's types and inventory.
-        This list is built by collecting definitions from relevant types/items
-        and then filtering based on the functions currently present in self.function_map.
+        Constructs and returns the list of tool definitions available based on
+        the current room's types, environmental items, and inventory.
+        Ensures no duplicate tool definitions are added.
         """
-        # First, build the function map for the current state
-        # This ensures self.function_map is up-to-date
-        self.construct_map()
-
-        # Collect all potential tool definitions relevant to the current state
+        self.construct_map() # Ensure function_map is up-to-date
+        
         all_potential_definitions = []
+        seen_tool_names = set() # ## NEW: Keep track of tool names already added ##
 
-        # Add room-type specific definitions
+        # Helper function to add definitions uniquely
+        def add_unique_definitions(definitions_list):
+            for definition in definitions_list:
+                tool_name = definition.get('name')
+                if tool_name and tool_name not in seen_tool_names:
+                    all_potential_definitions.append(definition)
+                    seen_tool_names.add(tool_name)
+
+        # 1. Add room-type specific definitions
         current_types = self.get_current_room_types()
         for room_type in current_types:
-            # Only add if the room_type is actually in the _room_type_data map (which is now dynamic)
             if room_type in self._room_type_data and "definitions" in self._room_type_data[room_type]:
-                all_potential_definitions.extend(self._room_type_data[room_type]["definitions"])
+                add_unique_definitions(self._room_type_data[room_type]["definitions"])
                 # print(f"DEBUG: Added definitions for room type: {room_type}")
 
-        # Add item-specific definitions based on inventory
+        # 2. Add environmental item definitions from items in the room
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) 
+        if isinstance(items_in_room, list):
+            for item in items_in_room:
+                if isinstance(item, dict):
+                    item_types = item.get("type", [])
+                    if isinstance(item_types, list):
+                        for item_type in item_types:
+                            if item_type in self._environmental_item_definitions:
+                                add_unique_definitions(self._environmental_item_definitions[item_type])
+                                # print(f"DEBUG: Added environmental definitions for item type: {item_type}")
+
+        # 3. Add item-specific definitions based on inventory
         inventory_items = self.state_manager.get_inventory_items(internal=True)
-        if isinstance(inventory_items, list): # Ensure it's a list
+        if isinstance(inventory_items, list):
             for item_in_inventory in inventory_items:
-                if isinstance(item_in_inventory, dict): # Ensure item is a dict
+                if isinstance(item_in_inventory, dict):
                     item_types_list = item_in_inventory.get("type", [])
-                    if isinstance(item_types_list, list): # Ensure types is a list
+                    if isinstance(item_types_list, list):
                         for individual_type_str in item_types_list:
                             if individual_type_str in self._item_specific_definitions:
-                                all_potential_definitions.extend(self._item_specific_definitions[individual_type_str])
-                                # print(f"DEBUG: Added definitions for item type: {individual_type_str} from item '{item_in_inventory.get('name', 'Unknown Item')}'")
+                                add_unique_definitions(self._item_specific_definitions[individual_type_str])
+                                # print(f"DEBUG: Added inventory definitions for item type: {individual_type_str}")
 
-        # Add base tools (always available if their function is in the map)
-        all_potential_definitions.extend(base_tools)
+        # 4. Add base tools (these should also be checked for uniqueness, though usually they are already unique)
+        add_unique_definitions(base_tools)
 
-
-        # Now, filter the potential definitions based on which function names
-        # are actually present in the constructed function_map.
+        # Final filtering based on the function map (this step is still crucial)
         available_tools_definitions = []
         available_function_names = set(self.function_map.keys()) # Get a set for efficient lookup
 
         for definition in all_potential_definitions:
             tool_name = definition.get('name')
-            # Check if the tool's name corresponds to an available function
+            # Check if the tool's name corresponds to an actually available function
             if tool_name and tool_name in available_function_names:
                  available_tools_definitions.append(definition)
-            # Optional: Add a print statement here if you want to see which tools are excluded
             # else:
             #     print(f"Excluding tool definition '{tool_name}' as function is not in map.")
 
-        #print(f"DEBUG: Final available tool definitions count: {len(available_tools_definitions)}")
-        #print(f"DEBUG: Final available tool definition names: {[d['name'] for d in available_tools_definitions]}")
+        print(f"DEBUG: Final available tool definitions count: {len(available_tools_definitions)}")
+        print(f"DEBUG: Final available tool definition names: {[d['name'] for d in available_tools_definitions]}")
 
         return available_tools_definitions
+    
 
     def construct_context(self):
         """
@@ -587,9 +634,9 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
-        # context.append("#############")
-        # context.append("In the current room the items are:")
-        # context.append(self.state_manager.list_items_in_current_room()) Keep it lean
+        context.append("#############")
+        context.append("In the current room the items are:")
+        context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary
         context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())

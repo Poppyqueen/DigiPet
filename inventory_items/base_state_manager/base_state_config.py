@@ -13,12 +13,11 @@ class InitialStateConst():
             "base_state": {
                 "b_house_path": "inventory_items/base_state_manager/houses_data/prime_house.json",
                 "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
+            },
+            "dev_room": {
+                "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
+                "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
             }
-            # ,
-            # "dev_room": {
-            #     "b_house_path": "path/to/dev_room_house.json",
-            #     "items_config": "path/to/dev_room_items_config.json"
-            # }
         }
         
     def create_state(self, select_state):

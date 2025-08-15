@@ -518,6 +518,14 @@ class room_living_room:
         message=f"The last TV show watched was:\n {self.last_show_watched}"
         return message
     
+    def take_a_seat(self, item_id:int):
+        item_details=self.state.get_item_details(item_id,internal=True)
+        if item_details["status"] == "found":
+            if "chair" in item_details["details"]["type"]:
+                print(f"Ok to sit on!")
+                string_desc= "\n".join(item_details["details"]["descriptions"])
+                return f"You take a sit on the {item_details["details"]["name"]}\n {string_desc}"
+        
 
     def watch_tv(self):
         """

@@ -1,0 +1,82 @@
+[
+    {
+        "name": "garden",
+        "image": "garden",
+        "room_types": [
+            "garden"
+        ],
+        "music": "garden",
+        "descriptions": {
+            "late night": [
+                "Moonlight silvered across glossy leaves and petals, while fireflies thread the darkness and a lone bench wrapped in a soft blanket feels like a secret, cozy alcove.",
+                "Lanterns hang low among the foliage, casting warm pools of light as the garden exhales a cool, jasmine-scented hush punctuated by distant owls."
+            ],
+            "early morning": [
+                "Dawn\u2019s first pale light dapples the dew-flecked greenery; steam rises from a forgotten mug on a small table and birds stitch the air with tentative song.",
+                "A cool mist clings to petals and ferns, while the garden feels freshly washed and snug\u2014inviting a slow stretch or a quiet moment on a tucked-in chaise."
+            ],
+            "morning": [
+                "Sun climbs and colors bloom vivid, bees hum industriously among blossoms as a hammock sways gently in a pocket of warmth and shade.",
+                "The garden buzzes with life and bright light, leaves glittering, while cozy nooks under climbing vines invite a book and a long, peaceful breath."
+            ],
+            "noon": [
+                "High sun floods the beds, making greens lush and colors electric; a vine-covered arbor offers cool, restful shade and a shaded bench with a pitcher of cold tea.",
+                "The heat sharpens scents and highlights every petal, but the garden\u2019s cozy corners\u2014cushioned seats and cool stone\u2014promise refuge from the midday glare."
+            ],
+            "afternoon": [
+                "Lazy sunlight filters between leaves, butterflies drift through warm air, and the garden feels like a comfortable, lived-in room outdoors.",
+                "Traffic of bees slows and light softens; a small table set for tea suggests a gentle, restorative rhythm in the heart of the greenery."
+            ],
+            "late afternoon": [
+                "Golden rays stretch long across lawns, petals glowing amber as the garden sighs toward evening and cushions are plumped for lingering company.",
+                "Shadows lengthen and fragrances deepen, the light turning cozy and intimate as the space prepares to fold into dusk."
+            ],
+            "night": [
+                "Under a velvet sky the garden becomes a constellation of silhouettes and lantern-lit pockets, warm blankets and a low firepit inviting hushed conversation.",
+                "Stars peek through the canopy while crickets and night-blooming flowers compose a soft nocturne, turning the lush space into a snug, magical retreat."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "DevRoom",
+        "image": "lab_room",
+        "room_types": [
+            "library",
+            "kitchen"
+        ],
+        "plot_number": 3,
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "The vats cast a cool, phosphorescent glow across the metal floor, their slow bubbles and the lab's low hum the only sounds in the hush.",
+                "Through the small glass trapdoor a sliver of moon hangs over empty rooftops while the lab smells faintly of antiseptic and warm, sweet chemicals."
+            ],
+            "early morning": [
+                "A pale, pre-dawn blue slips through the trapdoor, dust motes drifting in the thin light as the liquids in the vats ripple sleepily.",
+                "The room feels expectant and still; instruments are waiting and a faint steam rises from a vat, the air cool and slightly metallic."
+            ],
+            "morning": [
+                "Direct morning sun pricks the glass trapdoor and strips bright highlights across the vat surfaces, turning suspended particles into glittering specks.",
+                "The lab feels alert and sterile, soft clinks from settling lids and the sharp scent of reagents sharpening with the light."
+            ],
+            "noon": [
+                "A concentrated patch of noon sun pours through the trapdoor and sets the liquids aglow, reflections dancing along pipes and glass.",
+                "The heat is muted by ventilation, leaving a steady, bright clarity and the occasional drip echoing off steel in the secluded room."
+            ],
+            "afternoon": [
+                "Late daylight slants in amber through the trapdoor, the vats gleaming like pools of molten color as the lab's humming machinery steadies into rhythm.",
+                "Quiet and almost lazy, the room carries the sweet, chemical tang of ongoing experiments and the slow, mechanical sighs of pumps."
+            ],
+            "late afternoon": [
+                "Shadows lengthen across the floor and the liquids in the vats deepen to richer hues while the trapdoor frames a low, warm sky.",
+                "The lab takes on a contemplative hush; cooling systems whisper and stirred vapors imprint the air with a copper scent."
+            ],
+            "night": [
+                "Darkness outside makes the vat-glow the room's only light, turning the laboratory into a small, luminous island of soft color and faint electrical beeps.",
+                "The trapdoor shows a scatter of distant stars while the lab's silence is punctuated by the occasional burble of liquid and the persistent scent of antiseptic."
+            ]
+        },
+        "items": []
+    }
+]

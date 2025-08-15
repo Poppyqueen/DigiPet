@@ -1,0 +1,15 @@
+{
+    "initial_room":"DevRoom",
+    "garden":[
+        "Folding director's chair"
+    ],
+    "DevRoom":[
+        "Carrot Seeds",
+        "basil seed",
+        "Specimen Display Case",
+        "Art Deco Chaise Lounge",
+        "Scandinavian Minimalist Lounge Chair",
+        "Overstuffed Leather Club Chair",
+        "The Green Language: How a Spirit of the Verdant Veil Tends the Garden"
+    ]
+}

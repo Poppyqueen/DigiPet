@@ -25,15 +25,23 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self.initial_state_manager=InitialStateConst()
 
         # 1. Determine the initial state to load
-        available_states = {
-            "base_state": self.initial_state_manager.create_state("base_state"),
-            #"dev_room": self.initial_state_manager.create_state("dev_room"),
-        }
+
         selected_state_name = config_manager.get_config("game_settings", "initial_state")
-        selected_state = available_states.get(selected_state_name, self.initial_state_manager.create_state("base_state")) # Fallback if name not found
+
+        available_states = [
+            "base_state",
+            "dev_room"
+        ]
+
+        for i in available_states:
+            if i == selected_state_name:
+                selected_state=self.initial_state_manager.create_state(i)
+
+
+        #selected_state = available_states.get(selected_state_name, self.initial_state_manager.create_state("base_state")) # Fallback if name not found
 
         # 2. Initialize the central StateStore
-        print(f"DEBUG INVENTORY MANAGER INIT: Initializing StateStore with {selected_state_name}")
+        #print(f"DEBUG INVENTORY MANAGER INIT: Initializing StateStore with {selected_state_name}")
         self._state_store = StateStore(base_path, selected_state)
 
         # 3. Initialize all services, passing StateStore and signal_callback

@@ -1,86 +1,71 @@
-# Game Room Creation Guide
+# Game Rooms/Houses: What and How
 
-To create a new room, you'll define its structure as a dictionary within the `items_init.py` file. This file manages initial game state configurations, including `base_state` and `custom_state`, which hold lists of rooms.
+House definitions are used the first time you initialize a new agent. These initial configurations are used to make the home of the agent and populate them with items. The system allows you to create these initial configurations for houses to create initial states for your agents.
 
-You can either add your new room dictionary to an existing state dictionary's `"rooms"` list or create an entirely new state dictionary.
+The runtime goes like this:
 
----
+We open an agent and check if it is a new agent. If it is, we will use its configured initial house and items state to instantiate the world. If we have an agent that has already been instantiated, we will ignore this initial configuration and load the unique saved state of its own world. So, homes are configurable only on the initialization of these agents. This is important to consider.
 
-## Room Dictionary Structure
+An Initial State is built from two parts: a base home design and a collection of items for this specific home design, both as separate JSON files.
 
-A room dictionary requires several key pieces of information:
+The project includes two different states which you can use to guide your own designs: DevRoom and PrimeHouse and a respective configuration for each.
 
-*   `name`: A unique string identifier for the room, used for context.
-*   `id`: **Only necessary for the very first room the agent starts in (must be `0`).** All other rooms do not need an `id` defined in `items_init.py` as their IDs will be automatically populated. The `"current_room_id"` in the state dictionary must match the ID of the desired starting room (`0`).
-*   `image`: The filename (without extension) of the room's background image. Located in `style/images/` (JPG assumed).
-*   `room_types`: A list of strings (e.g., `'lab'`, `'social'`, `'kitchen'`). These are **critical** as they dictate available tools via `tools_builder/construct_tools.py`.
-*   `music`: The filename (without extension) of the background music (MP3) looping in this room. Located in `style/sounds/music/rooms/`.
-*   `descriptions`: A dictionary containing time-of-day specific descriptions.
-*   `items`: A list of dictionaries, each representing an item in the room.
+## What are Base Houses?
 
-### Detailed Property Breakdown
+**Example:**
+`inventory_items/base_state_manager/houses_data/prime_house.json`
 
-#### `name`
-A unique string identifier for the room, used for context.
+This is a JSON list of 'rooms' dictionaries, these contain the following keys:
 
-#### `id`
-This is **only necessary for the very first room** the agent starts in, which **must** have an `id` of `0`. All other rooms do not need an `id` defined in `items_init.py` as their IDs will be automatically populated by the game's initialization script. The `"current_room_id"` in the state dictionary must match the ID of the desired starting room (which will be `0`).
+- **name:** a string, free to be whatever
+- **image:** a string for the name of an image to use. Images should be included in the dir `style/images/` as a jpg, i.e., `image: lab_room` points to the file `lab_room.jpg`
+- **room_types:** a list of types that gives tools or functions affordances to the agent
+- **music:** mp3 files the same way as the image key, in `style/sounds/music/rooms/`, i.e., `white_room` points to `white_room.mp3`
+- **descriptions:** this is a dictionary with the keys `late night`, `early morning`, `morning`, `noon`, `afternoon`, `late afternoon` and `night`. Each contains a list of strings that work as descriptions of the room at that specific time of the day
+- **items:** this key needs to be initialized as an empty list for each room
 
-#### `image`
-The filename (without the extension) of the room's background image. This image file should be located in the `style/images/` folder (assuming JPG format).
+## What are room configurations?
 
-#### `room_types`
-A list of strings that categorize the room's nature (e.g., `'lab'`, `'social'`, `'kitchen'`, `'library'`). These types are **critical** because they dictate the tools (functions) available in that room. The `tools_builder/construct_tools.py` module uses these types to add relevant tools to the room. For example, a `'bedroom'` type might provide access to `'sleep'` and `'hug_pillow'` tools.
+**Example:**
+`inventory_items/base_state_manager/houses_configs/prime_house_config.json`
 
-#### `music`
-The filename (without the extension) of the background music track that will loop in this room. The game looks for an MP3 file in the `style/sounds/music/rooms/` folder.
+Each config is made with a Base House in mind. Here we specify the name of the items each of the rooms defined in a Base House will have. These item names are the names directly from our items store.
 
-#### `descriptions`
-A dictionary containing time-of-day specific descriptions for the room. This dictionary **must** include keys for all seven time slots: `'late night'`, `'early morning'`, `'morning'`, `'noon'`, `'afternoon'`, `'late afternoon'`, and `'night'`. Each time slot key maps to a list of one to two distinct descriptive strings. These descriptions should convey the mood, lighting, activity level, and general atmosphere, focusing on sensory details and brevity. They should also be consistent with the room's concept and across different time slots. You can create these descriptions manually or use the AI helper tool `data_constructors/room_generator.py`.
+This is a singular JSON structure. It expects a key called `initial_room` as a string that defines the name for the room we will initialize in.
 
-#### `items`
-A list of dictionaries, with each dictionary representing an item present in the room. This list can be empty initially. Items have their own structure, including:
-*   `name`: A unique string identifier.
-*   `descriptions`: A list of strings.
-*   `static`: A boolean (e.g., `True` for furniture).
-*   `type`: (e.g., `"furniture"`, `"tool"`, `"consumable"`, `"book"`).
-    *   **Consumable items** include a `stats_edit` dictionary (for effects on fullness, hydration, energy) and an `effects` list.
-    *   **Book items** include a `chapters` list, where each chapter is a dictionary with a `title` and `content`.
+- **initial_room:** string with the name of the room to start in
 
----
+Following, you need a key for each of the rooms in your Base House, and inside this key there is a list of the items we will use by name as they are in our ItemStore.
 
-## Workflow Summary
+## How do they work?
 
-Here's a summarized workflow for creating new game rooms:
+This specific implementation is up to change, but for now to introduce new initial states, after you create your configuration and base house files, go into `inventory_items/base_state_manager/base_state_config.py`
 
-1.  **Generate Room Descriptions with AI Helper:**
-    *   Navigate to the `data_constructors/room_generator.py` script.
-    *   Edit the `room_configs` list within this script. For each new room, add a dictionary specifying its concept (for AI description generation), `name`, `image`, `types`, and `music`.
-    *   Run the script:
-        ```bash
-        python room_generator.py
-        ```
-        This will generate detailed, time-of-day specific descriptions and output the complete room structure into a `room_data.json` file.
-    *   **Review:** **Always review** the generated data in `room_data.json` for accuracy and tone. Make any necessary manual adjustments there.
+Here we can change `self.states_configs` which maps a name for your initial state and the two files:
 
-2.  **Integrate into Game State (`items_init.py`):**
-    *   Open the `items_init.py` file.
-    *   Choose an existing state dictionary (like `base_state`) or create a new one.
-    *   Copy the generated room dictionary (or dictionaries) from `room_data.json`.
-    *   Paste this room dictionary into the `"rooms"` list within the chosen state dictionary in `items_init.py`.
+```python
+self.states_configs = {
+    "base_state": {
+        "b_house_path": "inventory_items/base_state_manager/houses_data/prime_house.json",
+        "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
+    },
+    "dev_room": {
+        "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
+        "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
+    }
+}
+```
 
-3.  **Configure Room ID and Starting Room:**
-    *   **Crucially**, only set the `id` to `0` for the intended starting room. **Do not** include an `id` key for any other rooms; their IDs will be automatically assigned by the game's initialization script.
-    *   If your new room (the one with `id: 0`) is intended to be the starting room, ensure the `"current_room_id"` in the state dictionary is set to `0`.
+Here you have to add your mapping.
 
-4.  **Populate with Items (Manual Step):**
-    *   Within your newly added room dictionary in `items_init.py`, manually populate the `"items"` list with dictionaries representing the items present in that room. Even if `room_generator.py` initializes `items: []`, this is where you'd add the specific item data (`name`, `descriptions`, `static`, `type`, etc.).
+`inventory_items/inventory_manager.py` also needs changes. For `available_states` you have to add the name you just created in this `states_config`:
 
-5.  **Finalize Game State (if creating a new top-level state):**
-    *   If you created a new top-level state dictionary, you'll also need to modify the `InventoryHouseManager` initialization in `inventory_house_manager.py` to set `self._default_state` to your new state.
+```python
+available_states = [
+    "base_state",
+    "dev_room",
+    "my_new_state"  # add it here
+]
+```
 
-
-
-## Crucial
-
-For now the system does not have a method to load newly created rooms into already existing agents or worlds. If you create a new room, one will have to start a whole new run for this to be added. This is an area of improvement, so we can add new rooms into existing runs.
+**Note:** One has to change the GUI code to add this to the interface for now. We will have to update this involved process, but if you don't need it on the GUI it will be enough to do the steps above for it to be a valid configuration.
