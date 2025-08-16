@@ -448,10 +448,10 @@ class room_bedroom:
         # --- Add signal call for looking ---
         self._send_signal({"type": "show_message", "message": "You look under the bed..."})
         # -----------------------------------
-        if check_one_in(50):
-            found_item=random_object.load_and_get_random_item("world_data/underbed_found_data.json")
+        if check_one_in(1):
+            found_item=random_object.load_and_get_random_item("underbed_found_data.json")
             creation_message=self.state.create_item("inventory", None, found_item)
-            message=f"You found something under the bed! {creation_message}."
+            message=f"You found something under the bed! It is a {found_item["name"]}, it is now in your inventory."
             # --- Add signal call for finding something ---
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"}) # Example icon
             # -------------------------------------------
@@ -492,9 +492,9 @@ class room_garden:
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png"})
         # -----------------------------------
         if check_one_in(200):
-            found_item=random_object.load_and_get_random_item("world_data/garden_found_items_data.json")
+            found_item=random_object.load_and_get_random_item("garden_found_items_data.json")
             creation_message=self.state.create_item("inventory", None, found_item)
-            message=f"While digging on the garden you found something! {creation_message}. All your stats have been lowered by {abs(edit)} for digging around."
+            message=f"While digging on the garden you found something! It is a {found_item["name"]}! It's been added to your inventory. All your stats have been lowered by {abs(edit)} for digging around."
              # --- Add signal call for finding something while digging ---
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2}) # Example icon
             # ---------------------------------------------------------
@@ -525,6 +525,8 @@ class room_living_room:
                 print(f"Ok to sit on!")
                 string_desc= "\n".join(item_details["details"]["descriptions"])
                 return f"You take a sit on the {item_details["details"]["name"]}\n {string_desc}"
+            return f"Item {item_id} {item_details["details"]["name"]} would not be a good place to sit on!"
+        return f"Item {item_id} not found."
         
 
     def watch_tv(self):

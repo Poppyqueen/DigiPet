@@ -20,7 +20,7 @@ import math
 #     gardener_s_starter_kit
 # )
 
-from world_data.care_packages import CareConstructor
+from inventory_items.items_provider.care_packages import CareConstructor
 
 
 # --- General Configuration ---
@@ -377,7 +377,7 @@ color_code={
 #     ]
 
 
-CARE_PACKAGES = CareConstructor(care_directory="inventory_items/care_packages_data").create_full_data()
+CARE_PACKAGES = CareConstructor(care_directory="inventory_items/items_provider/care_packages_data").create_full_data()
 
 
 # --- Event Configuration ---

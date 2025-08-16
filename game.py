@@ -47,7 +47,7 @@ except pygame.error:
     line_height = font.get_linesize() # Get line height from fallback font
 
 if mock_running:
-    config_manager = ConfigManager("bots", True)
+    config_manager = ConfigManager("bots", mock=True)
 else:
     config_manager = ConfigManager("bots")
 

@@ -5,3 +5,4 @@ bots/
 .cache.sqlite
 .DS_Store
 *secrets/
+*__pycache__/

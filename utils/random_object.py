@@ -2,8 +2,12 @@ import json
 import random
 import os # Used only for creating the dummy file for demonstration
 
+from inventory_items.items_provider.item_store import ItemStore
 
-def load_and_get_random_item(items_file="world_data/found_items_data.json"):
+item_s=ItemStore("inventory_items/items_provider/items_data")
+
+
+def load_and_get_random_item(items_file="underbed_found_data.json"):
     """
     Loads item data from a JSON file and returns a random item structure.
 
@@ -15,9 +19,10 @@ def load_and_get_random_item(items_file="world_data/found_items_data.json"):
               or the list is empty.
     """
     try:
-        with open(items_file, 'r') as f:
-            # Load the entire list from the JSON file
-            item_list = json.load(f)
+        filers={
+            '__source_path__':items_file
+        }
+        item_list=item_s.find_items(filers)
 
         # Check if the loaded data is actually a list
         if not isinstance(item_list, list):

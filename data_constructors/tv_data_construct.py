@@ -1,22 +1,31 @@
 # tv_data_construct.py
 
-from openai import OpenAI
+
+
+import os
+import re
+import sys
+
+# --- TEMPORARY FIX FOR DIRECT EXECUTION ---
+# This block allows the script to find the 'utils' package
+# when run directly from its current location.
+# Assuming 'utils' is in the parent directory of this script's location
+# This adds the parent directory to the Python path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+sys.path.append(parent_dir)
+# -------------------------------------------
+
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 import json # Import the json module
-import os   # Import os to check file existence (optional, try/except is often better)
 import time
-# --- Pydantic Models (Keep these as defined before) ---
-from dotenv import load_dotenv
 
-load_dotenv()  # This loads variables from .env into os.environ
 
-api_key = os.getenv("OPENAI_API_KEY")
+from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
 
-if api_key is None:
-    print("API key not found. Please set the OPENAI_API_KEY environment variable.")
-    exit(1)
-    
+
+
 class individual_tv_show(BaseModel):
     content: str = Field(description="An excerpt, quote or part of the program playing on TV. This has to be content of the TV media in display, not descriptions, but small excerpts or sections of it.")
     time_tag: str = Field(description="The slot of time for this TV show to air. Options: 'early morning', 'morning', 'noon', 'afternoon', 'late afternoon', 'night', 'late night'")
@@ -43,32 +52,12 @@ class ProgramContent(BaseModel):
 
 
 class tv_exec:
-    client=OpenAI(api_key=api_key)  # client is correctly set up here at the class level
 
-    def __init__(self):
-        pass
+    def __init__(self, select_model="gpt-5-mini", select_provider="openai"):
+        self.llm_client=LLMCONFIG(select_model,select_provider).get_provider()
 
 
-    def _calls_structured(self, system: str, input_content: str, structure: Any):
-        """
-        Calls the OpenAI API with a structured response format (e.g., JSON guided by Pydantic).
-        """
-        try:
-            completion = self.client.beta.chat.completions.parse(
-                model="gpt-4.1-mini", # As per original prompt
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": input_content}
-                ],
-                response_format=structure
-            )
-            response_content = completion.choices[0].message.parsed
-            time.sleep(1)
-            return response_content
-        except Exception as e:
-            print(f"Error calling OpenAI API for structured output with structure {structure.__name__}: {e}")
-            # print(f"System: {system}\nInput: {input_content}") # Optional: uncomment for debugging failed prompts
-            return None
+
 
     # --- Existing methods for two-step generation (Keep these) ---
 
@@ -85,9 +74,9 @@ class tv_exec:
         user_prompt = f"Develop a channel outline based on the concept: '{channel_concept}'."
 
         print(f"  Calling AI (Step 1: Channel Outline) for concept: '{channel_concept}'")
-        response = self._calls_structured(
+        response = self.llm_client.structured_output(
             system=system_prompt,
-            input_content=user_prompt,
+            user=user_prompt,
             structure=InitialChannelSetup
         )
 
@@ -164,9 +153,9 @@ Program Title: [Program Title]
         )
 
         print(f"  Calling AI (Step 2: Program Segments) for Program: '{program_title}' on Channel: '{channel_name}'")
-        response = self._calls_structured(
+        response = self.llm_client.structured_output(
             system=system_prompt,
-            input_content=user_prompt,
+            user=user_prompt,
             structure=ProgramContent
         )
 

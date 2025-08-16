@@ -43,7 +43,8 @@
         "image": "lab_room",
         "room_types": [
             "library",
-            "kitchen"
+            "kitchen",
+            "bedroom"
         ],
         "plot_number": 3,
         "music": "white_room",

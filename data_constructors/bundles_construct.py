@@ -1,6 +1,6 @@
 # bundles_construct.py
 
-# Updated, is now working as a general items creator, there is an entry point on main root that displays the usage
+# Updated, is now working as a general items creator
 
 import os
 import re
@@ -130,44 +130,6 @@ If a seed type is present, you MUST include 'plant_type' (string) with one of th
 
         print("--- AI Call Successful ---")
         return processed_items_list
-
-# --- Helper function to create a valid Python variable name ---
-
-# # --- Helper function to save the bundle data to a specified file ---
-# def save_bundle_to_file(file_path: str, concept: str, bundle_data: List[Dict[str, Any]]):
-#     """
-#     Generates a Python variable definition string from bundle data based on the concept
-#     and appends it to the end of the specified script file.
-
-#     Args:
-#         file_path: The path to the target Python file where the bundle list will be saved.
-#         concept: The string concept used to create the bundle.
-#         bundle_data: The list of dictionaries representing the item definitions.
-#     """
-#     filename = file_path # Use the provided file path
-
-#     variable_name = _concept_to_variable_name(concept) # this is no longer needed
-
-#     # Format the bundle data list into a Python string representation
-#     # Using repr() is suitable for basic Python literals.
-#     # Add indentation for readability in the output file
-#     data_string = repr(bundle_data)
-#     # Optional: Using json.dumps for potentially nicer formatting, requires json.loads when loading
-#     # data_string = json.dumps(bundle_data, indent=4)
-
-#     # Format the full variable definition string
-#     # Add newlines for separation from existing code
-#     definition_string = f"\n\n{variable_name} = {data_string}\n"
-
-#     try:
-#         # Open the file in append mode ('a')
-#         # Create the file if it doesn't exist
-#         with open(filename, 'a', encoding='utf-8') as f:
-#             f.write(definition_string)
-#         print(f"Bundle '{concept}' saved successfully as variable '{variable_name}' in {filename}")
-#     except IOError as e:
-#         print(f"Error saving bundle data to {filename}: {e}")
-
 
     # --- Helper function to save the bundle data to a specified file ---
     def save_bundle_to_json_file(self, file_path: str, bundle_data: List[Dict[str, Any]]):
