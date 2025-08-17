@@ -1,0 +1,955 @@
+[
+    {
+        "name": "Black Garlic Cloves",
+        "descriptions": [
+            "Soft, caramelized garlic cloves with a sweet, molasses-like umami.",
+            "Aged and fermented until black; mellow, almost balsamic in flavor.",
+            "Used as a garnish, spread, or an umami-rich ingredient in plant-based dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A rich, sweet umami coats your tongue; the sharp bite of fresh garlic is gone.",
+            "Leaves a lingering savory warmth that enhances vegetable dishes and spreads."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 0.5,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Fresh Sea Grapes (Umibudo)",
+        "descriptions": [
+            "Tiny translucent green beads that pop with a briny, mineral burst.",
+            "A coastal delicacy from warm seas \u2014 salty, slightly vegetal, and highly hydrating.",
+            "Best eaten raw or as a bright garnish for salads and rice dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Each bead bursts with a saline spray that refreshes the palate.",
+            "Leaves you feeling light and oddly refreshed, like a sip of seawater tempered into food."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 10.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Ripe Jackfruit Chunks (ready-to-eat)",
+        "descriptions": [
+            "Tender, fibrous pieces of jackfruit with tropical sweetness and a mango-like aroma.",
+            "Versatile: sweet when ripe, but strains or young fruit are used as meaty texture in savory dishes.",
+            "Packed and ready to eat as a fruit snack or blended into plant-based recipes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A hefty, satisfying bite that fills you without feeling greasy.",
+            "Sweet tropical notes lift your mood and add bright flavor to desserts or bowls."
+        ],
+        "stats_edit": {
+            "fullness": 28.0,
+            "hydration": 12.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "Red Miso Paste (jar)",
+        "descriptions": [
+            "A deeply savory, fermented soybean paste with a pronounced salty and savory depth.",
+            "Staple ingredient for broths, marinades, and dressings \u2014 fermented, probiotic-rich, and intense.",
+            "Use sparingly raw or diluted into soups and sauces."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "An immediate wall of savory saltiness that amplifies other plant flavors.",
+            "Gives a comforting depth to broths; a little goes a long way."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": -5.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Black Sesame Paste",
+        "descriptions": [
+            "Silky, nutty paste made from roasted black sesame seeds; earthy, slightly bitter, and rich.",
+            "Used as a spread, dessert filling, or savory condiment in many Asian-influenced recipes.",
+            "Dense and caloric \u2014 a little adds significant body and flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A toasty, nutty mouthfeel that lingers and rounds out sweeter or savory dishes.",
+            "Feels indulgent and substantial despite being plant-based."
+        ],
+        "stats_edit": {
+            "fullness": 14.0,
+            "hydration": -1.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Pickled Nopal Cactus Pads (nopalitos)",
+        "descriptions": [
+            "Tender cactus pads preserved with a light vinegar brine; green, tangy, and slightly mucilaginous when cooked.",
+            "Common in Mexican and Southwestern cuisines; adds a vegetal, lime-accented bite.",
+            "Ready to toss into salads, tacos, or stews."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A pleasantly vegetal, slightly slimy texture that pairs well with acidic dressings.",
+            "Leaves a cooling, green aftertaste that brightens heavier components."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 8.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Roasted Sacha Inchi Seeds",
+        "descriptions": [
+            "Crunchy, roasted seeds high in plant protein and omega-rich oils; nutty and satisfying.",
+            "Often described as a cross between peanuts and pumpkin seeds, but with a clean, toasted finish.",
+            "Great as a snack, salad topper, or ground into plant-based butters."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A crunchy, toasty burst that leaves a pleasant oily nuttiness.",
+            "Satisfying and filling, they make a dense plant-protein snack."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 0.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Dried Pandan Leaves Bundle",
+        "descriptions": [
+            "A small bundle of fragrant pandan leaves, dried for storage; aromatic notes of vanilla and green pandan.",
+            "Used as a flavoring for rice, desserts, and beverages across Southeast Asia.",
+            "Not typically eaten in large amounts \u2014 used to infuse aroma into dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Adds a lifted, floral-vanilla aroma to whatever it steeps into.",
+            "Gently elevates the aroma of desserts and coconut-based dishes without adding heaviness."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "bag of white rice (1 kg)",
+        "descriptions": [
+            "A tightly sealed 1 kg bag of long-grain white rice \u2014 dry, starchy, and extremely versatile once cooked.",
+            "Staple grain that stores well and can be prepared in many ways: boiled, steamed, or fried."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A plain bowl of cooked rice is filling and quietly comforting.",
+            "Dry rice is dense and not thirst-quenching by itself, but provides steady calories when prepared."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": 0.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "bag of dried lentils (500 g)",
+        "descriptions": [
+            "A 500 g pouch of dried lentils \u2014 cooks quickly and provides protein and fiber.",
+            "Ideal for soups, stews, or simple one-pot meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Nutty and earthy when cooked; a hearty, protein-rich base for meals.",
+            "Lentils rehydrate and become filling with a satisfying texture."
+        ],
+        "stats_edit": {
+            "fullness": 28.0,
+            "hydration": 0.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "bag of dried black beans (500 g)",
+        "descriptions": [
+            "A 500 g bag of dried black beans \u2014 high in protein and very filling after soaking and cooking.",
+            "Long shelf life and pairs well with rice, soups, and salads."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Rich and hearty when cooked; dense, sustaining, and good for slow-cooked dishes.",
+            "Takes longer to prepare but yields a substantial portion of protein and fiber."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 0.0,
+            "energy": 32.0
+        }
+    },
+    {
+        "name": "rolled oats (500 g)",
+        "descriptions": [
+            "Half-kilogram of rolled oats \u2014 useful for porridge, baking, or adding to smoothies.",
+            "Cooks quickly and is a common breakfast staple providing soluble fiber."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Warm oatmeal soothes and fills you up; raw oats give a chewy, nutty bite.",
+            "Absorbs liquids well, making it a good base for hydrating breakfasts."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 6.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "dried pasta",
+        "descriptions": [
+            "A 500 g pack of dried durum wheat pasta \u2014 cooks quickly to yield a filling meal component.",
+            "Neutral flavor that pairs with sauces, vegetables, and legumes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A warm bowl of pasta is filling and comforting; ideal for stretching other ingredients.",
+            "Dry pasta is calorically dense and satisfying once cooked."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": 0.0,
+            "energy": 28.0
+        }
+    },
+    {
+        "name": "canned tomatoes (400 g)",
+        "descriptions": [
+            "A 400 g can of crushed tomatoes \u2014 pre-cooked and ready to use in sauces, stews, and soups.",
+            "Provides acidity, moisture, and vegetable flavor without refrigeration until opened."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Bright, slightly acidic tomato flavor adds moisture and vitamin-rich body to meals.",
+            "Can be eaten cold or heated; a quick way to add vegetables to a dish."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 14.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "jar of peanut butter (340 g)",
+        "descriptions": [
+            "A 340 g jar of smooth peanut butter \u2014 calorie-dense, rich in fats and plant protein.",
+            "Good for sandwiches, sauces, or as a high-energy spread."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Thick and rich; a small spoonful is very filling and provides sustained energy.",
+            "Oily texture and concentrated calories make it useful for boosting meal energy quickly."
+        ],
+        "stats_edit": {
+            "fullness": 40.0,
+            "hydration": 0.0,
+            "energy": 45.0
+        }
+    },
+    {
+        "name": "granulated sugar (500 g)",
+        "descriptions": [
+            "A 500 g bag of granulated sugar \u2014 sweetener for baking, beverages, and preserving.",
+            "Pure carbohydrates that provide quick, high-impact calories."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A quick hit of sweetness and energy; small amounts spike energy but do not fill much.",
+            "Useful for boosting morale and adding quick calories to bland staples."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 0.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "all-purpose flour (1 kg)",
+        "descriptions": [
+            "A 1 kg bag of all-purpose wheat flour \u2014 an ingredient for baking bread, pancakes, and thickening sauces.",
+            "Not typically eaten alone; requires cooking or processing into baked goods."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "vegetable oil (1 L)",
+        "descriptions": [
+            "A 1 L bottle of neutral vegetable oil \u2014 used for frying, baking, and adding calories to dishes.",
+            "Long shelf life when kept sealed and stored away from heat."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Hummus & Veggie Pack",
+        "descriptions": [
+            "A reusable container of creamy chickpea hummus with carrot, cucumber, and celery sticks for dipping.",
+            "Fresh, crisp vegetables paired with a protein-rich plant spread \u2014 ready to eat and portable."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The crunchy vegetables and smooth hummus make for a satisfying, savory bite.",
+            "You feel pleasantly full and refreshed after finishing the pack."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": 6.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Quinoa & Roasted Vegetable Salad",
+        "descriptions": [
+            "A chilled bowl of fluffy quinoa mixed with roasted sweet potato, bell pepper, kale, and a lemon-tahini dressing.",
+            "High-fiber and nutrient-dense, designed as a filling, plant-based meal."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The roasted vegetables and warm quinoa balance each other for a hearty, comforting mouthfeel.",
+            "Eating it leaves you steadily energized and satisfied for hours."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": 8.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "Roasted Veg Sandwich on Whole Grain",
+        "descriptions": [
+            "Toasted whole-grain bread layered with roasted zucchini, peppers, eggplant, and a smear of avocado.",
+            "A convenient handheld meal with a mix of textures \u2014 crisp bread, soft roasted veg, creamy avocado."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Warm roasted vegetables and avocado create a balanced savory bite.",
+            "Fills you comfortably while delivering steady, long-lasting energy."
+        ],
+        "stats_edit": {
+            "fullness": 28.0,
+            "hydration": 5.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Fruit Compote & Oat Jar",
+        "descriptions": [
+            "A mason jar layered with lightly stewed seasonal fruit compote, rolled oats, and a touch of maple.",
+            "Sweet but wholesome \u2014 works as breakfast or a dessert-like snack."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Warm fruit and creamy oats feel comforting and slightly indulgent.",
+            "Leaves a pleasant light sweetness without being overly heavy."
+        ],
+        "stats_edit": {
+            "fullness": 22.0,
+            "hydration": 10.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Trail Mix Bag",
+        "descriptions": [
+            "A resealable bag of mixed almonds, cashews, pumpkin seeds, and dried cranberries.",
+            "Calorie-dense, shelf-stable snack for quick energy between meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Crunchy, slightly sweet, and very filling for its size.",
+            "Gives a concentrated boost of energy and satiety when munched."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 0.0,
+            "energy": 35.0
+        }
+    },
+    {
+        "name": "Chia Pudding Cup (almond milk)",
+        "descriptions": [
+            "Silky chia seed pudding made with almond milk and a hint of vanilla, topped with fresh berries.",
+            "A nutrient-rich dessert or snack with omega-3s and fiber."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The gelatinous chia texture is creamy and filling; berries add a fresh bite.",
+            "Feels hydrating and satisfying without heaviness."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 12.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Cold-Pressed Green Juice (bottle)",
+        "descriptions": [
+            "A chilled bottle of blended spinach, cucumber, celery, green apple, and lemon.",
+            "Low-residue, nutrient-packed beverage meant to refresh and hydrate."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Bright, slightly tart vegetal flavors that wake up your palate.",
+            "Quickly quenches thirst while delivering a light vitamin boost."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 30.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Garden Mixed Greens Salad",
+        "descriptions": [
+            "A ready-to-eat container of mixed baby lettuces, spinach, shaved cucumber, halved cherry tomatoes and a light lemon vinaigrette on the side.",
+            "Crisp, lightly dressed greens packaged for immediate eating; single-serving 300 g portion.",
+            "Keeps chilled; best eaten cold for maximum crunch and freshness."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a forkful of crisp leaves and cucumber; the bright lemon vinaigrette wakes your palate and leaves a clean, refreshing finish.",
+            "The crisp texture and mild bitterness of the greens make it feel very light but clearly satisfying \u2014 a tidy, revitalizing bite."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 8.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Mediterranean Chickpea Salad",
+        "descriptions": [
+            "Hearty blend of cooked chickpeas, diced cucumber, red onion, parsley and a drizzle of olive oil and lemon.",
+            "Protein-forward plant-based salad, ready to eat from a sealed tub; ~350 g serving.",
+            "Satisfying texture with a slight tang from the citrus and vinegar dressing."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Each spoonful is pleasantly substantial \u2014 the chickpeas give a nutty bite while lemon and herbs brighten the mouth.",
+            "You feel content quickly; the texture and savory notes produce a steady, filling sensation without heaviness."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 6.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Quinoa & Roasted Vegetable Bowl",
+        "descriptions": [
+            "A warm-style ready-to-eat bowl with fluffy quinoa, roasted sweet potato, zucchini, bell peppers and a tahini drizzle.",
+            "Higher-calorie plant-based meal intended as a filling lunch; ~450 g portion.",
+            "Hearty and warming flavors from roasted vegetables; best eaten at room temperature or slightly chilled."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The roasted sweet potato and quinoa make each bite substantial and comforting, with a gentle richness from tahini.",
+            "You feel noticeably more full and sustained after a few mouthfuls \u2014 it's a proper, filling plant-based meal."
+        ],
+        "stats_edit": {
+            "fullness": 40.0,
+            "hydration": 5.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "Tropical Fruit Medley Cup",
+        "descriptions": [
+            "Cubed pineapple, mango, papaya and banana tossed with a squeeze of lime; single-serve fresh fruit cup.",
+            "Bright, juicy and ready to eat with a fork or spoon; ~275 g serving.",
+            "High water content for a refreshing snack or dessert."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Juice bursts on the tongue with each bite \u2014 intensely sweet and tangy, cooling and bright.",
+            "The high water and natural sugars instantly refresh and uplift your senses; it feels hydrating and lively."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 30.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Berry & Plant Yoghurt Parfait",
+        "descriptions": [
+            "Layers of blueberries, strawberries and raspberries over coconut or oat-based yoghurt with a sprinkle of granola.",
+            "Balanced sweet-and-tart parfait in a portable cup; ~300 g serving.",
+            "Creamy texture contrasted by crunchy granola for a pleasant mouthfeel."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The tangy berries cut through the creamy plant yoghurt, while the granola adds a satisfying crunch.",
+            "It feels indulgent but light \u2014 a sweet treat that still leaves you moderately satisfied and energized."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": 12.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "Avocado & Tomato Open Sandwich",
+        "descriptions": [
+            "Whole-grain slice topped with mashed avocado, ripe tomato slices, lemon and microgreens; ready to eat.",
+            "Single savory snack-size open sandwich packaged for grab-and-go.",
+            "Creamy avocado and juicy tomato combine to create a filling, flavorful bite."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The richness of mashed avocado coats your mouth while tomato adds a bright, juicy contrast.",
+            "It provides a satisfying, sustaining sensation \u2014 hearty enough to feel like a small meal."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": 6.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Rainbow Coleslaw with Apple",
+        "descriptions": [
+            "Shredded red and green cabbage, carrot and thin apple ribbons tossed in a light apple-cider dressing.",
+            "Crisp, slightly sweet slaw packaged for immediate consumption; ~280 g serving.",
+            "Firm texture and bright acidity make it a refreshing side or light stand-alone salad."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Crunchy cabbage and crisp apple give a lively, slightly sweet bite that feels clean and brisk.",
+            "You feel refreshed and mildly satiated \u2014 the sugar from apple offers a small energy lift without heaviness."
+        ],
+        "stats_edit": {
+            "fullness": 22.0,
+            "hydration": 10.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Chilled Cucumber & Mint Soup",
+        "descriptions": [
+            "Smooth chilled soup made from blended cucumber, fresh mint, lime juice and a touch of olive oil; served cold.",
+            "Very hydrating, light portion suitable as a starter or cooling snack; ~250 ml serving.",
+            "Delicate herbal aroma and a cooling mouthfeel."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A cold spoonful slides across your tongue with a cooling mint snap and watery cucumber freshness.",
+            "Immediately hydrating and soothing, it feels like a refreshing reset on a warm day."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 40.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "apple slice",
+        "descriptions": [
+            "A single thin slice of crisp red apple, skin on, ready to eat.",
+            "Sweet-tart and slightly crunchy with visible juice along the cut edge."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into the apple slice; a sweet-tart crunch releases cool, juicy flavor that refreshes your mouth.",
+            "The crisp texture wakes up your senses without feeling heavy."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 4.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "orange wedge",
+        "descriptions": [
+            "A single wedge of peeled orange, segments intact and easy to pop into your mouth.",
+            "Bright citrus aroma, dripping slightly with sweet-tart juice."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the orange wedge; the burst of bright, acidic juice is instantly refreshing and hydrating.",
+            "Its tangy sweetness leaves a clean, zesty aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 10.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "banana slice",
+        "descriptions": [
+            "A single round slice from a ripe banana, soft and slightly sweet.",
+            "Creamy texture with gentle banana aroma, ready to chew."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop the banana slice in your mouth; its soft, slightly mushy texture and mellow sweetness feel comforting.",
+            "It provides a quick, mellow energy lift without any sharp flavors."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 3.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "cucumber slice",
+        "descriptions": [
+            "A thin round slice of cucumber, crisp and cool.",
+            "Mild flavor with high water content, often served chilled."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the cucumber slice; it feels cool and watery, leaving a clean, vegetal taste.",
+            "Its crisp snap is light and very refreshing."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 8.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "carrot stick",
+        "descriptions": [
+            "A single stick of raw carrot, peeled and cut for snacking.",
+            "Firm and crunchy with a naturally sweet, earthy flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You crunch the carrot stick; the firm texture and sweet-earthy notes make it satisfyingly substantial.",
+            "It leaves a lingering crispness that feels wholesome."
+        ],
+        "stats_edit": {
+            "fullness": 7.0,
+            "hydration": 2.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "celery stalk",
+        "descriptions": [
+            "A single short stalk of celery, washed and trimmed.",
+            "Very fibrous and crunchy with a mild, slightly bitter green flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew the celery stalk; its pronounced crunch and watery snap is refreshing though slightly bland.",
+            "The fibrous texture feels invigorating but not filling."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 5.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "tomato slice",
+        "descriptions": [
+            "A single thin slice of ripe tomato, juicy and slightly tangy.",
+            "Soft flesh with seeds and a fresh garden aroma."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the tomato slice; the juicy, slightly acidic flesh coats your mouth with fresh, savory-sweet flavor.",
+            "Its tender texture is lightly satisfying without being heavy."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 6.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "pineapple chunk",
+        "descriptions": [
+            "A single bite-sized chunk of ripe pineapple, bright yellow and juicy.",
+            "Sweet with a sharp, tropical tang and fibrous texture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite the pineapple chunk; a rush of sweet-tart juice and tropical acidity tingles your tongue.",
+            "Its fibrous bite leaves a lively, vibrant aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 9.0,
+            "hydration": 6.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "watermelon wedge",
+        "descriptions": [
+            "A small triangular wedge of watermelon with rind removed from the tip.",
+            "Extremely juicy, sweet, and cooling \u2014 perfect for warm weather snacks."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a bite of the watermelon wedge; an immediate wave of sugary, cool juice floods your mouth and refreshes you thoroughly.",
+            "Its light flesh feels hydrating and surprisingly filling for its weight."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 15.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "strawberry (single)",
+        "descriptions": [
+            "One ripe strawberry, hulled and ready to eat whole.",
+            "Sweet-fragrant with a soft, slightly seedy exterior."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop the strawberry into your mouth; its juicy sweetness and bright aroma provide a quick, delightful burst of flavor.",
+            "The soft texture is pleasant and not filling."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 2.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "bell pepper slice",
+        "descriptions": [
+            "A single slice of raw bell pepper, crisp and colorful.",
+            "Mildly sweet with a snappy texture and glossy skin."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew the bell pepper slice; its bright, slightly sweet flavor and crisp bite are pleasantly crunchy.",
+            "It feels light and uplifting rather than filling."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 4.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "grape (single)",
+        "descriptions": [
+            "A single seedless grape, firm-skinned and juicy.",
+            "Small, sweet, and perfect for popping in your mouth as a tiny snack."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop the grape; it bursts with sweet juice that gives a quick, pleasant hit of flavor.",
+            "Tiny and light, it doesn't fill you but provides a momentary sugar lift."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 1.0,
+            "energy": 2.0
+        }
+    }
+]

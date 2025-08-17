@@ -50,14 +50,14 @@ class ItemDefinition(BaseModel):
     descriptions: List[str] = Field(description="A list of strings providing descriptions for the item.")
     static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved like furniture).")
     # UPDATED: type is now List[str]
-    type: List[str] = Field(description="A list of strings defining item categories (e.g., ['consumable'], ['misc', 'tool'], ['consumable', 'seed'], ['seed']). Primary categories: 'consumable', 'misc', 'furniture', 'seed'.")    
+    type: List[str] = Field(description="A list of strings defining item categories (e.g., ['consumable'], ['misc', 'tool'], ['consumable', 'seed'], ['seed']). Primary categories: 'consumable', 'misc', 'furniture', 'seed', 'seat'.")    
     stackable: bool = Field(default=True, description="Bool for the stackablity property of this item, if defaults to true. Small non-unique items should be set to true so they are stackable. Large and unique items should be set to FALSE")
     # MAKE effects and stats_edit OPTIONAL
     # Use | None for Pydantic V2 syntax for optional fields
     # default=None allows the field to be missing in the input data without Pydantic error
 
-    effects: List[str] |None= Field(default=None, description="A list of strings describing narrative effects upon use (only for 'consumable' items).")
-    stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items).")
+    effects: List[str] |None= Field(default=None, description="A list of strings describing narrative and evocative effects upon use (only for 'consumable' items). i.e 'You feel refreshed after eating the apple', 'The apple gives a delicious juicy and sweet crunch'. Or, 'You eat the salt by itself, an overpowering slightly disgusting metalic flavor takes over you', 'You eat the raw eags, the slimy texture and the lack of taste make you gag', 'Eating the raw egss makes your stomach churn'")
+    stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items) Can be possitive or negative, i.e 'hydration' -10 for a salty snack. -50 hydration for dry rice, -50 energy for raw meat, +4 hydration for a fresh apple, etc.")
 
     plant_type: str  |None =Field(default=None, description=f"A string for the seed type, it should define the plant of seed this is for, from the valid options: {stringed_plant_types}")
 
@@ -102,6 +102,12 @@ If a consumable type is present, you MUST include 'effects' (List[str]) and 'sta
 Important: Only apply negative stat effects to items that are actually dangerous to eat raw (e.g., uncooked meat). For these items, such as a raw chicken, use severe negative values like -10 for fullness, -30 for hydration, and -50 for energy. Naturally edible raw items, like fruits and vegetables, should always provide positive or neutral effects.
 Seeds:
 If a seed type is present, you MUST include 'plant_type' (string) with one of these exact values: 'lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry'.
+Seats: 
+For any furniture where one can sit on, beds, chairs and sofas of all kinds.
+
+Effects:
+Narrative effects for items assume items are consumed AS IS, meaning, for example: If your item is a bag of raw coffee beans, make a narrative of someone consuming the raw dry coffee beans. Do not assume any extra preparation.
+Other example: If your item is raw sugar, you assume someone just ate a raw package of sugar and make a narrative text for it, even if it is a negative or uncomfortable experience/effect.
 """
 
         # Use the prompt format from your working example
@@ -178,11 +184,16 @@ if __name__ == "__main__":
     crafter = bundles_maker()
 
     # Define the target file path with a .json extension
-    target_output_file = "inventory_items/items_provider/items_data/healthy_food.json" # 
+    target_output_file = "inventory_items/items_provider/items_data/food_n_drinks/staples.json" # 
 
     bundle_concepts = [
-    "Bundle of consumable items, fresh and healthy ready to eat simple consumables." # here we prompt directly for the plants we want, however, the AI agent already knows what the valid plants are. It might generate invalid seeds if you ask for it.
-    ]
+        "Bundle of staple foods ingrediets, fresh produce, beaf and poultry",
+       "Bundle of staple foods ingrediets, fresh produce, sea food special",
+        "Bundle of staple foods ingrediets, fresh produce, vegetables and fruits",
+        "Bundle of staple foods ingrediets, conserves"
+
+
+                ]
     #"Bundle of furniture, varied styles, eras and designs, vibes, artistic directions, simple and classics bundle of: TVs and entertainment systems" # here we prompt directly for the plants we want, however, the AI agent already knows what the valid plants are. It might generate invalid seeds if you ask for it.
 
     total_bundles = len(bundle_concepts)

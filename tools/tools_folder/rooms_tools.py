@@ -426,7 +426,7 @@ class room_bedroom:
         # Using square root:
         energy_gain = constant * math.sqrt(seconds)
         # self.memory.save_to_memory("You beggin your sleep process.", "short_term", "user")
-        self._send_signal({"type": "show_message_popup", "message": "Entering sleep!"})
+        self._send_signal({"type": "show_message_popup", "message": f"Entering sleep for {seconds} seconds!"})
         #int_gain=int(energy_gain)
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
         await asyncio.sleep(seconds)
@@ -449,7 +449,9 @@ class room_bedroom:
         self._send_signal({"type": "show_message", "message": "You look under the bed..."})
         # -----------------------------------
         if check_one_in(1):
-            found_item=random_object.load_and_get_random_item("underbed_found_data.json")
+            found_item=random_object.load_and_get_random_item("found_items/underbed_found_data.json")
+            #found_item=random_object.load_and_get_random_item("food_n_drinks/")
+
             creation_message=self.state.create_item("inventory", None, found_item)
             message=f"You found something under the bed! It is a {found_item["name"]}, it is now in your inventory."
             # --- Add signal call for finding something ---
@@ -492,7 +494,7 @@ class room_garden:
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png"})
         # -----------------------------------
         if check_one_in(200):
-            found_item=random_object.load_and_get_random_item("garden_found_items_data.json")
+            found_item=random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
             creation_message=self.state.create_item("inventory", None, found_item)
             message=f"While digging on the garden you found something! It is a {found_item["name"]}! It's been added to your inventory. All your stats have been lowered by {abs(edit)} for digging around."
              # --- Add signal call for finding something while digging ---

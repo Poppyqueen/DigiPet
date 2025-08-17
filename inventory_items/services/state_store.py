@@ -249,7 +249,7 @@ class StateStore(GenericJsonTool):
 
             quantity = item_data.get("quantity", 1)
             if not isinstance(quantity, int) or quantity <= 0: return False, "Invalid 'quantity' (must be positive int)"
-            # item_data["quantity"] = quantity # No longer force default here
+            item_data["quantity"] = quantity # No longer force default here
 
             max_stack_size = item_data.get("max_stack_size")
             if max_stack_size is not None and (not isinstance(max_stack_size, int) or max_stack_size <= 0):

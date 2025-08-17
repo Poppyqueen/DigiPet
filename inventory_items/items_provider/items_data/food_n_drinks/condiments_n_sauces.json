@@ -1,0 +1,932 @@
+[
+    {
+        "name": "fresh basil pesto (small jar)",
+        "descriptions": [
+            "Bright green pesto made from fresh basil leaves, grated Parmesan, toasted pine nuts, garlic, olive oil and a touch of lemon.",
+            "Freshly blended and jarred \u2014 oil-slicked, herb-forward and fragrant."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You scoop a spoonful of vibrant green pesto straight from the jar. The oily, nutty mouthfeel coats your tongue and the basil hits with a sharp, herbaceous lift.",
+            "The fat from the olive oil and pine nuts leaves a lingering, satisfying richness rather than a heavy feeling."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 1.5,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "fresh lemon vinaigrette (bottle)",
+        "descriptions": [
+            "Emulsified vinaigrette of freshly squeezed lemon juice, Dijon, olive oil, and a pinch of honey and herbs.",
+            "Light, tangy and bright \u2014 made the same day for maximum citrus aroma."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a small sip of the vinaigrette; the sharp lemon and mustard tang hit immediately, followed by a clean, oily warmth.",
+            "It refreshes the palate more than it fills you, with a lingering citrus acidity."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 6.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "fresh salsa roja (cup)",
+        "descriptions": [
+            "Chopped ripe tomatoes, onions, cilantro, jalape\u00f1o, lime and salt \u2014 freshly made and still bright.",
+            "Chunky, juicy and slightly spicy, with a strong tomato-lime freshness."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a spoonful of fresh salsa: juicy tomato shards burst, lime brightens the heat and the cilantro adds a green snap.",
+            "The high water content is lively on the tongue \u2014 refreshing, slightly spicy and satisfying."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 9.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "whole grain mustard",
+        "descriptions": [
+            "Coarsely ground mustard seeds, vinegar, a little honey and spices \u2014 tangy with a textured bite.",
+            "Freshly made with a pronounced mustard seed aroma and gentle heat."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow a small dab of whole grain mustard; the initial vinegary tang and percussive mustard heat open your sinuses.",
+            "It doesn't fill you much but leaves a sharp, lingering spice on the tongue."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 1.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "roasted garlic olive-oil dip (jar)",
+        "descriptions": [
+            "Slow-roasted garlic mashed into extra-virgin olive oil with a pinch of sea salt and lemon zest.",
+            "Creamy in texture from the garlic puree and glossy with olive oil."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a spoonful: the roasted garlic is mellow and sweet, the oil carries it luxuriously across your mouth.",
+            "It's rich and savory, leaving a warm, lingering oiliness rather than immediate fullness."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 1.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "chimichurri (small jar)",
+        "descriptions": [
+            "Vibrant Argentinian sauce of chopped parsley, oregano, garlic, red wine vinegar and olive oil.",
+            "Fresh-herb forward, tangy and a little garlicky \u2014 made the same day for a green punch."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a spoonful of chimichurri: an herbaceous wave with sharp garlic and vinegar bite, finishing on a grassy olive-oil note.",
+            "It livens the mouth and appetite more than it fills you, leaving a bright, lingering herbiness."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 3.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "tahini sauce (jar)",
+        "descriptions": [
+            "Smooth sesame paste thinned with lemon juice, water, and a touch of garlic \u2014 nutty, creamy and earthy.",
+            "Freshly whisked tahini sauce with a glossy, slightly viscous texture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a spoonful of tahini: dense, nutty sesame flavors coat your mouth and leave a slightly bitter, satisfying finish.",
+            "The high oil and seed content feels substantial and caloric rather than watery."
+        ],
+        "stats_edit": {
+            "fullness": 7.0,
+            "hydration": 2.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "gochujang (fermented chili paste)",
+        "descriptions": [
+            "Korean fermented chili paste made from red chili, glutinous rice, fermented soy, and salt \u2014 sweet, spicy, umami-rich.",
+            "Freshly stirred, with a glossy deep red color and balanced heat."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You sample a fingertip of gochujang: immediate savory umami, a slow-building sweetness, then warm chili heat that lingers.",
+            "It's intensely flavored so a little goes a long way \u2014 warming and appetite-stirring."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 3.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "quick pickled cucumber slices",
+        "descriptions": [
+            "Thinly sliced cucumbers flash-pickled in vinegar, sugar, salt and dill \u2014 crunchy, tangy and bright.",
+            "Made the same day so the cucumbers remain crisp and juicy."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop a slice into your mouth: the crisp cucumber crunch gives way to sharp vinegar and a dill perfume.",
+            "It's refreshing and lightly filling, with a clean, tangy finish."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 7.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "fresh tzatziki (cup)",
+        "descriptions": [
+            "Thick strained yogurt mixed with grated cucumber, garlic, lemon juice and fresh dill \u2014 creamy, cooling and herby.",
+            "Made from fresh yogurt and cucumbers, stirred lightly to preserve texture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a spoonful of tzatziki: cool yogurt soothes, cucumber freshness lifts and a gentle garlic tang plays in the background.",
+            "It's both cooling and modestly satisfying, leaving a clean, slightly tangy aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 8.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Assorted Condiment Pack",
+        "descriptions": [
+            "A compact cardboard sleeve holding an assortment of single-serve sauce sachets and small cups \u2014 perfect for takeout or a picnic.",
+            "Includes a mix of ketchup, mustard, mayo, soy sauce, hot sauce, BBQ sauce, ranch, and honey packets arranged in an easy-tear tray."
+        ],
+        "static": false,
+        "type": [
+            "misc"
+        ],
+        "stackable": false
+    },
+    {
+        "name": "Ketchup Sachet",
+        "descriptions": [
+            "A tear-open sachet of classic tomato ketchup, thick and slightly sweet.",
+            "Designed to be squeezed onto fries, burgers, or used as a quick dip."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You squeeze the ketchup straight from the sachet \u2014 sweet, vinegary tomato paste coats your tongue and brings a familiar savory comfort.",
+            "A small, satisfying dollop makes fried snacks taste noticeably richer."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 0.5,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Yellow Mustard Packet",
+        "descriptions": [
+            "A thin packet of tangy yellow mustard with a sharp, vinegary bite.",
+            "Brightens sandwiches and sausages with a punch of mustard seed flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tear and squeeze the mustard; the fierce, tangy heat wakes up your palate and adds a bright note to anything it touches.",
+            "A sting of acidity lingers, making fatty bites feel lighter."
+        ],
+        "stats_edit": {
+            "fullness": 2.5,
+            "hydration": 0.2,
+            "energy": 0.5
+        }
+    },
+    {
+        "name": "Mayonnaise Cup",
+        "descriptions": [
+            "A small sealed cup of creamy mayonnaise \u2014 rich and slightly tangy.",
+            "Thick texture meant for spreading or dipping; a little goes a long way."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You scoop a spoonful of mayo and taste a dense, fatty creaminess that clings to the mouth.",
+            "The richness makes light snacks feel indulgent but can leave a lingering oily coating."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 0.2,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Soy Sauce Mini Bottle",
+        "descriptions": [
+            "A tiny plastic bottle of dark, salty soy sauce with umami depth.",
+            "Often included with sushi or noodles; provides a salty-savory boost in small doses."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tip a drop onto your tongue \u2014 an immediate wave of salty, fermented umami that amplifies savory notes.",
+            "A little goes a long way; it makes bland foods taste markedly more complex."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.5,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Hot Sauce Sachet",
+        "descriptions": [
+            "A small packet of fiery hot sauce with chili heat and vinegar tang.",
+            "Ideal for adding spice to snacks or a quick kick to bland food."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tear and taste the hot sauce; bright vinegar and capsaicin scorch the tip of your tongue and bring a flush of heat.",
+            "The spice can be exhilarating and makes other flavors pop, leaving a warm afterglow."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.1,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "BBQ Sauce Cup",
+        "descriptions": [
+            "A small plastic cup filled with smoky-sweet barbecue sauce.",
+            "Notes of molasses, smoke, and tomato create a sticky glaze perfect for grilled things."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You dip a fry into the BBQ sauce; the smoky-sweet syrup coats each bite and lends a grill-char warmth.",
+            "The sugar and spices make savory snacks feel heartier, with a pleasant sticky finish."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 0.5,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Ranch Dressing Cup",
+        "descriptions": [
+            "A pale, creamy cup of ranch dressing \u2014 herb-forward with a garlicky tang.",
+            "A classic dip for vegetables, chips, or chicken fingers."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste the ranch straight from the cup; cool, herby, and garlicky cream slips across the palate and smooths spicy or salty bites.",
+            "Its richness makes raw veggies feel more indulgent."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 0.3,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Honey Packet",
+        "descriptions": [
+            "A slender tear-strip packet of pure honey \u2014 sticky, floral, and very sweet.",
+            "Used to sweeten tea or drizzle over bread and snacks; easy to carry and squeeze."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You squeeze a strip of honey into your mouth; it clings thickly, floods your tongue with concentrated floral sugar, and leaves a warm, lingering sweetness.",
+            "Instant energy from the sugars and a soothing coat in the throat if taken slowly."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 0.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "bottle of ketchup",
+        "descriptions": [
+            "A squeezable plastic bottle filled with thick, sweet-tangy tomato ketchup.",
+            "Commonly used as a tabletop condiment; the cap has a small dispensing hole and residue often clings to the rim."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You squeeze a dollop of ketchup directly into your mouth: the sweetness and vinegar hit immediately, leaving a sticky coating on your tongue.",
+            "The thick texture makes each bite feel more substantial than its calories imply."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 0.5,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "jar of mustard",
+        "descriptions": [
+            "A small glass jar of yellow mustard with a sharp, vinegary aroma.",
+            "Bright and tangy, it\u2019s sold sealed and keeps for a long time once unopened."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You scoop a spoonful of mustard and taste an immediate mustard heat and vinegar tang that clears the sinuses.",
+            "The pungent bite lingers, adding a sharp note to anything eaten afterward."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.2,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "bottle of soy sauce",
+        "descriptions": [
+            "A dark glass bottle of fermented soy sauce, intensely salty with umami depth.",
+            "A little goes a long way; the aroma is savory and slightly fermented."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tip a few drops of soy sauce into your mouth: a concentrated hit of salt and umami floods the palate.",
+            "The strong savoury note can make you crave something bland or plain to balance it."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "jar of mayonnaise",
+        "descriptions": [
+            "A creamy jar of mayonnaise: rich, thick, and oily with a subtle tang.",
+            "High in fat and calories, commonly used as a spread or base for dressings."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a spoonful of mayonnaise; the mouthfeel is luxuriously fatty and smooth, leaving an oily coating.",
+            "It feels filling despite being paste-like, and its neutral flavor amplifies other tastes you eat afterward."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 0.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "bottle of hot sauce",
+        "descriptions": [
+            "A small bottle of bright red hot sauce with chili oil floating on top.",
+            "Spicy and vinegary, designed to add heat to dishes in small amounts."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow a teardrop of hot sauce: a sharp, immediate burn spreads across your tongue and throat, followed by a lingering warmth.",
+            "The vinegar brightens the heat, leaving a tingling after-sensation."
+        ],
+        "stats_edit": {
+            "fullness": 1.5,
+            "hydration": 0.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "jar of pickles",
+        "descriptions": [
+            "A glass jar of preserved cucumber spears in a brine of vinegar, water, and spices.",
+            "Crunchy and tart, the brine keeps them shelf-stable until opened."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a pickle straight from the jar: the crunch is juicy and sharp, the vinegar tang wakes the mouth.",
+            "The salty-briny flavor is refreshing and slightly effervescent on the tongue."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 2.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "jar of chutney",
+        "descriptions": [
+            "A thick, sweet-spicy chutney made from reduced fruit, vinegar, sugar, and spices.",
+            "Sticky and aromatic, it pairs well with cheeses and grilled meats."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a spoonful of chutney: candied fruit sweetness arrives first, followed by warm spice notes and a gentle acidity.",
+            "The texture is sticky and clinging, leaving a fruity aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 0.5,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "tube of tomato paste",
+        "descriptions": [
+            "A small metal tube of concentrated tomato paste; dense, intensely flavored, and slightly sticky.",
+            "Used in small amounts to thicken and deepen tomato flavor in sauces and stews."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You squeeze a pea-sized blob of tomato paste into your mouth: an intense, concentrated tomato savor overwhelms the palate with a slightly earthy tang.",
+            "The thick paste clings and leaves a lingering tomato intensity."
+        ],
+        "stats_edit": {
+            "fullness": 3.5,
+            "hydration": 0.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "bottle of barbecue sauce",
+        "descriptions": [
+            "A BBQ sauce bottle\u2014sweet, smoky, and vinegary with a molasses-like thickness.",
+            "Commonly used for glazing grilled foods; it has a sticky, caramelized flavor profile."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You spoon a taste of barbecue sauce: a smoky sweetness with caramel notes and a mild tang coats the mouth.",
+            "The sugary undertone makes it feel indulgent and slightly sticky on the lips."
+        ],
+        "stats_edit": {
+            "fullness": 3.5,
+            "hydration": 0.5,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Fresh Herb Bouquet",
+        "descriptions": [
+            "A small tied bundle of fresh culinary herbs \u2014 basil, parsley, and cilantro \u2014 harvested within the last day.",
+            "Bright green, fragrant leaves with a crisp, slightly peppery bite. Ideal for garnishing or eating raw for a fresh hit of flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite a tender sprig; the leaves crush easily, releasing a grassy, bright aroma and a burst of green, slightly peppery flavor.",
+            "Eating the bouquet raw refreshes your mouth like a salad garnish \u2014 cooling and lively rather than filling."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 2.0,
+            "energy": 1.5
+        }
+    },
+    {
+        "name": "Saffron Threads",
+        "descriptions": [
+            "A tiny sachet of vivid red saffron threads \u2014 delicate stigmas with a floral, honeyed scent.",
+            "Extremely aromatic and prized; each thread is light but powerfully fragrant."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a few raw threads; a floral, slightly metallic sweetness blooms across your tongue and leaves a lingering golden aroma.",
+            "The taste is intense and ephemeral \u2014 aromatic more than filling, like inhaling a perfume with edible texture."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 0.1,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Grains of Paradise (jar)",
+        "descriptions": [
+            "A small glass jar of peppery, citrus-tinged Grains of Paradise \u2014 tiny brown seeds with a warm, complex bite.",
+            "Used like a pepper substitute with a brighter, spicier profile and subtle orange notes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop a couple of seeds into your mouth; a compact explosion of peppery warmth and citrus lifts the palate.",
+            "They leave a gentle heat and a clear, bright spiciness that wakes your senses without weighing you down."
+        ],
+        "stats_edit": {
+            "fullness": 0.3,
+            "hydration": 0.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Star Anise (whole pods)",
+        "descriptions": [
+            "Whole star-shaped pods with crisp, woody shells and concentrated anise (licorice) flavor.",
+            "Aromatic and decorative; typically used whole in steeping or slow cooking but edible if chewed carefully."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a pod; a strong licorice-like sweetness and astringent backbone wash across your tongue with a pleasant warming quality.",
+            "The experience is aromatic and slightly drying \u2014 flavorful and memorable rather than filling."
+        ],
+        "stats_edit": {
+            "fullness": 0.5,
+            "hydration": 0.2,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Black Cardamom Pods",
+        "descriptions": [
+            "Large, smoky black cardamom pods with bold, resinous, camphor-like notes \u2014 used for deep, savory applications.",
+            "Robust and smoky compared to green cardamom; whole pods contain seeds that can be chewed for concentrated flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite a pod and crush the seeds; an intense, smoky menthol warmth fills your mouth with a resinous, almost medicinal kick.",
+            "The taste is powerful and energizing \u2014 clearly aromatic and more stimulating than filling."
+        ],
+        "stats_edit": {
+            "fullness": 0.6,
+            "hydration": 0.1,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Cinnamon Bark Sticks",
+        "descriptions": [
+            "A short bundle of dried cinnamon bark sticks \u2014 sweet, woody, and warmly aromatic.",
+            "Chewing a stick releases fragrant oils that are sweet and warming; commonly used for infusions and as a chewable palate cleanser."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You gnaw a piece of bark; a comforting sweet warmth and a little astringency coat your mouth, like a dry, spiced candy.",
+            "The fibers give a slight chew while the oils uplift your mood and give a gentle warming buzz."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.2,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Sumac Powder (paper pouch)",
+        "descriptions": [
+            "A small paper pouch of deep red sumac powder \u2014 tart, lemony, and bright.",
+            "Often used as a souring spice; dry and flaky with a tang that lifts rich dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You lick a pinch of powder; a sudden, pleasant tartness floods your mouth like concentrated lemon zest.",
+            "The sour spike is refreshing and vivid \u2014 it wakes the palate and leaves a dry, zesty aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 0.4,
+            "hydration": 0.2,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Vanilla Bean Pod",
+        "descriptions": [
+            "A single dark vanilla bean pod with sticky interior seeds and a deep, sweet floral aroma.",
+            "Typically scraped for its seeds, the whole pod can be chewed for a concentrated vanilla experience."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You split the pod and scrape or chew it; sticky seeds and fragrant oils coat your mouth with a warm, complex sweetness.",
+            "The sensation is indulgent and aromatic, like a tiny mouthful of dessert spice rather than substantial food."
+        ],
+        "stats_edit": {
+            "fullness": 0.8,
+            "hydration": 0.2,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Bundle of Fresh Spices (Assortment)",
+        "descriptions": [
+            "A wrapped set of small jars and packets containing staple spices: sea salt, black peppercorns, ground cinnamon, smoked paprika, and ground cumin. Packaged with a small fresh-herb sprig.",
+            "Designed for gifting or starter pantry kits \u2014 lightweight, stackable, and sealed. The jars are labeled and arranged in a recycled cardboard sleeve."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pinch a tiny sample of each spice and taste them one after another: briny salt that makes your mouth water, a sharp hit of pepper that makes you cough and clear your sinuses, warm cinnamon that tickles the tongue, a smoky paprika whisper, and an earthy cumin aftertaste.",
+            "The fresh-herb sprig adds a fleeting green brightness when chewed raw, while the concentrated dried powders leave your mouth feeling dry and slightly tingly."
+        ],
+        "stats_edit": {
+            "fullness": 0.8,
+            "hydration": -3.0,
+            "energy": 2.5
+        }
+    },
+    {
+        "name": "Jar of Sea Salt",
+        "descriptions": [
+            "A small glass jar of coarse sea salt crystals. Useful for cooking and finishing dishes.",
+            "The crystals are dry and crunch when handled; a single pinch is intensely salty."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop a few salt crystals onto your tongue \u2014 an immediate, overwhelming saline bite that makes your mouth pucker and leaves you thirsty.",
+            "Eating salt raw is sharp and abrasive; it can sting tiny mouth abrasions and quickly make you want a drink."
+        ],
+        "stats_edit": {
+            "fullness": 0.1,
+            "hydration": -8.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Black Peppercorn Jar",
+        "descriptions": [
+            "A small jar of whole black peppercorns. They can be used whole, cracked, or ground with a mill.",
+            "Crunchy and aromatic when chewed; the flavor is spicy and pungent."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a peppercorn: a sharp, biting heat builds in your nose and throat, making you cough and sneeze a little while your eyes water.",
+            "The bite clears your sinuses briefly and leaves a warm, tingling sensation in the mouth."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": -1.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Ground Cinnamon Tin",
+        "descriptions": [
+            "A small tin of fragrant ground cinnamon. Sweet, woody aroma when opened.",
+            "Very dry and fine powder; a little dust clouds the air when the tin is shaken."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a pinch of dry cinnamon straight from the tin \u2014 a burst of warm sweetness followed by a dry, slightly mouth-coating sensation that can make you cough if you inhale any dust.",
+            "It leaves a lingering warming sensation on the tongue and throat."
+        ],
+        "stats_edit": {
+            "fullness": 0.4,
+            "hydration": -2.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Smoked Paprika Jar",
+        "descriptions": [
+            "A compact jar of smoked paprika: vibrant red, smoky, and mildly sweet.",
+            "Adds color and a smoky note to dishes; the powder is fine and lightly oily to the touch."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a small pinch of smoked paprika \u2014 a gentle smoky sweetness that lingers on the palate without being overpowering.",
+            "The powder is pleasantly aromatic, giving a sense of warmth rather than sharp heat."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 0.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Ground Cumin",
+        "descriptions": [
+            "A little jar of ground cumin with a deep, earthy aroma and slightly bitter undertones.",
+            "Highly aromatic when sniffed; the powder is fine and can stick slightly to moist skin."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You let a crumb of cumin rest on your tongue \u2014 an earthy, warm bitterness that grows into a savory backbone flavor, leaving an herbal aftertaste.",
+            "It feels grounding and aromatic, not particularly filling."
+        ],
+        "stats_edit": {
+            "fullness": 0.2,
+            "hydration": 0.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Fresh Herb Bundle (Basil & Parsley)",
+        "descriptions": [
+            "A small tied bunch of fresh basil leaves and curly parsley. Bright green, aromatic, and slightly moist from recent harvesting.",
+            "Best used quickly; can be chewed raw for a burst of fresh, grassy flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a leaf of basil followed by a sprig of parsley \u2014 cooling, peppery notes from the basil and a crisp, slightly bitter freshness from the parsley.",
+            "The fresh herbs are pleasant to eat raw and leave your mouth feeling refreshed."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 2.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Wooden Spice Rack (Compact)",
+        "descriptions": [
+            "A small wall-mountable wooden spice rack designed to hold six small jars. Sturdy recycled pine with labeled slots.",
+            "Useful for organizing a starter spice bundle; it is static once mounted and not intended to be stacked."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "misc"
+        ],
+        "stackable": false
+    }
+]

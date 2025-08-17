@@ -3,14 +3,207 @@
         "package_color": "combo",
         "items": [
             "Bottled Water",
-            "Sweet Breakfast Cereal (Snack Box)"
+            "Honey Oat Granola Bar",
+            "Fresh Apple"
         ]
     },
     "general_survival_2": {
+        "package_color": "combo",
+        "items": [
+            "Salted Pretzel Twists",
+            "Greek Yogurt Cup",
+            "Bottled Water"
+        ]
+    },
+    "general_survival_3": {
+        "package_color": "combo",
+        "items": [
+            "Sparkling Water",
+            "Beef jerky stick",
+            "celery stalk"
+        ]
+    },
+    "general_survival_4": {
+        "package_color": "combo",
+        "items": [
+            "Bottled Water",
+            "Dark Chocolate Bar",
+            "Fresh Salad Cup (mixed greens, tomato, cucumber)"
+
+        ]
+    },
+    "general_survival_5": {
+        "package_color": "combo",
+        "items": [
+            "Orange Juice",
+            "Avocado & Tomato Open Sandwich",
+            "Carrot Sticks"
+        ]
+    },
+    "general_survival_6": {
+        "package_color": "combo",
+        "items": [
+            "Cola",
+            "Chicken Salad Sandwich (pre-cooked)",
+            "Single-serve potato chips"
+        ]
+    },
+    "general_survival_7": {
+        "package_color": "combo",
+        "items": [
+            "bottled green tea",
+            "Grilled Lemon-Herb Salmon Fillet",
+            "Shepherd's Pie"
+        ]
+    },
+    "hydration_kit_1": {
+        "package_color": "hydration",
+        "items": [
+            "Bottled Water",
+            "Sparkling Water",
+            "Aloe Vera Juice"
+        ]
+    },
+    "hydration_kit_2": {
+        "package_color": "hydration",
+        "items": [
+            "Cold-pressed Green Juice",
+            "Carrot-Ginger Shot",
+            "Beet & Carrot Juice Blend"
+        ]
+    },
+    "hydration_kit_3": {
+        "package_color": "hydration",
+        "items": [
+            "Hot Chocolate",
+            "Black Coffee",
+            "ready-to-drink matcha latte"
+        ]
+    },
+    "fullness_kit_1": {
+        "package_color": "fullness",
+        "items": [
+            "Beef jerky stick",
+            "Milk chocolate candy bar",
+            "Single-serve potato chips"
+        ]
+    },
+    "fullness_kit_2": {
+        "package_color": "fullness",
+        "items": [
+            "Instant cup noodles (ready-to-eat)",
+            "Sweet fruit gummies pack",
+            "Microwave buttered popcorn (bag)"
+        ]
+    },
+    "fullness_kit_3": {
+        "package_color": "fullness",
+        "items": [
+            "Fresh Salad Cup (mixed greens, tomato, cucumber)",
+            "Hummus Single-Serve (60g)",
+            "Dark Chocolate Bar"
+        ]
+    },
+    "fullness_kit_4": {
+        "package_color": "fullness",
+        "items": [
+            "Crispy Fried Fish Fillet",
+            "Blueberry Pancake Stack with Maple Syrup",
+            "celery stalk"
+        ]
+    },
+    "fullness_kit_5": {
+        "package_color": "fullness",
+        "items": [
+            "Creamy Coconut Chickpea Curry with Brown Rice",
+            "Pulled BBQ Pork Sandwich with Coleslaw",
+            "candied caramel square"
+        ]
+    },
+    "ingredients_kit_1": {
+        "package_color": "ingredient",
+        "items": [
+            "vegetable cooking oil",
+            "bottle of soy sauce",
+            "tube of tomato paste",
+            "Table salt (packet)",
+            "whole grain mustard"
+        ]
+    },
+    "ingredients_kit_2": {
+        "package_color": "ingredient",
+        "items": [
+            "quick pickled cucumber slices",
+            "Saffron Threads",
+            "fresh basil pesto (small jar)",
+            "Fresh Herb Bundle (Basil & Parsley)",
+            "Black Peppercorn Jar",
+            "Vanilla Bean Pod"
+        ]
+    },
+    "ingredients_kit_3": {
+        "package_color": "ingredient",
+        "items": [
+            "Fresh Herb Bouquet",
+            "Cinnamon Bark Sticks",
+            "Honey Packet",
+            "BBQ Sauce Cup",
+            "Jar of Sea Salt"
+        ]
+    },
+    "ingredients_kit_4": {
+        "package_color": "ingredient",
+        "items": [
+            "dried red lentils",
+            "vegetable cooking oil",
+            "dried spaghetti",
+            "Whole Raw Chicken (uncooked)",
+            "all-purpose flour",
+            "Fresh Mint Sprig"
+        ]
+    },
+    "ingredients_kit_5": {
+        "package_color": "ingredient",
+        "items": [
+            "bag of white rice",
+            "Raw ground beef",
+            "vegetable cooking oil",
+            "onion",
+            "all-purpose flour",
+            "Basil Leaf Bunch"
+        ]
+    },
+    "ingredients_kit_6": {
+        "package_color": "ingredient",
+        "items": [
+            "raw salmon filet (fresh)",
+            "Carton of Raw Eggs",
+            "dried pasta",
+            "Ground Cumin",
+            "Black Garlic Cloves"
+        ]
+    },
+    "seeds_pack_1": {
+        "package_color": "cheat",
+        "items": [
+            "Lettuce Seeds",
+            "Carrot Seeds",
+            "Tomato Seeds"
+        ]
+    },
+    "seeds_pack_2": {
         "package_color": "cheat",
         "items": [
             "basil seed",
-            "mint seed"
+            "mint seed",
+            "Strawberry Seeds"
+        ]
+    },
+    "seeds_pack_3": {
+        "package_color": "cheat",
+        "items": [
+            "sunflower seed",
+            "rose seed"
         ]
     }
 }

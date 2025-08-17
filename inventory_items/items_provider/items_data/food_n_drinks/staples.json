@@ -1,0 +1,1678 @@
+[
+    {
+        "name": "bag of white rice",
+        "descriptions": [
+            "A plain paper-sack of long-grain white rice, a foundational staple for many cuisines.",
+            "Dry, hard individual grains that need cooking to become fluffy and edible."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop raw rice into your mouth. The dry, crunchy grains grind between your teeth and quickly turn into uncomfortable abrasives in your mouth.",
+            "It leaves a coating of powder on your tongue and throat; oddly filling but thirsty work."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": -5.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "all-purpose flour",
+        "descriptions": [
+            "Fine, white flour in a sealed paper bag \u2014 the backbone of bread, pastries, and roux.",
+            "Raw flour is powdery and pleasant to the nose but is not intended to be eaten uncooked."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You shovel a handful of raw flour into your mouth. It tastes bland and chalky, coats your mouth, and makes you want to cough.",
+            "Eating raw flour can cause stomach upset for some people and leaves a dry, gritty feeling."
+        ],
+        "stats_edit": {
+            "fullness": -2.0,
+            "hydration": -10.0,
+            "energy": -15.0
+        }
+    },
+    {
+        "name": "dried spaghetti",
+        "descriptions": [
+            "A long bundle of dried pasta strands, a quick-cooking carb when boiled.",
+            "Uncooked it is hard and brittle but lightweight and easy to store."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite a raw strand; it snaps with a crisp sound and grinds against your teeth.",
+            "It fills the stomach a bit but is very dry and demands water or cooking to be truly palatable."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": -6.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "dried kidney beans (500 g)",
+        "descriptions": [
+            "A bag of hard, dried beans common in stews and chilies.",
+            "These must be soaked and properly cooked before eating; raw or undercooked kidney beans can cause food poisoning."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You try a spoonful of raw kidney beans. They taste chalky and bitter and quickly make your stomach churn.",
+            "Raw kidney beans contain natural toxins that can upset the gut; eating them uncooked often causes nausea and vomiting."
+        ],
+        "stats_edit": {
+            "fullness": -15.0,
+            "hydration": -25.0,
+            "energy": -40.0
+        }
+    },
+    {
+        "name": "rolled oats (500 g)",
+        "descriptions": [
+            "Flattened oat flakes commonly eaten as porridge or muesli.",
+            "Often eaten raw mixed with milk or yogurt, or cooked into warm cereal."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew raw oats; they are pleasantly nutty and slightly chewy, leaving a hearty, grainy texture.",
+            "They are filling and comforting even without cooking, though they benefit from soaking or milk."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": -3.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "granulated sugar (500 g)",
+        "descriptions": [
+            "A bag of fine white sugar, used to sweeten beverages and baked goods.",
+            "Eating sugar straight gives a sharp sweet hit but lacks substance."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pour a spoon of dry sugar into your mouth. It's intensely sweet and dissolves quickly, giving a quick jolt.",
+            "The sugar leaves a sticky film and provides a burst of quick energy but little lasting satisfaction."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": -2.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "table salt (200 g)",
+        "descriptions": [
+            "Fine iodized salt in a small shaker or packet \u2014 essential for seasoning.",
+            "Eating salt by itself is unpleasant and promotes dehydration."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You lick a pinch of salt. It scorches the tongue and makes your mouth water, then leaves you parched.",
+            "A mouthful of salt can make you feel dizzy and thirsty; it's not satisfying as a food on its own."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -25.0,
+            "energy": -2.0
+        }
+    },
+    {
+        "name": "vegetable cooking oil",
+        "descriptions": [
+            "A clear bottle of neutral vegetable oil used for frying and dressings.",
+            "High-calorie liquid fat; safe to consume in small quantities but heavy and slick when eaten plain."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow a mouthful of oil. It's slick and fills the mouth with a fatty coating, leaving a heavy, greasy sensation.",
+            "Oil provides a lot of calories quickly but feels greasy and can make you nauseous if taken in large amounts."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": -5.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "canned tomatoes (400 g can)",
+        "descriptions": [
+            "A tin of stewed tomatoes \u2014 ready to add to sauces, soups, and stews.",
+            "Soft, acidic, and already cooked; safe and hydrating to eat straight from the can."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat spoonfuls of canned tomatoes. They're tangy, juicy, and relieve thirst a little while providing a pleasant acidic bite.",
+            "The tomato juices are refreshing and comforting in a simple, cooked way."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 8.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "dried red lentils",
+        "descriptions": [
+            "Small, lens-shaped legumes that cook relatively quickly into soups and dals.",
+            "Like most dried pulses, they are intended to be soaked or boiled before eating."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You crunch down on raw lentils; they are hard and mildly bitter, and your stomach protests after a few mouthfuls.",
+            "Undercooked or raw lentils can cause bloating and mild digestive discomfort for some people."
+        ],
+        "stats_edit": {
+            "fullness": -5.0,
+            "hydration": -8.0,
+            "energy": -10.0
+        }
+    },
+    {
+        "name": "raw potatoes (bag, 2 kg)",
+        "descriptions": [
+            "A burlap sack of raw potatoes \u2014 versatile when cooked into mash, roast, or fries.",
+            "Raw potato flesh is starchy and crunchy, with a slightly bitter edge if green or sprouted."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a raw potato. It's starchy and crunchy, with an unappealing dry texture and a hint of bitterness.",
+            "A few bites are filling but the taste is bland compared to when potatoes are cooked."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 4.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Bag of white rice (uncooked)",
+        "descriptions": [
+            "A common staple grain: long-grain white rice in a simple paper sack.",
+            "Used worldwide as a base for many meals; sold here in its uncooked, dry form.",
+            "Edible raw in small amounts but very dry and hard; normally requires boiling to be palatable."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You shovel a handful of hard, uncooked grains into your mouth. They crackle and grind between your teeth, offering a plain, starchy bite.",
+            "The rice feels filling but gritty; it leaves your mouth and throat dry and makes you reach for water."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": -30.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Wheat flour (bag)",
+        "descriptions": [
+            "A sack of milled wheat flour \u2014 the basis for bread, pasta, and countless baked staples.",
+            "Sold raw and dusty; each mouthful is powdery and bland unless mixed or cooked."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You scoop a spoonful of raw flour and swallow. The powder clings to your mouth and throat, leaving a chalky, unpleasant texture.",
+            "Flour swells and absorbs moisture in your mouth, so while it briefly fills you, it makes you thirsty and a little queasy if you eat a lot."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": -15.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Cornmeal (maize flour)",
+        "descriptions": [
+            "Ground dried maize used for staples like porridge, flatbreads, and polenta.",
+            "Dry and granular when uncooked; nutritious once prepared with water or heat."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a mouthful of raw cornmeal; it has a slightly coarse, grainy texture and a bland corn taste.",
+            "It gives a modest sense of fullness but makes your mouth feel dry and sandy."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": -12.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Dried mixed beans",
+        "descriptions": [
+            "A pouch of assorted dried beans (kidney, navy, black), a protein-rich staple in many cuisines.",
+            "Sold uncooked and hard; normally soaked and boiled before eating."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a few raw beans. They are very firm and starchy with an earthy flavor; they crunch and then soften slightly.",
+            "They provide a genuine sense of bulkiness in your stomach but are unpleasantly dry and grainy eaten without cooking."
+        ],
+        "stats_edit": {
+            "fullness": 22.0,
+            "hydration": -10.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Dried lentils",
+        "descriptions": [
+            "Small, shelf-stable legumes valued across many cultures for protein and fiber.",
+            "They cook quickly compared with many beans but are sold here in raw, uncooked form."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "A mouthful of raw lentils is small and starchy, with a faint nuttiness. They crunch at first and then chew into a gritty paste.",
+            "They fill you more than you'd expect for their size, though they leave you a bit dry."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": -5.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Uncooked dried pasta",
+        "descriptions": [
+            "Strips or shapes of dried wheat pasta \u2014 a global carbohydrate staple when boiled.",
+            "Brittle and hard while uncooked; commonly stored for long periods."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a piece of dry pasta; it snaps and crunches, then grinds into a dry, floury paste.",
+            "It is surprisingly filling but very dehydrating and can be uncomfortable to chew in quantity."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": -25.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Granulated sugar",
+        "descriptions": [
+            "Refined white sugar in a small packet \u2014 used worldwide to sweeten foods and beverages.",
+            "Highly caloric but offers little lasting fullness; very sweet when eaten straight."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You dump a spoonful of dry sugar into your mouth. It dissolves instantly, a rush of sweetness that perks you up briefly.",
+            "The quick sugar spike gives immediate energy but barely fills you and leaves you wanting water."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -5.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Table salt (packet)",
+        "descriptions": [
+            "A small sachet of refined salt, essential for seasoning and preservation worldwide.",
+            "Eating it straight is harsh and rapidly dehydrating."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tip a pinch of pure salt into your mouth. The immediate sting of sodium overwhelms your taste buds and dries your throat.",
+            "Salt gives no real nourishment and makes you very thirsty; too much leaves you drained."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": -30.0,
+            "energy": -5.0
+        }
+    },
+    {
+        "name": "Canned tomatoes (sealed can)",
+        "descriptions": [
+            "A can of preserved tomatoes \u2014 common for sauces and stews around the globe.",
+            "Usually ready-to-eat when drained; tangy, watery, and slightly acidic."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You spoon some canned tomatoes straight from the can. They are soft, juicy, and tangy \u2014 fairly refreshing eaten as-is.",
+            "Their water content helps quench thirst a bit and they offer a pleasant, acidic bite."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 8.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Granulated Sugar (500 g)",
+        "descriptions": [
+            "A half-kilogram bag of white granulated sugar.",
+            "Extremely sweet eaten straight; gives a quick burst of energy but lacks any lasting nutrition."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tip palmfuls of sugar into your mouth; an intensely cloying sweetness floods your tongue and teeth.",
+            "The sugar gives a sharp rush of alertness and jittery warmth, but feels empty and quickly fades."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 0.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Dried Black Beans (500 g)",
+        "descriptions": [
+            "A pouch of dried black beans \u2014 staple legume meant for soaking and long simmering.",
+            "Eating them raw is chalky and tough; they\u2019re meant to be cooked to soften and unlock flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You crunch on a few raw beans; they\u2019re hard and bitter with a dusty aftertaste.",
+            "They take up space in your stomach and quiet your appetite for a while, though they lack the comfort of a cooked meal."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 0.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Raw Potatoes (3 pcs)",
+        "descriptions": [
+            "A small bundle of raw white potatoes, unpeeled.",
+            "Firm and starchy; raw potato flesh is crunchy and slightly bitter compared to boiled or roasted."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a raw potato; the flesh is crisp, starchy, and a touch astringent.",
+            "It fills you with a blunt, dense satiation but lacks the mellow comfort of cooked potato."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 2.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Raw Carrots (bunch)",
+        "descriptions": [
+            "A small bunch of fresh raw carrots with green tops trimmed.",
+            "Crisp, sweet, and perfectly edible raw \u2014 a portable, healthy snack."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You snap off a carrot and bite into it; it\u2019s juicy and sweet with a satisfying crunch.",
+            "The fresh vegetal flavor refreshes your mouth and makes you feel slightly more alert."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 4.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Raw Tomatoes (3 pcs)",
+        "descriptions": [
+            "Three vine-ripened tomatoes, unprepared.",
+            "Juicy and acidic; perfectly fine to eat raw and refreshing."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a tomato and a burst of sweet-tart juice floods your mouth.",
+            "The acidity wakes you up and leaves a clean, refreshing feeling."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 6.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Carton of Raw Eggs",
+        "descriptions": [
+            "A dozen uncooked eggs in a cardboard carton.",
+            "Intended for cooking; eating raw eggs is unpalatable and carries a risk of foodborne illness."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": false,
+        "effects": [
+            "You crack and swallow a raw egg; the slimy texture and metallic edge make you gag.",
+            "The flavor is dull and unsettling, and the experience leaves you queasy rather than nourished."
+        ],
+        "stats_edit": {
+            "fullness": -10.0,
+            "hydration": -30.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "Whole Raw Chicken (uncooked)",
+        "descriptions": [
+            "A whole raw chicken, uncleaned and unprepared.",
+            "Raw poultry is unsafe to eat as-is and can cause severe foodborne sickness."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": false,
+        "effects": [
+            "You attempt to bite into raw chicken; the texture is slimy and the smell is faintly sour.",
+            "The meat leaves a lingering nausea and a heavy sense of illness rather than any real nourishment."
+        ],
+        "stats_edit": {
+            "fullness": -10.0,
+            "hydration": -30.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "Fresh tomatoes (3 pieces)",
+        "descriptions": [
+            "Three ripe tomatoes, firm and glossy with a sweet-tart aroma.",
+            "Juicy and ready to eat raw or to add to salads and sauces."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a tomato and juice bursts across your tongue \u2014 sweet, tangy and refreshing.",
+            "The flesh is hydrating and light, leaving a clean, fresh taste."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 12.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Russet potatoes (4 count)",
+        "descriptions": [
+            "A small bag with four russet potatoes; starchy and versatile when cooked.",
+            "Raw potatoes are firm, mildly earthy, and a little bitter if eaten uncooked."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You gnaw on a raw potato: it's starchy and slightly chalky, filling you up though not very palatable.",
+            "The raw flesh leaves an earthy aftertaste but provides bulk."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 5.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Tomato seed packet (20 seeds)",
+        "descriptions": [
+            "A small envelope containing about 20 tomato seeds for planting.",
+            "Not meant for eating; intended for sowing in a garden or pot."
+        ],
+        "static": false,
+        "type": [
+            "seed"
+        ],
+        "stackable": true,
+        "plant_type": "tomato"
+    },
+    {
+        "name": "Raw beef steak (250 g)",
+        "descriptions": [
+            "A 250 g cut of raw beef steak, bright red with some marbling.",
+            "Intended to be cooked; eating raw red meat can cause digestive upset and risk of pathogens."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a bite of the uncooked steak; the texture is chewy and metallic, and it leaves a heavy, oily feeling.",
+            "Raw red meat can sit poorly in the stomach and may leave you queasy and weak."
+        ],
+        "stats_edit": {
+            "fullness": -5.0,
+            "hydration": -15.0,
+            "energy": -25.0
+        }
+    },
+    {
+        "name": "Raw ground beef",
+        "descriptions": [
+            "A 500 g pack of raw minced beef \u2014 convenient for many recipes but riskier eaten uncooked.",
+            "Ground meat has more exposed surface area and a higher chance of carrying harmful bacteria."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste the raw minced beef; the soft, pasty texture and iron-rich flavor make your stomach churn.",
+            "Eating raw ground beef is likely to cause severe gastrointestinal distress and possible foodborne illness."
+        ],
+        "stats_edit": {
+            "fullness": -15.0,
+            "hydration": -30.0,
+            "energy": -45.0
+        }
+    },
+    {
+        "name": "Whole raw chicken (approx. 1.5 kg)",
+        "descriptions": [
+            "A whole raw chicken, plucked and gutted, ready to be cooked.",
+            "Raw poultry is especially dangerous to consume due to high risk of salmonella and campylobacter."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": false,
+        "effects": [
+            "You attempt to eat raw chicken; the slimy texture and strong raw smell churn your stomach and make you feel faint.",
+            "Consuming raw poultry is highly likely to trigger severe food poisoning and immediate weakness."
+        ],
+        "stats_edit": {
+            "fullness": -10.0,
+            "hydration": -30.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "bag of white rice (1 kg)",
+        "descriptions": [
+            "A 1 kg paper bag of long-grain white rice, uncooked.",
+            "Dry, starchy grains that are normally boiled or steamed before eating."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You shovel a handful of dry rice into your mouth. The grains are gritty and starchy, filling but oddly dry.",
+            "It sits heavy in your stomach and leaves your mouth and throat parched."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": -20.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "all-purpose flour (1 kg)",
+        "descriptions": [
+            "A paper sack of all-purpose wheat flour.",
+            "Intended for baking and cooking, but fine, powdery and bland on its own."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a spoonful of raw flour. The dry powder coats your mouth, feels unpleasant and dusty.",
+            "It mildly soothes hunger but makes you thirsty and leaves a chalky aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": -8.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "granulated sugar (500 g)",
+        "descriptions": [
+            "A half-kilo bag of white granulated sugar.",
+            "Pure sucrose crystals used for sweetening beverages and baking."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pour a spoonful of dry sugar into your mouth. The intense sweet crystals hit your tongue immediately.",
+            "It gives a quick surge of energy but little satiety and leaves you slightly thirstier."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": -5.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "canned tuna (in oil)",
+        "descriptions": [
+            "A sealed tin of ready-to-eat tuna preserved in oil.",
+            "Shelf-stable, savory and oily \u2014 meant to be eaten straight from the can or used in recipes."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat spoonfuls of oily tuna straight from the can \u2014 salty, fishy and filling.",
+            "It sits well in the stomach and gives a sustained savory energy boost."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": 5.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "smoked salmon (vacuum-packed)",
+        "descriptions": [
+            "A thinly sliced pack of smoked salmon that is ready-to-eat.",
+            "Rich, smokey fish cured for preservation and flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a slice of smoked salmon as-is; it's oily, smoky and intensely savory.",
+            "The rich fats make it feel satisfying and give a heavy energy lift."
+        ],
+        "stats_edit": {
+            "fullness": 28.0,
+            "hydration": 3.0,
+            "energy": 40.0
+        }
+    },
+    {
+        "name": "raw salmon filet (fresh)",
+        "descriptions": [
+            "A fresh, uncooked salmon filet on ice.",
+            "Commonly used for cooking or sushi when properly handled, but raw on its own can be risky."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into the raw salmon\u2014slimy, cold and metallic. The taste and texture are off-putting if not prepared properly.",
+            "Eating it raw like this makes your stomach churn and can make you feel very unwell."
+        ],
+        "stats_edit": {
+            "fullness": -10.0,
+            "hydration": -30.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "raw shrimp (peeled, fresh)",
+        "descriptions": [
+            "A small tray of fresh, uncooked peeled shrimp.",
+            "Shrimp are normally cooked; raw shrimp can carry pathogens if not sushi-grade and handled correctly."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop a raw shrimp into your mouth; it is chewy, slippery and has an unpleasant briny raw taste.",
+            "It quickly makes your stomach turn and can lead to severe nausea and weakness."
+        ],
+        "stats_edit": {
+            "fullness": -10.0,
+            "hydration": -30.0,
+            "energy": -50.0
+        }
+    },
+    {
+        "name": "frozen cooked shrimp (thawed)",
+        "descriptions": [
+            "A packet of pre-cooked shrimp that has been frozen and then thawed for use.",
+            "Safe to eat cold or heated, convenient seafood protein."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a thawed cooked shrimp; it's tender, slightly sweet and pleasantly briny.",
+            "It satisfies hunger with a light seafood flavor and doesn't upset your stomach."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 5.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "fresh apple",
+        "descriptions": [
+            "A crisp red apple, freshly picked.",
+            "Juicy and sweet, ready to eat with no preparation."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite the apple and enjoy a crisp, juicy crunch. It refreshes your mouth and quenches a bit of thirst.",
+            "The taste is sweet and satisfying and leaves you feeling a little more energized."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 8.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "head of lettuce",
+        "descriptions": [
+            "A fresh head of green lettuce, crisp leaves ideal for salads.",
+            "Mild and watery, typically eaten raw as part of meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a few raw leaves; they are cool, watery, and faintly bitter.",
+            "They don't fill you much but refresh and add a light hydration boost."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 10.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "tomato seed packet",
+        "descriptions": [
+            "A small paper packet containing tomato seeds for planting.",
+            "Designed for sowing into soil to grow tomato plants."
+        ],
+        "static": false,
+        "type": [
+            "seed",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You look at the tiny seeds, imagining ripe tomatoes later \u2014 not meant for eating raw straight from the packet."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": 0.0,
+            "energy": 0.0
+        },
+        "plant_type": "tomato"
+    },
+    {
+        "name": "bottle of olive oil (500 ml)",
+        "descriptions": [
+            "A half-liter bottle of extra-virgin olive oil.",
+            "Used for cooking, dressings or adding fat and flavor \u2014 oily and dense when consumed straight."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow a tablespoon of olive oil. The oily mouthfeel coats your throat and leaves you slightly queasy.",
+            "It provides a concentrated caloric hit but makes you feel dehydrated and heavy."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": -15.0,
+            "energy": 35.0
+        }
+    },
+    {
+        "name": "loaf of bread (whole)",
+        "descriptions": [
+            "A freshly baked whole loaf of bread, crusty outside and soft inside.",
+            "A staple carbohydrate, meant to be sliced and eaten."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tear off a thick slice and eat it plain; the warm crumb is satisfying and filling.",
+            "It provides steady fullness and a moderate energy lift."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 8.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "dried seaweed snack (pack)",
+        "descriptions": [
+            "A small pack of roasted, salted seaweed sheets.",
+            "Light, crisp and intensely salty, often eaten as a snack or garnish."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a sheet of dried seaweed; it's thin, crunchy and overtly salty.",
+            "It satisfies a light craving but leaves you a touch thirsty from the salt."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": -3.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "10 kg Bag of White Rice",
+        "descriptions": [
+            "A large sack of milled white rice \u2014 clean, dry grains commonly used as a staple carbohydrate.",
+            "Packed for storage; edible as-is but very dry and crunchy when eaten without cooking."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": false,
+        "effects": [
+            "You shovel a handful of raw rice into your mouth; the grains are hard and extremely dry, crunching loudly.",
+            "The rice gives a steady, filling sensation but leaves your mouth dry and in need of water."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 0.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "500 g Pack of Dry Pasta",
+        "descriptions": [
+            "Standard durum-wheat pasta in a sealed bag \u2014 designed to be boiled before eating.",
+            "Firm, brittle strands or shapes that will soften only after cooking."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You crunch a piece of raw pasta; it tastes bland and starchy with a brittle snap.",
+            "It provides some quick carbohydrate satisfaction but is more pleasant when cooked."
+        ],
+        "stats_edit": {
+            "fullness": 16.0,
+            "hydration": 0.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Canned Mixed Beans (400 g)",
+        "descriptions": [
+            "A ready-to-eat can of mixed beans in light brine \u2014 protein-rich and shelf-stable.",
+            "Can be eaten straight from the can although many prefer to heat and season them first."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat beans directly from the can; they are soft, slightly salty, and filling.",
+            "They settle pleasantly in your stomach and give a lasting fullness and energy boost."
+        ],
+        "stats_edit": {
+            "fullness": 26.0,
+            "hydration": 6.0,
+            "energy": 28.0
+        }
+    },
+    {
+        "name": "Loaf of Whole Wheat Bread",
+        "descriptions": [
+            "A freshly baked whole wheat loaf, pre-sliced and wrapped.",
+            "Soft crumb with a hearty flavor \u2014 commonly used for sandwiches and toast."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tear off a slice and eat it plain; the bread is filling and slightly moist.",
+            "The whole grains leave a wholesome, satisfying aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": 5.0,
+            "energy": 34.0
+        }
+    },
+    {
+        "name": "Bag of Fresh Apples (4)",
+        "descriptions": [
+            "A small bag containing four crisp apples \u2014 firm, juicy, and ready to eat.",
+            "Great raw snack with natural sugars and hydration."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into an apple, the juice popping and the flesh sweet-tart and refreshing.",
+            "The fruit instantly cools and quenches the mouth while giving a pleasant energy lift."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 8.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Bunch of Bananas (5)",
+        "descriptions": [
+            "Five ripe bananas joined at the stem \u2014 soft, sweet, and high in potassium.",
+            "Peel and eat raw for a quick, portable snack."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You peel a banana and eat it; the texture is creamy and sweet with an immediate energy lift.",
+            "Bananas are easy on the stomach and fill you quickly."
+        ],
+        "stats_edit": {
+            "fullness": 14.0,
+            "hydration": 6.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Bunch of Carrots",
+        "descriptions": [
+            "A tied bunch of fresh carrots with firm, orange roots and leafy tops.",
+            "Crunchy and sweet, excellent raw as a snack or for cooking."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You snap a carrot and eat it raw; the crisp texture and sweet earthiness brighten the palate.",
+            "Carrots are satisfying and lightly hydrating with a gentle energy boost."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 6.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Fresh Tomatoes (4)",
+        "descriptions": [
+            "Four ripe tomatoes, juicy and slightly acidic, good for salads or eating raw.",
+            "Soft skin and pulpy interior full of flavor and moisture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite a tomato and juice runs down your chin; the flavor is sweet-tart and very refreshing.",
+            "Tomatoes hydrate and brighten your senses while filling you a little."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 10.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Bag of Potatoes (3 kg)",
+        "descriptions": [
+            "A heavy bag containing starchy potatoes \u2014 versatile for boiling, baking, or frying.",
+            "Raw they are firm and bland; normally cooked before eating."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": false,
+        "effects": [
+            "You bite into a raw potato: it's firm, slightly grainy, and very bland \u2014 more satisfying when cooked.",
+            "Raw potato offers substantial bulk and a slow-release carbohydrate feeling."
+        ],
+        "stats_edit": {
+            "fullness": 38.0,
+            "hydration": 6.0,
+            "energy": 36.0
+        }
+    },
+    {
+        "name": "Bottle of Olive Oil (250 ml)",
+        "descriptions": [
+            "A small bottle of cold-pressed olive oil \u2014 rich in fats and calories, commonly used as a dressing or cooking oil.",
+            "High in energy density; consuming it neat is oily and heavy."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a spoonful of olive oil; it slicks your mouth and throat with a fatty, fruity coat.",
+            "The oil provides a strong caloric surge and leaves a lingering, greasy sensation."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 0.0,
+            "energy": 50.0
+        }
+    },
+    {
+        "name": "Jar of Table Salt (150 g)",
+        "descriptions": [
+            "A small jar of fine table salt \u2014 essential seasoning but intense and drying when eaten alone.",
+            "Used sparingly for flavor; direct consumption can be unpleasant."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You lick a spoonful of salt; the immediate metallic, saline sting makes your mouth pucker and your throat feel dry.",
+            "Salt eaten on its own leaves you thirsty and slightly unsettled."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": -15.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Bag of Brown Sugar (500 g)",
+        "descriptions": [
+            "A sealed bag of moist brown sugar \u2014 sweet, caramel-tinged granules used in baking and sweetening.",
+            "Eating raw sugar is straightforward but very sweet."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a spoonful of brown sugar; it's intensely sweet with a molasses undertone and quickly spikes your energy.",
+            "The sugar leaves a lingering sweetness and a quick energy rush."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 0.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Strawberry Seed Packet",
+        "descriptions": [
+            "A small envelope of strawberry seeds intended for planting in a garden or pot.",
+            "Tiny seeds that are edible but extremely small and not particularly filling."
+        ],
+        "static": false,
+        "type": [
+            "seed",
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop a few strawberry seeds into your mouth; they are minute and mostly tasteless, with a slightly gritty texture.",
+            "Eating them raw does little beyond a faint plantlike note and a tiny sense of fullness."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 1.0,
+            "energy": 2.0
+        },
+        "plant_type": "strawberry"
+    },
+    {
+        "name": "Tomato Seed Packet",
+        "descriptions": [
+            "A small packet of tomato seeds for home gardening.",
+            "Like other seeds, they are edible in tiny amounts but mainly meant for planting."
+        ],
+        "static": false,
+        "type": [
+            "seed",
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a few tomato seeds; they are tiny, slightly bitter, and offer negligible sustenance.",
+            "They leave a faint tomato-like note but are not satisfying on their own."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 1.0
+        },
+        "plant_type": "tomato"
+    },
+    {
+        "name": "Head of Lettuce",
+        "descriptions": [
+            "A crisp head of leafy lettuce \u2014 cool, mild, and perfect for salads or raw sandwiches.",
+            "Very hydrating and light in calories."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You tear off a leaf and eat it; the lettuce is cool, crisp, and refreshing.",
+            "It quenches your thirst slightly and gives a light, clean sensation."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 10.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Raw Garlic Bulb (single)",
+        "descriptions": [
+            "A whole head of garlic with several cloves; raw, pungent, and concentrated.",
+            "Commonly used as seasoning; eating raw cloves is intense and sharp."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into a raw clove; the flavor is fiery, sulfurous, and may make your eyes water.",
+            "Garlic eaten raw can be invigorating but leaves a strong aftertaste and breath."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "bag of long-grain rice (1 kg)",
+        "descriptions": [
+            "A 1 kg paper sack of dry long-grain white rice \u2014 staple, neutral-smelling and shelf-stable.",
+            "Uncooked grains are hard and brittle; convenient for bulk storage and long meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You crunch through hard, dry grains \u2014 starchy, bland and oddly filling. Eating rice dry leaves a gritty mouthfeel and a strong thirst.",
+            "Comforting in quantity but noticeably drying without any liquid."
+        ],
+        "stats_edit": {
+            "fullness": 40.0,
+            "hydration": -20.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "dried spaghetti pasta (500 g)",
+        "descriptions": [
+            "A 500 g bundle of dried durum wheat spaghetti \u2014 brittle, long strands bundled in a pack.",
+            "Pasta stores well and cooks into a filling base for many meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The raw strands snap and crunch; tasting them dry gives a starchy, slightly sweet bite that fills quickly but leaves the mouth parched.",
+            "Not pleasant raw, but undeniably filling."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": -15.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "all-purpose flour (1 kg)",
+        "descriptions": [
+            "A 1 kg bag of sifted all-purpose wheat flour \u2014 soft, powdery and highly versatile for baking and thickening.",
+            "Raw flour is shelf-stable but gritty and clumping when eaten straight."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A mouthful of raw flour feels chalky and dry, clinging to the tongue and teeth. It settles the stomach but is bland and slightly uncomfortable.",
+            "Not dangerous in small amounts but unpleasant to eat on its own."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": -15.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "granulated sugar (500 g)",
+        "descriptions": [
+            "A 500 g sack of white granulated sugar \u2014 pure sweet crystals used for baking, preserving and sweetening.",
+            "Highly caloric and shelf-stable; pleasant in small quantities but cloying when eaten alone."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A heaping spoonful of dry sugar is an intense crystalline sweetness that hits quickly and can be almost painful after a few mouthfuls.",
+            "Gives a rapid burst of energy but soon leaves a dry, cloying sensation."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": -5.0,
+            "energy": 45.0
+        }
+    },
+    {
+        "name": "table salt (250 g)",
+        "descriptions": [
+            "A small container of fine-grain table salt \u2014 essential seasoning and a powerful flavor concentrate.",
+            "Very shelf-stable; strong taste means small amounts are typical."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A pinch becomes a sharp, almost painful salt bite; a spoonful is intensely bracing and makes your mouth and throat dry and very thirsty.",
+            "Salt eaten straight quickly makes you crave water."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -30.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "vegetable cooking oil (1 L)",
+        "descriptions": [
+            "A one-litre bottle of neutral vegetable oil \u2014 useful for frying, baking and dressing.",
+            "High-calorie, shelf-stable liquid with a smooth, oily mouthfeel."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Swallowing a spoonful of oil yields a slick, heavy coating in the mouth and throat; it's calorically dense and leaves a greasy aftertaste.",
+            "Provides sustained energy but feels heavy and can make you feel oily."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": -5.0,
+            "energy": 50.0
+        }
+    },
+    {
+        "name": "canned crushed tomatoes (400 g)",
+        "descriptions": [
+            "A 400 g tin of cooked crushed tomatoes in their juices \u2014 tangy and ready to use as a sauce base.",
+            "Convenient conserve that adds moisture, acidity and tomato flavor to dishes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Spoonfuls of soft, saucy tomatoes are tangy and slightly sweet; they are easy to eat straight from the can and refresh the mouth.",
+            "Provides a welcome moistness compared to dry staples."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": 10.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "canned mixed beans (400 g)",
+        "descriptions": [
+            "A 400 g can of mixed cooked beans in brine \u2014 protein-rich, starchy and ready-to-eat.",
+            "Hearty conserve that is filling and stores long on the shelf."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The soft beans are savory and satisfying straight from the can, with a starchy bite and noticeable saltiness from the brine.",
+            "Filling and comfortingly substantial."
+        ],
+        "stats_edit": {
+            "fullness": 45.0,
+            "hydration": 8.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "jar of fruit jam (strawberry, 340 g)",
+        "descriptions": [
+            "A 340 g jar of strawberry jam \u2014 thick, sweet fruit preserve made from fruit and sugar.",
+            "Used as a spread or sweetener; sticky and highly caloric."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A spoonful of jam is intensely sweet and fruity, clinging to the tongue in a thick, sticky coat.",
+            "Pleasant and comforting, but sugary and quickly filling."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 2.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "canned tuna in water (185 g)",
+        "descriptions": [
+            "A 185 g can of cooked, drained tuna preserved in water \u2014 flaky, salty and protein-dense.",
+            "Ready-to-eat, useful for sandwiches, salads or straight from the can."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Flaky, savory fish with a slightly metallic, fishy tang; satisfying and protein-rich when eaten right out of the can.",
+            "Substantial and restoring without preparation."
+        ],
+        "stats_edit": {
+            "fullness": 35.0,
+            "hydration": 5.0,
+            "energy": 35.0
+        }
+    },
+    {
+        "name": "dried lentils (500 g)",
+        "descriptions": [
+            "A 500 g bag of small dried lentils \u2014 quick-cooking legumes high in protein and fiber.",
+            "Dry and hard when uncooked; a staple for stews and bulk meals."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Crunchy and earthy when eaten raw; they fill the belly but are dry and a bit gritty without cooking.",
+            "Nutty flavor but thirst-inducing."
+        ],
+        "stats_edit": {
+            "fullness": 30.0,
+            "hydration": -10.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "instant coffee granules (100 g)",
+        "descriptions": [
+            "A small jar of instant coffee granules \u2014 concentrated, dehydrated coffee for quick brewing.",
+            "Strong aroma; typically dissolved in hot water rather than eaten dry."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Chewing dry coffee granules produces a bitter, astringent taste and a dry scratchy feeling; a jittery caffeine edge can come through after swallowing.",
+            "Unpleasant on its own but stimulating."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -2.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "bouillon cubes (beef, pack of 6)",
+        "descriptions": [
+            "A small wrapped pack of concentrated bouillon cubes \u2014 intensely seasoned and salty, meant for dissolving.",
+            "Convenient for adding umami to soups and stews."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Chewing a bouillon cube gives an overpowering salty, savory blast that can make your mouth water then go dry; very concentrated flavor.",
+            "Hard to eat straight and thirst-inducing due to high salt and seasoning."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": -20.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "jar of honey (500 g)",
+        "descriptions": [
+            "A 500 g jar of raw honey \u2014 viscous, sweet and shelf-stable natural sweetener.",
+            "Sticky and dense, keeps well and can be used for sweetening or as a fast energy source."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A spoonful of thick honey coats the mouth in warm sweetness, soothing and intensely caloric; it lingers long on the tongue.",
+            "Comforting energy boost with a heavy mouthfeel."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": 2.0,
+            "energy": 40.0
+        }
+    },
+    {
+        "name": "powdered milk (500 g)",
+        "descriptions": [
+            "A 500 g box of dried whole milk powder \u2014 shelf-stable dairy substitute that reconstitutes with water.",
+            "Dry and slightly sweet when eaten alone; commonly used in baking or rehydrated for drinking."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Dry milk powder tastes chalky and clumpy; a faint dairy sweetness is present, but it is much more palatable when mixed with liquid.",
+            "Slightly filling but a little drying when consumed as-is."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": -5.0,
+            "energy": 8.0
+        }
+    }
+]

@@ -272,5 +272,26 @@
             "misc"
         ],
         "stackable": true
+    },
+    {
+        "name": "onion",
+        "descriptions": [
+            "A single, pungent onion, crisp and layered.",
+            "Round and papery on the outside, with a sharp, distinct aroma."
+        ],
+        "static": false,
+        "type": [
+            "ingredient"
+        ],
+        "stackable": true,
+        "effects": [
+            "The first bite is an eye-watering, throat-burning shock of pungent flavor, leaving a lingering sharpness on your tongue.",
+            "Each successive layer crunches loudly, releasing more of the acrid juice as you eat the raw, unadorned vegetable."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 2.0,
+            "energy": 3.0
+        }
     }
 ]

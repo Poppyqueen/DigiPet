@@ -1,0 +1,891 @@
+[
+    {
+        "name": "Bottled Water",
+        "descriptions": [
+            "A 500ml resealable plastic bottle of plain drinking water.",
+            "Clean, neutral taste \u2014 the most basic thirst-quencher."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You feel refreshed as cool water soothes a dry throat.",
+            "No strong flavor, just clean hydration."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 30.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Sparkling Water",
+        "descriptions": [
+            "A 330ml can of carbonated water with a crisp, bubbly mouthfeel.",
+            "No sugar or flavoring \u2014 fizzy and light."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Bubbles tingle on your tongue and the drink feels refreshing.",
+            "Lighter than still water but still hydrating."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 25.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Cola",
+        "descriptions": [
+            "A 330ml can of sweet, carbonated cola with caffeine.",
+            "Sugary, fizzy, and brightly flavored \u2014 a quick pick-me-up."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The sweet fizz gives a quick sugar rush and a pleasant fizz.",
+            "Tastes indulgent but is less hydrating than plain water."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": 15.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Orange Juice",
+        "descriptions": [
+            "A 250ml single-serving carton of orange juice, lightly pulpy.",
+            "Bright citrus flavor with natural sugars and vitamin C."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "The citrus tang feels revitalizing and pleasantly sweet.",
+            "Good for a quick boost of flavor and calories."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 18.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Black Coffee",
+        "descriptions": [
+            "A 200ml hot cup of strong black coffee, no milk or sugar.",
+            "Bitter, aromatic and brewed for a clear caffeine lift."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A sharp jolt of alertness and warmth spreads through you.",
+            "Aromatic bitterness clears the head and wakes you up."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 8.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Iced Tea",
+        "descriptions": [
+            "A 500ml chilled bottled iced tea, lightly sweetened and brewed.",
+            "Cool and mildly caffeinated, good on a warm day."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Cold, mellow tea flavor calms thirst and offers a gentle lift.",
+            "Sweetness makes it satisfyingly refreshing."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 20.0,
+            "energy": 7.0
+        }
+    },
+    {
+        "name": "Milk (250ml carton)",
+        "descriptions": [
+            "A 250ml carton of pasteurized cow's milk \u2014 slightly sweet and creamy.",
+            "Good source of calories and a comforting simple drink."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Creamy and filling, it settles comfortably in your stomach.",
+            "Feels nourishing and mildly satisfying."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 12.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Hot Chocolate",
+        "descriptions": [
+            "A 300ml cup of warm hot chocolate made with cocoa and milk.",
+            "Sweet, chocolatey, and comforting \u2014 often served with a frothy top."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Warm sweetness soothes and comforts, offering a gentle mood lift.",
+            "The chocolatey flavor is filling and satisfying."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 10.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Fresh-squeezed Orange Juice (300ml)",
+        "descriptions": [
+            "Cold, freshly pressed orange juice with visible pulp and bright citrus aroma.",
+            "Kept refrigerated; no added preservatives or sugar.",
+            "Served in a recyclable glass bottle \u2014 best consumed within a few days of pressing."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A bright citrus burst that wakes up the senses; the pulp gives a pleasantly textured mouthfeel.",
+            "Feels very refreshing and hydrating; a light, natural sweetness without processed aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 28.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Pasteurized Orange Juice Carton (1L)",
+        "descriptions": [
+            "Store-bought, pasteurized orange juice in a sealed carton; smooth, slightly sweeter than fresh.",
+            "Longer shelf life unopened; refrigerate after opening.",
+            "Filtered of most pulp for a consistent texture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A smooth, sweet citrus flavor that's easy to drink in larger quantities.",
+            "Comforting and filling for a quick energy boost; less of the fresh tang of squeezed juice."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 40.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "Cold-pressed Green Juice",
+        "descriptions": [
+            "A blend of kale, spinach, cucumber, celery and a touch of apple for balance.",
+            "Cold-pressed to retain raw nutrients; kept refrigerated.",
+            "Earthy and vegetal with a slightly bitter finish."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "An earthy, slightly bitter sip that tastes nutrient-dense and refreshing.",
+            "Provides a clean, green lift rather than a sugary rush; might leave a mild vegetal aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 26.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Shelf-stable Apple Juice Carton (200ml)",
+        "descriptions": [
+            "Small, sealed carton of apple juice processed and shelf-stable until opened.",
+            "Clear, sweet apple flavor with a smooth mouthfeel.",
+            "Convenient single-serving size for travel or lunchboxes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Sweet and familiar apple flavor that's easy to sip and satisfying.",
+            "Quickly replenishes a small thirst and gives a gentle sugar lift."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 15.0,
+            "energy": 22.0
+        }
+    },
+    {
+        "name": "Mixed Fruit Juice Box (apple, grape, strawberry)",
+        "descriptions": [
+            "Juice box blending apple, grape and a hint of strawberry; kid-friendly and portable.",
+            "Tetra pack with a small straw attached.",
+            "Moderately sweet with a mild tartness from the berry."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A small, sweet and slightly tangy drink that feels light and convenient.",
+            "Easy to drink quickly; pleasant for a short energy pick-me-up."
+        ],
+        "stats_edit": {
+            "fullness": 9.0,
+            "hydration": 16.0,
+            "energy": 18.0
+        }
+    },
+    {
+        "name": "Frozen Orange Concentrate (375ml can)",
+        "descriptions": [
+            "Thick orange syrup intended to be diluted with water to make multiple servings.",
+            "Very sweet and viscous when undiluted; sticky and dense.",
+            "Stored frozen for long shelf life; follow dilution instructions on the label."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "When diluted, produces multiple glasses of sweet orange juice with a classic flavor.",
+            "If drunk undiluted, it's overwhelmingly sweet and syrupy \u2014 satisfying as a sugar hit but not very refreshing."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 2.0,
+            "energy": 45.0
+        }
+    },
+    {
+        "name": "bottled cold brew coffee",
+        "descriptions": [
+            "330 ml ready-to-drink cold brew in a dark glass bottle; smooth, concentrated coffee with chocolate and caramel notes.",
+            "Chilled and unsweetened for a clean bitter finish; designed as a quick strong pick-me-up."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the cold, concentrated coffee; its bold bitterness and cool body hit immediately, leaving a lingering roasted aftertaste.",
+            "The high caffeine content sharpens your focus and shakes off grogginess, giving a brisk mental clarity."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 18.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "canned iced latte",
+        "descriptions": [
+            "330 ml canned iced latte with milk and a double-shot espresso; lightly sweetened and creamy.",
+            "Smooth, milky texture with mild coffee bitterness \u2014 a comforting ready-to-drink coffee beverage."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You sip the sweet, creamy latte; the milk softens espresso's edge and leaves a warm, filling mouthfeel.",
+            "The coffee provides a steady wakefulness without the sharp jolt of straight black coffee."
+        ],
+        "stats_edit": {
+            "fullness": 18.0,
+            "hydration": 22.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "bottled green tea",
+        "descriptions": [
+            "500 ml bottled unsweetened green tea; grassy, slightly astringent, served chilled.",
+            "Light and refreshing, made from steamed green tea leaves with a clean finish."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the light, grassy tea; its subtle astringency clears your palate and feels refreshingly clean.",
+            "A mild caffeine lift eases mental fog without jitteriness."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 28.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "bottled chamomile tea",
+        "descriptions": [
+            "330 ml ready-to-drink chamomile infusion; caffeine-free with warm floral notes.",
+            "A gentle, soothing herbal tea intended for relaxation and a calm pause."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the floral chamomile; its soft honeyed notes and warm mouthfeel create an immediate sense of calm.",
+            "The caffeine-free infusion soothes and helps unwind after a busy day."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 30.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "ready-to-drink matcha latte",
+        "descriptions": [
+            "250 ml canned matcha latte: finely ground Japanese green tea blended with milk for a creamy, umami-rich drink.",
+            "Vivid green color, vegetal and slightly sweet, offers a sustained, focused alertness."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the creamy matcha; vegetal, slightly grassy flavors and a smooth dairy body leave a satisfying richness.",
+            "Matcha delivers a calm, sustained energy that feels steadier than a sharp espresso spike."
+        ],
+        "stats_edit": {
+            "fullness": 16.0,
+            "hydration": 15.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "sparkling cold brew coffee",
+        "descriptions": [
+            "330 ml carbonated cold brew in a can; fizzy take on cold coffee with bright, effervescent mouthfeel.",
+            "Crisp carbonation accentuates the coffee's aromatics and makes the beverage feel particularly refreshing."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the fizzy coffee; bubbles lift the roasted aroma and the cold sip hits with an immediate, lively jolt.",
+            "The combination of carbonation and caffeine provides an energetic, refreshing kick."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 15.0,
+            "energy": 28.0
+        }
+    },
+    {
+        "name": "Whole Roasted Coffee Beans",
+        "descriptions": [
+            "Dark, oil-sheened roasted coffee beans packaged for brewing or snacking.",
+            "Aromatic and crunchy; used for grinding, espresso, or nibbling a few as a quick caffeine bite."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a whole roasted coffee bean: a sharp, bitter hit of roastiness and acidity floods your mouth, followed by a fast, jittery lift of alertness.",
+            "The crunchy bean leaves a lingering bitter aftertaste and a slightly dry sensation on your tongue."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": -3.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "Ground Coffee (Medium Roast)",
+        "descriptions": [
+            "Pre-ground medium roast coffee suitable for drip brewing.",
+            "Finer texture than whole beans; aromatic and convenient for quick preparation."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You spoon a mouthful of dry ground coffee into your mouth: an immediate abrasive bitterness and strong roasted aroma overwhelm the palate.",
+            "A caffeinated buzz builds quickly, leaving a metallic dryness and a lingering bitter film."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -3.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Instant Coffee Granules",
+        "descriptions": [
+            "Freeze-dried coffee granules that dissolve quickly into hot water for instant coffee.",
+            "Convenient and concentrated \u2014 can be eaten dry in a pinch, though intensely bitter."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pour a spoonful of instant granules into your mouth; they dissolve with an acrid, concentrated bitterness and leave a powdery dryness.",
+            "A quick, sharp caffeine spike follows, making your hands tingle with alertness."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -4.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Espresso Roast Beans",
+        "descriptions": [
+            "Dark-roasted beans selected for high-intensity espresso shots.",
+            "Very bold, smoky flavor with a potent caffeine profile when consumed directly or brewed strong."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite into an espresso bean: a powerful, smoky bitterness and a blast of concentrated caffeine hit your system almost immediately.",
+            "Your heart races and focus sharpens rapidly; the bean leaves a persistent roasted aftertaste."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -5.0,
+            "energy": 35.0
+        }
+    },
+    {
+        "name": "Decaffeinated Coffee Beans",
+        "descriptions": [
+            "Roasted beans processed to remove most caffeine while retaining coffee flavor.",
+            "Good for brewing low-caffeine coffee; nibbling yields flavor with little stimulant effect."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a decaf coffee bean: familiar roasted bitterness arrives, but the usual jittery lift is muted.",
+            "It tastes like coffee with the stimulation largely dialed down, leaving behind a dry, roasted mouthfeel."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -2.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Green Coffee Beans (Unroasted)",
+        "descriptions": [
+            "Raw, unroasted coffee beans with a vegetal green aroma used for specialty preparations.",
+            "Tougher and more astringent than roasted beans; edible but intensely bitter and chewy."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You bite a raw green coffee bean: a grassy, astringent flavor with astringency and a tough chew sends a sour edge to your mouth.",
+            "You feel a modest stimulant effect and an uncomfortable dryness as tannins cling to your tongue."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -4.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Black Tea Leaves",
+        "descriptions": [
+            "Oxidized black tea leaves with robust, malty flavor notes, packaged loose.",
+            "Classic breakfast and afternoon tea base; can be steeped or chewed directly for a bitter, tannic bite."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a pinch of black tea leaves: strong tannic bitterness, a dry, puckering mouthfeel, and a mild caffeine lift set in.",
+            "The flavor is brisk and slightly astringent, leaving your throat dry but your mind more alert."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -2.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Earl Grey Loose Tea (Bergamot-Flavored)",
+        "descriptions": [
+            "Black tea blended with bergamot oil for a citrus-floral aroma and slightly perfumed taste.",
+            "Commonly brewed; the dry leaves are fragrant and bitter if eaten directly."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You taste a pinch of Earl Grey leaves: immediate bergamot citrus atop strong black tea bitterness, astringent and fragrant.",
+            "A light caffeine lift occurs along with a lingering citrus perfume in your mouth."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -2.0,
+            "energy": 13.0
+        }
+    },
+    {
+        "name": "Green Tea Leaves (Sencha)",
+        "descriptions": [
+            "Delicate steamed green tea leaves with grassy, vegetal notes and moderate caffeine.",
+            "Often brewed lightly; eaten as raw leaves they taste fresh, vegetal, and slightly bitter."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a mouthful of sencha leaves: fresh green, slightly grassy flavors with a pleasant but subtle bitterness.",
+            "A gentle, clear caffeine lift follows, with a mild drying sensation from the leaves' tannins."
+        ],
+        "stats_edit": {
+            "fullness": 1.5,
+            "hydration": -1.5,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Matcha Powder",
+        "descriptions": [
+            "Finely ground powdered green tea used for whisked preparations and cooking.",
+            "Bright green and concentrated \u2014 ingesting raw powder is intensely vegetal and bright with caffeine and L-theanine effects."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow a spoonful of vivid matcha powder: a punch of grassy bitterness, followed by a focused, calm alertness rather than jagged jitters.",
+            "The powder leaves a chalky texture on your tongue and a pleasantly lingering umami note."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -3.0,
+            "energy": 20.0
+        }
+    },
+    {
+        "name": "Chamomile Herbal Tea Blend",
+        "descriptions": [
+            "Dried chamomile flowers blended as a caffeine-free herbal tisane, known for its calming aroma.",
+            "Caffeine-free; eating the dried flowers yields a floral, slightly sweet, calming sensation rather than stimulation."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a mouthful of chamomile flowers: a gentle floral sweetness and mellow apple-like notes soothe the palate.",
+            "Rather than stimulating, the herb brings a slight drowsy calm and a soft relaxation spreading through your limbs."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": -1.0,
+            "energy": -5.0
+        }
+    },
+    {
+        "name": "Rooibos (Red Bush) Tea Leaves",
+        "descriptions": [
+            "Naturally caffeine-free South African red bush tea with sweet, woody flavors.",
+            "Used as a caffeine-free alternative; eaten raw it tastes sweet and slightly earthy rather than bitter."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew a pinch of rooibos: a warm, naturally sweet, slightly nutty flavor with minimal astringency.",
+            "Its calming, caffeine-free profile leaves you relaxed and without the dryness typical of oxidized teas."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 0.0
+        }
+    },
+    {
+        "name": "Cold-Pressed Orange Juice (Fresh)",
+        "descriptions": [
+            "Freshly pressed from ripe oranges; slightly cloudy with pulp and bright citrus aroma.",
+            "Kept chilled to preserve the tart-sweet tang and natural vitamin bite."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the cold, pulpy orange juice \u2014 the bright citrus zing wakes your senses and leaves a clean, slightly tart finish.",
+            "The pulp gives little chewy bits between sips, making it feel unusually fresh and lively."
+        ],
+        "stats_edit": {
+            "fullness": 8.0,
+            "hydration": 30.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Pasteurized Apple Juice (Bottled)",
+        "descriptions": [
+            "Clear golden apple juice, lightly sweet and smooth; shelf-stable until opened.",
+            "Filtered and pasteurized for a familiar, mellow flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You sip the smooth sweet apple nectar; it tastes comforting and simple, like taking a calm, familiar breath.",
+            "The liquid slides easily, leaving a gentle sweetness that lingers on the tongue."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": 25.0,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "Green Detox Juice (Kale & Cucumber)",
+        "descriptions": [
+            "A deep green blend of kale, spinach, celery and cucumber; vegetal, slightly bitter and grassy.",
+            "Cold-pressed to retain enzymes and a vivid green color."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You take a long pull of the green juice \u2014 the grassy kale and cool cucumber leave a fresh, slightly astringent mouthfeel.",
+            "It tastes cleansing and green, like a concentrated garden in a bottle."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 35.0,
+            "energy": 8.0
+        }
+    },
+    {
+        "name": "Beet & Carrot Juice Blend",
+        "descriptions": [
+            "Vibrant magenta juice with sweet earthiness from beets and bright sweetness from carrots.",
+            "Balanced between earthy and sweet, slightly thicker than plain fruit juice."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the beet-carrot blend and feel a sweet, earthy rush \u2014 it tastes dense and vegetal with a lingering rooty sweetness.",
+            "Its color stains the tongue, and each sip feels hearty and grounding."
+        ],
+        "stats_edit": {
+            "fullness": 9.0,
+            "hydration": 28.0,
+            "energy": 12.0
+        }
+    },
+    {
+        "name": "Tropical Smoothie (Mango-Pineapple-Banana)",
+        "descriptions": [
+            "Thick, creamy smoothie blending ripe mango, pineapple and banana; fibrous and rich.",
+            "More filling than juice \u2014 served cold, almost dessert-like in sweetness and texture."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the thick tropical smoothie; it coats your mouth with sweet, pulpy fruit and feels satisfyingly heavy.",
+            "The banana adds creaminess while mango and pineapple punch up the sweetness and tang."
+        ],
+        "stats_edit": {
+            "fullness": 25.0,
+            "hydration": 20.0,
+            "energy": 30.0
+        }
+    },
+    {
+        "name": "Citrus Concentrate Syrup (Straight)",
+        "descriptions": [
+            "Highly concentrated citrus syrup intended for dilution \u2014 intensely sweet and acidic in its current state.",
+            "Sticky and viscous, with an overpowering orange-lemon aroma."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "Drinking the concentrate straight is a sugar-and-acid shock: overwhelmingly sweet at first, then a sharp citrus burn that clings to the throat.",
+            "It feels syrupy and heavy, leaving a sticky, mouth-coating residue that demands water afterward."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 2.0,
+            "energy": 40.0
+        }
+    },
+    {
+        "name": "Savory Vegetable Broth (Canned)",
+        "descriptions": [
+            "Clear, savory broth made from simmered vegetables and seasonings; warm and comforting.",
+            "Lightly salty with an umami backbone, good as a sipping broth or base for soups."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You sip the warm broth \u2014 the salty, savory flavors feel soothing and easy to swallow, like a gentle comfort.",
+            "It settles quietly in your stomach and leaves a pleasant warmth spreading inward."
+        ],
+        "stats_edit": {
+            "fullness": 6.0,
+            "hydration": 15.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Aloe Vera Juice",
+        "descriptions": [
+            "Slightly viscous, pale liquid marketed for soothing and digestive comfort; mildly bitter and herbal.",
+            "Often blended with light sweeteners to cut the medicinal notes."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You swallow the thick aloe juice and notice a cooling, slightly medicinal flavor that slides down your throat.",
+            "It leaves a subtle aftertaste and a faintly calming sensation in the throat."
+        ],
+        "stats_edit": {
+            "fullness": 4.0,
+            "hydration": 20.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Berry Nectar (Strawberry & Blueberry, Sweetened)",
+        "descriptions": [
+            "Processed berry nectar made from pressed berries and added sweeteners; smooth and intensely fruity.",
+            "Thicker than pure juice, with a bright berry perfume and pronounced sweetness."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the berry nectar and are met with a bold, candy-like berry sweetness; it's lush and immediately satisfying.",
+            "The texture is slightly syrupy, making it feel indulgent with each swallow."
+        ],
+        "stats_edit": {
+            "fullness": 12.0,
+            "hydration": 22.0,
+            "energy": 25.0
+        }
+    },
+    {
+        "name": "Carrot-Ginger Shot",
+        "descriptions": [
+            "A small concentrated shot of carrot juice with a sharp ginger kick; spicy and bright.",
+            "Served chilled in a small vial, meant for a quick, potent boost."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You down the carrot-ginger shot in one go \u2014 the vegetable sweetness is immediately followed by a hot, spicy ginger bite that warms the sinuses.",
+            "It leaves a tingling heat in your throat and a cleansing, brisk sensation overall."
+        ],
+        "stats_edit": {
+            "fullness": 3.0,
+            "hydration": 6.0,
+            "energy": 7.0
+        }
+    }
+]

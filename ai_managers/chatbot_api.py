@@ -26,11 +26,7 @@ from ai_managers.llm_clients import groq_client
 from ai_managers.llm_clients import ollama_client
 
 
-
-
-
 from dotenv import load_dotenv
-
 
 
 # Default filepaths 

@@ -1,5 +1,3 @@
-# New items structures store for usage across the whole project
-
 import json
 import copy
 from pathlib import Path
@@ -58,7 +56,9 @@ class ItemStore:
         """
         Finds items that match all provided filters.
         A special filter key, '__source_path__', can be used to filter by the
-        item's original file path relative to the root directory.
+        item's original file path relative to the root directory. This can be a
+        direct path to a file or a path to a directory.
+        Example: find_items(filters={'__source_path__': 'weapons/'})
         Example: find_items(filters={'__source_path__': 'weapons/purple_magic_sword.json'})
         """
         if filters is None:
@@ -70,9 +70,13 @@ class ItemStore:
             
             # Check for the special '__source_path__' filter
             if '__source_path__' in filters:
-                expected_path = str(self._root_dir / filters['__source_path__'])
+                expected_path_segment = filters['__source_path__']
+                expected_path = str(self._root_dir / expected_path_segment)
                 actual_path = self._item_to_file_map.get(item_name)
-                if actual_path != expected_path:
+                
+                # If the actual path doesn't start with the expected path, it's not a match.
+                # This works for both directory and file paths.
+                if not actual_path or not actual_path.startswith(expected_path):
                     match = False
             
             # Check for all other filters

@@ -67,15 +67,29 @@ class InitialStateConst():
         final_rooms_list.extend(other_rooms)
         
         # Populate the 'items' list for each room using the new items_config map
-        # Populate the 'items' list for each room using the new items_config map
         for room in final_rooms_list:
-            if room["name"] in items_config:
-                # Get the dictionary of items and convert its values to a list
-                items_dict = self.items_store.get_item(items_config[room["name"]])
+            item_config_for_room = items_config.get(room["name"])
+
+            if isinstance(item_config_for_room, str):  # Check if it's a path
+                filters = {'__source_path__': item_config_for_room}
+                room["items"] = self.items_store.find_items(filters)
+            elif isinstance(item_config_for_room, list):  # Check if it's a list of names
+                items_dict = self.items_store.get_item(item_config_for_room)
                 room["items"] = list(items_dict.values())
             else:
-                # If no items are configured, it remains an empty list
+                # If no items are configured or format is wrong, it remains an empty list
                 room["items"] = []
+
+        # Handle inventory population based on config type (path or list)
+        inventory_items = []
+        inventory_config = items_config.get("inventory", [])  # Default to empty list
+
+        if isinstance(inventory_config, str):  # Check if it's a path
+            filters = {'__source_path__': inventory_config}
+            inventory_items = self.items_store.find_items(filters)
+        elif isinstance(inventory_config, list) and inventory_config:  # Check if it's a non-empty list
+            items_dict = self.items_store.get_item(inventory_config)
+            inventory_items = list(items_dict.values())
 
         # Assemble the final, complete state dictionary
         initial_state = {
@@ -83,7 +97,7 @@ class InitialStateConst():
             "next_room_id": ROOM_ID_START_COUNTER,
             "current_room_id": 0,
             "rooms": final_rooms_list,
-            "inventory": list(self.items_store.get_item(items_config.get("inventory", [])).values()),
+            "inventory": inventory_items,
             "current_emote": "neutral",
             "possible_emotes": {
                 "neutral": "You're feeling calm and attentive.",
@@ -105,17 +119,3 @@ class InitialStateConst():
         }
 
         return initial_state
-
-"""***
-
-### Example `items_config.json` Format
-
-The `items_config.json` file should be a simple JSON object that maps room names and the inventory to lists of item names. The `initial_room` key is also included here to specify the starting point. This file will be loaded dynamically by the `create_state` method.
-
-```json
-{
-    "initial_room": "living_room",
-    "living_room": ["Lettuce Seeds", "Carrot Seeds", "bowl_of_nuts"],
-    "kitchen": ["raw chicken breast", "raw beef steak"],
-    "inventory": ["gardening_gloves", "watering_can"]
-}"""

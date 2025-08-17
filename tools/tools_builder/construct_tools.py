@@ -354,7 +354,7 @@ class FunctionBuilder:
 
         ## NEW: Define functions for environmental items (not in inventory) ##
         self._environmental_item_functions = {
-            "chair": {
+            "seat": {
                 # We will place seat_tools, take_a_seat inside the living room instance which was used before as a 
                 # place for a specific living room in an environment, this change is just conceptual,
                 # making it now a place where it holds general living room functions instead of it being tied to 
@@ -366,7 +366,7 @@ class FunctionBuilder:
 
         ## NEW: Define definitions for environmental items ##
         self._environmental_item_definitions = {
-            "chair": seat_tools
+            "seat": seat_tools
         }
 
 

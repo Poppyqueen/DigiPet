@@ -32,6 +32,7 @@ class CareConstructor():
         # Loop through each package name and its data in the care_dict.
         for package_name, package_info in self.care_dict.items():
             # Get the list of detailed item dictionaries for the package.
+            # list_items will handle if "items" is a list or a path string.
             items = self.list_items(package_info["items"])
             
             # Create a dictionary in the exact format you requested.
@@ -51,13 +52,28 @@ class CareConstructor():
             print(f"Warning: Package '{package_name}' not found.")
             return []
         
-        item_names = package_info.get("items", [])
-        detailed_items = self.list_items(item_names)
+        item_source = package_info.get("items", [])
+        detailed_items = self.list_items(item_source)
         
         return detailed_items
 
-    def list_items(self, items_list=["Dry Pasta (500g)", "Granulated Sugar (500g)"]):
-        print("Items list request for base state constructor:")
-        list_items = self.items_store.get_item(items_list)
-        list_of_item_dicts = list(list_items.values())
-        return list_of_item_dicts
+    def list_items(self, item_source):
+        """
+        Retrieves a list of item dictionaries from either a list of item names
+        or a source path string.
+        """
+        #print("Items list request for base state constructor:")
+
+        if isinstance(item_source, str):  # Handle path string
+            filters = {'__source_path__': item_source}
+            return self.items_store.find_items(filters)
+
+        elif isinstance(item_source, list):  # Handle list of item names
+            if not item_source:
+                return []
+            list_items_dict = self.items_store.get_item(item_source)
+            return list(list_items_dict.values())
+            
+        else:
+            print(f"Warning: Invalid item source type: {type(item_source)}. Returning empty list.")
+            return []
