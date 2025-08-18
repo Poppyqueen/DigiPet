@@ -448,7 +448,7 @@ class room_bedroom:
         # --- Add signal call for looking ---
         self._send_signal({"type": "show_message", "message": "You look under the bed..."})
         # -----------------------------------
-        if check_one_in(1):
+        if check_one_in(50):
             found_item=random_object.load_and_get_random_item("found_items/underbed_found_data.json")
             #found_item=random_object.load_and_get_random_item("food_n_drinks/")
 

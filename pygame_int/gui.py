@@ -194,6 +194,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
                 screen.blit(icon_surface, (icon_start_x, icon_draw_y))
 
+        # Changed the order of drawing, now we draw these buttons before we draw the chat window
+        gui_care_package.draw_package_buttons(screen, is_input_locked)
+
         # --- Draw Panel related elements only if panel is visible ---
         if state.panel_visible:
             panel_rect = current_gui_rects['panel_rect']
@@ -292,7 +295,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         # --- Care Package buttons are drawn outside the panel visibility check for now ---
         # Their positioning might need to be adjusted based on panel visibility in gui_care_package.py
-        gui_care_package.draw_package_buttons(screen, is_input_locked)
+
+        # This has been moved above
+        #gui_care_package.draw_package_buttons(screen, is_input_locked)
 
 
         # --- NEW: Draw Mute Button ---

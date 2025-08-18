@@ -650,6 +650,9 @@ state.next_garden_tick_time = pygame.time.get_ticks() + config.GARDEN_TICK_INTER
 print(f"Next garden tick scheduled for {state.next_garden_tick_time} ms.")
 
 # only direct chat with the bot should count as interaction
+state.hovered_package_identifier = None # Initialize a variable to track hover state
+
+is_input_locked_by_state=False
 
 while running:
     dt = clock.tick(60)
@@ -666,6 +669,8 @@ while running:
 
     #state.current_radius=size
     #state.current_radius = state.current_radius
+
+
 
 
     # Update popups state (position, alpha, removal)
@@ -902,8 +907,9 @@ while running:
                         continue
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                
                 # Check inventory toggle button click (to close)
-                if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
+                if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos) and event.button == 1:
                     print("Inventory toggle button clicked while panel open. Closing panel.")
                     state.inventory_panel_visible = False
                     continue
@@ -947,12 +953,32 @@ while running:
 
 
 
+        # --- NEW: Handle MOUSEMOTION for hover effect ---
+        if event.type == pygame.MOUSEMOTION:
+            if not is_input_locked_by_state and not state.inventory_panel_visible and not state.lore_panel_visible:
+                package_hover_regions = gui.gui_care_package.get_package_button_click_regions()
+                current_hovered_identifier = None  # Local variable to find the new hovered item
+
+                for identifier, rect in package_hover_regions:
+                    if rect.collidepoint(event.pos):
+                        current_hovered_identifier = identifier
+                        break  # Found a hover, no need to check others
+
+                # Update the global hover state variable only if it has changed
+                if state.hovered_package_identifier != current_hovered_identifier:
+                    state.hovered_package_identifier = current_hovered_identifier
+                    state.package_scroll_y = 0
+                    # You can print for debugging here if needed
+                    #print(f"Hovering over: {state.hovered_package_identifier}")
+                    continue
+
+
         # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
         if event.type == pygame.MOUSEBUTTONDOWN:
                 #state.last_activity_time = current_time_ms #
 
                 # NEW: Handle Lore Panel Toggle Button click
-                if lore_toggle_button_rect and lore_toggle_button_rect.collidepoint(event.pos):
+                if lore_toggle_button_rect and lore_toggle_button_rect.collidepoint(event.pos) and event.button == 1:
                     if not state.lore_panel_visible: # Only open if not already open
                         print("Lore toggle button clicked. Opening panel.")
                         state.lore_panel_visible = True
@@ -962,7 +988,7 @@ while running:
 
                 if not state.lore_panel_visible:
                     # Check inventory toggle button click (to open)
-                    if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos):
+                    if inventory_toggle_button_rect and inventory_toggle_button_rect.collidepoint(event.pos) and event.button == 1:
                         print("Inventory toggle button clicked while panel closed. Opening panel.")
                         state.inventory_panel_visible = True
                         # Reset scroll positions when opening
@@ -971,7 +997,7 @@ while running:
                         continue # Consume event
 
                     # Check if the click is within the history display area
-                    if mute_button_rect and mute_button_rect.collidepoint(event.pos):
+                    if mute_button_rect and mute_button_rect.collidepoint(event.pos) and event.button == 1:
                         if music_player is not None:
                             music_player.toggle_mute()
                             mute_status = "muted" if music_player.get_is_muted() else "unmuted"
@@ -987,7 +1013,7 @@ while running:
                     all_button_rects = gui.gui_core.get_button_rects()
                     panel_toggle_rect = all_button_rects.get('panel_toggle')
 
-                    if panel_toggle_rect and panel_toggle_rect.collidepoint(event.pos):
+                    if panel_toggle_rect and panel_toggle_rect.collidepoint(event.pos) and event.button == 1:
                         state.panel_visible = not state.panel_visible
                         if state.panel_visible:
                             state.panel_width = config.DEFAULT_PANEL_WIDTH
@@ -1012,10 +1038,18 @@ while running:
                         #print(f"Chat scroll adjusted. Current: {state.scroll_y}, Max: {max_scroll}")
                         continue # Consume event
 
+                    if state.hovered_package_identifier and not state.inventory_panel_visible:
+                        scroll_info = gui.gui_care_package.get_package_scroll_info()
+                        if event.button == 4:  # Scroll up
+                            state.package_scroll_y = max(0, state.package_scroll_y - scroll_info['line_height'])
+                        elif event.button == 5:  # Scroll down
+                            state.package_scroll_y = min(scroll_info['max_scroll'], state.package_scroll_y + scroll_info['line_height'])
+                        #print(state.package_scroll_y)
+
 
                     # --- NEW: Handle clicks on Care Package Buttons and Scroll Controls ---
                     # Check if input is locked (sleep state). If so, ignore clicks on these buttons.
-                    if not is_input_locked_by_state and not state.inventory_panel_visible:
+                    if not is_input_locked_by_state and not state.inventory_panel_visible and event.button == 1 :
                         package_click_regions = gui.gui_care_package.get_package_button_click_regions()
                         clicked_package_button = False # Flag to consume event
 

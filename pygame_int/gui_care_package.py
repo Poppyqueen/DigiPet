@@ -39,7 +39,6 @@ def draw_package_buttons(screen, is_input_locked):
     pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], _backdrop_area_rect, 2) # Border width of 2 pixels
 
 
-
     total_packages = len(config.CARE_PACKAGES)
     visible_start = state.package_button_visible_start_index
     buttons_per_page = max(1, gui_core._buttons_per_page) # Ensure we don't divide by zero or less than 1
@@ -104,10 +103,110 @@ def draw_package_buttons(screen, is_input_locked):
             outline_pos = (outline_rect.x + dx, outline_rect.y + dy)
             screen.blit(outline_surface, outline_pos)
 
-        # Determine text color based on button color for contrast
-        text_color = (0, 0, 0) # Default to black
-        if button_color == (0, 0, 0) or sum(button_color) < 150: # If button is dark, use white text
-            text_color = (255, 255, 255)
+
+        # New border for hovering package button
+        identifier = f"package_{i}"
+        if identifier == state.hovered_package_identifier:
+            pygame.draw.rect(screen, (255, 255, 255), button_rect, 2)  # Draw a white border
+            
+            # Create hover information panel
+            info_panel_width = backdrop_width - 3
+            info_panel_height = backdrop_height * 2
+            info_panel_x = _backdrop_area_rect.left
+            info_panel_y = _backdrop_area_rect.top - info_panel_height #- 5  # Position above backdrop with small gap
+            info_panel_rect = pygame.Rect(info_panel_x, info_panel_y, info_panel_width, info_panel_height)
+            
+            # Draw the info panel background
+            pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], info_panel_rect)
+            # Draw border for the info panel
+            pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], info_panel_rect, 2)
+            
+            # Display package information
+            if "package" in package_info and len(package_info["package"]) > 0:
+                # Collect all item names
+                #print(package_info)
+                state.highlight_items_list = []
+                for item in package_info["package"]:
+                    state.highlight_items_list.append(item['name'])
+                
+                # Text positioning variables
+                text_x = info_panel_x + 8  # Left padding
+                text_y = info_panel_y + 8  # Top padding
+                line_height = gui_core._font.get_height() + 2
+                
+                # Calculate scrollable area
+                available_height = info_panel_height - 16  # Account for top/bottom padding
+                max_visible_lines = available_height // line_height
+                total_items = len(state.highlight_items_list)
+                
+                # Apply scroll offset
+                scroll_offset = int(state.package_scroll_y // 10)  # Adjust scroll sensitivity
+                start_index = max(0, min(scroll_offset, total_items - max_visible_lines))
+                end_index = min(start_index + max_visible_lines, total_items)
+                
+                # Determine if we can scroll up or down
+                can_scroll_up = start_index > 0
+                can_scroll_down = end_index < total_items
+                
+                # Draw scroll indicators (triangles)
+                triangle_size = 8
+                triangle_margin = 4
+                triangle_color = state.game_theme_colors["original_pet_color"]
+                
+                # Up triangle (when can scroll up)
+                if can_scroll_up:
+                    triangle_center_x = info_panel_x + info_panel_width - triangle_size - triangle_margin
+                    triangle_top_y = info_panel_y + triangle_margin
+                    triangle_points = [
+                        (triangle_center_x, triangle_top_y),  # Top point
+                        (triangle_center_x - triangle_size//2, triangle_top_y + triangle_size),  # Bottom left
+                        (triangle_center_x + triangle_size//2, triangle_top_y + triangle_size)   # Bottom right
+                    ]
+                    pygame.draw.polygon(screen, triangle_color, triangle_points)
+                
+                # Down triangle (when can scroll down)
+                if can_scroll_down:
+                    triangle_center_x = info_panel_x + info_panel_width - triangle_size - triangle_margin
+                    triangle_bottom_y = info_panel_y + info_panel_height - triangle_margin
+                    triangle_points = [
+                        (triangle_center_x, triangle_bottom_y),  # Bottom point
+                        (triangle_center_x - triangle_size//2, triangle_bottom_y - triangle_size),  # Top left
+                        (triangle_center_x + triangle_size//2, triangle_bottom_y - triangle_size)   # Top right
+                    ]
+                    pygame.draw.polygon(screen, triangle_color, triangle_points)
+                                
+                # Display visible item names (truncated if too long)
+                for idx in range(start_index, end_index):
+                    item_name = state.highlight_items_list[idx]
+                    # Reserve space for scroll indicators on the right
+                    max_width = info_panel_width - 32  # Reduced to account for triangle space
+                    
+                    # Truncate if too long
+                    name_surface = gui_core._font.render(item_name, True, state.game_theme_colors["original_pet_color"])
+                    if name_surface.get_width() > max_width:
+                        # Find how much text fits
+                        for i in range(len(item_name), 0, -1):
+                            truncated = item_name[:i] + "..."
+                            test_surface = gui_core._font.render(truncated, True, state.game_theme_colors["original_pet_color"])
+                            if test_surface.get_width() <= max_width:
+                                name_surface = test_surface
+                                break
+                    
+                    screen.blit(name_surface, (text_x, text_y))
+
+                    # Draw lines 
+                    # line_color = state.game_theme_colors["package_colors"][package_info["color"]]
+                    line_color = state.game_theme_colors["original_pet_color"]
+
+
+                    pygame.draw.line(screen, line_color,
+                                        (text_x, text_y + line_height - 1),
+                                        (info_panel_x + info_panel_width - 8, text_y + line_height - 1))
+                
+                    text_y += line_height
+
+
+
 
         # Render the main text on top
         text_surface =gui_core._font.render(number_text, True, state.game_theme_colors["original_pet_color"])
@@ -156,3 +255,30 @@ def get_package_button_click_regions():
         click_regions.append((f"package_{i}", button_rect))
 
     return click_regions
+
+
+
+def get_package_scroll_info():
+    """
+    Returns scroll information for the currently hovered package.
+    Used by main game to handle scroll bounds properly.
+    Returns: dict with 'line_height', 'max_scroll', 'total_items', 'max_visible_lines'
+    """
+    if not state.hovered_package_identifier or not hasattr(state, 'highlight_items_list'):
+        return {'line_height': 0, 'max_scroll': 0, 'total_items': 0, 'max_visible_lines': 0}
+    
+    line_height = gui_core._font.get_height() + 2
+    backdrop_height = config.INPUT_HEIGHT + 3
+    available_height = (backdrop_height * 2) - 16  # Panel height minus padding
+    max_visible_lines = available_height // line_height
+    total_items = len(state.highlight_items_list)
+    
+    # Calculate maximum scroll (how far down we can scroll)
+    max_scroll = max(0, (total_items - max_visible_lines) * line_height)
+    
+    return {
+        'line_height': line_height,
+        'max_scroll': max_scroll, 
+        'total_items': total_items,
+        'max_visible_lines': max_visible_lines
+    }
