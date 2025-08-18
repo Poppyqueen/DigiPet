@@ -24,7 +24,7 @@ def set_color_theme():
     
     # ---- Draw filter overlay above the background image ----
     # Define the alpha value for the overlay (0-255, where 255 is opaque)
-    alpha_value = 80
+    alpha_value = 120
     
     # Convert RGB to HSV for brightness adjustment
     # Normalize RGB to 0-1 range for colorsys

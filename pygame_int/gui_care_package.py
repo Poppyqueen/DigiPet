@@ -85,7 +85,6 @@ def draw_package_buttons(screen, is_input_locked):
         button_x = start_x + (i - visible_start) * (button_width + button_spacing_x)
         button_rect = pygame.Rect(button_x, button_y_top, button_width, button_height)
 
-        # Draw the filled rectangle
         pygame.draw.rect(screen, button_color, button_rect)
         # Draw the border
         pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], button_rect, 2) # Border width of 1 pixels
@@ -103,11 +102,19 @@ def draw_package_buttons(screen, is_input_locked):
             outline_pos = (outline_rect.x + dx, outline_rect.y + dy)
             screen.blit(outline_surface, outline_pos)
 
+        # # Render the main text on top
+        text_surface =gui_core._font.render(number_text, True, state.game_theme_colors["original_pet_color"])
+        text_rect = text_surface.get_rect(center=button_rect.center) # Center text on the button's center
+        screen.blit(text_surface, text_rect)
+
 
         # New border for hovering package button
         identifier = f"package_{i}"
         if identifier == state.hovered_package_identifier:
-            pygame.draw.rect(screen, (255, 255, 255), button_rect, 2)  # Draw a white border
+            #pygame.draw.rect(screen, (255, 255, 255), button_rect, 2)  # Draw a white border
+            #pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], button_rect, 2)  # Draw a border
+            pygame.draw.rect(screen, base_color, button_rect, 2)  # Draw a border
+
             
             # Create hover information panel
             info_panel_width = backdrop_width - 3
@@ -116,8 +123,22 @@ def draw_package_buttons(screen, is_input_locked):
             info_panel_y = _backdrop_area_rect.top - info_panel_height #- 5  # Position above backdrop with small gap
             info_panel_rect = pygame.Rect(info_panel_x, info_panel_y, info_panel_width, info_panel_height)
             
-            # Draw the info panel background
+            # # Draw the info panel background
+            # # Draw the filled rectangle
+            # #pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], info_panel_rect)
             pygame.draw.rect(screen, state.game_theme_colors["contrast_color"], info_panel_rect)
+
+
+            # # Create a surface with per-pixel alpha for transparency
+            # info_surface = pygame.Surface((info_panel_width, info_panel_height), pygame.SRCALPHA)
+
+            # # Fill the surface with a transparent color (RGBA)
+            # transparent_background = state.game_theme_colors["overlay_color_with_alpha"]
+            # info_surface.fill(transparent_background)
+
+            # # Draw the transparent background to the screen
+            # screen.blit(info_surface, (info_panel_x, info_panel_y))
+
             # Draw border for the info panel
             pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], info_panel_rect, 2)
             
@@ -127,7 +148,7 @@ def draw_package_buttons(screen, is_input_locked):
                 #print(package_info)
                 state.highlight_items_list = []
                 for item in package_info["package"]:
-                    state.highlight_items_list.append(item['name'])
+                    state.highlight_items_list.append(item['name'].title())
                 
                 # Text positioning variables
                 text_x = info_panel_x + 8  # Left padding
@@ -194,9 +215,11 @@ def draw_package_buttons(screen, is_input_locked):
                     
                     screen.blit(name_surface, (text_x, text_y))
 
+
                     # Draw lines 
                     # line_color = state.game_theme_colors["package_colors"][package_info["color"]]
                     line_color = state.game_theme_colors["original_pet_color"]
+                    # line_color = state.game_theme_colors["overlay_color_with_alpha"]
 
 
                     pygame.draw.line(screen, line_color,
@@ -207,8 +230,17 @@ def draw_package_buttons(screen, is_input_locked):
 
 
 
+        # Render the outline text slightly offset (using button_color for outline as before)
+        # This creates a 'debossed' or 'cutout' look
+        outline_surface = gui_core._font.render(number_text, True, state.game_theme_colors["contrast_color"])
+        outline_rect = outline_surface.get_rect(center=button_rect.center)
 
-        # Render the main text on top
+        offsets = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        for dx, dy in offsets:
+            outline_pos = (outline_rect.x + dx, outline_rect.y + dy)
+            screen.blit(outline_surface, outline_pos)
+
+        # # Render the main text on top
         text_surface =gui_core._font.render(number_text, True, state.game_theme_colors["original_pet_color"])
         text_rect = text_surface.get_rect(center=button_rect.center) # Center text on the button's center
         screen.blit(text_surface, text_rect)

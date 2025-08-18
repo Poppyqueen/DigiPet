@@ -205,7 +205,7 @@ class MockChatbot:
         print(f"\nMockChatbot: process_input() called [Role: {role}]: {user_input[:100]}...")
 
         # Simulate processing time
-        await asyncio.sleep(random.uniform(0.5, 2.0))
+        await asyncio.sleep(random.uniform(.3, 3))
 
         response_text = ""
         signal_sent = False # Flag to track if a signal was sent
@@ -270,8 +270,8 @@ class MockChatbot:
                 # Simulate stat changes - signals are handled by adjust_stat
                 self.state_manager.adjust_stat("energy", random.uniform(40, 80))
                 self.state_manager.adjust_stat("happiness", -random.uniform(5, 10))
-                # Signal sleep event (mock duration: 5-10 seconds)
-                sleep_duration = random.randint(5, 10)
+                # Signal sleep event (mock duration: 10-30 seconds)
+                sleep_duration = random.randint(10, 30)
                 self._signal_callback({"type": "sleep", "duration": sleep_duration})
                 signal_sent = True
 

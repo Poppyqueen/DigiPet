@@ -11,6 +11,7 @@ from pygame_int import animation # If init_gui uses it
 from pygame_int import gui_config # For constants used in init_gui
 from pygame_int import gui_construct_colors
 
+from pygame_int import gui_stat_icons
 # --- Internal Module State (Initialized by init_gui) ---
 _font = None
 _line_height = 0
@@ -307,6 +308,7 @@ def init_gui_elements(font, line_height, current_panel_width):
 
     # --- Load stat icons ---
     _load_stat_icons() # This call is fine as _load_stat_icons is in this file.
+    gui_stat_icons.update_stat_icon_rects()
 
     # Image popup display area and background surface initialization is now handled in gui_popups.show_image_popup
 

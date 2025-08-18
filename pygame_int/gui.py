@@ -11,7 +11,7 @@ from pygame_int import gui_inventory
 from pygame_int import gui_popups
 from pygame_int import gui_care_package
 from pygame_int import gui_lore_panel # NEW: Import the new lore panel module
-
+from pygame_int import gui_stat_icons
 import pygame
 # import pygame.gfxdraw # Removed
 import colorsys
@@ -179,21 +179,8 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius)
         pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius, 5)
 
-        # --- Draw Stat Icons (always visible in the game area) ---
-        stats_to_draw_order = ["fullness", "hydration", "energy"]
-        icon_start_x = config.STAT_ICON_START_X_SCREEN
-        icon_start_y = config.STAT_ICON_START_Y_SCREEN
-        icon_height = config.STAT_ICON_SIZE[1]
-        icon_spacing = config.STAT_ICON_SPACING_Y
-
-        for i, stat_name in enumerate(stats_to_draw_order):
-            stat_value = state.pet_stats.get(stat_name, 0)
-            stat_level = _get_stat_level(stat_value) # Assuming _get_stat_level is defined or imported
-            icon_surface = gui_core._stat_icons.get((stat_name, stat_level))
-            if icon_surface:
-                icon_draw_y = icon_start_y + i * (icon_height + icon_spacing)
-                screen.blit(icon_surface, (icon_start_x, icon_draw_y))
-
+        # Moved draw stat icons to its own spot
+        gui_stat_icons.draw_stat_icons(screen)
         # Changed the order of drawing, now we draw these buttons before we draw the chat window
         gui_care_package.draw_package_buttons(screen, is_input_locked)
 
@@ -343,8 +330,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
 
         if gui_core._inventory_toggle_button_rect:
+            inv_but_border_color=state.game_theme_colors["original_pet_color"]
             pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
-            pygame.draw.circle(screen, state.game_theme_colors["original_pet_color"], gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 1)
+            pygame.draw.circle(screen, inv_but_border_color, gui_core._inventory_toggle_button_rect.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 2)
 
 
 

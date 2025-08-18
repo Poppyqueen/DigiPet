@@ -558,6 +558,8 @@ def start_chatbot_request(user_input, input_role='user'):
     global chatbot_available, chatbot
     current_time_ms = pygame.time.get_ticks()
 
+    clean_hover() # Clean hover state on any kind of bot action
+
     # Also check if inventory panel is open - block user input requests if it is
     if input_role == 'user' and (current_time_ms < state.autonomous_action_paused_until_ms):
          block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
@@ -632,6 +634,13 @@ def start_garden_tick_request():
     thread.start()
     return True
 
+def clean_hover():
+    """
+    To clean up hover state variables if necessary.
+    """
+    state.hover_stat=None
+    state.hovered_package_identifier=None
+
 CURSOR_INTERVAL = 500 # Milliseconds
 
 # --- Game Loop ---
@@ -669,7 +678,6 @@ while running:
 
     #state.current_radius=size
     #state.current_radius = state.current_radius
-
 
 
 
@@ -955,9 +963,16 @@ while running:
 
         # --- NEW: Handle MOUSEMOTION for hover effect ---
         if event.type == pygame.MOUSEMOTION:
+            # state.inventory_b_hover=False
+            # if not is_input_locked_by_state and inventory_toggle_button_rect.collidepoint(event.pos) and not state.lore_panel_visible:
+            #     #print("over inventory button")
+            #     state.inventory_b_hover=True
+            #     continue
+
             if not is_input_locked_by_state and not state.inventory_panel_visible and not state.lore_panel_visible:
                 package_hover_regions = gui.gui_care_package.get_package_button_click_regions()
                 current_hovered_identifier = None  # Local variable to find the new hovered item
+                stats_rects = gui.gui_stat_icons.get_stat_icon_rects()
 
                 for identifier, rect in package_hover_regions:
                     if rect.collidepoint(event.pos):
@@ -970,7 +985,13 @@ while running:
                     state.package_scroll_y = 0
                     # You can print for debugging here if needed
                     #print(f"Hovering over: {state.hovered_package_identifier}")
-                    continue
+                
+                state.hover_stat=None
+                for name, rect in stats_rects.items():
+                    if rect.collidepoint(event.pos):
+                        state.hover_stat = name
+                        #print(name)
+                        break
 
 
         # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
@@ -1124,6 +1145,7 @@ while running:
 
         # Handle Keyboard events (typing, Ctrl+keys, Escape)
         if event.type == pygame.KEYDOWN:
+                #clean_hover()
 #                state.last_activity_time = current_time_ms # Activity resets idle timer
 
                 if event.key == pygame.K_ESCAPE:
@@ -1210,12 +1232,14 @@ while running:
 
                 else: # If cursor is inactive, text input is ignored here
                     if event.key == pygame.K_i:
+                        clean_hover() # Reset hover state if we enter a menu or other window 
                         if state.inventory_panel_visible:
                             state.inventory_panel_visible = False
                         else:
                             state.inventory_panel_visible = True
                         continue
                     if event.key == pygame.K_c:
+                        # clean_hover() no need to clear hover state here
                         if state.panel_visible:
                             state.panel_visible = False
                         else:
@@ -1223,6 +1247,7 @@ while running:
                         continue
                 #     pass
                     if event.key == pygame.K_m: # Use 'm' for mute
+                        # clean_hover() no need to clear hover state here
                         if music_player is not None:
                             music_player.toggle_mute()
                             # Optional: Add a system message or popup to confirm state

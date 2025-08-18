@@ -141,3 +141,5 @@ hovered_package_identifier = None
 package_scroll_y = 0
 
 highlight_items_list = []
+
+hover_stat=None

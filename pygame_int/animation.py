@@ -108,7 +108,7 @@ def start_circle_shake():
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
         # print("Input locked - bot is asleep. Ignoring manual shake command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger shake while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger shake while bot is resting.", 'system')
         return
 
     # Only general shake if no other specific animation is active
