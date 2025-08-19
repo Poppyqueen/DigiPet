@@ -381,6 +381,7 @@ class FunctionBuilder:
             "seat": seat_tools
         }
 
+        # Moved bluesky here, probably move all other import conditional tools here too
         if self.bluesky:
             # Add Bluesky tools to the inventory-only functions and definitions
             self._inventory_only_functions["bluesky_social"] = {
@@ -388,6 +389,7 @@ class FunctionBuilder:
             }
             self._inventory_only_definitions["bluesky_social"] = bluesky_tools
             print("Bluesky Social tools added to inventory-only functions.")
+
         # 3. ROOM-SPECIFIC: Tools that are available based on the current room type.
             self._room_type_data["bluesky_social"] = { # Using a distinct room type name
                 "functions": {

@@ -11,48 +11,6 @@ from utils.pydantic_models import ItemDefinitionListContainer
 from utils.ai_loader import AIConfiguration
 
 
-
-
-# # --- Structure for the fixed stats_edit dictionary ---
-# class ItemStatsEdit(BaseModel):
-#     """
-#     Defines the required structure for the stats_edit dictionary.
-#     Must contain exactly 'fullness', 'hydration', and 'energy' as integers.
-#     """
-#     fullness: float = Field(description="Integer change to fullness stat.")
-#     hydration: float = Field(description="Integer change to hydration stat.")
-#     energy: float = Field(description="Integer change to energy stat.")
-
-
-# # --- Structure for the individual item definition ---
-# class ItemDefinition(BaseModel):
-#     """
-#     Represents the data required to define a single item for creation.
-#     Excludes the ID and the 'type' field as per requirements.
-#     Includes a strictly defined stats_edit structure.
-#     """
-#     name: str = Field(description="A unique string identifier for the item type (e.g., 'bowl_of_nuts').")
-#     descriptions: List[str] = Field(description="A list of strings providing descriptions for the item.")
-#     static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved).")
-
-#     # Use the specific ItemStatsEdit model to enforce the structure and keys
-#     stats_edit: ItemStatsEdit = Field(description="A dictionary containing specific stat changes (fullness, hydration, energy).")
-
-#     # 'effects' field from your example, assuming it's required for this definition structure
-#     effects: List[str] = Field(description="A list of strings describing narrative effects upon use.")
-
-#     type: str = Field(description="Options: 'consumable' or 'misc' for items that are no longer consumable")
-
-    
-# # --- Structure that contains a list of these item definitions (Optional) ---
-# # This is if you needed a container holding a list of objects matching the above definition
-# class ItemDefinitionListContainer(BaseModel):
-#     """
-#     A container model holding a list of item definitions.
-#     """
-#     items: List[ItemDefinition] = Field(description="A list of item definition objects.")
-
-
 class cook:
 
     def __init__(self, config_manager):
@@ -115,31 +73,3 @@ class cook:
         print("--- AI Call Successful ---")
         return processed_items_list
 
-
-
-# # --- Example Usage ---
-# processor = cook()
-# input_items = ["raw_nuts", "ceramic_bowl"]
-# processing_action = "shell and place in bowl"
-
-# resulting_items = processor.prepare_food(input_items, processing_action)
-
-# print("\n--- Resulting Items (List of Dictionaries) ---")
-# import json
-# print(json.dumps(resulting_items, indent=4))
-
-# # Verification
-# print("\n--- Verification ---")
-# if resulting_items:
-#     # Check the first item (consumable in mock)
-#     print("First item (expected consumable):", resulting_items[0].get("name"))
-#     print("Has 'type'?", "type" in resulting_items[0])
-#     print("Has 'stats_edit'?", "stats_edit" in resulting_items[0])
-#     print("Has 'effects'?", "effects" in resulting_items[0])
-
-#     # Check the second item (misc in mock)
-#     if len(resulting_items) > 1:
-#         print("\nSecond item (expected misc):", resulting_items[1].get("name"))
-#         print("Has 'type'?", "type" in resulting_items[1])
-#         print("Has 'stats_edit'?", "stats_edit" in resulting_items[1]) # Should be False
-#         print("Has 'effects'?", "effects" in resulting_items[1])     # Should be False

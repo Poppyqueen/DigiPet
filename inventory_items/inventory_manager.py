@@ -28,11 +28,11 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
         selected_state_name = config_manager.get_config("game_settings", "initial_state")
 
-        available_states = [
-            "base_state",
-            "dev_room",
-            "no_lab"
-        ]
+        availiable_configs = self.initial_state_manager.states_configs
+
+        available_states=[]
+        for i in availiable_configs:
+            available_states.append(i)
 
         for i in available_states:
             if i == selected_state_name:

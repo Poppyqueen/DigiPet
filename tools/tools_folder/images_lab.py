@@ -152,7 +152,7 @@ class ImagesLab:
             # Now try to update the metadata.
             try:
                 metadata_object = {
-                    "image_name": final_name,
+                    "image_name": image_name, # use the original name for clarity
                     "concept": concept,
                     "path": svg_path,
                     "time_stamp": safe_filename_datetime

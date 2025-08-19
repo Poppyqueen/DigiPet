@@ -272,8 +272,8 @@ POPUP_DURATION_MS = 6000 # How long a pop-up message stays visible
 POPUP_MOVE_DISTANCE_Y = 50 # How far the pop-up moves upwards
 POPUP_INITIAL_OFFSET_Y = -CIRCLE_RADIUS - 20 # Starting Y offset relative to the pet's center
 POPUP_COLOR = (100, 255, 100) # Default color for pop-up text (e.g., positive changes)
-POPUP_RANDOM_SPREAD_X = 100 # Max horizontal random displacement from pet center
-POPUP_RANDOM_SPREAD_Y = 60 # Max vertical random displacement from pet center
+POPUP_RANDOM_SPREAD_X = 90 # Max horizontal random displacement from pet center
+POPUP_RANDOM_SPREAD_Y = 90 # Max vertical random displacement from pet center
 
 
 color_code={

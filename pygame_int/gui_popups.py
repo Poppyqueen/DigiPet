@@ -79,16 +79,19 @@ _active_image_popups = {} # Key: int (type), Value: ImagePopup instance
 
 
 # --- Function to trigger a floating pop-up message ---
-def show_popup_message(text, color=None):
+def show_popup_message(text, color=None, raw=False):
     """
     Creates a new floating pop-up message with a border and adds it to the active list.
     """
-    if not color:
-        color = state.game_theme_colors["contrast_color"]
-    
-    # Define border color and offset
-    # Choose border color based on main text color for better contrast
-    border_color =  state.game_theme_colors["original_pet_color"] # Default black border
+    border_color=(0,0,0)
+    if not raw:
+        if not color:
+            color = state.game_theme_colors["contrast_color"]
+        
+        # Define border color and offset
+        # Choose border color based on main text color for better contrast
+        #border_color =  state.game_theme_colors["original_pet_color"] # Default black border
+        border_color =  state.game_theme_colors.get("original_pet_color", (255,255,255)) 
 
     border_offset_px = 1 # 1 pixel offset for the border outline
 

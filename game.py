@@ -53,7 +53,11 @@ if mock_running:
 else:
     config_manager = ConfigManager(bots_archive_dir)
 
-run_config_main_menu_ui(screen, font, config_manager)
+
+# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
+gui.gui_core.init_gui_elements(font, line_height, 200)
+
+
 
 
 def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=config.STEP_SIZE_LIMIT): # 250
@@ -264,6 +268,9 @@ def handle_chatbot_signal(signal_data):
     else:
         print(f"Received signal data in unexpected format (not a dict): {signal_data}")
 
+
+run_config_main_menu_ui(screen, font, config_manager)
+
 if mock_running: # Mock configuration, leave as is
     # --- Mock Chatbot Initialization ---
     chatbot = None
@@ -439,8 +446,6 @@ def add_items(items_list, room):
         gui.gui_text_utils.add_message_to_history(error_message, 'error')
 
 
-# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
-gui.gui_core.init_gui_elements(font, line_height, 200)
 
 def get_current_room_image():
     """Retrieves the list of types for the current room."""
@@ -456,8 +461,22 @@ current_image=get_current_room_image()
 gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 
 # Initial popup, splash screen.
-gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 
+
+def splash_sound():
+    if pygame.mixer.get_init(): 
+        try:
+            sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
+            sound.set_volume(0.5)
+            sound.play()
+            print("Playing sound from GUI Core init.") # Modified print statement
+        except pygame.error as e:
+            print(f"Could not play sound: {e}")
+    else:
+        print("Pygame mixer not initialized. Cannot play sound.")
+
+splash_sound()
+gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 current_gui_rects=gui.gui_core.get_gui_rects()
 
 

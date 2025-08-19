@@ -2,10 +2,16 @@ import pygame
 import sys
 from pygame_int import gui_config
 from pygame_int import config
+from pygame_int import state
 import json
 from ai_managers import data
 
+
 from utils.ai_loader import AIConfiguration, UnifiedLoader
+
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
+
+from pygame_int import gui
 
 # Global state variables for the UI
 active_element = None
@@ -106,7 +112,7 @@ class TextInputBox:
         self.rect.w = self.max_width # Ensure width remains fixed
 
     def handle_event(self, event, adjusted_pos):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             global active_element
             if self.rect.collidepoint(adjusted_pos):
                 self.active = True
@@ -142,9 +148,10 @@ class DropdownMenu:
     def __init__(self, x, y, w, h, font, key, options, default_text='Select...'):
         self.rect = pygame.Rect(x, y, w, h)
         self.key = key
+        self.default_text = default_text
         self.font = font
         self.options = options
-        self.selected_option = default_text
+        self.selected_option = None
         self.is_open = False
         self.options_rects = []
         dropdowns[self.key] = self
@@ -152,7 +159,7 @@ class DropdownMenu:
     # --- MODIFIED: Event handler now accepts an adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
         global active_element
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(adjusted_pos):
                 self.is_open = not self.is_open
                 active_element = self if self.is_open else None
@@ -172,7 +179,9 @@ class DropdownMenu:
         draw_rect = self.rect.move(0, -offset_y)
         pygame.draw.rect(target_surface, gui_config.BUTTON_COLOR, draw_rect)
         pygame.draw.rect(target_surface, gui_config.BUTTON_TEXT_COLOR, draw_rect, 2)
-        text_surface = self.font.render(self.selected_option, True, gui_config.BUTTON_TEXT_COLOR)
+
+        display_text = self.selected_option if self.selected_option is not None else self.default_text
+        text_surface = self.font.render(display_text, True, gui_config.BUTTON_TEXT_COLOR)
         target_surface.blit(text_surface, (draw_rect.x + 5, draw_rect.y + 5))
         
         if self.is_open:
@@ -207,7 +216,7 @@ class Button:
     # --- MODIFIED: Event handler now accepts a single adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
         # The collision check is now simple and correct.
-        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(adjusted_pos):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(adjusted_pos) and event.button == 1:
             if self.action:
                 return self.action()
         return None
@@ -236,7 +245,7 @@ class Checkbox:
 
     # --- MODIFIED: Event handler now accepts an adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(adjusted_pos):
                 self.checked = not self.checked
         return None
@@ -293,7 +302,7 @@ class Popup:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     # Pass the original mouse_pos, as these buttons are not in a scrolled view
                     if self.accept_button.handle_event(event, mouse_pos):
                         return True
@@ -325,6 +334,7 @@ def run_config_main_menu_ui(screen, font, config_manager):
     print("Entering Main Config Menu...")
     clock = pygame.time.Clock()
     running = True
+
 
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -481,6 +491,9 @@ def run_config_creation_ui(screen, font, config_manager):
     (This function has been updated with the same event handling fixes for consistency)
     """
     print("Entering New Configuration UI...")
+
+    state.panel_width=0
+    state.panel_visible=False
     clock = pygame.time.Clock()
     running = True
     screen_width = screen.get_width()
@@ -488,6 +501,11 @@ def run_config_creation_ui(screen, font, config_manager):
     
     text_inputs.clear()
     dropdowns.clear()
+
+    availiable_configs=InitialStateConst().states_configs
+    available_states=[]
+    for i in availiable_configs:
+        available_states.append(i) 
 
     # --- Fixed UI Elements ---
     create_button_x = (screen_width - gui_config.ENTER_BUTTON_WIDTH) // 2
@@ -516,7 +534,7 @@ def run_config_creation_ui(screen, font, config_manager):
     
     config_name_label_surface = font.render("New Config Name:", True, config.WHITE)
     config_name_label_rect = config_name_label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=current_y)
-    config_name_input = TextInputBox(config_name_label_rect.right + 10, current_y, 250, gui_config.INPUT_BOX_HEIGHT, font, 'config_name')
+    config_name_input = TextInputBox(config_name_label_rect.right + 10, current_y, 250, gui_config.CONFIG_INPUT_BOX_HEIGHT, font, 'config_name')
     elements.append((config_name_label_surface, config_name_label_rect)); elements.append(config_name_input)
     current_y += config_name_input.rect.h + gui_config.INPUT_BOX_SPACING # Use actual height of the text input 
     title_surface, title_rect = draw_section_title(font, "AI_DeepMemory", current_y, screen_width)
@@ -541,21 +559,26 @@ def run_config_creation_ui(screen, font, config_manager):
     enable_musicbrainz_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable MusicBrainz", font); elements.append(enable_musicbrainz_checkbox); current_y += 30
     enable_bluesky_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable Bluesky", font); elements.append(enable_bluesky_checkbox); current_y += 30
     title_surface, title_rect = draw_section_title(font, "game_settings", current_y, screen_width); elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
-    game_states = ["base_state", "dev_room"]; current_y = draw_labeled_dropdown_or_input(font, "initial_state", "Initial State:", current_y, screen_width, elements, options=game_states)
+    game_states = available_states; current_y = draw_labeled_dropdown_or_input(font, "initial_state", "Initial State:", current_y, screen_width, elements, options=game_states)
     tts_providers = ["", "macos_say", "espeak_ng"]; current_y = draw_labeled_dropdown_or_input(font, "tts_provider", "TTS Provider:", current_y, screen_width, elements, options=tts_providers)
     current_y = draw_labeled_dropdown_or_input(font, "selected_voice", "Selected Voice:", current_y, screen_width, elements, is_dropdown=False)
     title_surface, title_rect = draw_section_title(font, "System Prompt", current_y, screen_width); elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     system_prompt_label_surface = font.render("Additional Prompt:", True, config.WHITE); system_prompt_label_rect = system_prompt_label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=current_y)
-    system_prompt_input = TextInputBox(gui_config.HORIZONTAL_PADDING, system_prompt_label_rect.bottom + 5, screen_width - 2*gui_config.HORIZONTAL_PADDING, gui_config.INPUT_BOX_HEIGHT * 2, font, 'sys_prompt', allow_newlines=True)
+    system_prompt_input = TextInputBox(gui_config.HORIZONTAL_PADDING, system_prompt_label_rect.bottom + 5, screen_width - 2*gui_config.HORIZONTAL_PADDING, gui_config.CONFIG_INPUT_BOX_HEIGHT * 2, font, 'sys_prompt', allow_newlines=True)
     elements.append((system_prompt_label_surface, system_prompt_label_rect)); elements.append(system_prompt_input); current_y += system_prompt_input.rect.h + gui_config.INPUT_BOX_SPACING # Use actual height
     total_content_height = current_y
 
     scroll_offset_y = 0
     scroll_speed = 30
 
+    
     while running:
         dt = clock.tick(30)
+        current_time_ms = pygame.time.get_ticks()
         mouse_pos = pygame.mouse.get_pos()
+        gui.gui_core.update_gui_rects(0)
+        gui.gui_popups.update_popups(current_time_ms)
+
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -568,8 +591,76 @@ def run_config_creation_ui(screen, font, config_manager):
                 if create_button.rect.collidepoint(mouse_pos):
                     if create_button.handle_event(event, mouse_pos) == "create_config":
                         # (Config saving logic is unchanged)
-                        if not text_inputs['config_name'].text:
-                            print("Error: Configuration name cannot be empty.")
+                        # 1. GATHER all current data from the UI into a simple dictionary.
+                        # This makes the data easy to read and validate.
+                        form_data = {
+                            "config_name": text_inputs['config_name'].text,
+                            "deep_memory_flag": enable_deep_memory_checkbox.checked,
+                            "deep_memory_ai_provider": dropdowns['deep_memory_ai_provider'].selected_option,
+                            "deep_memory_ai": text_inputs['deep_memory_ai'].text,
+                            "deep_memory_embeddings_provider": dropdowns['deep_memory_embeddings_provider'].selected_option,
+                            "general_ai_provider": dropdowns['general_ai_provider'].selected_option,
+                            "memory_ai_provider": dropdowns['memory_ai_provider'].selected_option,
+                            "cook_provider" :  dropdowns['cook_provider'].selected_option,
+                            "pets_folder": text_inputs['pets_folder'].text,
+                            "general_model": text_inputs['general_model'].text,
+                            "memory_model": text_inputs['memory_model'].text,
+                            "cook_model": text_inputs['cook_model'].text,
+                            "initial_state": dropdowns['initial_state'].selected_option,
+                            # Add any other fields you want to validate here
+                        }
+
+                        print("--- Form Data Collected ---")
+                        print(form_data)
+                        print("--------------------------")
+
+                        validation_errors = []
+
+                        # 2. RUN explicit and robust validation logic.
+                        # -- Unconditional fields --
+                        # Define which fields must always be filled/selected
+                        unconditional_fields = [
+                            "config_name", "general_ai_provider", "memory_ai_provider",
+                            "cook_provider", "pets_folder", "general_model", "memory_model",
+                            "cook_model", "initial_state"
+                        ]
+
+                        # Validate each unconditional field
+                        for field in unconditional_fields:
+                            if field in form_data:
+                                value = form_data[field]
+                                
+                                # Check if value is None, empty string, or just whitespace
+                                if not value or (isinstance(value, str) and not value.strip()):
+                                    validation_errors.append(f"{field.replace('_', ' ').title()} cannot be empty.")
+                            else:
+                                validation_errors.append(f"Required field '{field}' is missing from form data.")
+
+                        # -- Conditional fields --
+                        # Only validate deep memory fields if the checkbox is checked.
+                        if form_data["deep_memory_flag"]:
+                            # If no option is selected, the value will be None.
+                            # A simple 'not' check handles both None and empty strings.
+                            if not form_data["deep_memory_ai_provider"]:
+                                validation_errors.append("Deep Memory AI Provider must be selected.")
+                            
+                            # This is a text input, so the .strip() check remains correct.
+                            if not form_data["deep_memory_ai"].strip():
+                                validation_errors.append("Deep Memory AI Model Name cannot be empty.")
+
+                            # This is also a dropdown, so we check for a non-selection (None).
+                            if not form_data["deep_memory_embeddings_provider"]:
+                                validation_errors.append("Deep Memory Embeddings Provider must be selected.")
+
+                                
+                        # 3. PROCESS the result of the validation.
+                        if validation_errors:
+                            # If there are errors, print them and stop.
+                            print("--- Validation Failed ---")
+                            for error in validation_errors:
+                                print(f"Error: {error}")
+                        
+                                gui.gui_popups.show_popup_message(error, (255, 0, 0), True)
                         else:
                             config_name = text_inputs['config_name'].text
                             
@@ -623,7 +714,7 @@ def run_config_creation_ui(screen, font, config_manager):
                         if hasattr(element, 'handle_event'):
                             element.handle_event(event, adjusted_mouse_pos)
                 # Handle click events
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     for element in elements:
                         if hasattr(element, 'handle_event'):
                             element.handle_event(event, adjusted_mouse_pos)
@@ -666,8 +757,9 @@ def run_config_creation_ui(screen, font, config_manager):
         create_button.draw(screen, mouse_pos, 0)
         back_button.draw(screen, mouse_pos, 0)
 
+
+        gui.gui_popups.draw_popups(screen)
         pygame.display.flip()
-        
     return None
 
 def draw_section_title(font, title, y, screen_width):
@@ -682,13 +774,17 @@ def draw_labeled_dropdown_or_input(font, key, label_text, y, screen_width, eleme
     label_rect = label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=y)
     elements.append((label_surface, label_rect))
 
+    x = label_rect.right + gui_config.INPUT_LABEL_SPACING
+
+    box_width= screen_width - x - gui_config.HORIZONTAL_PADDING
+
     if is_dropdown:
         element_ui = DropdownMenu(
-            label_rect.right + gui_config.INPUT_LABEL_SPACING, y, 250, gui_config.INPUT_BOX_HEIGHT, font, key, options
+            x, y, box_width, gui_config.CONFIG_INPUT_BOX_HEIGHT, font, key, options
         )
     else:
         element_ui = TextInputBox(
-            label_rect.right + gui_config.INPUT_LABEL_SPACING, y, 250, gui_config.INPUT_BOX_HEIGHT, font, key
+            x, y, box_width, gui_config.CONFIG_INPUT_BOX_HEIGHT, font, key
         )
     elements.append(element_ui)
     
