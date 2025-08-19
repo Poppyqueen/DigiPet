@@ -308,6 +308,8 @@ else:
         chatbot = None # Ensure chatbot is None if initialization failed
 
 
+
+
 steps=chatbot.state_manager.get_steps()
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 state.current_radius=size
@@ -353,6 +355,11 @@ else:
     # Chatbot unavailable, color configuration is skipped. Use default color.
     print("Chatbot not available. Skipping color configuration/load. Using default green.")
     state.pet_color = config.GREEN
+
+
+
+gui.gui_core.gui_construct_colors.set_color_theme() 
+
 
 
 # --- Initial Background Load ---

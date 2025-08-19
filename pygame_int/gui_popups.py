@@ -240,6 +240,15 @@ def update_popups(current_time_ms):
                 image_popup.visible = False
 
 # --- Function to draw active pop-up messages (text popups) ---
+
+def clear_all_popups():
+    """
+    Clears all active pop-up messages (text and image).
+    """
+    state.active_popups.clear()
+    global _active_image_popups
+    _active_image_popups.clear()
+
 def draw_popups(screen):
     """
     Draws all active text pop-up messages. Accesses state.

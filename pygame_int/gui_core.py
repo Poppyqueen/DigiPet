@@ -306,8 +306,6 @@ def init_gui_elements(font, line_height, current_panel_width):
     _load_stat_icons() # This call is fine as _load_stat_icons is in this file.
     gui_stat_icons.update_stat_icon_rects()
 
-    gui_construct_colors.set_color_theme()
-
     # Image popup display area and background surface initialization is now handled in gui_popups.show_image_popup
 
     # The following call to show_image_popup will be problematic if show_image_popup is not in gui_core.py

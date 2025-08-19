@@ -693,10 +693,12 @@ def run_config_creation_ui(screen, font, config_manager):
                             config_manager.set_config("AI", "sys_prompt", final_prompt)
                             
                             config_manager.save_config_to_archive(config_name)
+                            gui.gui_popups.clear_all_popups()
                             running = False
                 
                 elif back_button.rect.collidepoint(mouse_pos):
                     if back_button.handle_event(event, mouse_pos) == "go_back":
+                        gui.gui_popups.clear_all_popups()
                         running = False
             
             # --- MODIFIED: Handle scrollable element events ---
