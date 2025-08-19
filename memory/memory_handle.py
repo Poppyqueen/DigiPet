@@ -7,13 +7,11 @@ import re
 import uuid
 
 # Import extra memory module
-from utils.tokens_handle import token_manager
 from memory.memory_configs import (short_term_prompt, long_term_prompt)
-from utils.utils_ai_providers.gemini_provider import GeminiProv
-from utils.utils_ai_providers.openai_provider import OpenAIProv
-from utils.utils_ai_providers.groq_provider import GroqProv
-from utils.utils_ai_providers.ollama_provider import OllamaProv
+
 from memory.deep_memory import DeepMemory
+
+from utils.ai_loader import AIConfiguration, TokenizerConfiguration
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
@@ -66,7 +64,6 @@ class memory_manager:
 
 
     def __init__(self, filepath: str = DEFAULT_MEMORY_DB, deep_memory_filepath: str = DEFAULT_DEEP_MEMORY_DB, deep_memory: bool = False, text_capture=None, sub_directory=None, config_manager=None):
-        self.token_manager = token_manager(config_manager)
         self.text_capture=text_capture
         self.filepath = filepath
         self.deep_memory_filepath = deep_memory_filepath
@@ -76,30 +73,19 @@ class memory_manager:
         self.token_counters_cache = {} # <--- NEW: Cache for token counts
 
     ### ///////// Init config  /////////  #####
-        available_providers = {
-            "gemini": {
-                "client":GeminiProv},
-            "openai": {
-                "client":OpenAIProv},
-            "groq": {
-                "client":GroqProv},
-            "ollama": {
-                "client":OllamaProv}
-        }
+
 
         selected_model= config_manager.get_config('AI','memory_model')
         config_selected_provider = config_manager.get_config('AI','memory_ai_provider')
 
-        # 4. Use the mapping dictionary to get the actual JSON structure
-        if config_selected_provider in available_providers:
-            config_client = available_providers[config_selected_provider]["client"]
-            print(f"Loaded provider for memory: {config_selected_provider}")
-        else:
-            print(f"Error: '{config_selected_provider}' is not a recognized state.")
-            # Handle the error, perhaps by falling back to a default state
-            config_client = None
+        general_model_prov= config_manager.get_config('AI', "general_ai_provider")
+        general_model=config_manager.get_config('AI', "general_model")
 
-        self.bot_instance = config_client(selected_model) if config_client else None
+
+        self.bot_instance = AIConfiguration(provider=config_selected_provider,model=selected_model,mode="simple_ai").get_client()
+
+        # Use the tokenizer for the general model, (the agent's model), instead of the memory model
+        self.token_manager = TokenizerConfiguration(provider=general_model_prov,model=general_model).get_tokenizer()
 
         if self.bot_instance and self.deep_memory_flag:
             try:
@@ -173,7 +159,7 @@ class memory_manager:
             if "base_memory" in memory_structure and isinstance(memory_structure["base_memory"], str):
                 string_memory += memory_structure["base_memory"]
 
-        total_tokens = self.token_manager.num_tokens_from_string(string_memory)
+        total_tokens = self.token_manager.count_tokens(string_memory)
         print(f"Current memory tokens ({memory_type}): {total_tokens}")
         return total_tokens
 
@@ -459,7 +445,7 @@ class memory_manager:
 
             if is_structured_tool_message:
                 result_text = str(content_data.get("result", ""))
-                result_tokens = self.token_manager.num_tokens_from_string(result_text)
+                result_tokens = self.token_manager.count_tokens(result_text)
 
                 # Now check if it meets the criteria for summarization
                 if (start_token_position > self.SYSTEM_MESSAGE_LINE_THRESHOLD and
@@ -486,7 +472,7 @@ class memory_manager:
                         final_entries.append(summarized_entry)
                         summarized_count += 1
 
-                        cumulative_tokens += self.token_manager.num_tokens_from_string(json.dumps(new_content))
+                        cumulative_tokens += self.token_manager.count_tokens(json.dumps(new_content))
                         continue
 
                     except Exception as e:
@@ -495,9 +481,9 @@ class memory_manager:
             # --- Pass-Through Logic ---
             final_entries.append(entry)
             if isinstance(content_data, dict):
-                timeline_tokens = self.token_manager.num_tokens_from_string(json.dumps(content_data))
+                timeline_tokens = self.token_manager.count_tokens(json.dumps(content_data))
             else:
-                timeline_tokens = self.token_manager.num_tokens_from_string(str(content_data))
+                timeline_tokens = self.token_manager.count_tokens(str(content_data))
             cumulative_tokens += timeline_tokens
 
 
@@ -601,7 +587,7 @@ class memory_manager:
                         "text_for_ai": f"[{tag.upper()} - {formatted_time}] {text_for_tokens}",
                         "original_tag": tag,
                         "original_entry": entry,
-                        "tokens": self.token_counters_cache.get(entry.get("unique_id"), self.token_manager.num_tokens_from_string(text_for_tokens))
+                        "tokens": self.token_counters_cache.get(entry.get("unique_id"), self.token_manager.count_tokens(text_for_tokens))
                     })
                     if entry.get("unique_id") not in self.token_counters_cache:
                         self.token_counters_cache[entry.get("unique_id")] = all_short_term_entries[-1]["tokens"]
@@ -634,7 +620,7 @@ class memory_manager:
                 if unique_id and unique_id in self.token_counters_cache:
                     entry_tokens = self.token_counters_cache[unique_id]
                 else:
-                    entry_tokens = self.token_manager.num_tokens_from_string(entry_item["text_for_ai"])
+                    entry_tokens = self.token_manager.count_tokens(entry_item["text_for_ai"])
                     if unique_id:
                         self.token_counters_cache[unique_id] = entry_tokens
 
@@ -692,7 +678,7 @@ class memory_manager:
             kept_long_term_entries = []
             current_retained_tokens = 0
             for entry_item in reversed(parsed_long_term):
-                entry_tokens = self.token_manager.num_tokens_from_string(entry_item["original_string"])
+                entry_tokens = self.token_manager.count_tokens(entry_item["original_string"])
 
                 if current_retained_tokens + entry_tokens <= self.LONG_TERM_RETAIN_TOKEN_BUDGET:
                     kept_long_term_entries.append(entry_item)

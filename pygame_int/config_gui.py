@@ -1,15 +1,23 @@
 import pygame
 import sys
 from pygame_int import gui_config
-from pygame_int.colors_config import _color_selection_options
 from pygame_int import config
 import json
 from ai_managers import data
+
+from utils.ai_loader import AIConfiguration, UnifiedLoader
 
 # Global state variables for the UI
 active_element = None
 text_inputs = {}
 dropdowns = {}
+
+AVAILABLE_AGENTS=AIConfiguration.get_providers_by_mode("agent")
+
+AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
+
+AVAILABLE_EMBEDDINGS=UnifiedLoader.get_available_providers("embeddings")
+
 
 def extract_color(config_manager, config_name):
     # the configuration file for each individual bot should be in...
@@ -513,16 +521,15 @@ def run_config_creation_ui(screen, font, config_manager):
     current_y += config_name_input.rect.h + gui_config.INPUT_BOX_SPACING # Use actual height of the text input 
     title_surface, title_rect = draw_section_title(font, "AI_DeepMemory", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
-    ai_providers = ["gemini", "openai", "groq", "ollama"]
     enable_deep_memory_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable Deep Memory", font); elements.append(enable_deep_memory_checkbox); current_y += 30
-    current_y = draw_labeled_dropdown_or_input(font, "deep_memory_ai_provider", "Provider:", current_y, screen_width, elements, options=ai_providers)
+    current_y = draw_labeled_dropdown_or_input(font, "deep_memory_ai_provider", "Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
     current_y = draw_labeled_dropdown_or_input(font, "deep_memory_ai", "Model Name:", current_y, screen_width, elements, is_dropdown=False)
-    current_y = draw_labeled_dropdown_or_input(font, "deep_memory_embeddings_provider", "Embeddings Provider:", current_y, screen_width, elements, options=["gemini", "openai", "ollama"]) # No Groq Embeddings model
+    current_y = draw_labeled_dropdown_or_input(font, "deep_memory_embeddings_provider", "Embeddings Provider:", current_y, screen_width, elements, options=AVAILABLE_EMBEDDINGS) # No Groq Embeddings model
     title_surface, title_rect = draw_section_title(font, "AI", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
-    current_y = draw_labeled_dropdown_or_input(font, "general_ai_provider", "General AI Provider:", current_y, screen_width, elements, options=ai_providers)
-    current_y = draw_labeled_dropdown_or_input(font, "memory_ai_provider", "Memory AI Provider:", current_y, screen_width, elements, options=ai_providers)
-    current_y = draw_labeled_dropdown_or_input(font, "cook_provider", "Cook Provider:", current_y, screen_width, elements, options=ai_providers)
+    current_y = draw_labeled_dropdown_or_input(font, "general_ai_provider", "General AI Provider:", current_y, screen_width, elements, options=AVAILABLE_AGENTS)
+    current_y = draw_labeled_dropdown_or_input(font, "memory_ai_provider", "Memory AI Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
+    current_y = draw_labeled_dropdown_or_input(font, "cook_provider", "Cook Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
     current_y = draw_labeled_dropdown_or_input(font, "pets_folder", "Pet's Folder:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "general_model", "General Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "memory_model", "Memory Model:", current_y, screen_width, elements, is_dropdown=False)

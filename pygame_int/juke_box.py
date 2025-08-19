@@ -2,9 +2,6 @@
 
 import pygame
 import os
-import io # Needed for BytesIO to simulate a file in memory
-
-# Assume pygame.init() has been called, which includes pygame.mixer.init()
 
 class jukebox:
     def __init__(self, base_song_path):

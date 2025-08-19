@@ -666,18 +666,6 @@ is_input_locked_by_state=False
 while running:
     dt = clock.tick(60)
     current_time_ms = pygame.time.get_ticks()
-    # current_location_info=chatbot.functions_builder.get_current_room_info() # This is getting an updated state every frame
-
-    # pygame.event.Event(config.LORE_PANEL_CONTENT_EVENT,current_location_info) # This is posting an event every frame
-    #steps=chatbot.state_manager.get_steps()
-    #size=state.size
-    #size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
-
-    #chatbot.state_manager.increment_game_tick()
-
-
-    #state.current_radius=size
-    #state.current_radius = state.current_radius
 
 
 
@@ -992,6 +980,7 @@ while running:
                         state.hover_stat = name
                         #print(name)
                         break
+            continue
 
 
         # Handle Mouse Button events (chat scroll, inventory toggle, NEW care package buttons)
@@ -1083,8 +1072,8 @@ while running:
                                         state.package_button_visible_start_index -= 1
                                         #state.last_activity_time = current_time_ms # Scrolling counts as activity (it shouldt...)
                                         #print(f"Scrolled package buttons left. New start index: {state.package_button_visible_start_index}")
-                                    else:
-                                        print("Scroll left clicked but already at the beginning.")
+                                    #else:
+                                        #print("Scroll left clicked but already at the beginning.")
                                     clicked_package_button = True # Event consumed by scroll click
                                     break # Stop checking regions
 
@@ -1096,8 +1085,8 @@ while running:
                                         state.package_button_visible_start_index += 1
                                         #state.last_activity_time = current_time_ms # Scrolling counts as activity (it doesnt)
                                         #print(f"Scrolled package buttons right. New start index: {state.package_button_visible_start_index}")
-                                    else:
-                                        print("Scroll right clicked but already at the end.")
+                                    #else:
+                                        #print("Scroll right clicked but already at the end.")
                                     clicked_package_button = True # Event consumed by scroll click
                                     break # Stop checking regions
 

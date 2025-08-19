@@ -3,23 +3,6 @@
 import pygame
 import math
 
-# --- Data Imports ---
-# Import specific care package data structures
-
-# this will change with the new items store and use a CareConstructor class
-# from world_data.care_packages import (
-#     care_package_1_general_survival, care_package_2_hydration_refreshment,
-#     care_package_3_hearty_meal_kit, care_package_4_quick_snacks_energy,
-#     care_package_friend_comfort_food, care_package_6_extreme_hydration,
-#     care_package_7_hearty_survival_rations, care_package_8_utility_mix,
-#     care_package_9_basic_hygiene, care_package_2_cooking_kit, a_bundle_for_hydration_some_misc_items,
-#     the_most_epic_and_complete_bundle_for_cooking_raw_, a_bundle_for_energy_and_snacks,
-#     a_bundle_for_outdoor_survival, kitchen_pantry_bottled_goods_spices_etc_all_consum,
-#     salty_and_hardy_foods, fresh_vegetables, bread_package_all_kinds_of_food_implements_ingredi,
-#     raw_protein_package, more_raw_protein_package, cheat_bundles_items_that_replenish_stats_by_150_co,
-#     gardener_s_starter_kit
-# )
-
 from inventory_items.items_provider.care_packages import CareConstructor
 
 
@@ -270,53 +253,10 @@ SCROLL_BUTTON_COLOR_DISABLED = GREY # Muted color for disabled scroll buttons
 BUTTON_ROW_Y = HEIGHT - PADDING - PACKAGE_BUTTON_HEIGHT // 2 # Vertical center alignment (assuming same size as toggle)
 
 
-# Calculate how many buttons can fit in the available width
-# TODO: Recalculate these in GUI modules
-# BUTTONS_MAX_COUNT = (WIDTH - PANEL_WIDTH - (SCROLL_BUTTON_WIDTH) * 2) // (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X)
-
-# Width = (ButtonSize + Spacing) * N - Spacing
-# BUTTON_AREA_DISPLAY_WIDTH = (PACKAGE_BUTTON_WIDTH + PACKAGE_BUTTON_SPACING_X) * BUTTONS_MAX_COUNT - PACKAGE_BUTTON_SPACING_X
-
-
-#BUTTON_AREA_DISPLAY_WIDTH = max(BUTTON_AREA_DISPLAY_WIDTH, PACKAGE_BUTTON_WIDTH) # Ensure minimal width for at least one button
-
-# Define the rects for the scroll buttons and the package button display area
-# They are placed to the right of the game area, before the chat panel.
-# Calculated working backwards from the right edge of the game area (WIDTH - PANEL_WIDTH).
-
 # Y position for the *top* edge of the rects (centered around BUTTON_ROW_Y)
 #BUTTON_RECT_TOP_Y = BUTTON_ROW_Y - SCROLL_BUTTON_SIZE // 2 # Assuming button size is same as scroll size
 BUTTON_RECT_TOP_Y = HEIGHT - PADDING - INPUT_HEIGHT
 
-# Calculate the rect for the RIGHT scroll button
-# Its right edge should be PADDING pixels from the right edge of the game area
-# RIGHT_SCROLL_BUTTON_X = BUTTON_AREA_DISPLAY_WIDTH + (SCROLL_BUTTON_WIDTH)
-# RIGHT_SCROLL_BUTTON_RECT = pygame.Rect(
-#     RIGHT_SCROLL_BUTTON_X,
-#     BUTTON_RECT_TOP_Y,
-#     SCROLL_BUTTON_WIDTH,
-#     SCROLL_BUTTON_HEIGHT
-# )
-
-# Calculate the rect for the button display area (where package buttons are drawn)
-# Its right edge should be PADDING pixels to the left of the RIGHT scroll button's left edge
-# CARE_PACKAGE_AREA_X = PADDING - BUTTON_AREA_DISPLAY_WIDTH
-# CARE_PACKAGE_AREA_RECT = pygame.Rect(
-#     CARE_PACKAGE_AREA_X,
-#     BUTTON_RECT_TOP_Y,
-#     BUTTON_AREA_DISPLAY_WIDTH,
-#     PACKAGE_BUTTON_HEIGHT
-# )
-
-# Calculate the rect for the LEFT scroll button
-# Its right edge should be PADDING pixels to the left of the button display area's left edge
-# LEFT_SCROLL_BUTTON_X =  INVENTORY_TOGGLE_BUTTON_SIZE + INVENTORY_TOGGLE_BUTTON_SIZE // 2 + PADDING
-# LEFT_SCROLL_BUTTON_RECT = pygame.Rect(
-#     LEFT_SCROLL_BUTTON_X,
-#     BUTTON_RECT_TOP_Y,
-#     SCROLL_BUTTON_WIDTH,
-#     SCROLL_BUTTON_HEIGHT
-# )
 
 
 # Stat Icons Display
@@ -346,35 +286,6 @@ color_code={
 
 }
 
-
-# # Reordered list based on the 'color' key
-# CARE_PACKAGES =   [
-#         {"package": care_package_1_general_survival,"color": "combo"},
-#         {"package": care_package_8_utility_mix, "color": "combo"},
-
-#         {"package": care_package_3_hearty_meal_kit,"color": "fullness"},
-#         {"package": care_package_4_quick_snacks_energy, "color": "fullness"},
-#         {"package": care_package_friend_comfort_food, "color": "fullness"},
-#         {"package": care_package_7_hearty_survival_rations,"color": "fullness"},
-#         {"package": a_bundle_for_energy_and_snacks,"color": "fullness"},
-#         {"package": a_bundle_for_outdoor_survival, "color": "fullness"},
-#         {"package": salty_and_hardy_foods,"color": "fullness"},
-#         {"package": fresh_vegetables,"color": "fullness"},
-
-#         {"package": care_package_2_hydration_refreshment,"color": "hydration"},
-#         {"package": care_package_6_extreme_hydration,"color": "hydration"},
-#         {"package": a_bundle_for_hydration_some_misc_items,"color": "hydration"},
-
-#         {"package": kitchen_pantry_bottled_goods_spices_etc_all_consum,"color": "ingredient"},
-#         {"package": care_package_2_cooking_kit,"color": "ingredient"},
-#         {"package": the_most_epic_and_complete_bundle_for_cooking_raw_,"color": "ingredient"},
-#         {"package": bread_package_all_kinds_of_food_implements_ingredi,"color": "ingredient"},
-#         {"package": raw_protein_package,"color": "ingredient"},
-#         {"package": more_raw_protein_package,"color": "ingredient"},
-
-#         {"package": cheat_bundles_items_that_replenish_stats_by_150_co, "color": "cheat"},
-#         {"package": gardener_s_starter_kit, "color": "cheat"}
-#     ]
 
 
 CARE_PACKAGES = CareConstructor(care_directory="inventory_items/items_provider/care_packages_data").create_full_data()

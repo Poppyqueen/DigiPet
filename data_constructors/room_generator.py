@@ -18,7 +18,7 @@ import time
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 
-from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
+from utils.ai_loader import AIConfiguration
 
 # --- Pydantic Models for Room Data Generation ---
 
@@ -73,7 +73,7 @@ class Room(BaseModel):
 class room_crafter:
 
     def __init__(self, select_model="gpt-5-mini", select_provider="openai"):
-        self.llm_client=LLMCONFIG(select_model,select_provider).get_provider()
+        self.llm_client=AIConfiguration(provider=select_provider,model=select_model,mode="simple_ai").get_client()
 
     def _generate_room_descriptions(self, room_concept: str) -> RoomTimeDescriptions | None:
         """

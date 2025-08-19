@@ -8,11 +8,8 @@
 
 from typing import List, Dict, Any
 from utils.pydantic_models import ItemDefinitionListContainer
+from utils.ai_loader import AIConfiguration
 
-from utils.utils_ai_providers.gemini_provider import GeminiProv
-from utils.utils_ai_providers.openai_provider import OpenAIProv
-from utils.utils_ai_providers.groq_provider import GroqProv
-from utils.utils_ai_providers.ollama_provider import OllamaProv
 
 
 
@@ -63,32 +60,8 @@ class cook:
         config_model = config_manager.get_config("AI","cook_model")
         selected_config_client = config_manager.get_config("AI","cook_provider")
 
-        available_providers = {
-            "gemini": {
-                "client": GeminiProv
-            },
-            "openai": {
-                "client": OpenAIProv
-            },
-            "groq": {
-                "client": GroqProv
-            },
-            "ollama": {
-                "client": OllamaProv
-            }
-        }
 
-        # 4. Use the mapping dictionary to get the actual JSON structure
-        if selected_config_client in available_providers:
-            config_client = available_providers[selected_config_client]["client"]
-            print(f"Loaded state: {selected_config_client}")
-            print(config_client)
-
-        else:
-            print(f"Error: '{selected_config_client}' is not a recognized state.")
-            # Handle the error, perhaps by falling back to a default state
-
-        self.client=config_client(config_model)
+        self.client=AIConfiguration(provider=selected_config_client,model=config_model,mode="simple_ai").get_client()
 
     def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]:
         """

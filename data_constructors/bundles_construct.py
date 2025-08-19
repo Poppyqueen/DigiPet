@@ -21,9 +21,9 @@ import json
 from pydantic import BaseModel, Field, ValidationError # Import ValidationError
 
 
-from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
+#from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
 
-
+from utils.ai_loader import AIConfiguration
 
 valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
 
@@ -72,7 +72,8 @@ class bundles_maker:
 
 
     def __init__(self, select_model="gpt-5-mini", select_provider="openai"):
-        self.llm_client=LLMCONFIG(select_model,select_provider).get_provider()
+        self.llm_client=AIConfiguration(provider=select_provider,model=select_model,mode="simple_ai").get_client()
+        #self.llm_client=LLMCONFIG(select_model,select_provider).get_provider()
 
 
     def prepare_bundle(self, concept: str) -> List[Dict[str, Any]]:
@@ -184,13 +185,11 @@ if __name__ == "__main__":
     crafter = bundles_maker()
 
     # Define the target file path with a .json extension
-    target_output_file = "inventory_items/items_provider/items_data/food_n_drinks/staples.json" # 
+    target_output_file = "inventory_items/items_provider/items_data/test_config_loader.json" # 
 
     bundle_concepts = [
-        "Bundle of staple foods ingrediets, fresh produce, beaf and poultry",
-       "Bundle of staple foods ingrediets, fresh produce, sea food special",
-        "Bundle of staple foods ingrediets, fresh produce, vegetables and fruits",
-        "Bundle of staple foods ingrediets, conserves"
+        "Bundle of staple foods ingrediets, fresh produce, beaf and poultry"
+
 
 
                 ]

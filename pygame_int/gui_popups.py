@@ -2,7 +2,6 @@
 
 import pygame
 import random
-import os
 from pygame_int import config
 from pygame_int import state
 from pygame_int import gui_core # For _font, _gui_rects, etc.

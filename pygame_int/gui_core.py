@@ -1,14 +1,10 @@
 # gui_core.py
 
 import pygame
-import pygame.gfxdraw
 import os
-import colorsys # Keep if load_and_set_background or other functions here use it directly
 
 from pygame_int import config # Needed for colors, padding, dimensions, max history
 from pygame_int import state # Needed for accessing/modifying chat_history, input_text, etc.
-from pygame_int import animation # If init_gui uses it
-from pygame_int import gui_config # For constants used in init_gui
 from pygame_int import gui_construct_colors
 
 from pygame_int import gui_stat_icons

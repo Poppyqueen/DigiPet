@@ -4,13 +4,11 @@ from utils.token_providers.opensource_dict import mapped_models
 import sys
 
 import os
-from dotenv import load_dotenv
 
 
 class OpenSourceTokenizer(ABC):
     def __init__(self, select_model):
 
-        load_dotenv()
         self.HuggingFace_Key = os.getenv("HUGGING_ACCESS_TOKEN")
 
         general_model = select_model

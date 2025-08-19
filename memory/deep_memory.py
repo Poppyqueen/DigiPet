@@ -7,22 +7,13 @@ import json
 # Import utils
 from utils.pydantic_models import save_ner_structure # Import from pydantic_models.py
 
-from utils.embeddings_providers.openai_embeddings import OpenAIEmbeddingProvider
-from utils.embeddings_providers.google_embeddings import GoogleEmbeddingProvider
-from utils.embeddings_providers.ollama_embeddings import OllamaEmbeddingProvider
-
-
-from utils.utils_ai_providers.gemini_provider import GeminiProv
-from utils.utils_ai_providers.openai_provider import OpenAIProv
-from utils.utils_ai_providers.groq_provider import GroqProv
-from utils.utils_ai_providers.ollama_provider import OllamaProv
 
 
 # --- We will now use both the DatabaseManager and EmbeddingOperations ---
 from memory.deep_memory_db_managers.deep_memory_database import DatabaseManager
 from memory.deep_memory_db_managers.embedding_operations import EmbeddingOperations
 
-
+from utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
 
 
 class DeepMemory:
@@ -53,53 +44,14 @@ class DeepMemory:
 
         embeddings_config_selected_provider = config_manager.get_config('AI_DeepMemory','deep_memory_embeddings_provider')
 
-        embeddings_available_providers = {
-            "google": {"client": GoogleEmbeddingProvider},
-            "openai": {"client": OpenAIEmbeddingProvider},
-            "ollama": {"client": OllamaEmbeddingProvider}
-        }
-
-        if embeddings_config_selected_provider in embeddings_available_providers:
-            embeddings_config_client = embeddings_available_providers[embeddings_config_selected_provider]["client"]
-            print(f"Deep Memory using embedding provider: {embeddings_config_selected_provider}")
-        else:
-            print(f"Error: '{embeddings_config_selected_provider}' is not a recognized provider. Falling back to OpenAI.")
-            embeddings_config_client = OpenAIEmbeddingProvider
-
 
 
         ai_config_model_name = config_manager.get_config('AI_DeepMemory','deep_memory_ai')
         ai_config_model_provider = config_manager.get_config('AI_DeepMemory','deep_memory_ai_provider')
 
-        ai_bot_providers = {
-            "gemini": {
-                "client": GeminiProv
-            },
-            "openai": {
-                "client": OpenAIProv
-            },
-            "groq": {
-                "client": GroqProv
-            },
-            "ollama": {
-                "client": OllamaProv
-            }
-        }
+        self.bot_instance = AIConfiguration(provider=ai_config_model_provider,model=ai_config_model_name,mode="simple_ai").get_client()
 
-        # 4. Use the mapping dictionary to get the actual JSON structure
-        if ai_config_model_provider in ai_bot_providers:
-            ai_config_client = ai_bot_providers[ai_config_model_provider]["client"]
-            print(f"Loaded state: {ai_config_model_provider}")
-            print(ai_config_client)
-
-        else:
-            print(f"Error: '{ai_config_model_provider}' is not a recognized state.")
-            # Handle the error, perhaps by falling back to a default state
-
-
-        self.bot_instance = ai_config_client(selected_model=ai_config_model_name)
-
-        self.embeddings_ai = embeddings_config_client()
+        self.embeddings_ai = EmbeddingsConfiguration(embeddings_config_selected_provider).get_embeddings()
 
         self._message_embeddings_cache = {}
 

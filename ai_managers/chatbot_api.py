@@ -19,12 +19,7 @@ from tts_providers.base_tts_provider import BaseTTSProvider
 from tts_providers.macos_say_provider import MacOSSaiProvider
 from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
-
-from ai_managers.llm_clients import openai_client
-from ai_managers.llm_clients import gemini_client
-from ai_managers.llm_clients import groq_client
-from ai_managers.llm_clients import ollama_client
-
+from utils.ai_loader import AIConfiguration
 
 from dotenv import load_dotenv
 
@@ -68,50 +63,15 @@ class CLIChatbot:
 
     ### ///////// Init config  /////////  #####
 
-        load_dotenv()
-
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
-        groq_api_key = os.getenv("GROQ_API_KEY")
-
         # load provider for the selected main AI model
 
         config_selected_provider = config_manager.get_config('AI','general_ai_provider')
-
+        config_select_model = config_manager.get_config('AI','general_model')
         
 
-        available_providers = {
-            "gemini": {
-                "client":gemini_client.GeminiClient,
-                "api_key":gemini_api_key
-                },
-            "openai": {
-                "client":openai_client.OpenAIClient,
-                "api_key":None
-                },
-            "groq":{
-                "client":groq_client.GroqClient,
-                "api_key":groq_api_key
-            },
-            "ollama":{
-                "client":ollama_client.OllamaClient,
-                "api_key":None
-            }
-        }
+        selected_client=AIConfiguration(provider=config_selected_provider,model=config_select_model,mode="agent").get_client()
 
-        # 4. Use the mapping dictionary to get the actual JSON structure
-        if config_selected_provider in available_providers:
-            config_client = available_providers[config_selected_provider]["client"]
-            #print(f"Loaded state: {config_selected_provider}")
-            print(config_client)
-            api_key_selected=available_providers[config_selected_provider]["api_key"]
-
-        else:
-            print(f"Error: '{config_selected_provider}' is not a recognized state.")
-            # Handle the error, perhaps by falling back to a default state
-
-
-
-        selected_client=config_client(api_key_selected)
+        
 
         # NEW: TTS Provider Initialization
         self.tts_provider: BaseTTSProvider | None = None
@@ -150,7 +110,7 @@ class CLIChatbot:
 
             self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager)  # Initialize the function builder
 
-            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model= config_manager.get_config('AI','general_model'), functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
+            self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=config_select_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
             # REMOVED: self.tts = tts_flag # Set to True if you want to enable text-to-speech output
             # REMOVED: self._current_tts_process = None
 
