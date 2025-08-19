@@ -51,7 +51,8 @@ from .my_tools import (
     discogs_tools,
     musicbrainz_tools,
     bluesky_tools, # Ensure bluesky_tools is imported if it has definitions
-    seat_tools
+    seat_tools,
+    art_book_tools
 )
 
 from utils import open_meteo_handle, simulation
@@ -65,7 +66,7 @@ from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.async_test_tool import simulate_data_fetch
 from tools.tools_folder.thinking_tool import emit_inner_thought
 
-
+from tools.tools_folder.images_lab import ImagesLab
 # Maybe update this to allow for certain item types to add functions to the room itself without needing to be in the pet's inventory
 
 class FunctionBuilder:
@@ -123,6 +124,8 @@ class FunctionBuilder:
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback)
         self._init_alife() # ALIFE is always initialized
 
+
+        self.images_lab=ImagesLab(self.sub_directory)
 
         # --- Conditional Initialization of Optional Tool Handlers ---
         # Initialize to None first.
@@ -208,7 +211,7 @@ class FunctionBuilder:
                 "functions": {
                     "watch_tv": self.room_tools.living_room.watch_tv,
                     "look_at_window": self.room_tools.living_room.look_at_window,
-                    "sit_on_couch": self.room_tools.living_room.sit_on_couch
+                    #"sit_on_couch": self.room_tools.living_room.sit_on_couch
                 },
                 "definitions": living_room_tools,
                 "current_info": self.room_tools.living_room.display_information
@@ -373,10 +376,15 @@ class FunctionBuilder:
         self._dual_use_item_functions = {
             "seat": {
                 "take_a_seat": self.room_tools.living_room.take_a_seat
+            },
+            "art_book":{
+
+                "create_svg_image": self.images_lab.create_svg_image
             }
         }
         self._dual_use_item_definitions = {
-            "seat": seat_tools
+            "seat": seat_tools,
+            "art_book": art_book_tools
         }
 
         # self.function_map will be constructed dynamically by construct_map

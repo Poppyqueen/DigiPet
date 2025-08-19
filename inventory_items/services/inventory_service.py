@@ -6,7 +6,7 @@ import json
 
 class InventoryService:
     MAX_INVENTORY_SLOTS = 30
-    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed", "chair"]
+    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed", "seat"]
 
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store

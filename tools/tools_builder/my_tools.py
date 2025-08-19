@@ -5,6 +5,44 @@
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
 
+art_book_tools=[
+    {
+        "type": "function",
+        "name": "create_svg_image",
+        "description": "Allows you to Create a new SVG image with the given name and content. It will be saved into an arts folder",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "image_name": {
+                    "type": "string",
+                    "description": "The title of the piece you want to make."
+                },                
+                "concept": {
+                    "type": "string",
+                    "description": "The concept or theme of the piece you want to make."
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The SVG XML format for the image you want to make."
+                }
+            },
+            "required": ["image_name", "content"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "read_archive",
+        "description": "Reads the metadata and returns an structured string for each of the entries.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+
+]
 
 seat_tools=[
     {

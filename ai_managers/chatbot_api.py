@@ -22,6 +22,7 @@ from tts_providers.espeak_ng_provider import ESpeakNGProvider
 from utils.ai_loader import AIConfiguration
 
 
+
 # Default filepaths 
 DEFAULT_MEMORY_DB = "memory.json"
 DEFAULT_DEEP_MEMORY_DB = "deep_memory.db"
@@ -30,7 +31,7 @@ DEFAULT_INVENTORY_FOLDER = "inventory"
 
 class CLIChatbot:
     # MODIFIED: Changed tts_flag to tts_provider_id
-    def __init__(self, config_manager, signal_callback=None):
+    def __init__(self, config_manager, signal_callback=None, bots_archive_dir="data_archive"):
         """Initialize the CLI chatbot with AI bot and memory systems."""
         # --- Use the subdirectory structure ---
         # Ensure the directory exists
@@ -38,7 +39,8 @@ class CLIChatbot:
         tts_provider_id = config_manager.get_config('game_settings','tts_provider')
         pet_name = config_manager.get_config('AI','pets_folder') # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
 
-        sub_directory=f"bots/{pet_name}"
+
+        sub_directory=os.path.join(bots_archive_dir,"bots",pet_name)
         os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
 
         # Construct full paths within the subdirectory

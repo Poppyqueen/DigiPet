@@ -853,7 +853,7 @@
         "name": "desktop computer (tower)",
         "descriptions": [
             "Mid-tower desktop case with a quiet fan, SSD, and a modest RGB glow for ambient color.",
-            "Primary workstation for coding, gaming, and media \u2014 typically sits under or beside the desk."
+            "Primary workstation. It seems to at least allow you to access wikipedia..."
         ],
         "static": false,
         "type": [
@@ -893,7 +893,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "seat"
         ],
         "stackable": false
     },
@@ -1840,5 +1841,19 @@
             "hydration": 0.0,
             "energy": 10.0
         }
+    },
+    {
+        "name": "Arts notebook",
+        "descriptions": [
+            "A digital notebook that allows you to create images"
+            
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc",
+            "art_book"
+        ],
+        "stackable": true
     }
 ]

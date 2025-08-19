@@ -523,10 +523,16 @@ class room_living_room:
     def take_a_seat(self, item_id:int):
         item_details=self.state.get_item_details(item_id,internal=True)
         if item_details["status"] == "found":
-            if "chair" in item_details["details"]["type"]:
+            if "seat" in item_details["details"]["type"]:
                 print(f"Ok to sit on!")
+                edit=1
+                message=f"You sit down on the couch for a while, you feel like you are sinking into it. Gained {edit} energy points."
+                if check_one_in(10):
+                    edit=5
+                    message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
                 string_desc= "\n".join(item_details["details"]["descriptions"])
-                return f"You take a sit on the {item_details["details"]["name"]}\n {string_desc}"
+                self.state.adjust_stat("energy", edit)
+                return f"You take a sit on the {item_details["details"]["name"]}\n {string_desc} \n {message}"
             return f"Item {item_id} {item_details["details"]["name"]} would not be a good place to sit on!"
         return f"Item {item_id} not found."
         

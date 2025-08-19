@@ -46,10 +46,12 @@ except pygame.error:
     font = pygame.font.SysFont("Arial", 20) # Fallback font
     line_height = font.get_linesize() # Get line height from fallback font
 
+bots_archive_dir="data_archive"
+
 if mock_running:
-    config_manager = ConfigManager("bots", mock=True)
+    config_manager = ConfigManager(bots_archive_dir, mock=True)
 else:
-    config_manager = ConfigManager("bots")
+    config_manager = ConfigManager(bots_archive_dir)
 
 run_config_main_menu_ui(screen, font, config_manager)
 
@@ -288,7 +290,8 @@ else:
     try:
         chatbot = CLIChatbot(
             signal_callback=handle_chatbot_signal,
-            config_manager=config_manager
+            config_manager=config_manager,
+            bots_archive_dir=bots_archive_dir
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
