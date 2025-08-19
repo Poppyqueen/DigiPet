@@ -61,9 +61,11 @@ class bluesky_bot:
     }
 
     # Removed threading arguments and super().__init__()
-    def __init__(self, state, signal):
+    def __init__(self, state, signal, images_lab):
         # super().__init__() # Removed call to parent class init
         self._signal_callback=signal
+
+        self.images_lab=images_lab
 
         self.state = state
         # Removed _stop_event
@@ -121,7 +123,7 @@ class bluesky_bot:
         return urlparse(uri).netloc
 
 
-    def post_response(self, uri: str, response_text: str):
+    def post_response(self, uri: str, response_text: str): # not sure this works at all, probably doesn't
         if not self.is_ready:
             logging.warning("Bluesky bot not ready, cannot post response.")
             return "Bluesky bot not ready."
@@ -177,51 +179,210 @@ class bluesky_bot:
         except Exception as e:
             logging.error(f"Failed to post response: {e}")
             return f"An error occurred while posting response: {e}"
+        
 
-
-    def post_bluesky(self, message: str, image_post: bool = False, langs_list: list = ['en']):
+    def _create_hashtag_facets(self, text: str, hashtag_list: list):
+        """
+        Create facets for hashtags in the post text.
+        Bluesky requires hashtags to be marked as facets with their byte positions.
+        """
+        facets = []
+        
+        # Convert text to bytes to get proper byte positions
+        text_bytes = text.encode('utf-8')
+        
+        for hashtag in hashtag_list:
+            # Find the hashtag with # prefix in the text
+            hashtag_with_hash = f'#{hashtag}'
+            
+            # Find all occurrences of this hashtag
+            start_pos = 0
+            while True:
+                # Find in the original text string
+                char_pos = text.find(hashtag_with_hash, start_pos)
+                if char_pos == -1:
+                    break
+                
+                # Convert character position to byte position
+                byte_start = len(text[:char_pos].encode('utf-8'))
+                byte_end = byte_start + len(hashtag_with_hash.encode('utf-8'))
+                
+                # Create facet for this hashtag
+                facet = {
+                    "index": {
+                        "byteStart": byte_start,
+                        "byteEnd": byte_end
+                    },
+                    "features": [{
+                        "$type": "app.bsky.richtext.facet#tag",
+                        "tag": hashtag  # Just the tag without #
+                    }]
+                }
+                
+                facets.append(facet)
+                start_pos = char_pos + len(hashtag_with_hash)
+        
+        return facets
+    
+    def post_bluesky(self, message: str, image_post: bool = False, langs_list: list = ['en'], image_name: str = None, hashtags: str = None):
         if not self.is_ready:
             logging.warning("Bluesky bot not ready, cannot send post.")
             return "Bluesky bot not ready."
-
-        logging.info(f"Attempting to send post: '{message}' (Image: {image_post})")
+        
+        # Process hashtags if provided
+        processed_message = message
+        if hashtags:
+            # Parse hashtags from string like "#AI#DigitalMind#Testing"
+            hashtag_list = [tag.strip() for tag in hashtags.split('#') if tag.strip()]
+            
+            # Add hashtags to the end of the message
+            hashtag_text = ' ' + ' '.join([f'#{tag}' for tag in hashtag_list])
+            processed_message = message + hashtag_text
+        
+        logging.info(f"Attempting to send post: '{processed_message}' (Image: {image_post})")
+        
         try:
             if image_post:
-                # The class now receives state in __init__, so it can access house info
-                # if 'house' is managed within the state object passed in
-                if not hasattr(self.state, 'get_current_room_name') or not callable(self.state.get_current_room_name):
-                     logging.error("State object does not have 'get_current_room_name' method for image post.")
-                     return "An error occurred: Application state not correctly configured."
-
-                current_room = self.state.get_current_room_name()
-                alt = self.alt_text.get(current_room, "Image description not available.")
-                # Ensure file path uses forward slashes or os.path.join for cross-platform compatibility
-                image_path = os.path.join('style', 'images', f'{current_room}_bordered.jpg')
-
-
-                if not os.path.exists(image_path):
-                    logging.error(f"Image file not found: {image_path}")
-                    return f"An error occurred: Image file not found for room '{current_room}'."
-
-                # Lock is no longer needed
-                with open(image_path, 'rb') as f:
-                    img_data = f.read()
-                self.client.send_image( # Use self.client directly
-                    text=message,
-                    image=img_data,
-                    image_alt=alt
-                )
-
-                logging.info(f"Image post sent successfully from {current_room}.")
-                logging.info(f"Used alt text: {alt}")
-                return "Message posted successfully on Bluesky with image."
+                # Check if a specific image name is provided
+                if image_name:
+                    # Get available images from archive
+                    try:
+                        metadata = self.images_lab._int_get_arch()
+                    except Exception as e:
+                        logging.error(f"Failed to get image archive metadata: {e}")
+                        return "An error occurred: Could not access image archive."
+                    
+                    # Find the requested image in the archive
+                    target_image = None
+                    for img_data in metadata:
+                        if img_data["image_name"] == image_name:
+                            target_image = img_data
+                            break
+                    
+                    if not target_image:
+                        logging.error(f"Image '{image_name}' not found in archive.")
+                        return f"An error occurred: Image '{image_name}' not found in archive."
+                    
+                    image_path = target_image["path"]
+                    
+                    # Check if the file exists
+                    if not os.path.exists(image_path):
+                        logging.error(f"Image file not found: {image_path}")
+                        return f"An error occurred: Image file not found at '{image_path}'."
+                    
+                    # Use image name and concept for alt text
+                    alt = f"{target_image['image_name']}: {target_image['concept']}"
+                    
+                    # Handle SVG conversion or read regular image
+                    if image_path.lower().endswith('.svg'):
+                        # Convert SVG to PNG
+                        try:
+                            from PIL import Image
+                            import cairosvg
+                            import io
+                            
+                            # Convert SVG to PNG using cairosvg
+                            png_data = cairosvg.svg2png(url=image_path)
+                            
+                            # Optional: resize if needed using PIL
+                            with Image.open(io.BytesIO(png_data)) as img:
+                                # Resize to reasonable dimensions if too large
+                                max_size = (1200, 1200)
+                                if img.width > max_size[0] or img.height > max_size[1]:
+                                    img.thumbnail(max_size, Image.Resampling.LANCZOS)
+                                
+                                # Save to bytes
+                                img_bytes = io.BytesIO()
+                                img.save(img_bytes, format='PNG', optimize=True)
+                                img_data = img_bytes.getvalue()
+                            
+                            logging.info(f"Converted SVG to PNG: {image_name}")
+                            
+                        except ImportError:
+                            logging.error("cairosvg not available. Install with: pip install cairosvg")
+                            return "An error occurred: SVG conversion requires cairosvg. Please install it."
+                        except Exception as e:
+                            logging.error(f"Failed to convert SVG to PNG: {e}")
+                            return f"An error occurred: Could not convert SVG '{image_name}' to PNG: {e}"
+                    
+                    else:
+                        # Read regular image file
+                        with open(image_path, 'rb') as f:
+                            img_data = f.read()
+                    
+                    # Send image post with hashtag facets
+                    if hashtags:
+                        facets = self._create_hashtag_facets(processed_message, hashtag_list)
+                        self.client.send_image(
+                            text=processed_message,
+                            image=img_data,
+                            image_alt=alt,
+                            facets=facets
+                        )
+                    else:
+                        self.client.send_image(
+                            text=processed_message,
+                            image=img_data,
+                            image_alt=alt
+                        )
+                    
+                    logging.info(f"Archive image post sent successfully: {image_name}")
+                    logging.info(f"Used alt text: {alt}")
+                    return "Message posted successfully on Bluesky with archive image."
+                
+                else:
+                    # Original room image logic
+                    if not hasattr(self.state, 'get_current_room_name') or not callable(self.state.get_current_room_name):
+                        logging.error("State object does not have 'get_current_room_name' method for image post.")
+                        return "An error occurred: Application state not correctly configured."
+                    
+                    current_room = self.state.get_current_room_name()
+                    alt = self.alt_text.get(current_room, "Image description not available.")
+                    
+                    # Ensure file path uses forward slashes or os.path.join for cross-platform compatibility
+                    image_path = os.path.join('style', 'images', f'{current_room}_bordered.jpg')
+                    
+                    if not os.path.exists(image_path):
+                        logging.error(f"Image file not found: {image_path}")
+                        return f"An error occurred: Image file not found for room '{current_room}'."
+                    
+                    with open(image_path, 'rb') as f:
+                        img_data = f.read()
+                    
+                    # Send image post with hashtag facets
+                    if hashtags:
+                        hashtag_list = [tag.strip() for tag in hashtags.split('#') if tag.strip()]
+                        facets = self._create_hashtag_facets(processed_message, hashtag_list)
+                        self.client.send_image(
+                            text=processed_message,
+                            image=img_data,
+                            image_alt=alt,
+                            facets=facets
+                        )
+                    else:
+                        self.client.send_image(
+                            text=processed_message,
+                            image=img_data,
+                            image_alt=alt
+                        )
+                    
+                    logging.info(f"Image post sent successfully from {current_room}.")
+                    logging.info(f"Used alt text: {alt}")
+                    return "Message posted successfully on Bluesky with image."
+            
             else:
-                 # Lock is no longer needed
-                 self.client.send_post(message, langs=langs_list) # Use self.client directly
-                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
-
-                 logging.info("Text post sent successfully.")
-                 return "Message posted successfully on Bluesky."
+                # Text-only post
+                if hashtags:
+                    hashtag_list = [tag.strip() for tag in hashtags.split('#') if tag.strip()]
+                    facets = self._create_hashtag_facets(processed_message, hashtag_list)
+                    self.client.send_post(processed_message, langs=langs_list, facets=facets)
+                else:
+                    self.client.send_post(processed_message, langs=langs_list)
+                
+                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
+                logging.info("Text post sent successfully.")
+                return "Message posted successfully on Bluesky."
+        
         except Exception as e:
             logging.error(f"Failed to send post: {e}")
             return f"An error occurred while sending post: {e}"

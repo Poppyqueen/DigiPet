@@ -165,7 +165,7 @@ class FunctionBuilder:
 
         if bluesky_enabled:
             try:
-                    self.bluesky = bluesky_bot(self.state_manager, self._signal_callback)
+                    self.bluesky = bluesky_bot(self.state_manager, self._signal_callback, self.images_lab)
                     print("BlueskyBot instance created.")
             except Exception as e:
                 print(f"Error instantiating BlueskyBot: {e}")
@@ -317,14 +317,14 @@ class FunctionBuilder:
             }
             print("YouTube Playlists tools added to room type data.")
 
-        if self.bluesky: # Check if the instance was successfully created
-            self._room_type_data["bluesky_social"] = { # Using a distinct room type name
-                "functions": {
-                    "post_bluesky": self.bluesky.post_bluesky
-                },
-                "definitions": bluesky_tools # Use the imported definitions list
-            }
-            print("Bluesky Social tools added to room type data.")
+        # if self.bluesky: # Check if the instance was successfully created
+        #     self._room_type_data["bluesky_social"] = { # Using a distinct room type name
+        #         "functions": {
+        #             "post_bluesky": self.bluesky.post_bluesky
+        #         },
+        #         "definitions": bluesky_tools # Use the imported definitions list
+        #     }
+        #     print("Bluesky Social tools added to room type data.")
 
 
         # --- End Central Mapping ---
@@ -333,12 +333,8 @@ class FunctionBuilder:
         # Create the mapping dictionary for base functions (always available)
         # These functions are independent of room type or inventory.
         self.base_function_map = {
-            # Global functions (if you uncommented them)
-            # "get_weather": get_weather,
-            # "get_time": get_time,
-            # "send_email": send_email,
+            # Global functions 
 
-            # State Manager base functions
             "list_items_in_current_room": self.state_manager.list_items_in_current_room,
             "set_current_emote": self.state_manager.set_current_emote,
             "move_to_room": self.state_manager.set_current_room,
@@ -351,8 +347,6 @@ class FunctionBuilder:
             "add_item_description": self.state_manager.add_item_description,
             "emit_inner_thought": emit_inner_thought
 
-            # Note: "post_bluesky" was here as an example but is now handled
-            # as part of the dynamic _room_type_data for "bluesky_social"
         }
 
 
@@ -366,26 +360,43 @@ class FunctionBuilder:
                 "read_chapter": self.state_manager.read_book_chapter,
                 "delete_chapter": self.state_manager.delete_book_chapter,
                 "update_chapter": self.state_manager.update_book_chapter,
+            },
+            "art_book":{
+                "create_svg_image": self.images_lab.create_svg_image,
+                "read_archive": self.images_lab.read_archive
             }
         }
         self._inventory_only_definitions = {
-            "book": book_tools
+            "book": book_tools,
+            "art_book": art_book_tools
         }
 
         # 2. DUAL-USE: Tools available whether the item is in the room OR in the inventory.
         self._dual_use_item_functions = {
             "seat": {
                 "take_a_seat": self.room_tools.living_room.take_a_seat
-            },
-            "art_book":{
-
-                "create_svg_image": self.images_lab.create_svg_image
             }
         }
         self._dual_use_item_definitions = {
-            "seat": seat_tools,
-            "art_book": art_book_tools
+            "seat": seat_tools
         }
+
+        if self.bluesky:
+            # Add Bluesky tools to the inventory-only functions and definitions
+            self._inventory_only_functions["bluesky_social"] = {
+                "post_bluesky": self.bluesky.post_bluesky
+            }
+            self._inventory_only_definitions["bluesky_social"] = bluesky_tools
+            print("Bluesky Social tools added to inventory-only functions.")
+        # 3. ROOM-SPECIFIC: Tools that are available based on the current room type.
+            self._room_type_data["bluesky_social"] = { # Using a distinct room type name
+                "functions": {
+                    "post_bluesky": self.bluesky.post_bluesky
+                },
+                "definitions": bluesky_tools # Use the imported definitions list
+            }
+
+            print("Bluesky Social tools added to room type data.")
 
         # self.function_map will be constructed dynamically by construct_map
         self.function_map = {} # Initialize as empty; filled by construct_map
@@ -624,6 +635,8 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
+        print("DEBUG ITEMS LIST")
+        print(self.state_manager.get_inventory_items())
         context.append("#############")
         # context.append("In the current room the items are:")
         # context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary

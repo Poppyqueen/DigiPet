@@ -4,7 +4,10 @@
         "Folding director's chair"
     ],
     "DevRoom":[
-        "Specimen Display Case",
-        "Arts notebook"
+        "Specimen Display Case"
+    ],
+    "inventory":[
+        "Cellphone",
+        "Arts Notebook"
     ]
 }

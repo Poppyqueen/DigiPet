@@ -9,17 +9,17 @@ art_book_tools=[
     {
         "type": "function",
         "name": "create_svg_image",
-        "description": "Allows you to Create a new SVG image with the given name and content. It will be saved into an arts folder",
+        "description": "'ArtBooksTM', allows you to create a new SVG image with the given name and content. It will be saved into an Arts Folder and saved with metadata.",
         "parameters": {
             "type": "object",
             "properties": {
                 "image_name": {
                     "type": "string",
-                    "description": "The title of the piece you want to make."
+                    "description": "The title of the image you want to make."
                 },                
                 "concept": {
                     "type": "string",
-                    "description": "The concept or theme of the piece you want to make."
+                    "description": "The concept or theme of the image you want to make."
                 },
                 "content": {
                     "type": "string",
@@ -33,7 +33,7 @@ art_book_tools=[
     {
         "type": "function",
         "name": "read_archive",
-        "description": "Reads the metadata and returns an structured string for each of the entries.",
+        "description": "Reads the archived metadata for your 'ArtBooksTM' collection. Lets you see what images you have saved in your Arts Folder.",
         "parameters": {
             "type": "object",
             "properties": {},
@@ -1080,6 +1080,14 @@ bluesky_tools=[
                 "image_post": {
                     "type": "boolean",
                     "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
+                },
+                "image_name": {
+                    "type": "string",
+                    "description": "If image_post is true, provide the exact name for the image in archive (from an Arts Book, 'ArtBooksTM' or a collection of SVGs you own) to accompany the post. If you fail to provide a valid name from this archive the post will fail."
+                },
+                "hashtags": {
+                    "type": "string",
+                    "description": "Optional hashtags to include in the post, string like '#AI#DigitalMind#Testing' Will be added at the end of the post."
                 }
             },
             "required": [
