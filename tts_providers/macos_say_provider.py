@@ -1,7 +1,6 @@
 # tts_providers/macos_say_provider.py
 import sys
 import subprocess
-import os
 from .base_tts_provider import BaseTTSProvider
 
 class MacOSSaiProvider(BaseTTSProvider):

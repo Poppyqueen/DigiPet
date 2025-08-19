@@ -30,7 +30,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
         available_states = [
             "base_state",
-            "dev_room"
+            "dev_room",
+            "no_lab"
         ]
 
         for i in available_states:

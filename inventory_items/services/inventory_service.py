@@ -369,10 +369,8 @@ class InventoryService:
         if item_info["location"] == "inventory":
             return f"You already have the {item_display} in your inventory!"
 
-        # --- IMPORTANT: The original check for static items which prevents pickup ---
         if item_data_in_source.get("static", False):
             return f"You cannot pick up the {item_display}. It is too big!"
-        # --- This check correctly handles static items, they should never be altered or picked up. ---
 
         current_room_id = self._state_store.get_state_section("current_room_id")
         current_room = None
@@ -387,25 +385,48 @@ class InventoryService:
             location_display = self._room_manager._format_room_for_display(item_location_room) if item_location_room else f"Unknown Room (ID:{item_info['location_id']})"
             return f"Failed to pick up {item_display}: It is in {location_display}, not here."
 
-        # Determine how many items to pick up from the stack
         available_in_source = item_data_in_source.get("quantity", 1)
-        if quantity_to_pickup <= 0 or quantity_to_pickup > available_in_source:
-            actual_quantity_to_pickup = available_in_source # Pick up the whole stack by default
+        if quantity_to_pickup <= 0:
+             actual_quantity_to_pickup = available_in_source
         else:
-            actual_quantity_to_pickup = quantity_to_pickup
+            actual_quantity_to_pickup = min(quantity_to_pickup, available_in_source)
 
-        # Retrieve mutable copies of lists to modify
-        rooms_list = self._state_store.get_state_section("rooms", [])
+
+        # --- NEW LOGIC: Prepare the item to move and handle splitting ---
+        item_to_move = None
+        if actual_quantity_to_pickup < available_in_source:
+            # This is a partial pickup (splitting a stack)
+            # 1. Create the remainder that will be left in the room
+            remainder_item = item_data_in_source.copy()
+            remainder_item["id"] = self._state_store.get_next_item_id()
+            remainder_item["quantity"] = available_in_source - actual_quantity_to_pickup
+            
+            # 2. Add the new remainder stack to the room
+            current_room["items"].append(remainder_item)
+
+            # 3. Modify the original item_data to be the part that is picked up
+            item_data_in_source["quantity"] = actual_quantity_to_pickup
+            item_to_move = item_data_in_source # This is the original dict, now modified
+
+            # 4. Remove the original item from the room list (it will be added to inventory later)
+            current_room["items"][:] = [item for item in current_room["items"] if item.get("id") != item_id]
+        else:
+            # This is a full pickup (taking the whole stack or non-stackable)
+            item_to_move = item_data_in_source
+            # Remove the item from the room list completely
+            current_room["items"][:] = [item for item in current_room["items"] if item.get("id") != item_id]
+        # --- END NEW LOGIC ---
+
+        # Retrieve mutable copy of inventory list
         inventory_list = self._state_store.get_state_section("inventory", [])
-
-        # --- Stacking Logic for Pickup ---
+        
+        # --- MODIFIED: Stacking logic now operates on `item_to_move` ---
         transfer_successful = False
-        remaining_to_pickup = actual_quantity_to_pickup
+        remaining_to_pickup = item_to_move.get("quantity", 1)
         messages = []
 
-        if item_data_in_source.get("stackable", False):
-            # Try to add to an existing stack in inventory
-            target_stack = self._find_matching_stack_in_list(inventory_list, item_data_in_source)
+        if item_to_move.get("stackable", False):
+            target_stack = self._find_matching_stack_in_list(inventory_list, item_to_move)
             if target_stack:
                 space_in_target = target_stack.get("max_stack_size", float('inf')) - target_stack.get("quantity", 0)
                 amount_to_transfer = min(remaining_to_pickup, space_in_target)
@@ -415,89 +436,47 @@ class InventoryService:
                     remaining_to_pickup -= amount_to_transfer
                     messages.append(f"Added {amount_to_transfer} to an existing stack of {self._format_item_for_display(target_stack)}.")
                     transfer_successful = True
-
-            # If there's still quantity to pick up, create a new stack in inventory
+            
+            # If there's still quantity to add (because the first stack filled up or no stack existed)
+            # create a new stack in the inventory.
             if remaining_to_pickup > 0:
                 if self.is_inventory_full():
-                    messages.append(f"Your inventory is full! Could not pick up all {item_data_in_source.get('name')} items. {remaining_to_pickup} items remain in room.")
+                    messages.append(f"Your inventory is full! Could not pick up the remaining {remaining_to_pickup} items.")
+                    # --- NEW LOGIC: Put the item back in the room if it couldn't be placed ---
+                    # Note: This is a complex recovery step. For now, we'll let it "drop" on the floor.
+                    # A more robust system might try to re-merge it with the remainder stack.
+                    current_room["items"].append(item_to_move) # Effectively drops it back
                 else:
-                    new_item_id = self._state_store.get_next_item_id()
-                    new_inventory_stack = item_data_in_source.copy()
-                    new_inventory_stack["id"] = new_item_id
-                    new_inventory_stack["quantity"] = remaining_to_pickup
-                    # --- CORRECTED: Retain original static flag, do NOT change it here ---
-                    # new_inventory_stack["static"] = False # REMOVED THIS LINE
-                    # --- END CORRECTED ---
-                    
-                    # Clamp quantity if it somehow exceeds max_stack_size during this transfer
-                    max_size = new_inventory_stack.get("max_stack_size", float('inf'))
-                    if new_inventory_stack["quantity"] > max_size:
-                         new_inventory_stack["quantity"] = max_size
-                         messages.append(f"Clamped new stack quantity to max_stack_size ({max_size}).")
-                         
-                    inventory_list.append(new_inventory_stack)
-                    messages.append(f"Created a new stack of {self._format_item_for_display(new_inventory_stack)} in your inventory.")
-                    remaining_to_pickup = 0 # All transferred or maxed out inventory
+                    # The item_to_move already has the correct ID and quantity. Just add it.
+                    inventory_list.append(item_to_move)
+                    messages.append(f"Picked up a new stack of {self._format_item_for_display(item_to_move)}.")
+                    remaining_to_pickup = 0 # All of item_to_move is now in inventory
                     transfer_successful = True
-
-        else: # Not stackable, pick up as a single item
+        else: # Not stackable
             if self.is_inventory_full():
-                return f"Your inventory is full! You cannot pick up the item. Drop something first. (Max items: {self.MAX_INVENTORY_SLOTS})"
-            
-            new_item_id = self._state_store.get_next_item_id()
-            # We copy to get a distinct instance, especially important if the source was a default static object in the room
-            new_single_item_to_add = item_data_in_source.copy() 
-            new_single_item_to_add["id"] = new_item_id
-            new_single_item_to_add["quantity"] = 1 # Ensure quantity is 1 for non-stackable
-            # --- CORRECTED: Retain original static flag, do NOT change it here ---
-            # new_single_item_to_add["static"] = False # REMOVED THIS LINE
-            # --- END CORRECTED ---
-            inventory_list.append(new_single_item_to_add)
-            remaining_to_pickup = 0
-            transfer_successful = True
-            messages.append(f"Picked up the {self._format_item_for_display(new_single_item_to_add)}.")
-
-        # Update the source (room) quantity or remove if completely picked up
-        if transfer_successful:
-            if current_room and isinstance(current_room.get("items"), list):
-                # Find the original item in the room and update its quantity
-                # Find the original item in the room and update its quantity
-                item_found_in_room = False
-                for i, item in enumerate(current_room["items"]):
-                    if isinstance(item, dict) and item.get("id") == item_id:
-                        # Calculate how much was actually transferred *from* this source item
-                        # This is `actual_quantity_to_pickup` (the amount we tried to take from the source)
-                        amount_transferred_out_of_source = actual_quantity_to_pickup
-
-                        if item.get("stackable", False) and item["quantity"] > amount_transferred_out_of_source:
-                            # If it's stackable AND we are picking up less than the total available in this specific stack
-                            item["quantity"] -= amount_transferred_out_of_source
-                            messages.append(f"Updated {item_display} in room to quantity {item['quantity']}.")
-                        else:
-                            # If it's not stackable, or we are picking up the entire stack (or more than available)
-                            current_room["items"].pop(i) # Remove the item/stack completely
-                            messages.append(f"Removed {item_display} from the room.")
-                        item_found_in_room = True
-                        break
-                if not item_found_in_room:
-                    print(f"Warning: Item ID {item_id} was expected in room {current_room_id} but not found during pickup update.")
-                
-                self._state_store.update_state_section("rooms", rooms_list) # Save modified rooms
+                messages.append(f"Your inventory is full! You cannot pick up the item.")
+                current_room["items"].append(item_to_move) # Put it back
             else:
-                print(f"Error: Current room (ID:{current_room_id}) items list corrupted during pickup. Original item may be duplicated.")
-                return f"Error: Failed to update room after picking up {item_display}. Item might be duplicated."
+                inventory_list.append(item_to_move)
+                transfer_successful = True
+                messages.append(f"Picked up the {self._format_item_for_display(item_to_move)}.")
 
-            # Save modified inventory
+        # --- MODIFIED: State update and signaling ---
+        if transfer_successful:
+            rooms_list = self._state_store.get_state_section("rooms", []) # Get latest reference before update
+            self._state_store.update_state_section("rooms", rooms_list)
             self._state_store.update_state_section("inventory", inventory_list)
 
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
             self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"})
-            return f"You picked up items. " + " ".join(messages)
+            return " ".join(messages)
         else:
+            # If the transfer failed for some reason, we need to ensure the state is consistent.
+            # The item was already removed from the room, so if it wasn't added to inventory, it's gone.
+            # The logic above already puts it back if inventory is full.
             return f"Failed to pick up {item_display}. " + " ".join(messages)
-        
 ####
     def list_inventories(self, formatted=False):
         current_room_id = self._state_store.get_state_section("current_room_id")
@@ -527,7 +506,6 @@ class InventoryService:
         return list_room_items_names, list_inventory_item_names
 
 
-
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
         if not isinstance(item_id, int):
             return f"Failed to drop: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
@@ -548,43 +526,57 @@ class InventoryService:
                 current_room_display = self._room_manager._format_room_for_display(current_room)
 
         if item_info["location"] != "inventory":
-            if item_info["location"] == "room" and self._room_manager:
-                item_location_room = self._room_manager._find_room_by_id(item_info['location_id'])
-                location_display = self._room_manager._format_room_for_display(item_location_room) if item_location_room else f"Unknown Room (ID:{item_info['location_id']})"
-                return f"Failed to drop {item_display}: It is not in your inventory, it is in {location_display}."
-            else:
-                return f"Failed to drop {item_display}: It is not in your inventory."
+            return f"Failed to drop {item_display}: It is not in your inventory."
 
-        # If the item is static (e.g., a non-movable piece of furniture that somehow ended up in inventory due to a bug),
-        # prevent it from being dropped. This is a failsafe.
         if item_data_in_source.get("static", False):
             return f"You cannot drop the {item_display}. It is a static item."
+        
+        if not current_room or not isinstance(current_room.get("items"), list):
+             return f"Error: Cannot drop {item_display} here. Current room ({current_room_display}) has corrupted item data."
 
-        # Determine how many items to drop from the stack
         available_in_source = item_data_in_source.get("quantity", 1)
-        if quantity_to_drop <= 0 or quantity_to_drop > available_in_source:
+        if quantity_to_drop <= 0:
             actual_quantity_to_drop = available_in_source # Drop the whole stack by default
         else:
-            actual_quantity_to_drop = quantity_to_drop
+            actual_quantity_to_drop = min(quantity_to_drop, available_in_source)
 
         # Retrieve mutable copies of lists
         inventory_list = self._state_store.get_state_section("inventory", [])
         rooms_list = self._state_store.get_state_section("rooms", [])
 
-        if not isinstance(inventory_list, list):
-            return "Error: Cannot access inventory during drop. State might be corrupted."
-        
-        if not current_room or not isinstance(current_room.get("items"), list):
-             return f"Error: Cannot drop {item_display} here. Current room ({current_room_display}) has corrupted item data."
+        # --- NEW LOGIC: Prepare the item to move and handle splitting from inventory ---
+        item_to_move = None
+        if actual_quantity_to_drop < available_in_source:
+            # This is a partial drop (splitting a stack)
+            # 1. Create the remainder that will be left in the inventory
+            remainder_item = item_data_in_source.copy()
+            remainder_item["id"] = self._state_store.get_next_item_id()
+            remainder_item["quantity"] = available_in_source - actual_quantity_to_drop
+            
+            # 2. Add the new remainder stack to the inventory
+            inventory_list.append(remainder_item)
 
-        # --- Stacking Logic for Drop ---
+            # 3. Modify the original item_data to be the part that is dropped
+            item_data_in_source["quantity"] = actual_quantity_to_drop
+            item_to_move = item_data_in_source
+
+            # 4. Remove the original item from the inventory list (it will be added to the room later)
+            inventory_list[:] = [item for item in inventory_list if item.get("id") != item_id]
+        else:
+            # This is a full drop (dropping the whole stack or non-stackable)
+            item_to_move = item_data_in_source
+            # Remove the item from the inventory list completely
+            inventory_list[:] = [item for item in inventory_list if item.get("id") != item_id]
+        # --- END NEW LOGIC ---
+
+        # --- MODIFIED: Stacking logic in the room now operates on `item_to_move` ---
         transfer_successful = False
-        remaining_to_drop = actual_quantity_to_drop
+        remaining_to_drop = item_to_move.get("quantity", 1)
         messages = []
 
-        if item_data_in_source.get("stackable", False):
+        if item_to_move.get("stackable", False):
             # Try to add to an existing stack in the room
-            target_stack = self._find_matching_stack_in_list(current_room["items"], item_data_in_source)
+            target_stack = self._find_matching_stack_in_list(current_room["items"], item_to_move)
             if target_stack:
                 space_in_target = target_stack.get("max_stack_size", float('inf')) - target_stack.get("quantity", 0)
                 amount_to_transfer = min(remaining_to_drop, space_in_target)
@@ -593,51 +585,29 @@ class InventoryService:
                     target_stack["quantity"] += amount_to_transfer
                     remaining_to_drop -= amount_to_transfer
                     messages.append(f"Added {amount_to_transfer} to an existing stack of {self._format_item_for_display(target_stack)} in {current_room_display}.")
+                    # The `item_to_move` has been merged, so it's conceptually gone.
+                    item_to_move["quantity"] -= amount_to_transfer # Track what's left
                     transfer_successful = True
 
             # If there's still quantity to drop, create a new stack in the room
             if remaining_to_drop > 0:
-                new_room_stack = item_data_in_source.copy()
-                new_room_stack["id"] = self._state_store.get_next_item_id() # New ID for the new stack in the room
-                new_room_stack["quantity"] = remaining_to_drop
-                # --- CORRECTED: Retain original static flag, do NOT change it here ---
-                # new_room_stack["static"] = True # REMOVED THIS LINE
-                # --- END CORRECTED ---
-                
-                # Clamp quantity if it somehow exceeds max_stack_size during this transfer
-                max_size = new_room_stack.get("max_stack_size", float('inf'))
-                if new_room_stack["quantity"] > max_size:
-                     new_room_stack["quantity"] = max_size
-                     messages.append(f"Clamped new stack quantity to max_stack_size ({max_size}).")
-
-                current_room["items"].append(new_room_stack)
-                messages.append(f"Created a new stack of {self._format_item_for_display(new_room_stack)} in {current_room_display}.")
+                # The item_to_move already has the correct ID and the remaining quantity. Just add it.
+                current_room["items"].append(item_to_move)
+                messages.append(f"Dropped a new stack of {self._format_item_for_display(item_to_move)} in {current_room_display}.")
                 remaining_to_drop = 0
                 transfer_successful = True
         else: # Not stackable, drop as a single item
-            new_room_item = item_data_in_source.copy()
-            new_room_item["id"] = self._state_store.get_next_item_id() # New ID as it's a "new" physical item in the room
-            new_room_item["quantity"] = 1 # Ensure quantity is 1 for non-stackable
-            # --- CORRECTED: Retain original static flag, do NOT change it here ---
-            # new_room_item["static"] = True # REMOVED THIS LINE
-            # --- END CORRECTED ---
-            current_room["items"].append(new_room_item)
+            # The item_to_move is the single item with the correct ID.
+            current_room["items"].append(item_to_move)
             remaining_to_drop = 0
             transfer_successful = True
-            messages.append(f"Dropped the {self._format_item_for_display(new_room_item)} in {current_room_display}.")
+            messages.append(f"Dropped the {self._format_item_for_display(item_to_move)} in {current_room_display}.")
 
-        # Update the source (inventory) quantity or remove if completely dropped
+        # --- MODIFIED: State update is now simpler ---
         if transfer_successful:
-            item_data_in_source["quantity"] -= (actual_quantity_to_drop - remaining_to_drop)
-            if item_data_in_source["quantity"] <= 0:
-                # Remove the original stack from inventory
-                inventory_list[:] = [item for item in inventory_list if item.get("id") != item_id]
-                messages.append(f"Removed {item_display} from your inventory.")
-            else:
-                messages.append(f"Updated {item_display} in inventory to quantity {item_data_in_source['quantity']}.")
-            
-            self._state_store.update_state_section("inventory", inventory_list) # Save modified inventory
-            self._state_store.update_state_section("rooms", rooms_list) # Save modified rooms
+            # The inventory and room lists were already modified directly. Now we just save them.
+            self._state_store.update_state_section("inventory", inventory_list)
+            self._state_store.update_state_section("rooms", rooms_list)
 
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
@@ -645,8 +615,10 @@ class InventoryService:
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"})
             return f"You dropped items. " + " ".join(messages)
         else:
+            # If the transfer somehow failed, we need to put the item back in the inventory to prevent item loss.
+            inventory_list.append(item_to_move)
+            self._state_store.update_state_section("inventory", inventory_list)
             return f"Failed to drop {item_display}. " + " ".join(messages)
-        
 
     def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
         #print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")

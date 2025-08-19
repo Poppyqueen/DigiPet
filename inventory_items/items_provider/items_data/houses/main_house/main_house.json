@@ -113,8 +113,7 @@
     {
         "name": "Nightstand",
         "descriptions": [
-            "A small bedside table with a drawer for essentials like glasses or a book.",
-            "Keeps a lamp, alarm clock, and nighttime items within arm's reach."
+            "A small bedside table made out of hardwood."
         ],
         "static": true,
         "type": [
@@ -383,7 +382,8 @@
         ],
         "static": false,
         "type": [
-            "misc"
+            "misc",
+            "seat"
         ],
         "stackable": true
     },
@@ -1059,7 +1059,8 @@
         "static": true,
         "type": [
             "misc",
-            "furniture"
+            "furniture",
+            "seat"
         ],
         "stackable": false
     },

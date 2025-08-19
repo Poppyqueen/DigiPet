@@ -17,6 +17,10 @@ class InitialStateConst():
             "dev_room": {
                 "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
                 "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
+            },
+            "no_lab": {
+                "b_house_path": "inventory_items/base_state_manager/houses_data/no_lab_house.json",
+                "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
             }
         }
         

@@ -21,8 +21,6 @@ from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
 from utils.ai_loader import AIConfiguration
 
-from dotenv import load_dotenv
-
 
 # Default filepaths 
 DEFAULT_MEMORY_DB = "memory.json"

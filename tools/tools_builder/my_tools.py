@@ -10,7 +10,7 @@ seat_tools=[
     {
         "type": "function",
         "name": "take_a_seat",
-        "description": "A function for you to sit on any seat, chair or valid item you see around.",
+        "description": "Allows you to take a seat on any sensible place you could imagine sitting on.",
         "parameters": {
             "type": "object",
             "properties": {
