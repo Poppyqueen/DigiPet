@@ -4,7 +4,7 @@ from pygame_int import gui_config
 from pygame_int import config
 from pygame_int import state
 import json
-from ai_managers import data
+from ai_managers import prompt_data
 
 
 from utils.ai_loader import AIConfiguration, UnifiedLoader
@@ -24,6 +24,19 @@ AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
 
 AVAILABLE_EMBEDDINGS=UnifiedLoader.get_available_providers("embeddings")
 
+
+
+def calculate_total_content_height(elements):
+    """
+    Calculates the total height of all UI elements in a list by finding the lowest element's bottom edge.
+    """
+    max_bottom = 0
+    for element in elements:
+        # We only care about UI objects that have a rect attribute
+        if hasattr(element, 'rect'):
+            max_bottom = max(max_bottom, element.rect.bottom)
+    # Return the lowest point plus the standard spacing for a clean look
+    return max_bottom + gui_config.INPUT_BOX_SPACING
 
 def extract_color(config_manager, config_name):
     # the configuration file for each individual bot should be in...
@@ -68,7 +81,7 @@ class TextInputBox:
         
         self.rendered_lines = [] # Stores (surface, text_string) for each rendered line
         self._render_text() # Initial rendering and height adjustment
-        
+        self.validation_error =False
         text_inputs[self.key] = self
 
     def _render_text(self):
@@ -115,6 +128,8 @@ class TextInputBox:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             global active_element
             if self.rect.collidepoint(adjusted_pos):
+                self.validation_error=False
+
                 self.active = True
                 active_element = self
             else:
@@ -136,7 +151,8 @@ class TextInputBox:
     def draw(self, target_surface, offset_y):
         draw_rect = self.rect.move(0, -offset_y)
         pygame.draw.rect(target_surface, gui_config.INPUT_BOX_BACKGROUND_COLOR, draw_rect)
-        pygame.draw.rect(target_surface, self.color, draw_rect, 2)
+        border_color= (255,0,0) if self.validation_error else self.color
+        pygame.draw.rect(target_surface, border_color, draw_rect, 2)
         
         y_offset_for_text = draw_rect.y + self.text_padding
         for line_surface in self.rendered_lines:
@@ -155,12 +171,14 @@ class DropdownMenu:
         self.is_open = False
         self.options_rects = []
         dropdowns[self.key] = self
+        self.validation_error = False
         
     # --- MODIFIED: Event handler now accepts an adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
         global active_element
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(adjusted_pos):
+                self.validation_error=False
                 self.is_open = not self.is_open
                 active_element = self if self.is_open else None
             elif self.is_open:
@@ -178,7 +196,8 @@ class DropdownMenu:
     def draw(self, target_surface, offset_y):
         draw_rect = self.rect.move(0, -offset_y)
         pygame.draw.rect(target_surface, gui_config.BUTTON_COLOR, draw_rect)
-        pygame.draw.rect(target_surface, gui_config.BUTTON_TEXT_COLOR, draw_rect, 2)
+        border_color = (255, 0, 0) if self.validation_error else gui_config.INPUT_BOX_BORDER_COLOR
+        pygame.draw.rect(target_surface, border_color, draw_rect, 2)
 
         display_text = self.selected_option if self.selected_option is not None else self.default_text
         text_surface = self.font.render(display_text, True, gui_config.BUTTON_TEXT_COLOR)
@@ -197,7 +216,6 @@ class DropdownMenu:
                 option_surface = self.font.render(option, True, gui_config.BUTTON_TEXT_COLOR)
                 target_surface.blit(option_surface, (draw_option_rect.x + 5, draw_option_rect.y + 5))
                 option_y += self.rect.height
-
 class Button:
     def __init__(self, x, y, w, h, text, font, action=None, border_color=None, border_width=0, text_color=None, button_color=None, hover_color=None):
         self.rect = pygame.Rect(x, y, w, h)
@@ -213,7 +231,6 @@ class Button:
         self.border_color = border_color
         self.border_width = border_width
 
-    # --- MODIFIED: Event handler now accepts a single adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
         # The collision check is now simple and correct.
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(adjusted_pos) and event.button == 1:
@@ -221,9 +238,13 @@ class Button:
                 return self.action()
         return None
 
+    # --- REVERTED TO SIMPLER, CORRECT VERSION ---
     def draw(self, target_surface, mouse_pos, offset_y):
         draw_rect = self.rect.move(0, -offset_y)
+        # The mouse_pos passed to this function will now be pre-validated by the caller.
+        # This makes the logic here simple and effective.
         self.is_hovered = draw_rect.collidepoint(mouse_pos)
+        
         current_color = self.hover_color if self.is_hovered else self.color
         pygame.draw.rect(target_surface, current_color, draw_rect, border_radius=15)
         
@@ -242,11 +263,12 @@ class Checkbox:
         self.rect = pygame.Rect(x, y, 20, 20)
         self.checked = initial_state
         self.is_hovered = False
-
+        self.validation_error = False
     # --- MODIFIED: Event handler now accepts an adjusted mouse position ---
     def handle_event(self, event, adjusted_pos):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(adjusted_pos):
+                self.validation_error = None
                 self.checked = not self.checked
         return None
 
@@ -254,7 +276,8 @@ class Checkbox:
         draw_rect = self.rect.move(0, -offset_y)
         self.is_hovered = draw_rect.collidepoint(mouse_pos)
         pygame.draw.rect(target_surface, gui_config.INPUT_BOX_BACKGROUND_COLOR, draw_rect)
-        border_color = gui_config.ACTIVE_INPUT_BOX_BORDER_COLOR if self.is_hovered else gui_config.INPUT_BOX_BORDER_COLOR
+        #border_color = gui_config.ACTIVE_INPUT_BOX_BORDER_COLOR if self.is_hovered else gui_config.INPUT_BOX_BORDER_COLOR
+        border_color = (255,0,0) if self.validation_error else gui_config.INPUT_BOX_BORDER_COLOR 
         pygame.draw.rect(target_surface, border_color, draw_rect, 2)
         if self.checked:
             pygame.draw.line(target_surface, gui_config.BUTTON_TEXT_COLOR, (draw_rect.left + 5, draw_rect.top + 5), (draw_rect.right - 5, draw_rect.bottom - 5), 2)
@@ -421,16 +444,17 @@ def run_config_main_menu_ui(screen, font, config_manager):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                # 1. Handle fixed button (no scrolling adjustment needed)
+                # Prioritize static buttons. If a click happens on them, consume the event.
                 if make_new_button.rect.collidepoint(mouse_pos):
-                     result = make_new_button.handle_event(event, mouse_pos)
-                     if result == "create_new":
+                    result = make_new_button.handle_event(event, mouse_pos)
+                    if result == "create_new":
                         run_config_creation_ui(screen, font, config_manager)
+                        # Rebuild the list in case new configs were added
                         scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
                         scroll_offset_y = 0
-                        continue
+                    continue  #
                 
-                # 2. Handle scrollable elements if click is inside the viewport
+                # Only check scrollable content if the click is within the viewport
                 elif viewport_rect.collidepoint(mouse_pos):
                     adjusted_mouse_pos = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y + scroll_offset_y)
 
@@ -462,24 +486,43 @@ def run_config_main_menu_ui(screen, font, config_manager):
                     scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
 
         screen.fill(config.BLACK)
-        screen.blit(title_surface, title_rect)
-        make_new_button.draw(screen, mouse_pos, 0)
         
-        scroll_surface.fill(config.BLACK)
+
+        # --- FIX IS HERE ---
+        # 1. Determine if the mouse is physically inside the viewport rectangle.
+        is_mouse_in_viewport = viewport_rect.collidepoint(mouse_pos)
+        
+        # 2. Calculate the mouse position relative to the scrollable surface.
         mouse_pos_in_viewport = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y)
 
+        # 3. Create a "safe" position for hover checks. If the mouse is outside the viewport,
+        #    use an impossible coordinate so nothing can be hovered.
+        hover_check_pos = mouse_pos_in_viewport if is_mouse_in_viewport else (-1, -1)
+        # --- END OF FIX ---
+
+        scroll_surface.fill(config.BLACK)
+
+        # 4. Pass the SAFE hover_check_pos to the draw methods.
         for button in scrollable_buttons:
-            button.draw(scroll_surface, mouse_pos_in_viewport, scroll_offset_y)
+            button.draw(scroll_surface, hover_check_pos, scroll_offset_y)
         # Draw delete buttons on top
         for button in delete_buttons:
-            button.draw(scroll_surface, mouse_pos_in_viewport, scroll_offset_y)
+            button.draw(scroll_surface, hover_check_pos, scroll_offset_y)
 
         pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
         screen.blit(scroll_surface, viewport_rect.topleft)
+        pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
+
+        # Static elements are drawn last and use the original mouse_pos
+        screen.blit(title_surface, title_rect)
+        make_new_button.draw(screen, mouse_pos, 0)
 
         pygame.display.flip()
         
     return None
+
+
+
 
 # The rest of your code (run_config_creation_ui, helpers) is assumed to be correct
 # but would need the same handle_event modifications if they also have scrollable elements.
@@ -523,7 +566,7 @@ def run_config_creation_ui(screen, font, config_manager):
     )
 
     # --- Define the Viewport ---
-    viewport_y = 10
+    viewport_y = 1
     viewport_height = back_button.rect.top - viewport_y - 15
     viewport_rect = pygame.Rect(0, viewport_y, screen_width, viewport_height)
     scroll_surface = pygame.Surface((viewport_rect.width, viewport_rect.height))
@@ -579,6 +622,8 @@ def run_config_creation_ui(screen, font, config_manager):
         gui.gui_core.update_gui_rects(0)
         gui.gui_popups.update_popups(current_time_ms)
 
+        total_content_height = calculate_total_content_height(elements)
+
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -591,34 +636,91 @@ def run_config_creation_ui(screen, font, config_manager):
                 if create_button.rect.collidepoint(mouse_pos):
                     if create_button.handle_event(event, mouse_pos) == "create_config":
                         # (Config saving logic is unchanged)
-                        # 1. GATHER all current data from the UI into a simple dictionary.
-                        # This makes the data easy to read and validate.
+
+                        # 1. GATHER all current data AND component references
+                        # This structure holds both the value and the UI component reference
                         form_data = {
-                            "config_name": text_inputs['config_name'].text,
-                            "deep_memory_flag": enable_deep_memory_checkbox.checked,
-                            "deep_memory_ai_provider": dropdowns['deep_memory_ai_provider'].selected_option,
-                            "deep_memory_ai": text_inputs['deep_memory_ai'].text,
-                            "deep_memory_embeddings_provider": dropdowns['deep_memory_embeddings_provider'].selected_option,
-                            "general_ai_provider": dropdowns['general_ai_provider'].selected_option,
-                            "memory_ai_provider": dropdowns['memory_ai_provider'].selected_option,
-                            "cook_provider" :  dropdowns['cook_provider'].selected_option,
-                            "pets_folder": text_inputs['pets_folder'].text,
-                            "general_model": text_inputs['general_model'].text,
-                            "memory_model": text_inputs['memory_model'].text,
-                            "cook_model": text_inputs['cook_model'].text,
-                            "initial_state": dropdowns['initial_state'].selected_option,
-                            # Add any other fields you want to validate here
+                            "config_name": {
+                                "value": text_inputs['config_name'].text,
+                                "component": text_inputs['config_name'],
+                                "type": "text"
+                            },
+                            "deep_memory_flag": {
+                                "value": enable_deep_memory_checkbox.checked,
+                                "component": enable_deep_memory_checkbox,
+                                "type": "checkbox"
+                            },
+                            "deep_memory_ai_provider": {
+                                "value": dropdowns['deep_memory_ai_provider'].selected_option,
+                                "component": dropdowns['deep_memory_ai_provider'],
+                                "type": "dropdown"
+                            },
+                            "deep_memory_ai": {
+                                "value": text_inputs['deep_memory_ai'].text,
+                                "component": text_inputs['deep_memory_ai'],
+                                "type": "text"
+                            },
+                            "deep_memory_embeddings_provider": {
+                                "value": dropdowns['deep_memory_embeddings_provider'].selected_option,
+                                "component": dropdowns['deep_memory_embeddings_provider'],
+                                "type": "dropdown"
+                            },
+                            "general_ai_provider": {
+                                "value": dropdowns['general_ai_provider'].selected_option,
+                                "component": dropdowns['general_ai_provider'],
+                                "type": "dropdown"
+                            },
+                            "memory_ai_provider": {
+                                "value": dropdowns['memory_ai_provider'].selected_option,
+                                "component": dropdowns['memory_ai_provider'],
+                                "type": "dropdown"
+                            },
+                            "cook_provider": {
+                                "value": dropdowns['cook_provider'].selected_option,
+                                "component": dropdowns['cook_provider'],
+                                "type": "dropdown"
+                            },
+                            "pets_folder": {
+                                "value": text_inputs['pets_folder'].text,
+                                "component": text_inputs['pets_folder'],
+                                "type": "text"
+                            },
+                            "general_model": {
+                                "value": text_inputs['general_model'].text,
+                                "component": text_inputs['general_model'],
+                                "type": "text"
+                            },
+                            "memory_model": {
+                                "value": text_inputs['memory_model'].text,
+                                "component": text_inputs['memory_model'],
+                                "type": "text"
+                            },
+                            "cook_model": {
+                                "value": text_inputs['cook_model'].text,
+                                "component": text_inputs['cook_model'],
+                                "type": "text"
+                            },
+                            "initial_state": {
+                                "value": dropdowns['initial_state'].selected_option,
+                                "component": dropdowns['initial_state'],
+                                "type": "dropdown"
+                            }
                         }
 
                         print("--- Form Data Collected ---")
-                        print(form_data)
+                        for field, data in form_data.items():
+                            print(f"{field}: {data['value']}")
                         print("--------------------------")
 
-                        validation_errors = []
+                        # Clear any existing validation errors first
+                        for field, data in form_data.items():
+                            data['component'].validation_error = False
 
-                        # 2. RUN explicit and robust validation logic.
+                        validation_errors = []
+                        failed_fields = []  # Track which fields failed validation
+
+                        # 2. RUN explicit and robust validation logic
                         # -- Unconditional fields --
-                        # Define which fields must always be filled/selected
                         unconditional_fields = [
                             "config_name", "general_ai_provider", "memory_ai_provider",
                             "cook_provider", "pets_folder", "general_model", "memory_model",
@@ -628,39 +730,55 @@ def run_config_creation_ui(screen, font, config_manager):
                         # Validate each unconditional field
                         for field in unconditional_fields:
                             if field in form_data:
-                                value = form_data[field]
+                                value = form_data[field]["value"]
                                 
                                 # Check if value is None, empty string, or just whitespace
                                 if not value or (isinstance(value, str) and not value.strip()):
-                                    validation_errors.append(f"{field.replace('_', ' ').title()} cannot be empty.")
+                                    error_msg = f"{field.replace('_', ' ').title()} cannot be empty."
+                                    validation_errors.append(error_msg)
+                                    failed_fields.append(field)
+                                    # Mark the UI component as having a validation error
+                                    form_data[field]["component"].validation_error = True
                             else:
                                 validation_errors.append(f"Required field '{field}' is missing from form data.")
 
                         # -- Conditional fields --
-                        # Only validate deep memory fields if the checkbox is checked.
-                        if form_data["deep_memory_flag"]:
-                            # If no option is selected, the value will be None.
-                            # A simple 'not' check handles both None and empty strings.
-                            if not form_data["deep_memory_ai_provider"]:
-                                validation_errors.append("Deep Memory AI Provider must be selected.")
+                        # Only validate deep memory fields if the checkbox is checked
+                        if form_data["deep_memory_flag"]["value"]:
+                            # Deep Memory AI Provider validation
+                            if not form_data["deep_memory_ai_provider"]["value"]:
+                                error_msg = "Deep Memory AI Provider must be selected."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("deep_memory_ai_provider")
+                                form_data["deep_memory_ai_provider"]["component"].validation_error = True
                             
-                            # This is a text input, so the .strip() check remains correct.
-                            if not form_data["deep_memory_ai"].strip():
-                                validation_errors.append("Deep Memory AI Model Name cannot be empty.")
+                            # Deep Memory AI Model validation
+                            if not form_data["deep_memory_ai"]["value"] or not form_data["deep_memory_ai"]["value"].strip():
+                                error_msg = "Deep Memory AI Model Name cannot be empty."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("deep_memory_ai")
+                                form_data["deep_memory_ai"]["component"].validation_error = True
 
-                            # This is also a dropdown, so we check for a non-selection (None).
-                            if not form_data["deep_memory_embeddings_provider"]:
-                                validation_errors.append("Deep Memory Embeddings Provider must be selected.")
+                            # Deep Memory Embeddings Provider validation
+                            if not form_data["deep_memory_embeddings_provider"]["value"]:
+                                error_msg = "Deep Memory Embeddings Provider must be selected."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("deep_memory_embeddings_provider")
+                                form_data["deep_memory_embeddings_provider"]["component"].validation_error = True
 
-                                
-                        # 3. PROCESS the result of the validation.
+                        # 3. PROCESS the result of the validation
                         if validation_errors:
-                            # If there are errors, print them and stop.
+                            # If there are errors, print them and show popup
                             print("--- Validation Failed ---")
+                            print(f"Failed fields: {failed_fields}")
                             for error in validation_errors:
                                 print(f"Error: {error}")
-                        
+
+                                # print each message individualy 
                                 gui.gui_popups.show_popup_message(error, (255, 0, 0), True)
+                            
+                            print(f"Marked {len(failed_fields)} UI components with validation errors")
+
                         else:
                             config_name = text_inputs['config_name'].text
                             
@@ -686,8 +804,8 @@ def run_config_creation_ui(screen, font, config_manager):
                             config_manager.set_config("game_settings", "initial_state", dropdowns['initial_state'].selected_option)
                             config_manager.set_config("game_settings", "tts_provider", dropdowns['tts_provider'].selected_option)
                             config_manager.set_config("game_settings", "selected_voice", text_inputs['selected_voice'].text)
-                            
-                            base_prompt = data.sys_prompt
+
+                            base_prompt = prompt_data.sys_prompt
                             user_prompt = text_inputs['sys_prompt'].text
                             final_prompt = base_prompt + " " + user_prompt if user_prompt else base_prompt
                             config_manager.set_config("AI", "sys_prompt", final_prompt)
@@ -701,6 +819,7 @@ def run_config_creation_ui(screen, font, config_manager):
                         gui.gui_popups.clear_all_popups()
                         running = False
             
+
             # --- MODIFIED: Handle scrollable element events ---
             # Pass events to the active element or all scrollable elements
             adjusted_mouse_pos = (
@@ -715,11 +834,12 @@ def run_config_creation_ui(screen, font, config_manager):
                     for element in elements:
                         if hasattr(element, 'handle_event'):
                             element.handle_event(event, adjusted_mouse_pos)
-                # Handle click events
+                # Handle click events only if the click is within the viewport
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    for element in elements:
-                        if hasattr(element, 'handle_event'):
-                            element.handle_event(event, adjusted_mouse_pos)
+                    if viewport_rect.collidepoint(mouse_pos):
+                        for element in elements:
+                            if hasattr(element, 'handle_event'):
+                                element.handle_event(event, adjusted_mouse_pos)
 
 
             if viewport_rect.collidepoint(mouse_pos):
@@ -730,8 +850,9 @@ def run_config_creation_ui(screen, font, config_manager):
         
         # --- Drawing ---
         screen.fill(config.BLACK)
-        scroll_surface.fill(config.BLACK)
         
+        # 1. Draw the scrollable content onto its surface
+        scroll_surface.fill(config.BLACK)
         mouse_pos_in_viewport = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y)
         
         active_dropdown = None
@@ -753,9 +874,11 @@ def run_config_creation_ui(screen, font, config_manager):
         if active_dropdown:
             active_dropdown.draw(scroll_surface, scroll_offset_y)
 
-        pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
+        # 2. Blit the scroll surface to the screen
         screen.blit(scroll_surface, viewport_rect.topleft)
+        pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
 
+        # 3. Draw the static buttons and other non-scrolling UI on top
         create_button.draw(screen, mouse_pos, 0)
         back_button.draw(screen, mouse_pos, 0)
 
