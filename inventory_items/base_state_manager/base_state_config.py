@@ -1,29 +1,176 @@
 from inventory_items.items_provider.item_store import ItemStore
 import json
+import os
+from pathlib import Path
 
 ITEM_ID_START_COUNTER = 0
 ROOM_ID_START_COUNTER = 1
 
 class InitialStateConst():
-    def __init__(self):
+    def __init__(self, config_root_dir="inventory_items/base_state_manager/configs"):
         self.items_store = ItemStore("inventory_items/items_provider/items_data")
+        self.config_root_dir = config_root_dir
+        # new config method, use directory walking to find all config files
+        self.states_configs = self._load_states_map()
 
-        # new config method, use a config file for both, like so
-        self.states_configs = {
-            "base_state": {
-                "b_house_path": "inventory_items/base_state_manager/houses_data/prime_house.json",
-                "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
-            },
-            "dev_room": {
-                "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
-                "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
-            },
-            "no_lab": {
-                "b_house_path": "inventory_items/base_state_manager/houses_data/no_lab_house.json",
-                "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
-            }
-        }
+    def _load_states_map(self) -> dict:
+        """
+        Walk through the config root directory and load all JSON config map files.
+        Each JSON file should contain a dictionary of state configurations in the same format
+        as the original state_configs_map.json
+        """
+        all_configs = {}
         
+        if not os.path.exists(self.config_root_dir):
+            print(f"Config directory '{self.config_root_dir}' not found. Creating it...")
+            os.makedirs(self.config_root_dir, exist_ok=True)
+            return all_configs
+
+        try:
+            # Walk through the directory tree
+            for root, dirs, files in os.walk(self.config_root_dir):
+                for file in files:
+                    if file.endswith('.json'):
+                        file_path = os.path.join(root, file)
+                        try:
+                            with open(file_path, 'r') as f:
+                                config_data = json.load(f)
+                            
+                            # Merge the configurations from this file into all_configs
+                            # This maintains the same structure as your original single JSON file
+                            if isinstance(config_data, dict):
+                                all_configs.update(config_data)
+                                print(f"Loaded {len(config_data)} configs from {file_path}")
+                            else:
+                                print(f"Warning: {file_path} does not contain a dictionary at root level")
+                                
+                        except (json.JSONDecodeError, KeyError) as e:
+                            print(f"Error loading config from {file_path}: {e}")
+                            continue
+                            
+        except Exception as e:
+            print(f"Error walking config directory: {e}")
+            
+        return all_configs
+
+    def _load_states_from_multiple_dirs(self, root_dirs: list) -> dict:
+        """
+        Alternative method: Load configs from multiple root directories.
+        Each JSON file should contain a dictionary of state configurations.
+        """
+        all_configs = {}
+        
+        for root_dir in root_dirs:
+            if not os.path.exists(root_dir):
+                print(f"Config directory '{root_dir}' not found, skipping...")
+                continue
+                
+            try:
+                for root, dirs, files in os.walk(root_dir):
+                    for file in files:
+                        if file.endswith('.json'):
+                            file_path = os.path.join(root, file)
+                            try:
+                                with open(file_path, 'r') as f:
+                                    config_data = json.load(f)
+                                
+                                # Merge the configurations from this file
+                                if isinstance(config_data, dict):
+                                    all_configs.update(config_data)
+                                    print(f"Loaded {len(config_data)} configs from {file_path}")
+                                else:
+                                    print(f"Warning: {file_path} does not contain a dictionary at root level")
+                                
+                            except (json.JSONDecodeError, KeyError) as e:
+                                print(f"Error loading config from {file_path}: {e}")
+                                continue
+                                
+            except Exception as e:
+                print(f"Error walking config directory {root_dir}: {e}")
+                
+        return all_configs
+
+    def reload_configs(self):
+        """
+        Reload all configurations from the directory structure.
+        Useful if configs have been added/modified externally.
+        """
+        self.states_configs = self._load_states_map()
+        print(f"Reloaded {len(self.states_configs)} configurations")
+
+    def add_state_configuration(self, config_map: dict, subdirectory: str = ""):
+        """
+        Adds state configurations by saving them to a JSON file in the config directory
+        and updates self.states_configs. Maintains the same interface as the original method.
+        
+        Args:
+            config_map: Dictionary of configurations to add (same format as original)
+            subdirectory: Optional subdirectory within the config root to save the file
+                        (e.g., "local_ai_gens" will save to config_root_dir/local_ai_gens/)
+        """
+        if not isinstance(config_map, dict):
+            raise ValueError("Configuration must be a dictionary.")
+
+        # Load existing configurations to avoid overwriting
+        current_configs = dict(self.states_configs)
+        
+        # Add the new configurations
+        current_configs.update(config_map)
+
+        # Determine the target directory
+        if subdirectory:
+            target_dir = os.path.join(self.config_root_dir, subdirectory)
+        else:
+            target_dir = self.config_root_dir
+
+        # Save to a new JSON file (you can customize the filename)
+        import time
+        timestamp = int(time.time())
+        config_file_path = os.path.join(target_dir, f"added_configs_{timestamp}.json")
+        
+        # Ensure the target directory exists
+        os.makedirs(target_dir, exist_ok=True)
+
+        try:
+            # Save only the new configurations to the file
+            with open(config_file_path, 'w') as f:
+                json.dump(config_map, f, indent=4)
+
+            # Update the in-memory state
+            self.states_configs.update(config_map)
+            print(f"Added {len(config_map)} configurations to {config_file_path}")
+            
+        except Exception as e:
+            print(f"Error saving configurations: {e}")
+            raise
+
+    def remove_state_configuration(self, config_name: str):
+        """
+        Remove a state configuration by deleting its JSON file and updating self.states_configs
+        """
+        if config_name not in self.states_configs:
+            raise ValueError(f"Configuration '{config_name}' not found.")
+
+        config_file_path = os.path.join(self.config_root_dir, f"{config_name}.json")
+        
+        try:
+            if os.path.exists(config_file_path):
+                os.remove(config_file_path)
+            
+            # Remove from in-memory state
+            del self.states_configs[config_name]
+            print(f"Removed configuration '{config_name}'")
+            
+        except Exception as e:
+            print(f"Error removing configuration '{config_name}': {e}")
+            raise
+
+    def list_available_configs(self):
+        """
+        Return a list of all available configuration names
+        """
+        return list(self.states_configs.keys())
+
     def create_state(self, select_state):
         """
         Creates the complete initial game state based on a selected configuration.
@@ -33,7 +180,8 @@ class InitialStateConst():
         # Load the selected state's configuration from states_configs
         selected_config = self.states_configs.get(select_state)
         if not selected_config:
-            raise ValueError(f"State configuration '{select_state}' not found.")
+            available_configs = self.list_available_configs()
+            raise ValueError(f"State configuration '{select_state}' not found. Available configs: {available_configs}")
 
         base_house_path = selected_config["b_house_path"]
         items_config_path = selected_config["items_config"]
@@ -123,3 +271,11 @@ class InitialStateConst():
         }
 
         return initial_state
+
+
+# Alternative usage with multiple root directories:
+class InitialStateConstMultiDir(InitialStateConst):
+    def __init__(self, config_root_dirs: list):
+        self.items_store = ItemStore("inventory_items/items_provider/items_data")
+        self.config_root_dirs = config_root_dirs
+        self.states_configs = self._load_states_from_multiple_dirs(config_root_dirs)

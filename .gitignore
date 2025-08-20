@@ -7,3 +7,5 @@ bots/
 *secrets/
 *__pycache__/
 data_archive/
+
+*local_ai_gens/

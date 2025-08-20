@@ -1,8 +1,9 @@
 import pygame
 import sys
-from pygame_int import gui_config
+from pygame_int import gui_config, state
 from pygame_int import config
 import json
+
 
 
 from pygame_int.main_menu_help.button import Button
@@ -10,8 +11,12 @@ from pygame_int.main_menu_help.button import Button
 from pygame_int.main_menu_help.pop_up import Popup
 
 from pygame_int.main_menu_areas.config_creation_ui import run_config_creation_ui
+from pygame_int.main_menu_areas.state_maker_ui import run_config_creation_twilight_zone
+
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
 
+initial_states_manager=InitialStateConst()
 
 def extract_color(config_manager, config_name):
     # the configuration file for each individual bot should be in...
@@ -44,6 +49,10 @@ def run_config_main_menu_ui(screen, font, config_manager):
     running = True
 
 
+    state.panel_width=0
+    state.panel_visible=False
+
+
     screen_width = screen.get_width()
     screen_height = screen.get_height()
     
@@ -55,6 +64,13 @@ def run_config_main_menu_ui(screen, font, config_manager):
     new_button_y = title_rect.bottom + 15
     make_new_button = Button(new_button_x, new_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make New", font, lambda: "create_new")
 
+
+
+
+    packages_button_x =  - gui_config.HORIZONTAL_PADDING + gui_config.ENTER_BUTTON_WIDTH
+    packages_button_y = title_rect.bottom + 15
+    packages_button = Button(packages_button_x, packages_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make Package", font, lambda: "create_new_package")
+
     viewport_y = make_new_button.rect.bottom + 20
     viewport_height = screen_height - viewport_y - 20
     viewport_rect = pygame.Rect(
@@ -63,6 +79,8 @@ def run_config_main_menu_ui(screen, font, config_manager):
         screen_width - 2 * gui_config.HORIZONTAL_PADDING, 
         viewport_height
     )
+
+
     
     scroll_surface = pygame.Surface((viewport_rect.width, viewport_rect.height))
 
@@ -133,11 +151,20 @@ def run_config_main_menu_ui(screen, font, config_manager):
                 if make_new_button.rect.collidepoint(mouse_pos):
                     result = make_new_button.handle_event(event, mouse_pos)
                     if result == "create_new":
-                        run_config_creation_ui(screen, font, config_manager)
+                        run_config_creation_ui(screen, font, config_manager, initial_states_manager.states_configs)
                         # Rebuild the list in case new configs were added
                         scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
                         scroll_offset_y = 0
                     continue  #
+
+                if packages_button.rect.collidepoint(mouse_pos):
+                    result = packages_button.handle_event(event, mouse_pos)
+                    if result == "create_new_package":
+                        run_config_creation_twilight_zone(screen, font, initial_states_manager) # To create base states 
+                        # Rebuild the list in case new configs were added
+                        scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
+                        scroll_offset_y = 0
+                    continue  #                        
                 
                 # Only check scrollable content if the click is within the viewport
                 elif viewport_rect.collidepoint(mouse_pos):
@@ -201,6 +228,7 @@ def run_config_main_menu_ui(screen, font, config_manager):
         # Static elements are drawn last and use the original mouse_pos
         screen.blit(title_surface, title_rect)
         make_new_button.draw(screen, mouse_pos, 0)
+        packages_button.draw(screen,mouse_pos, 0)
 
         pygame.display.flip()
         

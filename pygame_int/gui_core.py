@@ -552,42 +552,53 @@ def _load_stat_icons():
     # print(f"Finished loading stat icons. Loaded {len([s for s in _stat_icons.values() if s is not None])} icons.")
 
 # --- Helper function to load and set background image ---
-def load_and_set_background(image_path):
-    """Loads an image and sets it as the background."""
-    # state.background_image is used here. 'state' is imported.
-    print(f"Attempting to load background image: {image_path}")
-    full_image_path = None
-    try:
-        if '.' not in image_path:
-            base, _ = os.path.splitext(image_path)
-            potential_paths = [f"style/images/{base}.jpg", f"style/images/{base}.png", f"style/images/{base}.jpeg"]
-            found_path = None
-            for p in potential_paths:
-                if os.path.exists(p):
-                    found_path = p
-                    break
-            if not found_path:
-                 print(f"Error: Background image file not found with common extensions in 'images/' directory: {potential_paths}")
-                 state.background_image = None 
-                 return
-            full_image_path = found_path
-            print(f"Found image at: {full_image_path}")
-        else:
-             full_image_path = image_path if os.path.exists(image_path) else f"style/images/{image_path}"
-             if not os.path.exists(full_image_path):
-                  print(f"Error: Background image file not found at specified path: {full_image_path}")
-                  state.background_image = None
-                  return
 
-        img_surface = pygame.image.load(full_image_path)
-        state.background_image = pygame.transform.scale(img_surface, (config.WIDTH, config.HEIGHT))
-        print(f"Successfully set background to {full_image_path}")
-    except pygame.error as e:
-        print(f"Pygame Error loading image '{full_image_path}': {e}")
-        state.background_image = None 
-    except Exception as e:
-         print(f"An unexpected error occurred while loading background image '{full_image_path}': {e}")
-         state.background_image = None
+def load_and_set_background(image_path):
+    """
+    Loads an image and sets it as the background, checking a local directory first.
+    """
+    print(f"Attempting to load background image: {image_path}")
+    image_dirs = ["style/images/local_rooms_images", "style/images/rooms_images"]
+    full_image_path = None
+    
+    # Check if the image_path has an extension
+    if '.' not in image_path:
+        base_name = image_path
+        # Define common extensions to check for
+        extensions = ['.jpg']
+        
+        # Iterate through directories and extensions to find the file
+        for directory in image_dirs:
+            for ext in extensions:
+                potential_path = os.path.join(directory, f"{base_name}{ext}")
+                if os.path.exists(potential_path):
+                    full_image_path = potential_path
+                    break
+            if full_image_path:
+                break
+    else:
+        # If image_path has an extension, check the specified directories directly
+        for directory in image_dirs:
+            potential_path = os.path.join(directory, image_path)
+            if os.path.exists(potential_path):
+                full_image_path = potential_path
+                break
+
+    # If the image was found, load and set it. Otherwise, handle the error.
+    if full_image_path:
+        try:
+            img_surface = pygame.image.load(full_image_path)
+            state.background_image = pygame.transform.scale(img_surface, (config.WIDTH, config.HEIGHT))
+            print(f"Successfully set background to {full_image_path}")
+        except pygame.error as e:
+            print(f"Pygame Error loading image '{full_image_path}': {e}")
+            state.background_image = None
+        except Exception as e:
+            print(f"An unexpected error occurred while loading background image '{full_image_path}': {e}")
+            state.background_image = None
+    else:
+        print(f"Error: Background image file '{image_path}' not found in any specified directory: {image_dirs}")
+        state.background_image = None
 
 
 # --- Getter functions for rects ---

@@ -1,10 +1,8 @@
 # main_menu_areas/config_creation_ui.py
 from pygame_int import gui_config
 from pygame_int import config
-from pygame_int import state
 import pygame
 
-from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
 from ai_managers import prompt_data
 
@@ -36,15 +34,13 @@ AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
 AVAILABLE_EMBEDDINGS=UnifiedLoader.get_available_providers("embeddings")
 
 
-def run_config_creation_ui(screen, font, config_manager):
+def run_config_creation_ui(screen, font, config_manager, state_configs):
     """
     A UI for creating a new configuration, with a dedicated scrollable viewport.
     (This function has been updated with the same event handling fixes for consistency)
     """
     print("Entering New Configuration UI...")
 
-    state.panel_width=0
-    state.panel_visible=False
     clock = pygame.time.Clock()
     running = True
     screen_width = screen.get_width()
@@ -53,7 +49,7 @@ def run_config_creation_ui(screen, font, config_manager):
     text_inputs.clear()
     dropdowns.clear()
 
-    availiable_configs=InitialStateConst().states_configs
+    availiable_configs=state_configs
     available_states=[]
     for i in availiable_configs:
         available_states.append(i) 

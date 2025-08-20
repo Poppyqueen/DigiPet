@@ -5,7 +5,7 @@ from ollama import ChatResponse
 import os
 from typing import Any
 import time
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 
 
@@ -36,7 +36,12 @@ class OllamaProv(SimpleAI):
                 'role': role,
                 'content': input_content,
             },
-            ])
+
+            ],
+            options={
+                "num_ctx": 1024
+            }
+            )
             #print(response['message']['content'])
             # or access fields directly from the response object
             #print(response.message.content)
@@ -48,32 +53,45 @@ class OllamaProv(SimpleAI):
 
     def _calls_structured(self, system: str, input_content: str, structure: Any):
         """
-        Calls the Ollama API with a structured response format (e.g., JSON guided by Pydantic).
-        This method is kept EXACTLY as provided in the original example.
+        Calls the Ollama API with a structured response format and retries on validation errors.
         """
-        try:
-
-            response = chat(
-            messages=[
-                {
-                'role': 'system',
-                'content': system,
-                },
-                {
-                'role': 'user',
-                'content': input_content,
-                }
-            ],
-            model=self.ai_model,
-            format=structure.model_json_schema(),
-            )
-            model_structure=structure.model_validate_json(response.message.content)
-            time.sleep(1) # Pause to respect API rate limits
-            return model_structure
-        except Exception as e:
-            print(f"Error calling Ollama API for structured output with structure {structure.__name__}: {e}")
-            # print(f"System: {system}\nInput: {input_content}") # Optional: uncomment for debugging failed prompts
-            return None
+        max_retries = 4
+        for attempt in range(max_retries):
+            try:
+                response = chat(
+                    messages=[
+                        {
+                            'role': 'system',
+                            'content': system,
+                        },
+                        {
+                            'role': 'user',
+                            'content': input_content,
+                        }
+                    ],
+                    model=self.ai_model,
+                    format=structure.model_json_schema(),
+                    options={
+                        "num_ctx": 1024
+                    }
+                )
+                # This is where the ValidationError is raised
+                model_structure = structure.model_validate_json(response.message.content)
+                print(f"✅ Success on attempt {attempt + 1}")
+                time.sleep(1)
+                return model_structure
+            except ValidationError as e:
+                print(f"❌ Pydantic validation error on attempt {attempt + 1}: {e}")
+                if attempt < max_retries - 1:
+                    print("Retrying...")
+                    time.sleep(2)  # Pause before retrying
+                else:
+                    print("❗ Max retries reached. Giving up.")
+                    return None
+            except Exception as e:
+                print(f"Error calling Ollama API: {e}")
+                return None
+        return None # Return None if all retries fail
 
     def structured_output(self, system, user, structure: BaseModel) -> BaseModel:
         """

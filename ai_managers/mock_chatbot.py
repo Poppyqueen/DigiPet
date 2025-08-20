@@ -48,17 +48,16 @@ class MockFunctionsBuilder:
 # This class mocks the behavior of CLIChatbot for UI testing purposes.
 # It does not use any real AI APIs.
 class MockChatbot:
-    def __init__(self, signal_callback, config_manager):
+    def __init__(self, signal_callback, config_manager, bots_archive_dir="data_archive"):
         print("MockChatbot: Initializing...")
 
         pet_name = config_manager.get_config('AI','pets_folder') # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
 
-        sub_directory=f"bots/{pet_name}"
+        sub_directory=os.path.join(bots_archive_dir,"bots",pet_name)
 
         os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
 
         self._signal_callback = signal_callback
-        self._sub_directory = sub_directory # Stored, but not used by mock logic
 
         # --- Mock Internal State (Simulating what the real bot holds) ---
         # self._is_color_configured = False
