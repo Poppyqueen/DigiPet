@@ -1095,7 +1095,43 @@ bluesky_tools=[
             ],
             "additionalProperties": False
         }
+    },    
+    {
+        "type": "function",
+        "name": "get_posts_needing_responses",
+        "description": "Get the posts from your account that need responses.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [
+            ],
+            "additionalProperties": False
+        }
     },
+    {
+        "type": "function",
+        "name": "post_reply",
+        "description": "Post a reply to a specific Bluesky post.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string",
+                    "description": "The uri of the post to reply to."
+                },
+                "response_text": {
+                    "type": "string",
+                    "description": "The content of the reply."
+                }
+            },
+            "required": [
+                "uri",
+                "response_text"
+            ],
+            "additionalProperties": False
+        }
+    }
 ]
 
 library_tools = [    {

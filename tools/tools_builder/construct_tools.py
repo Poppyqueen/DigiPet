@@ -166,6 +166,7 @@ class FunctionBuilder:
         if bluesky_enabled:
             try:
                     self.bluesky = bluesky_bot(self.state_manager, self._signal_callback, self.images_lab)
+                    #print(self.bluesky.get_posts_needing_responses(2))
                     print("BlueskyBot instance created.")
             except Exception as e:
                 print(f"Error instantiating BlueskyBot: {e}")
@@ -385,7 +386,9 @@ class FunctionBuilder:
         if self.bluesky:
             # Add Bluesky tools to the inventory-only functions and definitions
             self._inventory_only_functions["bluesky_social"] = {
-                "post_bluesky": self.bluesky.post_bluesky
+                "post_bluesky": self.bluesky.post_bluesky,
+                "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
+                "post_reply": self.bluesky.post_reply
             }
             self._inventory_only_definitions["bluesky_social"] = bluesky_tools
             print("Bluesky Social tools added to inventory-only functions.")
@@ -393,7 +396,9 @@ class FunctionBuilder:
         # 3. ROOM-SPECIFIC: Tools that are available based on the current room type.
             self._room_type_data["bluesky_social"] = { # Using a distinct room type name
                 "functions": {
-                    "post_bluesky": self.bluesky.post_bluesky
+                    "post_bluesky": self.bluesky.post_bluesky,
+                    "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
+                    "post_reply": self.bluesky.post_reply
                 },
                 "definitions": bluesky_tools # Use the imported definitions list
             }
