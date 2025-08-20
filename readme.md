@@ -122,10 +122,13 @@ When running the project, you can expect:
 ## To-do: 
 
 #### Short term:
+
 * Implementing different providers for TTS, local and cloud that work across different OSes.
-* Add more things to this list
 
 #### Long Term:
-* Implement Anthropic's MCP for connecting servers into the Pet, turning the current project into an MPC client.
-* Refactor the pygame implementation of the agent, state and configs so we can have various agents active at the same time on the same runtime.
-* Re-do the "deep memory" system from 0 with better techniques.
+
+
+* Implement Anthropic's MCP for connecting servers into the Pet, turning the current project into an MPC client. Maybe?
+
+
+* Refactor the pygame implementation of the agent, state and configs so we can have various agents active at the same time on the same runtime. 

@@ -6,7 +6,7 @@ from pygame_int import animation
 from pygame_int import gui_lore_panel
 from pygame_int import gui_color_selector
 from pygame_int.juke_box import jukebox 
-from pygame_int.config_gui import run_config_main_menu_ui
+from pygame_int.config_gui_main_menu import run_config_main_menu_ui
 import pygame
 import sys
 import threading
