@@ -387,6 +387,7 @@ def run_config_creation_twilight_zone(screen, font, init_states):
                 elif back_button.rect.collidepoint(mouse_pos):
                     if back_button.handle_event(event, mouse_pos) == "go_back":
                         if processing_thread and processing_thread.is_alive():
+                            base_state_crafter.request_shutdown()
                             reset_processing_state()
                         gui.gui_popups.clear_all_popups()
                         running = False

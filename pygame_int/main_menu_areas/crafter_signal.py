@@ -11,3 +11,8 @@ class CrafterSignal(Enum):
     COMPLETED = "completed"
     
     ERROR = "error"
+
+        # New shutdown-related signals
+    SHUTDOWN_REQUESTED = "shutdown_requested"
+    SHUTDOWN_COMPLETE = "shutdown_complete"
+    CLEANUP_COMPLETE = "cleanup_complete"
