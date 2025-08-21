@@ -39,7 +39,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     A UI for creating a new configuration, with a dedicated scrollable viewport.
     (This function has been updated with the same event handling fixes for consistency)
     """
-    print("Entering New Configuration UI...")
+    print("Entering New DigiPet Configuration UI...")
 
     clock = pygame.time.Clock()
     running = True

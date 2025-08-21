@@ -22,45 +22,27 @@ UNIQUE_TYPES = [
 class BaseCrafter:
     def __init__(self, select_model="gpt-5-mini", select_provider="openai", initial_states_manager=None, signal_queue=None):
         print("Initializing BaseCrafter...")
-
-        print("Initializing Items Crafter...")
         self.items_crafter = bundles_maker(select_model, select_provider)
-
-        print("Initializing Rooms Crafter...")
         self.rooms_crafter = room_crafter(select_model, select_provider, signal_queue=signal_queue)
-
         self.InitialStateConst = initial_states_manager
-
         self.signal_queue = signal_queue
-               
-        # Shutdown mechanism
         self._shutdown_event = threading.Event()
-        self._current_operation = None
 
 
     def request_shutdown(self):
-        """Request shutdown from external thread/process"""
         print("🛑 BaseCrafter shutdown requested...")
         self._shutdown_event.set()
-        
-        # Also request shutdown for room crafter
         if hasattr(self.rooms_crafter, 'request_shutdown'):
             self.rooms_crafter.request_shutdown()
-        
-        # Also request shutdown for items crafter if it supports it
-        if hasattr(self.items_crafter, 'request_shutdown'):
-            self.items_crafter.request_shutdown()
-        
-        self._send_signal(CrafterSignal.SHUTDOWN_REQUESTED, None)
 
     def is_shutdown_requested(self):
         """Check if shutdown has been requested"""
         return self._shutdown_event.is_set()
 
+
     def _check_shutdown(self, operation_name=""):
-        """Check for shutdown request and handle if needed"""
-        if self.is_shutdown_requested():
-            print(f"🛑 BaseCrafter shutdown detected during: {operation_name}")
+        if self._shutdown_event.is_set():
+            print(f"🛑 Shutdown detected during: {operation_name}")
             self._send_signal(CrafterSignal.SHUTDOWN_COMPLETE, {"interrupted_at": operation_name})
             return True
         return False
@@ -68,13 +50,13 @@ class BaseCrafter:
 
 
 
+
     def _send_signal(self, signal, data=None):
-        """Send a signal if queue is available"""
         if self.signal_queue:
             try:
                 self.signal_queue.put((signal, data))
-            except:
-                pass  # Don't let signal issues break the main process
+            except Exception as e:
+                print(f"Warning: Failed to send signal {signal}: {e}")
 
     def _filter_unique_types(self, all_rooms_data: Dict[str, List[Dict]], rooms_config: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """
@@ -177,234 +159,181 @@ class BaseCrafter:
         
         print(f"Filtering complete: {items_removed} duplicate unique-type items removed")
         return filtered_rooms_config
-                
-    def generate_base_state(self, initial_idea: str, 
+
+
+
+    def generate_base_state(self, initial_idea: str,
                            houses_output_dir: str = "inventory_items/base_state_manager/houses_data/local_ai_gens",
                            configs_output_dir: str = "inventory_items/base_state_manager/houses_configs/local_ai_gens") -> Dict[str, Any] | None:
         """
-        Complete orchestration of house + items generation from a single idea.
-        Now with shutdown support.
+        Complete orchestration of house + items generation from a single idea,
+        instrumented with detailed signals for UI feedback.
         """
-        print(f"\n{'='*80}")
-        print(f"GENERATING COMPLETE BASE STATE")
-        print(f"Concept: {initial_idea}")
-        print(f"{'='*80}")
-
-        # Reset shutdown state and partial data for new generation
-        self._shutdown_event.clear()
-        self._current_operation = "base_state_generation"
-
-        # Check for early shutdown
-        if self._check_shutdown("initialization"):
-            return None
-
-        self._send_signal(CrafterSignal.ANALYZING_PROMPT, None)
-        
-        # Step 1: Generate the house with rooms
-        print(f"\n--- STEP 1: Generating House Structure ---")
-        self._current_operation = "house_generation"
-        
-        # Check shutdown before expensive operation
-        if self._check_shutdown("before_house_generation"):
-            return None
-            
-        base_house = self.rooms_crafter.orchestrate_generation(
-            initial_idea=initial_idea,
-            output_dir=houses_output_dir
-        )
-
-        # Check shutdown after house generation
-        if self._check_shutdown("after_house_generation"):
-            # Save partial house data
-            return None
-
-        self._send_signal(CrafterSignal.GENERATING_STATE, None)
-        
-        if not base_house:
-            print("❌ Failed to generate house structure. Aborting.")
-            return None
-        
-        house_name = base_house["house_name"]
-        house_file_path = base_house["file_path"]
-        house_rooms_data = base_house["room_data"]
-        
-        
-        print(f"✅ House '{house_name}' generated with {len(house_rooms_data)} rooms")
-        
-        # Step 2: Generate items for each room
-        print(f"\n--- STEP 2: Generating Items for Each Room ---")
-        self._current_operation = "items_generation"
-        
-        rooms_config = {}
-        all_rooms_data = {}
-        
-        # Choose the first room as the initial room
-        if house_rooms_data:
-            initial_room_name = house_rooms_data[0]["name"]
-            rooms_config["initial_room"] = initial_room_name
-            print(f"🏠 Set initial room: '{initial_room_name}'")
-        
-        # Generate items for each room
-        total_rooms = len(house_rooms_data)
-        for index, room in enumerate(house_rooms_data):
-            current_room_number = index + 1
-            room_name = room["name"]
-
-            # Check for shutdown before processing each room
-            if self._check_shutdown(f"room_{room_name}_generation"):
-                # Save what we have so far
-                return None
-
-            print(f"\n--- Processing Room {current_room_number}/{total_rooms}: '{room_name}' ---")
-            process_value = (current_room_number / total_rooms) * 100
-            self._send_signal(CrafterSignal.PROGRESS_UPDATE, process_value)
-
-            # Extract descriptions
-            prompt_context = []
-            for time_period, descriptions in room["descriptions"].items():
-                if isinstance(descriptions, list):
-                    prompt_context.extend(descriptions)
-                else:
-                    prompt_context.append(descriptions)
-            
-            final_descriptions = "\n".join(prompt_context)
-            final_prompt = (
-                f"You are a creative AI tasked with generating a small to medium bundle of items "
-                f"for the following room: {room_name}. The room has the following descriptions: "
-                f"{final_descriptions}. Based on this information, create a list of items that would "
-                f"logically fit in this room, considering the room's atmosphere, purpose, and described elements."
-                f"10 items max per room."
-            )
-            
-            print(f"Generating items for room: '{room_name}'")
-            print(f"Using context: {final_descriptions[:100]}...")
-            
-            # Generate the bundle for this room
-            room_bundle = self.items_crafter.orchestrate_bundle_generation(
-                initial_idea=final_prompt,
-                output_dir="inventory_items/items_provider/items_data/local_ai_gens"
-            )
-            
-            # Check shutdown after item generation
-            if self._check_shutdown(f"after_room_{room_name}_items"):
-                return None
-            
-            if room_bundle and "item_data" in room_bundle:
-                all_rooms_data[room_name] = room_bundle["item_data"]
-                
-                item_names = []
-                for item in room_bundle["item_data"]:
-                    if "name" in item:
-                        item_names.append(item["name"])
-                
-                rooms_config[room_name] = item_names
-                print(f"✅ Generated {len(item_names)} items for '{room_name}'")
-                
-                if item_names:
-                    example_items = item_names[:3]
-                    print(f"   Examples: {', '.join(example_items)}")
-                    if len(item_names) > 3:
-                        print(f"   ... and {len(item_names) - 3} more")
-            else:
-                print(f"❌ Failed to generate items for room: '{room_name}'")
-                rooms_config[room_name] = []
-                all_rooms_data[room_name] = []
-            
-            
-            # Add delay between rooms (except for the last one) with shutdown checks
-            if current_room_number < total_rooms:
-                print("⏳ Pausing 5 seconds before next room...")
-                for i in range(5):  # Check shutdown every second during delay
-                    if self._check_shutdown(f"delay_after_room_{room_name}"):
-                        return None
-                    time.sleep(1)
-        
-        # Step 2.5: Apply unique types filter
-        print(f"\n--- STEP 2.5: Applying Unique Types Filter ---")
-        if self._check_shutdown("before_filtering"):
-            return None
-            
-        filtered_rooms_config = self._filter_unique_types(all_rooms_data, rooms_config)
-        
-        # Check shutdown after filtering
-        if self._check_shutdown("after_filtering"):
-            return None
-        
-        # Step 3: Save the rooms configuration
-        print(f"\n--- STEP 3: Saving Filtered Rooms Configuration ---")
-        if self._check_shutdown("before_saving_config"):
-            return None
-        
-        os.makedirs(configs_output_dir, exist_ok=True)
-        safe_house_name = re.sub(r'[^a-zA-Z0-9_-]', '_', house_name.lower())
-        config_file_path = os.path.join(configs_output_dir, f"{safe_house_name}_config.json")
-        
         try:
+            print(f"\n{'='*80}")
+            print(f"GENERATING COMPLETE BASE STATE")
+            print(f"Concept: {initial_idea}")
+            print(f"{'='*80}")
+
+            # Reset shutdown state for the new generation run
+            self._shutdown_event.clear()
+
+            # --- STEP 1: FOUNDATION (House & Room Structure Generation) ---
+            self._send_signal(CrafterSignal.FOUNDATION_START)
+            self._send_signal(CrafterSignal.FLAVOR_TEXT, "Dreaming up a floor plan...")
+            if self._check_shutdown("before_house_generation"): return None
+
+            base_house = self.rooms_crafter.orchestrate_generation(
+                initial_idea=initial_idea,
+                output_dir=houses_output_dir
+            )
+
+            if self._check_shutdown("after_house_generation"): return None
+            if not base_house:
+                raise ValueError("Failed to generate the base house structure. The process returned None.")
+            
+            self._send_signal(CrafterSignal.FOUNDATION_COMPLETE)
+            
+            house_name = base_house["house_name"]
+            house_file_path = base_house["file_path"]
+            house_rooms_data = base_house["room_data"]
+            print(f"✅ House '{house_name}' generated with {len(house_rooms_data)} rooms")
+
+            # --- STEP 2: POPULATION (Item Generation for each Room) ---
+            self._send_signal(CrafterSignal.POPULATION_START)
+            self._send_signal(CrafterSignal.FLAVOR_TEXT, "Unpacking the moving boxes...")
+
+            rooms_config = {}
+            all_rooms_data = {}
+            
+            if house_rooms_data:
+                initial_room_name = house_rooms_data[0]["name"]
+                rooms_config["initial_room"] = initial_room_name
+                print(f"🏠 Set initial room: '{initial_room_name}'")
+
+            total_rooms = len(house_rooms_data)
+            for index, room in enumerate(house_rooms_data):
+                if self._check_shutdown("after_house_generation"): return None
+
+                current_room_number = index + 1
+                room_name = room["name"]
+
+                if self._check_shutdown(f"room_{room_name}_generation"): return None
+
+                print(f"\n--- Processing Room {current_room_number}/{total_rooms}: '{room_name}' ---")
+
+
+                prompt_context = [desc for descs in room["descriptions"].values() for desc in descs]
+                final_descriptions = "\n".join(prompt_context)
+                final_prompt = (
+                    f"You are a creative AI tasked with generating a small to medium bundle of items "
+                    f"for the following room: {room_name}. The room has the following descriptions: "
+                    f"{final_descriptions}. Based on this information, create a list of items that would "
+                    f"logically fit in this room. 10 items max per room."
+                )
+
+
+                self._send_signal(CrafterSignal.POPULATION_PROGRESS, {
+                    "room_name": room_name,
+                    "current": current_room_number,
+                    "total": total_rooms
+                })
+                
+                room_bundle = self.items_crafter.orchestrate_bundle_generation(
+                    initial_idea=final_prompt,
+                    output_dir="inventory_items/items_provider/items_data/local_ai_gens"
+                )
+
+
+                if self._check_shutdown(f"after_room_{room_name}_items"): return None
+
+                if room_bundle and "item_data" in room_bundle:
+                    all_rooms_data[room_name] = room_bundle["item_data"]
+                    item_names = [item["name"] for item in room_bundle["item_data"] if "name" in item]
+                    rooms_config[room_name] = item_names
+                    print(f"✅ Generated {len(item_names)} items for '{room_name}'")
+                else:
+                    print(f"❌ Failed to generate items for room: '{room_name}'")
+                    rooms_config[room_name] = []
+                    all_rooms_data[room_name] = []
+
+                if current_room_number < total_rooms:
+                    print("⏳ Pausing 5 seconds before next room...")
+                    for _ in range(5):
+                        if self._check_shutdown(f"delay_after_room_{room_name}"): return None
+                        time.sleep(1)
+
+            self._send_signal(CrafterSignal.POPULATION_COMPLETE)
+
+            # --- STEP 2.5: FILTERING (Applying Unique Types Filter) ---
+            self._send_signal(CrafterSignal.FILTERING_START)
+            #self._send_signal(CrafterSignal.FLAVOR_TEXT, "Ensuring no two snowflakes are alike...")
+            if self._check_shutdown("before_filtering"): return None
+
+            filtered_rooms_config = self._filter_unique_types(all_rooms_data, rooms_config)
+            
+            if self._check_shutdown("after_filtering"): return None
+            self._send_signal(CrafterSignal.FILTERING_COMPLETE)
+
+            # --- STEP 3: SAVING (Writing Config Files to Disk) ---
+            self._send_signal(CrafterSignal.SAVING_START)
+            if self._check_shutdown("before_saving_config"): return None
+
+            os.makedirs(configs_output_dir, exist_ok=True)
+            safe_house_name = re.sub(r'[^a-zA-Z0-9_-]', '_', house_name.lower())
+            config_file_path = os.path.join(configs_output_dir, f"{safe_house_name}_config.json")
+            
             with open(config_file_path, 'w') as f:
                 json.dump(filtered_rooms_config, f, indent=4)
             print(f"✅ Filtered rooms configuration saved to: {config_file_path}")
-        except Exception as e:
-            print(f"❌ Error saving rooms configuration: {e}")
-            return None
-        
-        # Check shutdown after saving
-        if self._check_shutdown("after_saving_config"):
-            return None
-        
-        # Step 4: Create final return structure
-        print(f"\n--- STEP 4: Creating Final Configuration Structure ---")
-        
-        final_config = {
-            safe_house_name: {
-                "b_house_path": house_file_path,
-                "items_config": config_file_path
-            }
-        }
-        
-        # Step 5: Create comprehensive summary
-        total_items_across_rooms = sum(len(items) for items in filtered_rooms_config.values() if isinstance(items, list))
-        
-        generation_summary = {
-            "house_name": house_name,
-            "total_rooms": len(house_rooms_data),
-            "total_items_generated": total_items_across_rooms,
-            "initial_room": filtered_rooms_config.get("initial_room", "unknown"),
-            "room_names": list(filtered_rooms_config.keys()),
-            "house_file": house_file_path,
-            "config_file": config_file_path,
-            "rooms_with_items": {k: len(v) for k, v in filtered_rooms_config.items() if isinstance(v, list)}
-        }
-        
-        result = {
-            "config": final_config,
-            "generation_summary": generation_summary,
-            "rooms_config": filtered_rooms_config
-        }
-        
-        # Final check before completion
-        if self._check_shutdown("before_completion"):
-            return None
-        
-        # Print final summary
-        print(f"\n{'='*80}")
-        print(f"🎉 BASE STATE GENERATION COMPLETE!")
-        print(f"{'='*80}")
-        print(f"🏠 House: {house_name}")
-        print(f"🚪 Rooms: {len(house_rooms_data)}")
-        print(f"📦 Total Items: {total_items_across_rooms}")
-        print(f"🏠 House File: {house_file_path}")
-        print(f"⚙️  Config File: {config_file_path}")
-        print(f"🚪 Initial Room: {filtered_rooms_config.get('initial_room', 'unknown')}")
-        print(f"\n📋 Rooms Summary:")
-        for room_name, items in filtered_rooms_config.items():
-            if isinstance(items, list):
-                print(f"   • {room_name}: {len(items)} items")
-        print(f"{'='*80}")
+            
+            if self._check_shutdown("after_saving_config"): return None
+            self._send_signal(CrafterSignal.SAVING_COMPLETE)
+            
+            # --- STEP 4: FINALIZING (Creating Final Data Structure) ---
+            self._send_signal(CrafterSignal.FINALIZING)
+            #sself._send_signal(CrafterSignal.FLAVOR_TEXT, "Tidying up and adding the final touches!")
+            if self._check_shutdown("before_completion"): return None
 
-        self.InitialStateConst.add_state_configuration(final_config, "local_ai_gens")
-        self._send_signal(CrafterSignal.COMPLETED, None)
-        
-        return result
+            final_config = {
+                safe_house_name: {
+                    "b_house_path": house_file_path,
+                    "items_config": config_file_path
+                }
+            }
+            
+            total_items_across_rooms = sum(len(items) for items in filtered_rooms_config.values() if isinstance(items, list))
+            generation_summary = {
+                "house_name": house_name, "total_rooms": len(house_rooms_data),
+                "total_items_generated": total_items_across_rooms,
+                "initial_room": filtered_rooms_config.get("initial_room", "unknown"),
+                "house_file": house_file_path, "config_file": config_file_path
+            }
+            
+            result = {
+                "config": final_config,
+                "generation_summary": generation_summary,
+                "rooms_config": filtered_rooms_config
+            }
+
+            # --- STEP 5: COMPLETION ---
+            print(f"\n{'='*80}")
+            print(f"🎉 BASE STATE GENERATION COMPLETE!")
+            print(f"   House: {house_name} ({len(house_rooms_data)} rooms, {total_items_across_rooms} items)")
+            print(f"{'='*80}")
+
+            self.InitialStateConst.add_state_configuration(final_config, "local_ai_gens")
+            self._send_signal(CrafterSignal.OVERALL_COMPLETE)
+            
+            return result
+
+        except Exception as e:
+            # Catch any error during the process, log it, and send a signal to the UI
+            print(f"❌ An unrecoverable error occurred during base state generation: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc()
+            self._send_signal(CrafterSignal.ERROR, str(e))
+            return None
 
 
 # Example usage with thread management

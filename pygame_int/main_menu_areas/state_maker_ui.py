@@ -1,4 +1,3 @@
-# main_menu_areas/config_creation_ui.py
 from pygame_int import gui_config
 from pygame_int import config
 from pygame_int import state
@@ -26,6 +25,8 @@ from data_constructors.base_state_construct import BaseCrafter
 
 from utils.ai_loader import AIConfiguration
 
+import math
+
 
 
 
@@ -34,18 +35,23 @@ AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
 
 dropdowns = {}
 
-# Thread communication signals
+# =============================================================================
+# NEW: Redesigned Processing States & Signals
+# =============================================================================
+
 class ProcessState(Enum):
+    """
+    Represents the major *phase* the UI is currently in.
+    Determines the overall display style (e.g., show progress bar).
+    """
     IDLE = "idle"
-    PROCESSING = "processing" 
+    FOUNDATION = "foundation"       # Generating the house structure
+    POPULATION = "population"       # Generating items for rooms (shows progress)
+    FINALIZATION = "finalization"   # Filtering, saving, and wrapping up
     COMPLETED = "completed"
     ERROR = "error"
+    CANCELLING = "cancelling"       # Waiting for thread to acknowledge shutdown
 
-class ThreadSignal(Enum):
-    START_PROCESSING = "start_processing"
-    PROCESSING_COMPLETE = "processing_complete"
-    PROCESSING_ERROR = "processing_error"
-    CANCEL_PROCESSING = "cancel_processing"
 
 text_inputs = {}
 active_element = None
@@ -56,40 +62,76 @@ process_state = ProcessState.IDLE
 signal_queue = queue.Queue()
 result_queue = queue.Queue()
 processing_thread = None
+base_state_crafter_instance = None # To hold the crafter for shutdown requests
 
 
-def start_enhanced_threaded_processing(base_state_crafter, user_prompt):
-    """
-    Start the enhanced processing in a separate thread.
-    """
+class PulsingText:
+    """A helper to draw text that fades in and out indefinitely and can be updated."""
+    def __init__(self, text, font, position, color=(255, 255, 0), ang_velocity=0.004):
+        self.font = font
+        self.position = position
+        self.color = color
+        self.visible = False  # Start hidden by default
+        self.text = text
+        self.start_time_ms = pygame.time.get_ticks()
+        self.ang_velocity= ang_velocity
+
+        self._render_text()
+
+    def _render_text(self):
+        """Internal helper to render the text surface and update its rectangle."""
+        self.surface = self.font.render(self.text, True, self.color)
+        self.rect = self.surface.get_rect(center=self.position)
+
+    def update_text(self, new_text):
+        """Updates the text content and re-renders the surface."""
+        if self.text != new_text:
+            self.text = new_text
+            self._render_text()
+
+    def draw(self, screen):
+        """Draw the text with its current alpha, which pulses using a sine wave, if visible."""
+        if not self.visible or not self.text:
+            return
+            
+        elapsed_time = pygame.time.get_ticks() - self.start_time_ms
+        
+        # Use a sine wave to create a smooth pulse from 0 to 255 and back
+        alpha = (math.sin(elapsed_time * self.ang_velocity) + 1) / 2 * 255
+        self.surface.set_alpha(int(alpha))
+        
+        screen.blit(self.surface, self.rect)
+
+    def show(self):
+        """Makes the text visible."""
+        self.visible = True
+
+    def hide(self):
+        """Hides the text."""
+        self.visible = False
+
+def start_threaded_processing(crafter, user_prompt):
     global processing_thread, process_state
-    
     if process_state != ProcessState.IDLE:
-        return False  # Already processing
-    
-    # Clear any old results from queues
-    while not signal_queue.empty():
-        signal_queue.get()
-    while not result_queue.empty():
-        result_queue.get()
-    
-    # Start the enhanced worker thread
+        return False
+
+    while not signal_queue.empty(): signal_queue.get()
+    while not result_queue.empty(): result_queue.get()
+
     processing_thread = threading.Thread(
-        target=enhanced_worker_thread, # <<< TARGETS THE NEW WORKER
-        args=(base_state_crafter, user_prompt, signal_queue, result_queue),
+        target=lambda: result_queue.put(crafter.generate_base_state(user_prompt)),
         daemon=True
     )
     processing_thread.start()
-    process_state = ProcessState.PROCESSING # Set state to processing immediately
-    
+    # The first signal from the thread will set the correct initial state
     return True
 
 
 def reset_processing_state():
-    """Reset the processing state back to idle."""
-    global process_state, processing_thread
+    global process_state, processing_thread, base_state_crafter_instance
     process_state = ProcessState.IDLE
     processing_thread = None
+    base_state_crafter_instance = None
 
 # =============================================================================
 # Example 2: Updated worker thread function to handle BaseCrafter signals
@@ -137,8 +179,14 @@ def enhanced_worker_thread(base_state_crafter, user_prompt, ui_signal_queue, res
                     ui_signal_queue.put(("status_update", "Starting AI processing..."))
                 elif signal == CrafterSignal.ANALYZING_PROMPT:
                     ui_signal_queue.put(("status_update", "Analyzing your prompt..."))
-                elif signal == CrafterSignal.GENERATING_STATE:
-                    ui_signal_queue.put(("status_update", "Generating environment state..."))
+                elif signal == CrafterSignal.GENERATING_HOUSE:
+                    ui_signal_queue.put(("status_update", "Generating house structure..."))
+                elif signal == CrafterSignal.GENERATING_ITEMS:
+                    ui_signal_queue.put(("status_update", "Generating items for each room..."))
+                elif signal == CrafterSignal.FILTERING_UNIQUE_ITEMS:
+                    ui_signal_queue.put(("status_update", "Filtering unique items..."))
+                elif signal == CrafterSignal.SAVING_CONFIGURATION:
+                    ui_signal_queue.put(("status_update", "Saving configuration..."))
                 elif signal == CrafterSignal.VALIDATING_RESULT:
                     ui_signal_queue.put(("status_update", "Validating results..."))
                 elif signal == CrafterSignal.PROGRESS_UPDATE:
@@ -207,16 +255,10 @@ def check_enhanced_thread_signals():
         'status': status_message, 
         'progress': progress_percentage
     }
-
-
 def run_config_creation_twilight_zone(screen, font, init_states):
-    """
-    A UI for creating a new configuration, with a dedicated scrollable viewport.
-    Now with the enhanced threading integration.
-    """
-    global process_state, processing_thread
+    global process_state, processing_thread, active_element, base_state_crafter_instance
     
-    print("Entering New Configuration UI...")
+    print("Entering Environment Creation UI...")
 
     state.panel_width = 0
     state.panel_visible = False
@@ -227,15 +269,15 @@ def run_config_creation_twilight_zone(screen, font, init_states):
 
     initial_states_manager = init_states
     
-
-    # Reset processing state when entering UI
     reset_processing_state()
+    text_inputs.clear()
     
-    # +++ ADDED: Variables to hold status messages and progress from the thread
-    current_status_message = ""
+    # --- UI State variables for processing display ---
+    main_status_message = ""
+    sub_status_message = ""
     current_progress = 0
     
-    text_inputs.clear()
+
 
     # --- Fixed UI Elements ---
     create_environment_button_x = (screen_width - gui_config.ENTER_BUTTON_WIDTH) // 2
@@ -246,31 +288,50 @@ def run_config_creation_twilight_zone(screen, font, init_states):
     )
     
     back_button_x = gui_config.HORIZONTAL_PADDING
-    back_button_y = screen_height - gui_config.INPUT_AREA_BOTTOM_PADDING - gui_config.ENTER_BUTTON_HEIGHT
+    back_button_y = screen_height - gui_config.ENTER_BUTTON_HEIGHT  - gui_config.INPUT_AREA_BOTTOM_PADDING #
     back_button = Button(
         back_button_x, back_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT,
         "Back", font, lambda: "go_back"
     )
 
-    # --- Define the Viewport ---
-    viewport_y = 1
+    # --- Viewport & Scrollable Content Setup ---
+    viewport_y = 0
     viewport_height = back_button.rect.top - viewport_y - 15
     viewport_rect = pygame.Rect(0, viewport_y, screen_width, viewport_height)
     scroll_surface = pygame.Surface((viewport_rect.width, viewport_rect.height))
     
-    # --- Build Scrollable Content ---
+
+    footer_height = screen_height - viewport_rect.bottom
+
+    footer_rect = pygame.Rect(0, viewport_rect.bottom, screen_width, footer_height)
+
+    menu_font = pygame.font.Font(None, 25) #
+
+
+
+    flavor_text_display = PulsingText(
+        "", menu_font, 
+        (viewport_height / 2, viewport_height / 2 + 25),
+        color=(100, 255, 100), ang_velocity=0.002
+    )
+
+    # pulsing_processing = PulsingText(
+    #     "Processing...", menu_font, 
+    #     (screen_width / 2, footer_rect.centery),
+    #     color=(255, 255, 255), ang_velocity=0.002
+    # )
+
+    # pulsing_processing = PulsingText(
+    #     "Processing...", menu_font, 
+    #     (screen_width / 2, screen_height - gui_config.INPUT_AREA_BOTTOM_PADDING),
+    #     color=(255, 255, 255), ang_velocity=0.002
+    # )
+
     elements = []
     current_y = 10 
-
-
-
     current_y = draw_labeled_dropdown_or_input(font, "ai_provider_name", "Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
-
     current_y = draw_labeled_dropdown_or_input(font, "select_model", "Model Name:", current_y, screen_width, elements, is_dropdown=False)
-
-
-
-
+    
     title_surface, title_rect = draw_section_title(font, "System Prompt", current_y, screen_width)
     elements.append((title_surface, title_rect))
     current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
@@ -278,27 +339,20 @@ def run_config_creation_twilight_zone(screen, font, init_states):
     system_prompt_label_surface = font.render("Home Idea:", True, config.WHITE)
     system_prompt_label_rect = system_prompt_label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=current_y)
     system_prompt_input = TextInputBox(
-        gui_config.HORIZONTAL_PADDING, 
-        system_prompt_label_rect.bottom + 5, 
-        screen_width - 2*gui_config.HORIZONTAL_PADDING, 
-        gui_config.CONFIG_INPUT_BOX_HEIGHT * 2, 
-        font, 
-        'sys_prompt', 
-        allow_newlines=True, 
-        text_inputs=text_inputs, 
-        active_element=active_element
+        gui_config.HORIZONTAL_PADDING, system_prompt_label_rect.bottom + 5, screen_width - 2*gui_config.HORIZONTAL_PADDING, 
+        gui_config.CONFIG_INPUT_BOX_HEIGHT * 2, font, 'sys_prompt', allow_newlines=True, text_inputs=text_inputs, active_element=active_element
     )
     elements.append((system_prompt_label_surface, system_prompt_label_rect))
     elements.append(system_prompt_input)
-
-    current_y += system_prompt_input.rect.h + gui_config.INPUT_BOX_SPACING
-
-
-
+    current_y = system_prompt_input.rect.h + gui_config.INPUT_BOX_SPACING
 
     total_content_height = current_y
     scroll_offset_y = 0
     scroll_speed = 30
+
+    # flavor_text_display.show()
+
+   # pulsing_processing.show()
     
     while running:
         dt = clock.tick(30)
@@ -306,195 +360,210 @@ def run_config_creation_twilight_zone(screen, font, init_states):
         mouse_pos = pygame.mouse.get_pos()
         gui.gui_core.update_gui_rects(0)
         gui.gui_popups.update_popups(current_time_ms)
-
         total_content_height = calculate_total_content_height(elements)
 
-        # <<< CHANGED: Use the enhanced signal checker
-        enhanced_results = check_enhanced_thread_signals()
-        
-        # +++ ADDED: Update status and progress from the returned dictionary
-        if enhanced_results['status']:
-            current_status_message = enhanced_results['status']
-        if enhanced_results['progress'] is not None:
-            current_progress = enhanced_results['progress']
 
-        # <<< CHANGED: Simplified result/error handling. 
-        # The 'check_enhanced_thread_signals' function now sets the process_state.
-        # We just need to react to the state and the returned data.
-        if process_state == ProcessState.COMPLETED:
-            if enhanced_results['result'] is not None:
-                # Process the result here
-                print(f"Received result: {enhanced_results['result']}")
-                gui.gui_popups.show_popup_message("Environment created successfully!", (0, 255, 0), True)
-            reset_processing_state() # Reset to allow another run
-            
-        elif process_state == ProcessState.ERROR:
-            # The error message is now in the status
-            gui.gui_popups.show_popup_message(current_status_message, (255, 0, 0), True)
-            reset_processing_state() # Reset to allow another run
+
+        # NEW: We define this flag early to use it in both event handling and drawing
+        is_processing = process_state not in [ProcessState.IDLE, ProcessState.COMPLETED, ProcessState.ERROR]
+
+        if not is_processing:
+            flavor_text_display.hide()
+            #pulsing_processing.hide()
+        else:
+            flavor_text_display.show()
+            #pulsing_processing.show() # testing visuals
+
+        # --- Redesigned Signal Handling ---
+        while not signal_queue.empty():
+            try:
+                signal, data = signal_queue.get_nowait()
+                
+                if signal == CrafterSignal.FOUNDATION_START:
+                    process_state = ProcessState.FOUNDATION
+                    main_status_message = "Phase 1: Building Foundation"
+                    sub_status_message = "Generating house and room structure..."
+                    current_progress = 0
+                
+                elif signal == CrafterSignal.POPULATION_START:
+                    process_state = ProcessState.POPULATION
+                    main_status_message = "Phase 2: Populating Rooms"
+                    
+                elif signal == CrafterSignal.POPULATION_PROGRESS:
+                    sub_status_message = f"Furnishing '{data['room_name']}' ({data['current']}/{data['total']})"
+                    current_progress = (data['current'] / data['total']) * 100
+                
+                elif signal in [CrafterSignal.FILTERING_START, CrafterSignal.SAVING_START, CrafterSignal.FINALIZING]:
+                    process_state = ProcessState.FINALIZATION
+                    main_status_message = "Phase 3: Finalizing"
+                    if signal == CrafterSignal.FILTERING_START:
+                        sub_status_message = "Filtering for unique items..."
+                    elif signal == CrafterSignal.SAVING_START:
+                        sub_status_message = "Saving configuration files..."
+                    else:
+                        sub_status_message = "Assembling the final data..."
+                    current_progress = 100 
+
+                elif signal == CrafterSignal.FLAVOR_TEXT:
+                    flavor_text_display.update_text(data)
+                
+                elif signal == CrafterSignal.OVERALL_COMPLETE:
+                    process_state = ProcessState.COMPLETED
+                    result_data = result_queue.get()
+                    print(f"Received result: {result_data}")
+                    gui.gui_popups.show_popup_message("Environment created successfully!", (0, 255, 0), True)
+                    reset_processing_state()
+
+                elif signal == CrafterSignal.ERROR:
+                    process_state = ProcessState.ERROR
+                    error_message = f"Error: {data}"
+                    gui.gui_popups.show_popup_message(error_message, (255, 0, 0), True)
+                    reset_processing_state()
+
+                elif signal == CrafterSignal.SHUTDOWN_COMPLETE:
+                    if process_state == ProcessState.CANCELLING:
+                        gui.gui_popups.clear_all_popups()
+                        running = False
+                    
+            except queue.Empty:
+                break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if processing_thread and processing_thread.is_alive():
+                    if base_state_crafter_instance: base_state_crafter_instance.request_shutdown()
                     processing_thread.join(timeout=1.0)
                 pygame.quit()
                 sys.exit()
 
             # --- Event Handling ---
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if create_environment_button.rect.collidepoint(mouse_pos):
+                # NEW: Only check for create button clicks if not processing
+                if not is_processing and create_environment_button.rect.collidepoint(mouse_pos):
                     if create_environment_button.handle_event(event, mouse_pos) == "create_config":
                         if process_state == ProcessState.IDLE:
-
-
                             user_prompt = text_inputs['sys_prompt']
                             select_provider = dropdowns['ai_provider_name']
                             select_model = text_inputs['select_model']
 
+                            select_data = [user_prompt.text, select_provider.selected_option, select_model.text]
 
-                            select_data = [
-                                user_prompt.text,
-                                select_provider.selected_option,
-                                select_model.text
-                            ]
-
-                            validation_error = False
-                            for item in select_data:
-                                if not item or (isinstance(item, str) and not item.strip()):
-                                    message = "All fields must be filled out."
-                                    gui.gui_popups.show_popup_message(message, (255, 0, 0), True)
-                                    validation_error = True
-
-                            if validation_error:
+                            if any(not item or not item.strip() for item in select_data):
+                                gui.gui_popups.show_popup_message("All fields must be filled out.", (255, 0, 0), True)
                                 continue
 
-                            # Passed validation error!
-
-                            base_state_crafter = BaseCrafter(select_model.text, select_provider.selected_option, initial_states_manager, signal_queue=signal_queue)  
-                            # <<< CHANGED: Call the new enhanced processing starter
-                            if start_enhanced_threaded_processing(base_state_crafter, user_prompt.text):
-                                message = "Creating new environment with help from the AI..."
-                                current_status_message = "Initializing..." # Initial status
-                                current_progress = 0
-                                gui.gui_popups.show_popup_message(message, (0, 255, 255), True)
+                            base_state_crafter_instance = BaseCrafter(
+                                select_model.text, select_provider.selected_option, 
+                                initial_states_manager, signal_queue=signal_queue
+                            )
+                            if start_threaded_processing(base_state_crafter_instance, user_prompt.text):
+                                gui.gui_popups.show_popup_message("Starting environment creation...", (0, 255, 255), True)
                             else:
-                                message = "Could not start processing. Please try again."
-                                gui.gui_popups.show_popup_message(message, (255, 0, 0), True)
-                        else:
-                            message = "Please wait, processing is already in progress..."
-                            gui.gui_popups.show_popup_message(message, (255, 255, 0), True)
+                                gui.gui_popups.show_popup_message("Processing already in progress.", (255, 255, 0), True)
                 
                 elif back_button.rect.collidepoint(mouse_pos):
                     if back_button.handle_event(event, mouse_pos) == "go_back":
-                        if processing_thread and processing_thread.is_alive():
-                            base_state_crafter.request_shutdown()
-                            reset_processing_state()
-                        gui.gui_popups.clear_all_popups()
-                        running = False
-
-            # --- Handle scrollable element events ---
-            adjusted_mouse_pos = (
-                mouse_pos[0] - viewport_rect.x,
-                mouse_pos[1] - viewport_rect.y + scroll_offset_y
-            )
-            if active_element:
-                active_element.handle_event(event, adjusted_mouse_pos)
-            else:
-                if event.type != pygame.MOUSEBUTTONDOWN:
+                        if process_state not in [ProcessState.IDLE, ProcessState.COMPLETED, ProcessState.ERROR]:
+                            process_state = ProcessState.CANCELLING
+                            flavor_text_display.update_text("Cancelling the creation...")
+                            main_status_message = "Cancelling..."
+                            sub_status_message = "Waiting for process to stop safely."
+                            if base_state_crafter_instance:
+                                base_state_crafter_instance.request_shutdown()
+                        else:
+                            gui.gui_popups.clear_all_popups()
+                            running = False
+            
+            # NEW: Only handle events for the scrollable elements if we are NOT processing.
+            if not is_processing:
+                adjusted_mouse_pos = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y + scroll_offset_y)
+                if active_element:
+                    active_element.handle_event(event, adjusted_mouse_pos)
+                else:
                     for element in elements:
                         if hasattr(element, 'handle_event'):
                             element.handle_event(event, adjusted_mouse_pos)
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if viewport_rect.collidepoint(mouse_pos):
-                        for element in elements:
-                            if hasattr(element, 'handle_event'):
-                                element.handle_event(event, adjusted_mouse_pos)
 
-            if viewport_rect.collidepoint(mouse_pos):
-                if event.type == pygame.MOUSEWHEEL:
-                    scroll_offset_y -= event.y * scroll_speed
-                    max_scroll = max(0, total_content_height - viewport_rect.height)
-                    scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
-
-        if process_state == ProcessState.PROCESSING:
-            create_environment_button.hidden = True
-            #back_button.hidden = True
-        elif process_state == ProcessState.IDLE:
-            create_environment_button.hidden = False
-            #back_button.hidden = False
+                if viewport_rect.collidepoint(mouse_pos):
+                    if event.type == pygame.MOUSEWHEEL:
+                        scroll_offset_y -= event.y * scroll_speed
+                        max_scroll = max(0, total_content_height - viewport_rect.height)
+                        scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
 
         # --- Drawing ---
         screen.fill(config.BLACK)
         
-        scroll_surface.fill(config.BLACK)
-        mouse_pos_in_viewport = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y)
+        create_environment_button.hidden = is_processing # remove 'not', this is just for testing
         
-        active_dropdown = None
-        for element in elements:
-            if isinstance(element, tuple):
-                text_surface, text_rect = element
-                draw_rect = text_rect.move(0, -scroll_offset_y)
-                scroll_surface.blit(text_surface, draw_rect)
-            elif isinstance(element, TextInputBox):
-                # Simplified drawing logic for example
-                element.draw(scroll_surface, scroll_offset_y)
-            elif isinstance(element, Checkbox):
-                 element.draw(scroll_surface, mouse_pos_in_viewport, scroll_offset_y)
-
-            elif isinstance(element, DropdownMenu):
-                if element.is_open:
-                    active_dropdown = element
-                else:
+        # NEW: Only draw the scrollable content area if we are NOT processing.
+        if not is_processing:
+            scroll_surface.fill(config.BLACK)
+            mouse_pos_in_viewport = (mouse_pos[0] - viewport_rect.x, mouse_pos[1] - viewport_rect.y)
+            
+            active_dropdown = None
+            for element in elements:
+                if isinstance(element, tuple):
+                    text_surface, text_rect = element
+                    draw_rect = text_rect.move(0, -scroll_offset_y)
+                    scroll_surface.blit(text_surface, draw_rect)
+                elif isinstance(element, TextInputBox):
                     element.draw(scroll_surface, scroll_offset_y)
-        
-        if active_dropdown:
-            active_dropdown.draw(scroll_surface, scroll_offset_y)
+                elif isinstance(element, Checkbox):
+                    element.draw(scroll_surface, mouse_pos_in_viewport, scroll_offset_y)
+                elif isinstance(element, DropdownMenu):
+                    if element.is_open:
+                        active_dropdown = element
+                    else:
+                        element.draw(scroll_surface, scroll_offset_y)
+            
+            if active_dropdown:
+                active_dropdown.draw(scroll_surface, scroll_offset_y)
 
-        screen.blit(scroll_surface, viewport_rect.topleft)
-        pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
+            screen.blit(scroll_surface, viewport_rect.topleft)
+            
+
+
+        # --- Detailed Processing Indicator Drawing ---
+        if is_processing or process_state == ProcessState.CANCELLING:
+            main_text = font.render(main_status_message, True, (255, 255, 255))
+            main_rect = main_text.get_rect(center=(screen_width / 2, viewport_height / 2 - 40))
+            screen.blit(main_text, main_rect)
+            
+            sub_text = font.render(sub_status_message, True, (200, 200, 200))
+            sub_rect = sub_text.get_rect(center=(screen_width / 2, viewport_height / 2))
+            screen.blit(sub_text, sub_rect)
+
+            if process_state == ProcessState.POPULATION:
+                progress_bar_width = screen_width
+                progress_bar_height = 20
+                progress_bar_x = (screen_width - progress_bar_width) // 2
+                progress_bar_y = main_rect.bottom + 80
+                progress_bar_y = viewport_height - progress_bar_height
+                
+                pygame.draw.rect(screen, (50, 50, 50), (progress_bar_x, progress_bar_y, progress_bar_width, progress_bar_height))
+                fill_width = (current_progress / 100) * progress_bar_width
+                pygame.draw.rect(screen, (0, 200, 100), (progress_bar_x, progress_bar_y, fill_width, progress_bar_height))
+                pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, (progress_bar_x, progress_bar_y, progress_bar_width, progress_bar_height), 1)
+        
+
+
+
+
+        # Top of Screen Area
+        flavor_text_display.draw(screen)
+       # pulsing_processing.draw(screen)
+        gui.gui_popups.draw_popups(screen)
 
         create_environment_button.draw(screen, mouse_pos, 0)
         back_button.draw(screen, mouse_pos, 0)
 
-        # <<< CHANGED: Draw the new, detailed processing indicator
-        if process_state == ProcessState.PROCESSING:
 
+        pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1) # Draw border last
 
-
-
-            # Display 'Processing...'
-            processing_message = font.render("Processing...", True, (255, 255, 255)) # Maybe we can make this blink, lets make a class for blinking text, maybe a "pulse" (softer and using alpha if possible to fade in and out? with an option for looping while active and an option for it to have and manage a timelife of its own?)
-            processing_rect = processing_message.get_rect(center=(screen_width / 2, screen_height - gui_config.INPUT_AREA_BOTTOM_PADDING - gui_config.ENTER_BUTTON_HEIGHT))
-            screen.blit(processing_message, processing_rect) 
-
-
-            # Display the current status message from the thread
-            status_text = font.render(current_status_message, True, (255, 255, 0))
-
-            status_rect = status_text.get_rect(center=(screen_width / 2, screen_height / 2))
-
-
-            screen.blit(status_text, status_rect) 
-
-            
-            # Draw a progress bar
-            progress_bar_width = viewport_rect.width
-            progress_bar_height = 20
-            progress_bar_x = (screen_width - progress_bar_width) // 2
-            progress_bar_y = viewport_height - progress_bar_height
-
-            # Draw background
-            pygame.draw.rect(screen, (50, 50, 50), (progress_bar_x, progress_bar_y, progress_bar_width, progress_bar_height))
-            # Draw foreground
-            fill_width = (current_progress / 100) * progress_bar_width
-            pygame.draw.rect(screen, (0, 200, 100), (progress_bar_x, progress_bar_y, fill_width, progress_bar_height))
-            # Draw border
-            pygame.draw.rect(screen, config.WHITE, (progress_bar_x, progress_bar_y, progress_bar_width, progress_bar_height), 1)
-
-        gui.gui_popups.draw_popups(screen)
         pygame.display.flip()
     
     if processing_thread and processing_thread.is_alive():
+        if base_state_crafter_instance: base_state_crafter_instance.request_shutdown()
         processing_thread.join(timeout=1.0)
     
     return None

@@ -62,14 +62,14 @@ def run_config_main_menu_ui(screen, font, config_manager):
     
     new_button_x = screen_width - gui_config.HORIZONTAL_PADDING - gui_config.ENTER_BUTTON_WIDTH
     new_button_y = title_rect.bottom + 15
-    make_new_button = Button(new_button_x, new_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make New", font, lambda: "create_new")
+    make_new_button = Button(new_button_x, new_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make DigiPet", font, lambda: "create_new")
 
 
 
 
     packages_button_x =  - gui_config.HORIZONTAL_PADDING + gui_config.ENTER_BUTTON_WIDTH
     packages_button_y = title_rect.bottom + 15
-    packages_button = Button(packages_button_x, packages_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make Package", font, lambda: "create_new_package")
+    packages_button = Button(packages_button_x, packages_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make Home", font, lambda: "create_new_package")
 
     viewport_y = make_new_button.rect.bottom + 20
     viewport_height = screen_height - viewport_y - 20

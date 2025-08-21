@@ -15,10 +15,15 @@ import asyncio
 
 from utils.config_manager import ConfigManager
 
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
+
+
+initial_states_manager=InitialStateConst()
+
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 if mock_running:
     from ai_managers.mock_chatbot import MockChatbot
@@ -271,6 +276,8 @@ def handle_chatbot_signal(signal_data):
 
 run_config_main_menu_ui(screen, font, config_manager)
 
+
+
 if mock_running: # Mock configuration, leave as is
     # --- Mock Chatbot Initialization ---
     chatbot = None
@@ -278,7 +285,8 @@ if mock_running: # Mock configuration, leave as is
     try:
         chatbot = MockChatbot( # Use the mock class
             signal_callback=handle_chatbot_signal,
-            config_manager=config_manager
+            config_manager=config_manager,
+            bots_archive_dir=bots_archive_dir
         )
         chatbot_available = True
         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
@@ -310,7 +318,12 @@ else:
 
 
 
-steps=chatbot.state_manager.get_steps()
+if chatbot_available and chatbot and callable(chatbot.state_manager.get_steps()):
+    steps=chatbot.state_manager.get_steps()
+else:
+    steps=0
+
+
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 state.current_radius=size
 print(f"setting up pets size as {size}")
@@ -469,7 +482,6 @@ gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 
 # Initial popup, splash screen.
 
-
 def splash_sound():
     if pygame.mixer.get_init(): 
         try:
@@ -485,6 +497,10 @@ def splash_sound():
 splash_sound()
 gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 current_gui_rects=gui.gui_core.get_gui_rects()
+
+
+state.panel_visible = True
+state.panel_width = 200
 
 
 history_display_area = current_gui_rects['history_display_area']

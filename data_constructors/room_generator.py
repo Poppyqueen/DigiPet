@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from utils.ai_loader import AIConfiguration
 
+from pygame_int.main_menu_areas.crafter_signal import CrafterSignal
+
 # --- Pydantic Models for Room Data Generation ---
 
 VALID_ROOM_TYPES=["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research"]
@@ -88,18 +90,13 @@ class room_crafter:
         self._shutdown_event = threading.Event()
         self._current_operation = None
 
+    # CHANGED: Simplified to only manage its internal state. No redundant signal.
     def request_shutdown(self):
-        """Request shutdown from external thread/process"""
-        if not self._shutdown_event.is_set():  # Only if not already requested
+        """Request shutdown from an external thread (e.g., BaseCrafter)."""
+        if not self._shutdown_event.is_set():
             print("🛑 Room Crafter shutdown requested...")
             self._shutdown_event.set()
-            if self.signal_queue:
-                try:
-                    # Import here to avoid circular imports if needed
-                    from pygame_int.main_menu_areas.crafter_signal import CrafterSignal
-                    self.signal_queue.put((CrafterSignal.SHUTDOWN_REQUESTED, "room_crafter"))
-                except:
-                    pass
+
 
     def is_shutdown_requested(self):
         """Check if shutdown has been requested"""
@@ -111,6 +108,18 @@ class room_crafter:
             print(f"🛑 Room Crafter shutdown detected during: {operation_name}")
             return True
         return False
+
+    # NEW: Signal sending helper, consistent with BaseCrafter
+    def _send_signal(self, signal, data=None):
+        """Send a signal if a queue is available."""
+        if self.signal_queue:
+            try:
+                self.signal_queue.put((signal, data))
+            except Exception as e:
+                # Don't let a failed signal stop the process
+                print(f"Warning: room_crafter failed to send signal {signal}: {e}")
+
+
 
 
     def _generate_room_descriptions(self, room_concept: str) -> RoomTimeDescriptions | None:
@@ -159,42 +168,28 @@ class room_crafter:
             print(f"❌ Error generating room descriptions: {e}")
             return None
 
+    # CHANGED: Added a flavor text signal
     def create_single_room_data(self, room_concept: str, room_name: str, room_image: str, room_types: List[str], room_music: str, plots: int | None = None) -> Dict[str, Any] | None:
-        """
-        Orchestrates the generation of room descriptions and assembles the complete room data dictionary.
-        Now with shutdown support.
-        """
-        # Check shutdown at start
         if self._check_shutdown(f"creating_room_data_{room_name}"):
             return None
 
         print(f"\n--- Initiating Room Data Generation for Concept: '{room_concept}' (Name: '{room_name}') ---")
+        
+        # NEW: Send flavor text
+        self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Imagining the details of the {room_name}...")
 
-        # Step 1: Generate the time-based descriptions using AI
         descriptions_model = self._generate_room_descriptions(room_concept)
-
-        # Check shutdown after descriptions
         if self._check_shutdown(f"after_descriptions_{room_name}"):
             return None
-
         if not descriptions_model:
             print("Critical failure: Could not generate room descriptions. Aborting room data creation.")
             return None
 
-        # Convert the Pydantic descriptions model into a dictionary, respecting the aliases
         descriptions_dict = descriptions_model.model_dump(by_alias=True)
-
-        # Step 2: Assemble the full room dictionary with the AI-generated descriptions
         full_room_data = {
-            "name": room_name,
-            "image": room_image,
-            "room_types": room_types,
-            "music": room_music,
-            "descriptions": descriptions_dict,
-            "items": []
+            "name": room_name, "image": room_image, "room_types": room_types,
+            "music": room_music, "descriptions": descriptions_dict, "items": []
         }
-        
-        # Step 3: Conditionally add the 'plots' key if a value was provided.
         if plots is not None:
             full_room_data["plots"] = plots
 
@@ -236,6 +231,9 @@ class room_crafter:
         # Check shutdown after file reading
         if self._check_shutdown(f"after_reading_file_{file_path}"):
             return False
+        
+        self._send_signal(CrafterSignal.FLAVOR_TEXT, "Consulting the architectural AI...")
+
 
         # 2. Append the new room data
         if new_room_data:
@@ -410,6 +408,8 @@ class room_crafter:
             print("Failed to generate house configuration. Aborting orchestration.")
             return None
         
+        self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Now building '{house_config.house_name}'...")
+
         # Step 2: Set up output file path
         os.makedirs(output_dir, exist_ok=True)
         safe_house_name = re.sub(r'[^a-zA-Z0-9_-]', '_', house_config.house_name.lower())
@@ -422,6 +422,9 @@ class room_crafter:
         
         for index, room_config in enumerate(house_config.rooms):
             current_room_number = index + 1
+
+            self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Raising the walls for the {room_config.name}...")
+
             
             print(f"\n--- Processing Room {current_room_number}/{total_rooms}: '{room_config.name}' ---")
             
