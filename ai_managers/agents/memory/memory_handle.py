@@ -17,23 +17,50 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfigurati
 DEFAULT_MEMORY_DB = "memory_database.json"
 DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.db"
 
+RETAIN_BUDGET_RATIO = 2 / 11
+
+SYTEM_LINE_RATIO = 3 / 11
+
+SYSTEM_SUMMARIZE_RATIO = 3 / 22
+
+
+def calc_budgets(total_tokens_limit)->dict:
+
+    base_tokens_threshold=total_tokens_limit/2
+
+    
+    short_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
+    long_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
+
+    system_line_budget = base_tokens_threshold * SYTEM_LINE_RATIO
+    system_summarize_budget = base_tokens_threshold * SYSTEM_SUMMARIZE_RATIO
+
+    return {
+        "short_term_threshold": base_tokens_threshold,
+        "long_term_threshold": base_tokens_threshold,
+        "short_term_retain": short_term_retain_budget,
+        "long_term_retain": long_term_retain_budget,
+        "system_line": system_line_budget,
+        "system_summarize": system_summarize_budget
+    }
+
 class memory_manager:
 
-    # # # # New token-based retention budgets
-    # # # # Memory summarizarion thresholds for individual token lenghts for each category
-    SHORT_TERM_TOKEN_THRESHOLD = 22000
-    LONG_TERM_TOKEN_THRESHOLD = 22000
+    # # # # # New token-based retention budgets
+    # # # # # Memory summarizarion thresholds for individual token lenghts for each category
+    # SHORT_TERM_TOKEN_THRESHOLD = 22000
+    # LONG_TERM_TOKEN_THRESHOLD = 22000
 
-    # Determines how much of the recent entries in tokens are kept after summarization
-    SHORT_TERM_RETAIN_TOKEN_BUDGET = 4000
-    LONG_TERM_RETAIN_TOKEN_BUDGET = 4000
+    # # Determines how much of the recent entries in tokens are kept after summarization
+    # SHORT_TERM_RETAIN_TOKEN_BUDGET = 4000
+    # LONG_TERM_RETAIN_TOKEN_BUDGET = 4000
 
-    # "Line in the sand", if any system message is above our token "line in the sand", it will check if there is a summarization needed for it
-    # the idea is that it is a point where the conversation might be too old for this specifc message to be relevant anymore
-    # a smarter system would get info on what specifics to retain after summarization, right now it is a simple contextless summarization process
-    SYSTEM_MESSAGE_LINE_THRESHOLD = 6000
-    # Individual message token threshold: if a system message is above this, try to summarize it
-    SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD = 3000
+    # # "Line in the sand", if any system message is above our token "line in the sand", it will check if there is a summarization needed for it
+    # # the idea is that it is a point where the conversation might be too old for this specifc message to be relevant anymore
+    # # a smarter system would get info on what specifics to retain after summarization, right now it is a simple contextless summarization process
+    # SYSTEM_MESSAGE_LINE_THRESHOLD = 6000
+    # # Individual message token threshold: if a system message is above this, try to summarize it
+    # SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD = 3000
 
 
     # # # Test settings
@@ -81,6 +108,12 @@ class memory_manager:
         general_model_prov= config_manager.get_config('AI', "general_ai_provider")
         general_model=config_manager.get_config('AI', "general_model")
 
+
+        # handle the case this is falsy with a default
+        self.max_tokens_limit = config_manager.get_config('AI', "max_memory_tokens")
+
+        if not self.max_tokens_limit:
+            self.max_tokens_limit = 20000  # Default value
 
         self.bot_instance = AIConfiguration(provider=config_selected_provider,model=selected_model,mode="simple_ai").get_client()
 
@@ -448,8 +481,8 @@ class memory_manager:
                 result_tokens = self.token_manager.count_tokens(result_text)
 
                 # Now check if it meets the criteria for summarization
-                if (start_token_position > self.SYSTEM_MESSAGE_LINE_THRESHOLD and
-                    result_tokens > self.SYSTEM_MESSAGE_SUMMARIZE_THRESHOLD):
+                if (start_token_position > calc_budgets(self.max_tokens_limit)["system_line"] and
+                    result_tokens > calc_budgets(self.max_tokens_limit)["system_summarize"]):
 
                     print(f"Tool/System message (ID: {entry.get('unique_id')}) at token position {start_token_position} is a candidate for summarization.")
 
@@ -552,8 +585,8 @@ class memory_manager:
         # --- Short-Term Memory Check ---
         token_count = self.current_memory_tokens("short_term")
 
-        if token_count >= self.SHORT_TERM_TOKEN_THRESHOLD:
-            message=f"\n--- Short-Term Memory Check Triggered ({token_count} >= {self.SHORT_TERM_TOKEN_THRESHOLD}) ---"
+        if token_count >= calc_budgets(self.max_tokens_limit)["short_term_threshold"]:
+            message=f"\n--- Short-Term Memory Check Triggered ({token_count} >= {calc_budgets(self.max_tokens_limit)['short_term_threshold']}) ---"
             print(message)
             self.text_capture.dump_text(message)
 
@@ -624,7 +657,7 @@ class memory_manager:
                     if unique_id:
                         self.token_counters_cache[unique_id] = entry_tokens
 
-                if current_retained_tokens + entry_tokens <= self.SHORT_TERM_RETAIN_TOKEN_BUDGET:
+                if current_retained_tokens + entry_tokens <= calc_budgets(self.max_tokens_limit)["short_term_retain"]:
                     entries_to_keep.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:
@@ -645,8 +678,8 @@ class memory_manager:
 
         # --- Long-Term Memory Check ---
         long_term_token_count = self.current_memory_tokens("long_term")
-        if long_term_token_count >= self.LONG_TERM_TOKEN_THRESHOLD:
-            message=f"\n--- Long-Term Memory Check Triggered ({long_term_token_count} >= {self.LONG_TERM_TOKEN_THRESHOLD}) ---"
+        if long_term_token_count >= calc_budgets(self.max_tokens_limit)["long_term_threshold"]:
+            message=f"\n--- Long-Term Memory Check Triggered ({long_term_token_count} >= {calc_budgets(self.max_tokens_limit)['long_term_threshold']}) ---"
             print(message)
             self.text_capture.dump_text(message)
 
@@ -680,7 +713,7 @@ class memory_manager:
             for entry_item in reversed(parsed_long_term):
                 entry_tokens = self.token_manager.count_tokens(entry_item["original_string"])
 
-                if current_retained_tokens + entry_tokens <= self.LONG_TERM_RETAIN_TOKEN_BUDGET:
+                if current_retained_tokens + entry_tokens <= calc_budgets(self.max_tokens_limit)["long_term_retain"]:
                     kept_long_term_entries.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:

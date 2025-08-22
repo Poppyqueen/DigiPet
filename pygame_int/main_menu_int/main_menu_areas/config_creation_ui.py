@@ -99,6 +99,12 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     current_y = draw_labeled_dropdown_or_input(font, "general_model", "General Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "memory_model", "Memory Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "cook_model", "Cook Model:", current_y, screen_width, elements, is_dropdown=False)
+
+    title_surface, title_rect = draw_section_title(font, "Token Limits", current_y, screen_width)
+    elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
+
+    current_y = draw_labeled_dropdown_or_input(font, "max_tokens", "Max Tokens:", current_y, screen_width, elements, is_dropdown=False, default_text="44000")
+
     title_surface, title_rect = draw_section_title(font, "Tools", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     enable_youtube_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable YouTube", font); elements.append(enable_youtube_checkbox); current_y += 30
@@ -114,7 +120,6 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     system_prompt_input = TextInputBox(gui_config.HORIZONTAL_PADDING, system_prompt_label_rect.bottom + 5, screen_width - 2*gui_config.HORIZONTAL_PADDING, gui_config.CONFIG_INPUT_BOX_HEIGHT * 2, font, 'sys_prompt', allow_newlines=True, text_inputs=text_inputs, active_element=active_element)
     elements.append((system_prompt_label_surface, system_prompt_label_rect)); elements.append(system_prompt_input); current_y += system_prompt_input.rect.h + gui_config.INPUT_BOX_SPACING # Use actual height
     total_content_height = current_y
-
     scroll_offset_y = 0
     scroll_speed = 30
 
@@ -128,7 +133,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
         total_content_height = calculate_total_content_height(elements)
 
-        
+        if not text_inputs['max_tokens'].text and not text_inputs['max_tokens'].active:
+            print("tokens empty")
+            text_inputs['max_tokens'].text="44000"
+            text_inputs['max_tokens']._render_text()
+    
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -208,6 +217,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                                 "value": dropdowns['initial_state'].selected_option,
                                 "component": dropdowns['initial_state'],
                                 "type": "dropdown"
+                            },
+                            "max_tokens": {
+                                "value": text_inputs['max_tokens'].text,
+                                "component": text_inputs['max_tokens'],
+                                "type": "text"
                             }
                         }
 
@@ -270,6 +284,19 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                                 failed_fields.append("deep_memory_embeddings_provider")
                                 form_data["deep_memory_embeddings_provider"]["component"].validation_error = True
 
+
+                        # validate tokens as an int if it has any value, else, set a default, add a validation error
+                        if form_data["max_tokens"]["value"]:
+                            try:
+                                form_data["max_tokens"]["value"] = int(form_data["max_tokens"]["value"])
+                            except ValueError:
+                                error_msg = "Max Tokens must be an integer."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("max_tokens")
+                                form_data["max_tokens"]["component"].validation_error = True
+                        else:
+                            form_data["max_tokens"]["value"] = 44000  # Set default value
+
                         # 3. PROCESS the result of the validation
                         if validation_errors:
                             # If there are errors, print them and show popup
@@ -308,6 +335,8 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             config_manager.set_config("game_settings", "initial_state", dropdowns['initial_state'].selected_option)
                             config_manager.set_config("game_settings", "tts_provider", dropdowns['tts_provider'].selected_option)
                             config_manager.set_config("game_settings", "selected_voice", text_inputs['selected_voice'].text)
+
+                            config_manager.set_config("AI", "max_memory_tokens", form_data["max_tokens"]["value"])
 
                             base_prompt = prompt_data.sys_prompt
                             user_prompt = text_inputs['sys_prompt'].text
@@ -355,7 +384,9 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                         scroll_offset_y -= event.y * scroll_speed
                         max_scroll = max(0, total_content_height - viewport_rect.height)
                         scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
-        
+    
+
+
         # --- Drawing ---
         screen.fill(config.BLACK)
         
@@ -382,6 +413,9 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
         if active_dropdown:
             active_dropdown.draw(scroll_surface, scroll_offset_y)
 
+        
+
+
         # 2. Blit the scroll surface to the screen
         screen.blit(scroll_surface, viewport_rect.topleft)
         pygame.draw.rect(screen, gui_config.INPUT_BOX_BORDER_COLOR, viewport_rect, 1)
@@ -396,7 +430,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     return None
 
 
-def draw_labeled_dropdown_or_input(font, key, label_text, y, screen_width, elements, is_dropdown=True, options=None):
+def draw_labeled_dropdown_or_input(font, key, label_text, y, screen_width, elements, is_dropdown=True, options=None, default_text=""):
     """Helper function to draw a label and a dropdown or text input box."""
     label_surface = font.render(label_text, True, config.WHITE)
     label_rect = label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=y)
@@ -412,7 +446,7 @@ def draw_labeled_dropdown_or_input(font, key, label_text, y, screen_width, eleme
         )
     else:
         element_ui = TextInputBox(
-            x, y, box_width, gui_config.CONFIG_INPUT_BOX_HEIGHT, font, key, text_inputs=text_inputs, active_element=active_element
+            x, y, box_width, gui_config.CONFIG_INPUT_BOX_HEIGHT, font, key, text_inputs=text_inputs, active_element=active_element, default_text=default_text
         )
     elements.append(element_ui)
     
