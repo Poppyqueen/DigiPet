@@ -348,9 +348,13 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
             if viewport_rect.collidepoint(mouse_pos):
                 if event.type == pygame.MOUSEWHEEL:
-                    scroll_offset_y -= event.y * scroll_speed
-                    max_scroll = max(0, total_content_height - viewport_rect.height)
-                    scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
+                    if is_any_dropdown_open(mouse_pos, scroll_offset_y, viewport_rect):
+                        # Let the dropdown handle its own scrolling - don't scroll the main viewport
+                        pass  # The dropdown will handle the scroll in its own handle_event method
+                    else:
+                        scroll_offset_y -= event.y * scroll_speed
+                        max_scroll = max(0, total_content_height - viewport_rect.height)
+                        scroll_offset_y = max(0, min(scroll_offset_y, max_scroll))
         
         # --- Drawing ---
         screen.fill(config.BLACK)
@@ -415,3 +419,32 @@ def draw_labeled_dropdown_or_input(font, key, label_text, y, screen_width, eleme
     # Return the bottom of the element, which is its Y position plus its height, plus spacing
     # This ensures subsequent elements are positioned correctly below
     return element_ui.rect.bottom + gui_config.INPUT_BOX_SPACING
+
+
+def is_any_dropdown_open(mouse_pos, scroll_offset_y, viewport_rect):
+    """
+    Check if any dropdown menu is currently open and the mouse is hovering over it,
+    accounting for the scroll offset.
+    """
+    # First, quickly check if the mouse is even inside the viewport.
+    # If not, it can't be hovering over a dropdown within the scrollable area.
+
+    flag = False
+    if not viewport_rect.collidepoint(mouse_pos):
+        return flag
+
+    # Convert the screen mouse coordinates to coordinates relative to the scrollable surface
+    adjusted_mouse_x = mouse_pos[0] - viewport_rect.x
+    adjusted_mouse_y = mouse_pos[1] - viewport_rect.y + scroll_offset_y
+    adjusted_pos = (adjusted_mouse_x, adjusted_mouse_y)
+
+    for dropdown in dropdowns.values():
+        if dropdown.is_open:
+            # Check collision with the main dropdown button
+            if dropdown.rect.collidepoint(adjusted_pos):
+                flag = True
+            # Check collision with the expanded options list (if it exists)
+            if dropdown.dropdown_rect and dropdown.dropdown_rect.collidepoint(adjusted_pos):
+                flag = True
+
+    return flag

@@ -27,7 +27,7 @@ class ConfigManager(GenericJsonTool):
     def load_config_from_archive(self, config_name):
         if config_name in self.archive:
             self.active_config = self.archive[config_name]
-            print(f"Configuration '{config_name}' loaded from archive. Now the active config.")
+            #print(f"Configuration '{config_name}' loaded from archive. Now the active config.")
         else:
             print(f"Error: Configuration '{config_name}' not found in the archive.")
             return None

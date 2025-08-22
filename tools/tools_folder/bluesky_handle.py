@@ -1,5 +1,4 @@
 import os
-import logging
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from atproto import Client, models, AtUri
@@ -8,8 +7,8 @@ from datetime import datetime, timezone
 from tools.tools_folder.tools_data.blsk_alt_text import alt_text
 
 from tools.tools_folder.tools_helpers.svg_manager import SVGManager
-# Configure logging (keep it outside the class)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configure #logging (keep it outside the class)
+##logging.basicConfig(level=#logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class bluesky_bot:
     def __init__(self, state, signal, images_lab):
@@ -26,7 +25,7 @@ class bluesky_bot:
         self.PASSWORD = os.getenv('PASSWORD')
 
         if not self.HANDLE or not self.PASSWORD:
-            logging.error("HANDLE or PASSWORD not set in environment variables.")
+            ##logging.error("HANDLE or PASSWORD not set in environment variables.")
             self.is_ready = False
             return
 
@@ -34,10 +33,10 @@ class bluesky_bot:
         try:
             self.client = Client()
             self.client.login(self.HANDLE, self.PASSWORD)
-            logging.info(f"Logged in as {self.HANDLE} (Bluesky Bot)")
+            ##logging.info(f"Logged in as {self.HANDLE} (Bluesky Bot)")
             self.is_ready = True
         except Exception as e:
-            logging.error(f"Login failed for {self.HANDLE}: {e}")
+            ##logging.error(f"Login failed for {self.HANDLE}: {e}")
             self.is_ready = False
 
 
@@ -47,7 +46,7 @@ class bluesky_bot:
             try:
                 self._signal_callback(signal_data)
             except Exception as e:
-                logging.error(f"Error sending signal from {self.__class__.__name__}: {e}")
+                print(f"Error sending signal from {self.__class__.__name__}: {e}")
 
     def extract_did_from_uri(self, uri: str) -> str:
         """Extract DID from AT-Proto URI."""
@@ -55,18 +54,19 @@ class bluesky_bot:
             at_uri = AtUri.from_str(uri)
             return at_uri.hostname
         except Exception as e:
-            logging.error(f"Failed to extract DID from URI {uri}: {e}")
-            raise
+            ##logging.error(f"Failed to extract DID from URI {uri}: {e}")
+            print(f"Failed to extract DID from URI {uri}: {e}")
+            return
 
 
 
     def update_description(self, description: str):
         """Update the profile description."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot update description.")
+            ##logging.warning("Bluesky bot not ready, cannot update description.")
             return "Bluesky bot not ready."
 
-        logging.info(f"Attempting to update profile description to: '{description}'")
+        #logging.info(f"Attempting to update profile description to: '{description}'")
         
         try:
             current_profile_record = self.client.app.bsky.actor.profile.get(self.client.me.did, 'self')
@@ -88,20 +88,20 @@ class bluesky_bot:
                 )
             )
 
-            logging.info("Profile description updated successfully.")
+            #logging.info("Profile description updated successfully.")
             return "Profile description updated successfully."
             
         except Exception as e:
-            logging.error(f"Failed to update profile description: {e}")
+            #logging.error(f"Failed to update profile description: {e}")
             return f"An error occurred while updating profile description: {e}"
 
     def post_reply(self, uri: str, response_text: str):
         """Post a reply to a specific post."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot post response.")
+            #logging.warning("Bluesky bot not ready, cannot post response.")
             return "Bluesky bot not ready."
 
-        logging.info(f"Attempting to post reply to {uri}...")
+        #logging.info(f"Attempting to post reply to {uri}...")
         
         try:
             parent_uri = AtUri.from_str(uri)
@@ -133,7 +133,7 @@ class bluesky_bot:
 
             parent_cid = record_data.cid # <-- Access .cid attribute
             if not parent_cid:
-                logging.error("Parent CID not found in the record.")
+                #logging.error("Parent CID not found in the record.")
                 return "Error: Parent CID not found."
 
             parent_ref = models.ComAtprotoRepoStrongRef.Main(
@@ -167,12 +167,12 @@ class bluesky_bot:
                 record=record,
             )
 
-            logging.info("Reply posted successfully.")
+            #logging.info("Reply posted successfully.")
             return "Reply posted successfully on Bluesky."
             
         except Exception as e:
         # It's helpful to log the full traceback for easier debugging
-            logging.error(f"Failed to post reply: {e}", exc_info=True)
+            #logging.error(f"Failed to post reply: {e}", exc_info=True)
             return f"An error occurred while posting reply: {e}"
         
 
@@ -330,7 +330,7 @@ class bluesky_bot:
     def get_account_summary(self, limit: int = 10):
         """Get the top posts info for the latest n posts in the account."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot get account summary.")
+            #logging.warning("Bluesky bot not ready, cannot get account summary.")
             return None
 
         try:
@@ -370,13 +370,13 @@ class bluesky_bot:
             return summary
             
         except Exception as e:
-            logging.error(f"Failed to get account summary: {e}")
+            #logging.error(f"Failed to get account summary: {e}")
             return None
 
     def get_posts_needing_responses(self, pagination: int = 2):
         """Get ONLY posts that need responses, formatted as structured string for AI."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot get posts needing responses.")
+            #logging.warning("Bluesky bot not ready, cannot get posts needing responses.")
             return "ERROR: Bot not ready"
 
         try:
@@ -421,7 +421,7 @@ class bluesky_bot:
                             valid_responses = thread_info["all_replies"]
 
                 except Exception as e:
-                    logging.warning(f"Failed to get replies for post {post.post.uri}: {e}")
+                    #logging.warning(f"Failed to get replies for post {post.post.uri}: {e}")
                     continue
                 
                 # Only include posts that have valid responses needing our attention
@@ -447,17 +447,17 @@ class bluesky_bot:
             return self._format_posts_for_ai(response_needed_posts)
             
         except Exception as e:
-            logging.error(f"Failed to get posts needing responses: {e}")
+            #logging.error(f"Failed to get posts needing responses: {e}")
             return f"ERROR: {str(e)}"
         
     def respond_to_post(self, target_uri: str, response_text: str):
         """Clean function to respond to a specific post URI."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot respond to post.")
+            #logging.warning("Bluesky bot not ready, cannot respond to post.")
             return "ERROR: Bot not ready"
         
         if not target_uri or not response_text:
-            logging.warning("Missing target URI or response text.")
+            #logging.warning("Missing target URI or response text.")
             return "ERROR: Missing required parameters"
         
         # Use the existing post_reply method
@@ -467,7 +467,7 @@ class bluesky_bot:
                     image_name: str = None, hashtags: str = None):
         """Post a message to Bluesky with optional image and hashtags."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot send post.")
+            #logging.warning("Bluesky bot not ready, cannot send post.")
             return "Bluesky bot not ready."
         
         # Process hashtags if provided
@@ -479,7 +479,7 @@ class bluesky_bot:
             hashtag_text = ' ' + ' '.join([f'#{tag}' for tag in hashtag_list])
             processed_message = message + hashtag_text 
         
-        logging.info(f"Attempting to send post: '{processed_message}' (Image: {image_post})")
+        #logging.info(f"Attempting to send post: '{processed_message}' (Image: {image_post})")
         
         metadata=self.images_lab._int_get_arch()
         current_room_name=self.state.get_current_room_name()
@@ -505,7 +505,7 @@ class bluesky_bot:
                         image_alt=alt
                     )
                 
-                logging.info(f"Image post sent successfully: {image_name or 'room image'}")
+                #logging.info(f"Image post sent successfully: {image_name or 'room image'}")
                 return "Message posted successfully on Bluesky with image."
             
             else:
@@ -517,17 +517,17 @@ class bluesky_bot:
                     self.client.send_post(processed_message, langs=langs_list)
                 
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
-                logging.info("Text post sent successfully.")
+                #logging.info("Text post sent successfully.")
                 return "Message posted successfully on Bluesky."
         
         except Exception as e:
-            logging.error(f"Failed to send post: {e}")
+            #logging.error(f"Failed to send post: {e}")
             return f"An error occurred while sending post: {e}"
 
     def get_notifications(self, limit: int = 20):
         """Get recent notifications that mention our account."""
         if not self.is_ready:
-            logging.warning("Bluesky bot not ready, cannot get notifications.")
+            #logging.warning("Bluesky bot not ready, cannot get notifications.")
             return None
 
         try:
@@ -554,5 +554,5 @@ class bluesky_bot:
             return filtered_notifications
             
         except Exception as e:
-            logging.error(f"Failed to get notifications: {e}")
+            #logging.error(f"Failed to get notifications: {e}")
             return None

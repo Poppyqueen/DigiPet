@@ -203,6 +203,8 @@ class BaseCrafter:
             self._send_signal(CrafterSignal.POPULATION_START)
             self._send_signal(CrafterSignal.FLAVOR_TEXT, "Unpacking the moving boxes...")
 
+            time.sleep(5)
+
             rooms_config = {}
             all_rooms_data = {}
             
@@ -223,6 +225,7 @@ class BaseCrafter:
                 print(f"\n--- Processing Room {current_room_number}/{total_rooms}: '{room_name}' ---")
 
 
+
                 prompt_context = [desc for descs in room["descriptions"].values() for desc in descs]
                 final_descriptions = "\n".join(prompt_context)
                 final_prompt = (
@@ -235,15 +238,24 @@ class BaseCrafter:
 
                 self._send_signal(CrafterSignal.POPULATION_PROGRESS, {
                     "room_name": room_name,
-                    "current": current_room_number,
+                    "current": current_room_number-1,
                     "total": total_rooms
                 })
+
+                self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Organizing {room_name}") # sub-step populating individual room
+
+
                 
-                room_bundle = self.items_crafter.orchestrate_bundle_generation(
+                room_bundle = self.items_crafter.orchestrate_bundle_generation( # This is a lengthy process
                     initial_idea=final_prompt,
                     output_dir="inventory_items/items_provider/items_data/local_ai_gens"
                 )
 
+                self._send_signal(CrafterSignal.POPULATION_PROGRESS, {
+                    "room_name": room_name,
+                    "current": current_room_number,
+                    "total": total_rooms
+                })
 
                 if self._check_shutdown(f"after_room_{room_name}_items"): return None
 

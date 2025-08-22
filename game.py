@@ -18,50 +18,66 @@ from utils.config_manager import ConfigManager
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
 
-initial_states_manager=InitialStateConst()
 
-# We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
-# main process
+def add_items(items_list, room):
+    """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
+    current_time_ms = pygame.time.get_ticks()
+    # Check if input is generally locked (by sleep or panel)
+    # This check is done *before* calling add_items now via mouse handler
+    # but keeping a check here is a safeguard if this function is called directly elsewhere
+    if current_time_ms < state.autonomous_action_paused_until_ms or state.inventory_panel_visible:
+        block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
+        print(f"Input locked - {block_reason}. Ignoring add items command.")
+        gui.gui_text_utils.add_message_to_history(f"Cannot add items while {block_reason}", 'system')
+        return
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+    gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
+    try:
+        if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'create_item') and callable(chatbot.state_manager.create_item):
+            chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
+            room_name=chatbot.state_manager.get_room_name(room)
+            # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
+            chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
 
-if mock_running:
-    from ai_managers.mock_chatbot import MockChatbot
-else:
-    from ai_managers.chatbot_api import CLIChatbot 
+            # Append the text into GUI chat window
+            gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
 
-# --- Pygame Initialization ---
-pygame.init()
-screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
-pygame.display.set_caption("Digital Pet")
+        else:
+            error_message = "Chatbot not available or does not support adding items."
+            print(error_message)
+            gui.gui_text_utils.add_message_to_history(error_message, 'error')
 
-# Initialize Pygame Mixer
-try:
-    pygame.mixer.init()
-    print("Pygame Mixer initialized.")
-except pygame.error as e:
-    print(f"Warning: Could not initialize Pygame Mixer: {e}")
-
-# Font
-try:
-    font = pygame.font.Font(None, 20) # Default font
-    line_height = font.get_linesize()
-except pygame.error:
-    print("Warning: Default font not found, using a fallback.")
-    font = pygame.font.SysFont("Arial", 20) # Fallback font
-    line_height = font.get_linesize() # Get line height from fallback font
-
-bots_archive_dir="data_archive"
-
-if mock_running:
-    config_manager = ConfigManager(bots_archive_dir, mock=True)
-else:
-    config_manager = ConfigManager(bots_archive_dir)
+    except Exception as e:
+        error_message = f"System Error preparing add items instruction: {type(e).__name__}: {e}"
+        print(error_message)
+        gui.gui_text_utils.add_message_to_history(error_message, 'error')
 
 
-# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
-gui.gui_core.init_gui_elements(font, line_height, 200)
 
+def get_current_room_image():
+    """Retrieves the list of types for the current room."""
+    current_id = chatbot.state_manager.get_current_room_id()
+    room = chatbot.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
+    if room and "image" in room:
+        print(f"DEBUG: Current room image: {room['image']}")
+        return room["image"]
+    print("DEBUG: No room types found or room not found.")
+    return "" # Return empty list if no types found
+
+
+# Initial popup, splash screen.
+
+def splash_sound():
+    if pygame.mixer.get_init(): 
+        try:
+            sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
+            sound.set_volume(0.5)
+            sound.play()
+            print("Playing sound from GUI Core init.") # Modified print statement
+        except pygame.error as e:
+            print(f"Could not play sound: {e}")
+    else:
+        print("Pygame mixer not initialized. Cannot play sound.")
 
 
 
@@ -274,284 +290,6 @@ def handle_chatbot_signal(signal_data):
         print(f"Received signal data in unexpected format (not a dict): {signal_data}")
 
 
-run_config_main_menu_ui(screen, font, config_manager)
-
-
-
-if mock_running: # Mock configuration, leave as is
-    # --- Mock Chatbot Initialization ---
-    chatbot = None
-    chatbot_available = False
-    try:
-        chatbot = MockChatbot( # Use the mock class
-            signal_callback=handle_chatbot_signal,
-            config_manager=config_manager,
-            bots_archive_dir=bots_archive_dir
-        )
-        chatbot_available = True
-        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-    except Exception as e:
-        # Error handling is still useful in case the mock itself has an issue
-        print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
-        chatbot_available = False
-        chatbot = None
-
-
-else:
-    # Actual chatbot initialization
-    # --- Chatbot Initialization ---
-    chatbot = None
-    chatbot_available = False
-    try:
-        chatbot = CLIChatbot(
-            signal_callback=handle_chatbot_signal,
-            config_manager=config_manager,
-            bots_archive_dir=bots_archive_dir
-        )
-        chatbot_available = True
-        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-    except Exception as e:
-        print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
-        chatbot_available = False
-        chatbot = None # Ensure chatbot is None if initialization failed
-
-
-
-
-if chatbot_available and chatbot and callable(chatbot.state_manager.get_steps()):
-    steps=chatbot.state_manager.get_steps()
-else:
-    steps=0
-
-
-size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
-state.current_radius=size
-print(f"setting up pets size as {size}")
-
-
-# Ensure state.pet_color is initialized to the default before potential load/selection
-state.pet_color = config.GREEN # Or use the default from state.py (which is already green)
-
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_color_configured') and callable(chatbot.state_manager.is_color_configured):
-    if not chatbot.state_manager.is_color_configured():
-        # --- Run Color Selection UI ---
-        print("Color not configured. Starting color selection UI...")
-        # Call the blocking UI function
-        selected_color = gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font
-
-        if selected_color is not None:
-            # Color was selected, save it via the chatbot
-            print(f"Color selected: {selected_color}. Saving configuration...")
-            chatbot.state_manager.set_pet_color(selected_color)
-            chatbot.state_manager.set_color_configured(True)
-            # Update runtime state with the selected color
-            state.pet_color = selected_color
-            print("Color configuration saved and applied.")
-        else:
-            # User quit during color selection
-            print("User quit during color selection. Exiting game.")
-            running = False # Set main game loop flag to False
-
-    else:
-        # --- Load Configured Color ---
-        print("Color already configured. Loading saved color...")
-        # Load the saved color from the chatbot's state manager
-        loaded_color = chatbot.state_manager.get_pet_color()
-        if loaded_color: # Check if get_pet_color returned a valid color
-            state.pet_color = loaded_color # Update runtime state
-            print(f"Loaded pet color: {state.pet_color}")
-        else:
-             # This case should be rare if validation works, but good to handle
-             print("Error loading pet color from config. Using default green.")
-             state.pet_color = config.GREEN # Fallback to default green
-else:
-    # Chatbot unavailable, color configuration is skipped. Use default color.
-    print("Chatbot not available. Skipping color configuration/load. Using default green.")
-    state.pet_color = config.GREEN
-
-
-
-gui.gui_core.gui_construct_colors.set_color_theme() 
-
-
-
-# --- Initial Background Load ---
-# Determine starting location based on chatbot if available, otherwise use default
-starting_location_name = "bedroom" # Default
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_current_room_name'):
-     try:
-        # Call get_current_location only if the method exists and is callable
-        if callable(getattr(chatbot.state_manager, 'get_current_room_name', None)):
-             loc = chatbot.state_manager.get_current_room_name()
-             if loc: # Use chatbot location if it returned something
-                  starting_location_name = loc
-                  print("found starting location!")
-                  print(f"Getting initial location from chatbot: {starting_location_name}")
-             else: # Fallback if chatbot returned None or empty string
-                  print("Chatbot get_current_location returned empty. Using default 'bedroom'.")
-                  starting_location_name = "bedroom"
-        else:
-             print("Chatbot instance does not have a callable 'get_current_location' method.")
-             starting_location_name = "bedroom" # Fallback
-     except Exception as e:
-        print(f"Error getting initial location from chatbot: {e}")
-        starting_location_name = "bedroom" # Fallback
-else:
-    print("Chatbot instance not available or does not have 'get_current_location'. Using default 'bedroom'.")
-
-
-
-
-# --- NEW: Initial Wellness State Load ---
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'):
-    try:
-        # Call get_wellness_states only if the method exists and is callable
-        if callable(getattr(chatbot.state_manager, 'get_stats', None)):
-             stats_data = chatbot.state_manager.get_stats(True)
-             if isinstance(stats_data, dict):
-                  # Check if the expected keys are present and values are numbers
-                  all_keys_present = all(key in stats_data for key in state.pet_stats.keys())
-                  all_values_numeric = all(isinstance(value, (int, float)) for value in stats_data.values())
-
-                  if all_keys_present and all_values_numeric:
-                       # Update state.pet_stats with loaded values, clamping defensively
-                       for stat_name, value in stats_data.items():
-                           state.pet_stats[stat_name.lower()] = max(0.0, min(200.0, value))
-                       print(f"Getting initial wellness states from chatbot: {state.pet_stats}")
-                  else:
-                       print(f"Chatbot get_stats returned unexpected data format: {stats_data}. Using default state.")
-             elif stats_data is None:
-                  print("Chatbot get_stats returned None. Using default state.")
-             else:
-                  print(f"Chatbot get_stats returned non-dict data: {stats_data}. Using default state.")
-        else:
-             print("Chatbot instance does not have a callable 'get_stats' method. Using default state.")
-    except Exception as e:
-        print(f"Error getting initial wellness states from chatbot: {e}. Using default state.")
-else:
-    print("Chatbot instance not available or does not have 'get_stats'. Using default state.")
-
-
-def add_items(items_list, room):
-    """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
-    current_time_ms = pygame.time.get_ticks()
-    # Check if input is generally locked (by sleep or panel)
-    # This check is done *before* calling add_items now via mouse handler
-    # but keeping a check here is a safeguard if this function is called directly elsewhere
-    if current_time_ms < state.autonomous_action_paused_until_ms or state.inventory_panel_visible:
-        block_reason = "bot is resting." if current_time_ms < state.autonomous_action_paused_until_ms else "inventory panel is open."
-        print(f"Input locked - {block_reason}. Ignoring add items command.")
-        gui.gui_text_utils.add_message_to_history(f"Cannot add items while {block_reason}", 'system')
-        return
-
-    gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
-    try:
-        if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'create_item') and callable(chatbot.state_manager.create_item):
-            chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
-            room_name=chatbot.state_manager.get_room_name(room)
-            # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
-            chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
-
-            # Append the text into GUI chat window
-            gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
-
-        else:
-            error_message = "Chatbot not available or does not support adding items."
-            print(error_message)
-            gui.gui_text_utils.add_message_to_history(error_message, 'error')
-
-    except Exception as e:
-        error_message = f"System Error preparing add items instruction: {type(e).__name__}: {e}"
-        print(error_message)
-        gui.gui_text_utils.add_message_to_history(error_message, 'error')
-
-
-
-def get_current_room_image():
-    """Retrieves the list of types for the current room."""
-    current_id = chatbot.state_manager.get_current_room_id()
-    room = chatbot.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
-    if room and "image" in room:
-        print(f"DEBUG: Current room image: {room['image']}")
-        return room["image"]
-    print("DEBUG: No room types found or room not found.")
-    return "" # Return empty list if no types found
-current_image=get_current_room_image()
-
-gui.gui_core.load_and_set_background(f"{current_image}.jpg")
-
-# Initial popup, splash screen.
-
-def splash_sound():
-    if pygame.mixer.get_init(): 
-        try:
-            sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
-            sound.set_volume(0.5)
-            sound.play()
-            print("Playing sound from GUI Core init.") # Modified print statement
-        except pygame.error as e:
-            print(f"Could not play sound: {e}")
-    else:
-        print("Pygame mixer not initialized. Cannot play sound.")
-
-splash_sound()
-gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
-current_gui_rects=gui.gui_core.get_gui_rects()
-
-
-state.panel_visible = True
-state.panel_width = 200
-
-
-history_display_area = current_gui_rects['history_display_area']
-
-# --- Initial Inventory Load ---
-try:
-    if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'list_inventories') and callable(getattr(chatbot.state_manager, 'list_inventories', None)):
-         print("Attempting to get initial inventories from chatbot...")
-         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories(formatted=True)
-
-         # MODIFIED: Check and pre-calculate initial data
-         if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
-             # Ensure gui is initialized before preparing data
-             # Assuming gui.init_gui is called earlier in setup
-             if gui.gui_core._font is None: # Check if gui initialization was successful
-                  print("GUI font not initialized. Cannot prepare inventory data. Initial inventories will be empty.")
-                  state.room_inventory_list = []
-                  state.player_inventory_list = []
-             else:
-                 state.room_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
-                 state.player_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
-                 print(f"Loaded and prepared initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
-         else:
-             print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
-             state.room_inventory_list = []
-             state.player_inventory_list = []
-
-    else:
-        print("Chatbot not available or does not have get_inventories method. Initial inventories will be empty.")
-        state.room_inventory_list = [] # Ensure lists are initialized even if chatbot fails
-        state.player_inventory_list = [] # Ensure lists are initialized even if chatbot fails
-
-
-except Exception as e:
-    print(f"Error getting initial inventories from chatbot: {e}. Initial inventories will be empty.")
-    state.room_inventory_list = [] # Ensure lists are initialized on error
-    state.player_inventory_list = [] # Ensure lists are initialized on error
-
-
-# Get the calculated rects from gui.py after initialization if needed in game.py
-# Note: We *can* get them here, but we don't strictly *need* them for click detection
-# if we use gui.get_package_button_click_regions() and gui.get_button_rects().
-# Let's continue using the gui functions to access rects where possible for cleaner separation.
-inventory_button_rects = gui.gui_core.get_button_rects()
-inventory_panel_rects = gui.gui_core.get_panel_rects()
-inventory_toggle_button_rect = inventory_button_rects.get('inventory_toggle')
-inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The big panel rect
-room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
-player_list_area_rect = inventory_panel_rects.get('player_list_area') # Area for player list items
-
-mute_button_rect = inventory_button_rects.get('mute_button')
 
 # --- Worker Function for Chatbot API Call ---
 def chatbot_worker(user_input, input_role, chatbot_instance):
@@ -686,7 +424,290 @@ def clean_hover():
     state.hover_stat=None
     state.hovered_package_identifier=None
 
+
+#### --- Pygame Initialization --- ####
+
+initial_states_manager=InitialStateConst()
+
+# We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
+# main process
+
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+
+if mock_running:
+    from ai_managers.mock_chatbot import MockChatbot
+else:
+    from ai_managers.chatbot_api import CLIChatbot 
+
+
+
+# --- Pygame Initialization ---
+pygame.init()
+screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
+pygame.display.set_caption("Digital Pet")
+
+# Initialize Pygame Mixer
+try:
+    pygame.mixer.init()
+    print("Pygame Mixer initialized.")
+except pygame.error as e:
+    print(f"Warning: Could not initialize Pygame Mixer: {e}")
+
+# Font
+try:
+    font = pygame.font.Font(None, 20) # Default font
+    line_height = font.get_linesize()
+except pygame.error:
+    print("Warning: Default font not found, using a fallback.")
+    font = pygame.font.SysFont("Arial", 20) # Fallback font
+    line_height = font.get_linesize() # Get line height from fallback font
+
+
+
+bots_archive_dir="data_archive"
+
+
+
+if mock_running:
+    config_manager = ConfigManager(bots_archive_dir, mock=True)
+else:
+    config_manager = ConfigManager(bots_archive_dir)
+
+
+# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
+gui.gui_core.init_gui_elements(font, line_height, 200)
+
+
+# Main Process #
+
+run_config_main_menu_ui(screen, font, config_manager)
+
+
+
+if mock_running: # Mock configuration, leave as is
+    # --- Mock Chatbot Initialization ---
+    chatbot = None
+    chatbot_available = False
+    try:
+        chatbot = MockChatbot( # Use the mock class
+            signal_callback=handle_chatbot_signal,
+            config_manager=config_manager,
+            bots_archive_dir=bots_archive_dir
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+    except Exception as e:
+        # Error handling is still useful in case the mock itself has an issue
+        print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None
+
+
+else:
+    # Actual chatbot initialization
+    # --- Chatbot Initialization ---
+    chatbot = None
+    chatbot_available = False
+    try:
+        chatbot = CLIChatbot(
+            signal_callback=handle_chatbot_signal,
+            config_manager=config_manager,
+            bots_archive_dir=bots_archive_dir
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+    except Exception as e:
+        print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None # Ensure chatbot is None if initialization failed
+
+
+
+
+if chatbot_available and chatbot and callable(chatbot.state_manager.get_steps()):
+    steps=chatbot.state_manager.get_steps()
+else:
+    steps=0
+
+current_image=get_current_room_image()
+
+gui.gui_core.load_and_set_background(f"{current_image}.jpg")
+
+
+size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+state.current_radius=size
+print(f"setting up pets size as {size}")
+
+
+# Ensure state.pet_color is initialized to the default before potential load/selection
+state.pet_color = config.GREEN # Or use the default from state.py (which is already green)
+
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_color_configured') and callable(chatbot.state_manager.is_color_configured):
+    if not chatbot.state_manager.is_color_configured():
+        # --- Run Color Selection UI ---
+        print("Color not configured. Starting color selection UI...")
+        # Call the blocking UI function
+        selected_color = gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font
+
+        if selected_color is not None:
+            # Color was selected, save it via the chatbot
+            print(f"Color selected: {selected_color}. Saving configuration...")
+            chatbot.state_manager.set_pet_color(selected_color)
+            chatbot.state_manager.set_color_configured(True)
+            # Update runtime state with the selected color
+            state.pet_color = selected_color
+            print("Color configuration saved and applied.")
+        else:
+            # User quit during color selection
+            print("User quit during color selection. Exiting game.")
+            running = False # Set main game loop flag to False
+
+    else:
+        # --- Load Configured Color ---
+        print("Color already configured. Loading saved color...")
+        # Load the saved color from the chatbot's state manager
+        loaded_color = chatbot.state_manager.get_pet_color()
+        if loaded_color: # Check if get_pet_color returned a valid color
+            state.pet_color = loaded_color # Update runtime state
+            print(f"Loaded pet color: {state.pet_color}")
+        else:
+             # This case should be rare if validation works, but good to handle
+             print("Error loading pet color from config. Using default green.")
+             state.pet_color = config.GREEN # Fallback to default green
+else:
+    # Chatbot unavailable, color configuration is skipped. Use default color.
+    print("Chatbot not available. Skipping color configuration/load. Using default green.")
+    state.pet_color = config.GREEN
+
+
+
+gui.gui_core.gui_construct_colors.set_color_theme() 
+
+
+
+# --- Initial Background Load ---
+# Determine starting location based on chatbot if available, otherwise use default
+starting_location_name = "bedroom" # Default
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_current_room_name'):
+     try:
+        # Call get_current_location only if the method exists and is callable
+        if callable(getattr(chatbot.state_manager, 'get_current_room_name', None)):
+             loc = chatbot.state_manager.get_current_room_name()
+             if loc: # Use chatbot location if it returned something
+                  starting_location_name = loc
+                  print("found starting location!")
+                  print(f"Getting initial location from chatbot: {starting_location_name}")
+             else: # Fallback if chatbot returned None or empty string
+                  print("Chatbot get_current_location returned empty. Using default 'bedroom'.")
+                  starting_location_name = "bedroom"
+        else:
+             print("Chatbot instance does not have a callable 'get_current_location' method.")
+             starting_location_name = "bedroom" # Fallback
+     except Exception as e:
+        print(f"Error getting initial location from chatbot: {e}")
+        starting_location_name = "bedroom" # Fallback
+else:
+    print("Chatbot instance not available or does not have 'get_current_location'. Using default 'bedroom'.")
+
+
+
+
+# --- NEW: Initial Wellness State Load ---
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'):
+    try:
+        # Call get_wellness_states only if the method exists and is callable
+        if callable(getattr(chatbot.state_manager, 'get_stats', None)):
+             stats_data = chatbot.state_manager.get_stats(True)
+             if isinstance(stats_data, dict):
+                  # Check if the expected keys are present and values are numbers
+                  all_keys_present = all(key in stats_data for key in state.pet_stats.keys())
+                  all_values_numeric = all(isinstance(value, (int, float)) for value in stats_data.values())
+
+                  if all_keys_present and all_values_numeric:
+                       # Update state.pet_stats with loaded values, clamping defensively
+                       for stat_name, value in stats_data.items():
+                           state.pet_stats[stat_name.lower()] = max(0.0, min(200.0, value))
+                       print(f"Getting initial wellness states from chatbot: {state.pet_stats}")
+                  else:
+                       print(f"Chatbot get_stats returned unexpected data format: {stats_data}. Using default state.")
+             elif stats_data is None:
+                  print("Chatbot get_stats returned None. Using default state.")
+             else:
+                  print(f"Chatbot get_stats returned non-dict data: {stats_data}. Using default state.")
+        else:
+             print("Chatbot instance does not have a callable 'get_stats' method. Using default state.")
+    except Exception as e:
+        print(f"Error getting initial wellness states from chatbot: {e}. Using default state.")
+else:
+    print("Chatbot instance not available or does not have 'get_stats'. Using default state.")
+
+
+
+splash_sound()
+gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
+
+
+current_gui_rects=gui.gui_core.get_gui_rects()
+
+
+state.panel_visible = True
+state.panel_width = 200
+
+
+history_display_area = current_gui_rects['history_display_area']
+
+# --- Initial Inventory Load ---
+try:
+    if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'list_inventories') and callable(getattr(chatbot.state_manager, 'list_inventories', None)):
+         print("Attempting to get initial inventories from chatbot...")
+         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories(formatted=True)
+
+         # MODIFIED: Check and pre-calculate initial data
+         if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
+             # Ensure gui is initialized before preparing data
+             # Assuming gui.init_gui is called earlier in setup
+             if gui.gui_core._font is None: # Check if gui initialization was successful
+                  print("GUI font not initialized. Cannot prepare inventory data. Initial inventories will be empty.")
+                  state.room_inventory_list = []
+                  state.player_inventory_list = []
+             else:
+                 state.room_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
+                 state.player_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
+                 print(f"Loaded and prepared initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
+         else:
+             print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
+             state.room_inventory_list = []
+             state.player_inventory_list = []
+
+    else:
+        print("Chatbot not available or does not have get_inventories method. Initial inventories will be empty.")
+        state.room_inventory_list = [] # Ensure lists are initialized even if chatbot fails
+        state.player_inventory_list = [] # Ensure lists are initialized even if chatbot fails
+
+
+except Exception as e:
+    print(f"Error getting initial inventories from chatbot: {e}. Initial inventories will be empty.")
+    state.room_inventory_list = [] # Ensure lists are initialized on error
+    state.player_inventory_list = [] # Ensure lists are initialized on error
+
+
+# Get the calculated rects from gui.py after initialization if needed in game.py
+# Note: We *can* get them here, but we don't strictly *need* them for click detection
+# if we use gui.get_package_button_click_regions() and gui.get_button_rects().
+# Let's continue using the gui functions to access rects where possible for cleaner separation.
+inventory_button_rects = gui.gui_core.get_button_rects()
+inventory_panel_rects = gui.gui_core.get_panel_rects()
+inventory_toggle_button_rect = inventory_button_rects.get('inventory_toggle')
+inventory_panel_main_rect = inventory_panel_rects.get('inventory_panel') # The big panel rect
+room_list_area_rect = inventory_panel_rects.get('room_list_area') # Area for room list items
+player_list_area_rect = inventory_panel_rects.get('player_list_area') # Area for player list items
+
+mute_button_rect = inventory_button_rects.get('mute_button')
+
+
 CURSOR_INTERVAL = 500 # Milliseconds
+
+
 
 # --- Game Loop ---
 running = True

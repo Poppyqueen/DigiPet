@@ -40,7 +40,7 @@ class InitialStateConst():
                             # This maintains the same structure as your original single JSON file
                             if isinstance(config_data, dict):
                                 all_configs.update(config_data)
-                                print(f"Loaded {len(config_data)} configs from {file_path}")
+                                #print(f"Loaded {len(config_data)} configs from {file_path}")
                             else:
                                 print(f"Warning: {file_path} does not contain a dictionary at root level")
                                 
@@ -77,7 +77,7 @@ class InitialStateConst():
                                 # Merge the configurations from this file
                                 if isinstance(config_data, dict):
                                     all_configs.update(config_data)
-                                    print(f"Loaded {len(config_data)} configs from {file_path}")
+                                    #print(f"Loaded {len(config_data)} configs from {file_path}")
                                 else:
                                     print(f"Warning: {file_path} does not contain a dictionary at root level")
                                 
