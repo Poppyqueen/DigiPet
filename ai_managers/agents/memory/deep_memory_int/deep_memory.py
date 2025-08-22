@@ -10,8 +10,8 @@ from utils.pydantic_models import save_ner_structure # Import from pydantic_mode
 
 
 # --- We will now use both the DatabaseManager and EmbeddingOperations ---
-from memory.deep_memory_db_managers.deep_memory_database import DatabaseManager
-from memory.deep_memory_db_managers.embedding_operations import EmbeddingOperations
+from ai_managers.agents.memory.deep_memory_int.deep_memory_db.deep_memory_database import DatabaseManager
+from ai_managers.agents.memory.deep_memory_int.deep_memory_db.embedding_operations import EmbeddingOperations
 
 from ai_managers.ai_utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
 

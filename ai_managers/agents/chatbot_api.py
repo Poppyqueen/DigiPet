@@ -1,4 +1,4 @@
-# an endpoint for an AI agent 
+# main endpoint for an AI agent 
 
 
 import os
@@ -8,7 +8,7 @@ import time
 # Import AI framework
 
 from inventory_items.inventory_manager import InventoryHouseManager
-from memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
+from ai_managers.agents.memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
 from ai_managers.agents.ai_handle import ai_bot # Assuming this is the correct import for your AI class
 from tools.tools_builder.construct_tools import FunctionBuilder
 # Import Utils

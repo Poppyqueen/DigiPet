@@ -6,7 +6,7 @@ import importlib
 from dotenv import load_dotenv
 
 from ai_managers.simple_ai.abstract_provider import SimpleAI
-from ai_managers.agents.abstract_llm_client import AbstractLLMClient
+from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClient
 
 # Load environment variables
 load_dotenv()
@@ -311,7 +311,7 @@ class EmbeddingsConfiguration(BaseConfiguration):
         """Get an initialized embeddings provider."""
         embeddings_class = self._components[self.provider]["class"]
         try:
-            return embeddings_class(self.provider)
+            return embeddings_class()
         except TypeError:
             return embeddings_class
     

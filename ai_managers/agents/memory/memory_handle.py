@@ -7,9 +7,9 @@ import re
 import uuid
 
 # Import extra memory module
-from memory.memory_configs import (short_term_prompt, long_term_prompt)
+from ai_managers.agents.memory.memory_configs import (short_term_prompt, long_term_prompt)
 
-from memory.deep_memory import DeepMemory
+from ai_managers.agents.memory.deep_memory_int.deep_memory import DeepMemory
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfiguration
 
