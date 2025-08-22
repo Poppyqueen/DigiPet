@@ -29,6 +29,8 @@ import inspect
 
 import traceback
 
+from tools.tools_folder import simulation
+
 
 
 # Import the tool definitions lists
@@ -45,7 +47,6 @@ from .my_tools import (
     garden_room_tools,
     kitchen_room_tools,
     lab_room_tools,
-    dev_room_tools,
     harvesting_garden_tools,
     youtube_playlister_tools,
     discogs_tools,
@@ -55,7 +56,7 @@ from .my_tools import (
     art_book_tools
 )
 
-from utils import open_meteo_handle, simulation
+from utils import open_meteo_handle
 
 from tools.tools_folder.garden_tools import Garden_Mananger
 
@@ -63,7 +64,6 @@ from tools.tools_folder.garden_tools import Garden_Mananger
 # Import tools
 # We import the tool handlers/classes here
 from tools.tools_folder.rooms_tools import main_tools_handle
-from tools.tools_folder.async_test_tool import simulate_data_fetch
 from tools.tools_folder.thinking_tool import emit_inner_thought
 
 from tools.tools_folder.images_lab import ImagesLab
@@ -92,19 +92,19 @@ class FunctionBuilder:
         # This pattern ensures that the 'from utils import x' lines are only executed when needed.
         if youtube_enabled:
             try:
-                from utils import youtube_service
+                from tools.tools_folder.tools_helpers.services import youtube_service
             except ImportError as e:
                 print(f"Warning: Could not import youtube_service, disabling YouTube tools. Error: {e}")
                 youtube_enabled = False # Mark as disabled if import fails
         if discogs_enabled:
             try:
-                from utils import discogs
+                from tools.tools_folder.tools_helpers.services import discogs
             except ImportError as e:
                 print(f"Warning: Could not import discogs, disabling Discogs tools. Error: {e}")
                 discogs_enabled = False
         if musicbrainz_enabled:
             try:
-                from utils import musicbrainz
+                from tools.tools_folder.tools_helpers.services import musicbrainz
             except ImportError as e:
                 print(f"Warning: Could not import musicbrainz, disabling MusicBrainz tools. Error: {e}")
                 musicbrainz_enabled = False
@@ -187,12 +187,6 @@ class FunctionBuilder:
                 },
                 "definitions": harvesting_garden_tools,
                 "current_info": self.garden_manager.get_garden_summary
-            },
-            "dev_room":{
-                "functions": {
-                    "simulate_data_fetch": simulate_data_fetch
-                },
-                "definitions": dev_room_tools
             },
             "library": {
                 "functions": {

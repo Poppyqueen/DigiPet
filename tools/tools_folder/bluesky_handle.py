@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from tools.tools_folder.tools_data.blsk_alt_text import alt_text
 
-from tools.tools_folder.tools_helpers.svg_manager import SVGManager
+from tools.tools_folder.tools_helpers.bluesky.svg_manager import SVGManager
 # Configure #logging (keep it outside the class)
 ##logging.basicConfig(level=#logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

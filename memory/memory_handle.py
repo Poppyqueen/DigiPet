@@ -11,7 +11,7 @@ from memory.memory_configs import (short_term_prompt, long_term_prompt)
 
 from memory.deep_memory import DeepMemory
 
-from utils.ai_loader import AIConfiguration, TokenizerConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfiguration
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"

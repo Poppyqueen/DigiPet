@@ -1,12 +1,12 @@
 # game.py
 from pygame_int import config
 from pygame_int import state
-from pygame_int import gui
-from pygame_int import animation
-from pygame_int import gui_lore_panel
-from pygame_int import gui_color_selector
+from pygame_int.main_digipet import gui
+from pygame_int.main_digipet import animation
+from pygame_int.main_digipet import gui_lore_panel
+from pygame_int.main_digipet import gui_color_selector
 from pygame_int.juke_box import jukebox 
-from pygame_int.config_gui_main_menu import run_config_main_menu_ui
+from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
 import pygame
 import sys
 import threading
@@ -435,9 +435,9 @@ initial_states_manager=InitialStateConst()
 mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 if mock_running:
-    from ai_managers.mock_chatbot import MockChatbot
+    from ai_managers.agents.mock_chatbot import MockChatbot
 else:
-    from ai_managers.chatbot_api import CLIChatbot 
+    from ai_managers.agents.chatbot_api import CLIChatbot 
 
 
 

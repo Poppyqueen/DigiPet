@@ -13,7 +13,7 @@ from utils.pydantic_models import save_ner_structure # Import from pydantic_mode
 from memory.deep_memory_db_managers.deep_memory_database import DatabaseManager
 from memory.deep_memory_db_managers.embedding_operations import EmbeddingOperations
 
-from utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
+from ai_managers.ai_utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
 
 
 class DeepMemory:

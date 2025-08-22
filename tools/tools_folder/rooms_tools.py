@@ -13,12 +13,13 @@
 import asyncio
 import math
 
-from utils import open_meteo_handle, tv_handle, random_object
+from tools.tools_folder.tools_helpers import random_object, tv_handle
+from utils import open_meteo_handle
 
-from utils.ai_cook import cook
+from tools.tools_folder.tools_helpers.ai_cook import cook
 
 import random
-from utils.wiki_handle import Wikipedia_handle
+from tools.tools_folder.tools_helpers.services.wiki_handle import Wikipedia_handle
 
 
 

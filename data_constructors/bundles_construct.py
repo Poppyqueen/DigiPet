@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field, ValidationError # Import ValidationError
 
 #from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
 
-from utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
 

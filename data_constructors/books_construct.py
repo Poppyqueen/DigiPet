@@ -18,7 +18,7 @@ from typing import List, Dict, Any
 import json
 import time
 
-from utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 # --- Structure for the individual book definition ---
 class Chapter(BaseModel):

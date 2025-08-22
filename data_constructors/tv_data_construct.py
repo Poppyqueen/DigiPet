@@ -22,7 +22,7 @@ import json # Import the json module
 import time
 
 
-from utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 

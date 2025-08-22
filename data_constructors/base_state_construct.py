@@ -7,7 +7,7 @@ from typing import Dict, Any, List
 from enum import Enum
 import json
 
-from pygame_int.main_menu_areas.crafter_signal import CrafterSignal
+from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 
 
@@ -245,7 +245,7 @@ class BaseCrafter:
                 self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Organizing {room_name}") # sub-step populating individual room
 
 
-                
+
                 room_bundle = self.items_crafter.orchestrate_bundle_generation( # This is a lengthy process
                     initial_idea=final_prompt,
                     output_dir="inventory_items/items_provider/items_data/local_ai_gens"

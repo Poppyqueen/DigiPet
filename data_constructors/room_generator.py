@@ -10,9 +10,9 @@ import glob
 import json
 from pydantic import BaseModel, Field
 
-from utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration
 
-from pygame_int.main_menu_areas.crafter_signal import CrafterSignal
+from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 # --- Pydantic Models for Room Data Generation ---
 
