@@ -45,7 +45,9 @@ class ai_bot:
             extra_context=""
             if developer_message:
                 extra_context=developer_message
-            extra_context = f"{extra_context}\n{str(self.functions_builder.construct_context())}"
+
+            current_context= str(self.functions_builder.construct_context())
+            extra_context = f"{extra_context}\n{current_context}"
 
             # this is logging
             extra_context_message=f"##########\n Current system state: \n{extra_context}"
@@ -55,7 +57,7 @@ class ai_bot:
 
             if self.memory_manager.deep_memory_flag:
                 print("Deep Memory Flag detected")
-                deep_memory_context=self.memory_manager.deep_memory.quick_search(mem_structure, False) # Leave as false, set as false will use a quick method of memory using embeddings that is much more efficient than using the LLM from the setting on True
+                deep_memory_context=self.memory_manager.deep_memory.quick_search_optimized(mem_structure, False, current_context) # Leave as false, set as false will use a quick method of memory using embeddings that is much more efficient than using the LLM from the setting on True
 
                 extra_context=f"#####Deep past memories: \n{deep_memory_context}\n End of deep past memories.#####" + extra_context
 

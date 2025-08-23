@@ -575,3 +575,227 @@ class DatabaseManager:
                 # print(f"Closed SQLite connection for thread {threading.get_ident()}") # Optional: uncomment for debugging
             except sqlite3.Error as e:
                  print(f"Error closing database connection for thread {threading.get_ident()}: {e}")
+
+
+    # Add these methods to your DatabaseManager class
+
+    def get_total_characteristics_count(self):
+        """
+        Gets the total count of characteristics in the database.
+        Used for adaptive threshold calculations.
+        Safe to call from any thread.
+        
+        Returns:
+            int: Total number of characteristics, or 0 if error occurs.
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM Characteristics")
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            print(f"Error getting total characteristics count: {e}")
+            return 0
+
+    def get_total_entities_count(self):
+        """
+        Gets the total count of entities in the database.
+        Safe to call from any thread.
+        
+        Returns:
+            int: Total number of entities, or 0 if error occurs.
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM Entity")
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            print(f"Error getting total entities count: {e}")
+            return 0
+
+    def get_recent_characteristics(self, limit=50):
+        """
+        Gets the most recently created characteristics, useful for prioritizing
+        recent memories in search results.
+        Safe to call from any thread.
+        
+        Args:
+            limit (int): Maximum number of characteristics to return.
+            
+        Returns:
+            list: List of characteristic IDs, ordered by most recent first.
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT id FROM Characteristics 
+                ORDER BY extracted_at_timestamp DESC 
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            return [row[0] for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error getting recent characteristics: {e}")
+            return []
+
+    def get_characteristics_by_entity_ids(self, entity_ids):
+        """
+        Gets characteristics for specific entities, useful for targeted searches.
+        Safe to call from any thread.
+        
+        Args:
+            entity_ids (list): List of entity IDs to get characteristics for.
+            
+        Returns:
+            list: List of dictionaries containing characteristic data.
+        """
+        if not entity_ids:
+            return []
+            
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            placeholders = ','.join('?' * len(entity_ids))
+            query = f"""
+                SELECT id, entity_id, embeddings_blob, raw_text, extracted_at_timestamp, version 
+                FROM Characteristics 
+                WHERE entity_id IN ({placeholders})
+                ORDER BY extracted_at_timestamp DESC
+            """
+            cursor.execute(query, entity_ids)
+            rows = cursor.fetchall()
+            
+            characteristics = []
+            for row in rows:
+                try:
+                    char_data = {
+                        "id": row[0],
+                        "entity_id": row[1],
+                        "embeddings": pickle.loads(row[2]) if row[2] else None,
+                        "raw_text": row[3],
+                        "extracted_at_timestamp": row[4],
+                        "version": row[5]
+                    }
+                    characteristics.append(char_data)
+                except Exception as e:
+                    print(f"Warning: Could not deserialize embedding for characteristic ID {row[0]}: {e}")
+                    char_data = {
+                        "id": row[0],
+                        "entity_id": row[1],
+                        "embeddings": None,
+                        "raw_text": row[3],
+                        "extracted_at_timestamp": row[4],
+                        "version": row[5]
+                    }
+                    characteristics.append(char_data)
+            return characteristics
+        except sqlite3.Error as e:
+            print(f"Error getting characteristics by entity IDs: {e}")
+            return []
+
+    def get_entity_names_batch(self, entity_ids):
+        """
+        Gets entity names for multiple entity IDs in a single query.
+        Safe to call from any thread.
+        
+        Args:
+            entity_ids (list): List of entity IDs.
+            
+        Returns:
+            dict: Dictionary mapping entity_id to entity name.
+        """
+        if not entity_ids:
+            return {}
+            
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            placeholders = ','.join('?' * len(entity_ids))
+            query = f"SELECT id, name FROM Entity WHERE id IN ({placeholders})"
+            cursor.execute(query, entity_ids)
+            rows = cursor.fetchall()
+            return {row[0]: row[1] for row in rows}
+        except sqlite3.Error as e:
+            print(f"Error getting entity names batch: {e}")
+            return {}
+
+    def update_entity_last_access(self, entity_id):
+        """
+        Updates the last_access timestamp for an entity.
+        This can be used to track which entities are being accessed frequently.
+        Safe to call from any thread.
+        
+        Args:
+            entity_id (int): The ID of the entity to update.
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        now = datetime.datetime.now().isoformat()
+        try:
+            cursor.execute("UPDATE Entity SET last_access = ? WHERE id = ?", (now, entity_id))
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error updating entity last access for ID {entity_id}: {e}")
+            conn.rollback()
+
+    def get_characteristics_with_entity_names(self, limit=None):
+        """
+        Gets characteristics along with their entity names in a single query.
+        More efficient than separate queries when you need both.
+        Safe to call from any thread.
+        
+        Args:
+            limit (int, optional): Maximum number of results to return.
+            
+        Returns:
+            list: List of dictionaries containing characteristic and entity data.
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            query = """
+                SELECT c.id, c.entity_id, c.embeddings_blob, c.raw_text, 
+                    c.extracted_at_timestamp, c.version, e.name as entity_name
+                FROM Characteristics c
+                JOIN Entity e ON c.entity_id = e.id
+                ORDER BY c.extracted_at_timestamp DESC
+            """
+            if limit:
+                query += f" LIMIT {limit}"
+                
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            
+            characteristics = []
+            for row in rows:
+                try:
+                    char_data = {
+                        "id": row[0],
+                        "entity_id": row[1],
+                        "embeddings": pickle.loads(row[2]) if row[2] else None,
+                        "raw_text": row[3],
+                        "extracted_at_timestamp": row[4],
+                        "version": row[5],
+                        "entity_name": row[6]
+                    }
+                    characteristics.append(char_data)
+                except Exception as e:
+                    print(f"Warning: Could not deserialize embedding for characteristic ID {row[0]}: {e}")
+                    char_data = {
+                        "id": row[0],
+                        "entity_id": row[1],
+                        "embeddings": None,
+                        "raw_text": row[3],
+                        "extracted_at_timestamp": row[4],
+                        "version": row[5],
+                        "entity_name": row[6]
+                    }
+                    characteristics.append(char_data)
+            return characteristics
+        except sqlite3.Error as e:
+            print(f"Error getting characteristics with entity names: {e}")
+            return []

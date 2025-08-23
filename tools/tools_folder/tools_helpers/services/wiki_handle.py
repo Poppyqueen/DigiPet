@@ -234,7 +234,9 @@ class Wikipedia_handle:
         # First check memory constraints to determine if we should fetch full content or just excerpt
         mem_tokens = self.memory.current_memory_tokens()
         print(mem_tokens)
-        use_excerpt_only = mem_tokens >= 6000
+
+        excerpts_only_value = (self.memory.calc_budgets()["short_term_threshold"] * 0.8) # 
+        use_excerpt_only = mem_tokens >= excerpts_only_value
 
         content_params = {
             "action": "query",

@@ -19,30 +19,10 @@ DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.db"
 
 RETAIN_BUDGET_RATIO = 2 / 11
 
-SYTEM_LINE_RATIO = 3 / 11
+SYSTEM_LINE_RATIO = 3 / 11
 
 SYSTEM_SUMMARIZE_RATIO = 3 / 22
 
-
-def calc_budgets(total_tokens_limit)->dict:
-
-    base_tokens_threshold=total_tokens_limit/2
-
-    
-    short_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
-    long_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
-
-    system_line_budget = base_tokens_threshold * SYTEM_LINE_RATIO
-    system_summarize_budget = base_tokens_threshold * SYSTEM_SUMMARIZE_RATIO
-
-    return {
-        "short_term_threshold": base_tokens_threshold,
-        "long_term_threshold": base_tokens_threshold,
-        "short_term_retain": short_term_retain_budget,
-        "long_term_retain": long_term_retain_budget,
-        "system_line": system_line_budget,
-        "system_summarize": system_summarize_budget
-    }
 
 class memory_manager:
 
@@ -131,6 +111,24 @@ class memory_manager:
             self.deep_memory = None
             self.deep_memory_flag = False
 
+    def calc_budgets(self)->dict:
+
+        base_tokens_threshold=self.max_tokens_limit/2
+
+        short_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
+        long_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
+
+        system_line_budget = base_tokens_threshold * SYSTEM_LINE_RATIO
+        system_summarize_budget = base_tokens_threshold * SYSTEM_SUMMARIZE_RATIO
+
+        return {
+            "short_term_threshold": base_tokens_threshold,
+            "long_term_threshold": base_tokens_threshold,
+            "short_term_retain": short_term_retain_budget,
+            "long_term_retain": long_term_retain_budget,
+            "system_line": system_line_budget,
+            "system_summarize": system_summarize_budget
+        }
     def current_memory_tokens(self, memory_type: str = "all") -> int:
         """
         Returns the current number of tokens in the memory structure based on its
@@ -481,8 +479,8 @@ class memory_manager:
                 result_tokens = self.token_manager.count_tokens(result_text)
 
                 # Now check if it meets the criteria for summarization
-                if (start_token_position > calc_budgets(self.max_tokens_limit)["system_line"] and
-                    result_tokens > calc_budgets(self.max_tokens_limit)["system_summarize"]):
+                if (start_token_position > self.calc_budgets()["system_line"] and
+                    result_tokens > self.calc_budgets()["system_summarize"]):
 
                     print(f"Tool/System message (ID: {entry.get('unique_id')}) at token position {start_token_position} is a candidate for summarization.")
 
@@ -585,8 +583,8 @@ class memory_manager:
         # --- Short-Term Memory Check ---
         token_count = self.current_memory_tokens("short_term")
 
-        if token_count >= calc_budgets(self.max_tokens_limit)["short_term_threshold"]:
-            message=f"\n--- Short-Term Memory Check Triggered ({token_count} >= {calc_budgets(self.max_tokens_limit)['short_term_threshold']}) ---"
+        if token_count >= self.calc_budgets()["short_term_threshold"]:
+            message=f"\n--- Short-Term Memory Check Triggered ({token_count} >= {self.calc_budgets()['short_term_threshold']}) ---"
             print(message)
             self.text_capture.dump_text(message)
 
@@ -657,7 +655,7 @@ class memory_manager:
                     if unique_id:
                         self.token_counters_cache[unique_id] = entry_tokens
 
-                if current_retained_tokens + entry_tokens <= calc_budgets(self.max_tokens_limit)["short_term_retain"]:
+                if current_retained_tokens + entry_tokens <= self.calc_budgets()["short_term_retain"]:
                     entries_to_keep.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:
@@ -678,8 +676,8 @@ class memory_manager:
 
         # --- Long-Term Memory Check ---
         long_term_token_count = self.current_memory_tokens("long_term")
-        if long_term_token_count >= calc_budgets(self.max_tokens_limit)["long_term_threshold"]:
-            message=f"\n--- Long-Term Memory Check Triggered ({long_term_token_count} >= {calc_budgets(self.max_tokens_limit)['long_term_threshold']}) ---"
+        if long_term_token_count >= self.calc_budgets()["long_term_threshold"]:
+            message=f"\n--- Long-Term Memory Check Triggered ({long_term_token_count} >= {self.calc_budgets()['long_term_threshold']}) ---"
             print(message)
             self.text_capture.dump_text(message)
 
@@ -713,7 +711,7 @@ class memory_manager:
             for entry_item in reversed(parsed_long_term):
                 entry_tokens = self.token_manager.count_tokens(entry_item["original_string"])
 
-                if current_retained_tokens + entry_tokens <= calc_budgets(self.max_tokens_limit)["long_term_retain"]:
+                if current_retained_tokens + entry_tokens <= self.calc_budgets()["long_term_retain"]:
                     kept_long_term_entries.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:

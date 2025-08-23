@@ -3,6 +3,8 @@
 from typing import List
 import json
 
+import time
+
 
 # Import utils
 from utils.pydantic_models import save_ner_structure # Import from pydantic_models.py
@@ -15,6 +17,10 @@ from ai_managers.agents.memory.deep_memory_int.deep_memory_db.embedding_operatio
 
 from ai_managers.ai_utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
 
+
+import numpy as np
+
+import datetime
 
 class DeepMemory:
     """
@@ -163,235 +169,394 @@ class DeepMemory:
     
 
 
-
-    def _process_similar_results(self, similar_results, threshold, entity_name=""):
-        """Helper to process similar results and format them."""
-        memory_results = []
-        if similar_results:
-            for result in similar_results:
-                if result['similarity_score'] >= threshold:
-                    print(f"\nFound similar entity (ID: {result['entity_id']}) for '{entity_name}' with score {result['similarity_score']:.4f}. Saving info for context.")
-                    
-                    # Safely get entity name
-                    name_record = self.db_manager.get_entity_by_id(result['entity_id'])
-                    result_name = name_record.get('name') if name_record else "Unknown Entity"
-
-                    raw_qualities = result['raw_text']
-                    
-                    # Get messages, which are expected to be list of dictionaries from the DB
-                    messages_dicts = self.db_manager.get_messages_for_entity_current_characteristic(result['entity_id'])
-
-                    # Ensure messages_dicts is a list; if not, initialize as empty list
-                    if not isinstance(messages_dicts, list):
-                        print(f"Warning: get_messages_for_entity_current_characteristic for entity {result['entity_id']} did not return a list. Received type: {type(messages_dicts)}. Treating as empty list.")
-                        messages_dicts = []
-
-                    # Transform list of dictionaries into a list of strings (message contents)
-                    messages_contents = []
-                    for msg_dict_from_db in messages_dicts:
-                        # The key for the original message data is 'raw_json'
-                        if isinstance(msg_dict_from_db, dict) and 'raw_json' in msg_dict_from_db:
-                            try:
-                                # The 'raw_json' field is already a dictionary when retrieved from the DB,
-                                # so json.loads() is not needed here.
-                                original_msg_data = msg_dict_from_db['raw_json']
-
-                                if not isinstance(original_msg_data, dict):
-                                    print(f"Warning: 'raw_json' content is not a dictionary as expected for message ID {msg_dict_from_db.get('id', 'N/A')}: {original_msg_data}. Skipping.")
-                                    continue # Skip this message if raw_json isn't a dictionary
-
-                                # The 'content' field within original_msg_data can be a string or a dict
-                                if 'content' in original_msg_data:
-                                    content = original_msg_data['content']
-                                    # Ensure content is a string before appending
-                                    messages_contents.append(json.dumps(content) if isinstance(content, dict) else str(content))
-                                else:
-                                    print(f"Warning: 'content' key missing in original_msg_data for message ID {msg_dict_from_db.get('id', 'N/A')}: {original_msg_data}. Skipping.")
-                            except Exception as e: # Catch any other unexpected errors during processing
-                                print(f"Error processing message from DB (ID: {msg_dict_from_db.get('id', 'N/A')}): {original_msg_data} - {e}. Skipping this message.")
-                        else:
-                            # This block will now only be hit if the top-level dict is malformed or 'raw_json' is missing
-                            print(f"Warning: Message dictionary from DB format unexpected or 'raw_json' key missing (ID: {msg_dict_from_db.get('id', 'N/A')}): {msg_dict_from_db}. Skipping this message.")
-
-                    # Now pass the list of strings to _concatenate_n_strings
-                    concat = self._concatenate_n_strings(messages_contents, 5)
-                    
-                    result_message = f"Entity name:{result_name}\nRaw qualities of Identified object:{raw_qualities}\nSource messages for memories:{concat}"
-                    memory_results.append(result_message)
-        return memory_results
-    
-    def quick_search(self, memory_structure: dict, characteristics_flag=False) -> str:
+    def _prepare_and_filter_messages_optimized(self, memory_structure: dict, max_messages: int) -> list:
         """
-        This function performs a quick search within the current memory structure,
-        either by processing entities and their characteristics using LLM embeddings
-        (if characteristics_flag is True) or by directly embedding individual messages
-        for similarity comparison.
-
-        It searches the current memory structure for entities/messages and compares them
-        with entities/messages in the DB using cosine similarity of embeddings.
-
-        Returns a well-structured, formatted string for injection into an LLM context window.
+        Intelligently prepare and filter messages using multiple strategies.
         """
-        self.log.dump_text("###########")
+        all_messages = []
+        for source, messages in memory_structure.get("short_term", {}).items():
+            for msg in messages:
+                msg_copy = msg.copy()
+                msg_copy['source'] = source
+                # Add content length for filtering
+                content_str = json.dumps(msg['content']) if isinstance(msg['content'], dict) else str(msg['content'])
+                msg_copy['content_length'] = len(content_str)
+                all_messages.append(msg_copy)
 
-        init_message = f"DEEP MEMORIES QUICK SEARCH INITIALIZED"
-        print(init_message)
-        self.log.dump_text(init_message)
+        if len(all_messages) <= max_messages:
+            return all_messages
 
-        # Define the threshold for finding entities that might be relatively similar
-        CHARACTERISTICS_SIMILARITY_THRESHOLD = 0.6
-        NO_CHAR_SIMILARITY_THRESHOLD = 0.5
-
-        memory_results = ["\n"]
-        memory_context = ""
+        # Sort by timestamp (most recent first)
+        all_messages.sort(key=lambda x: x['timestamp'], reverse=True)
         
-        # New set to store unique characteristic IDs to avoid duplicates
-        processed_characteristic_ids = set()
+        filtered_messages = []
 
-        # Check if the database has entries
-        db_has_data = self.db_manager.has_data()  # Assuming this returns True if has data.
 
-        if not db_has_data:
-            message = "Database is empty. No search can be performed."
-            print(message)
-            self.log.dump_text(message)
-            self.log.dump_text("\nDEEP MEMORIES QUICK SEARCH ENDED ")
-            self.log.dump_text("\n###########")
-            return ""
+        
+        # Strategy 1: Always include most recent messages (30% of quota)
+        recent_quota = max(2, int(max_messages * 0.3))
+        filtered_messages.extend(all_messages[:recent_quota])
+        remaining_quota = max_messages - len(filtered_messages)
+        
+        # Strategy 2: Include substantial messages (messages > 50 chars, up to 40% of remaining quota)
+        if remaining_quota > 0:
+            substantial_quota = max(1, int(remaining_quota * 0.4))
+            substantial_messages = [
+                msg for msg in all_messages[recent_quota:] 
+                if msg['content_length'] > 50
+            ][:substantial_quota]
+            filtered_messages.extend(substantial_messages)
+            remaining_quota = max_messages - len(filtered_messages)
+        
+        # # Strategy 3: Include keyword-rich messages
+        # if remaining_quota > 0:
+        #     important_keywords = ['important', 'remember', 'note', 'task', 'project', 'decision', 'action', 'todo']
+        #     keyword_messages = []
+            
+        #     for msg in all_messages[len(filtered_messages):]:
+        #         if any(msg in filtered_messages for msg in [msg]):  # Skip already included
+        #             continue
+        #         content_str = json.dumps(msg['content']) if isinstance(msg['content'], dict) else str(msg['content'])
+        #         if any(keyword in content_str.lower() for keyword in important_keywords):
+        #             keyword_messages.append(msg)
+            
+        #     filtered_messages.extend(keyword_messages[:remaining_quota])
+        #     remaining_quota = max_messages - len(filtered_messages)
+        
+        # Strategy 4: Fill with diverse sources
+        if remaining_quota > 0:
+            sources_in_selection = {msg['source'] for msg in filtered_messages}
+            diverse_messages = [
+                msg for msg in all_messages
+                if msg not in filtered_messages and msg['source'] not in sources_in_selection
+            ][:remaining_quota]
+            filtered_messages.extend(diverse_messages)
+        
+        return filtered_messages[:max_messages]
 
-        if characteristics_flag:
-            message = "Process for Characteristics search"
-            print(message)
-            self.log.dump_text(message)
-            entities_result = self._search_entities(memory_structure)  # Renamed to avoid conflict with list 'entities'
-
-            if not entities_result or not entities_result.entities:
-                message = "No entities found for characteristics search."
-                print(message)
-                self.log.dump_text(message)
-                return ""
-
-            # 3. Process each potential entity from the LLM response
-            for entity_data in entities_result.entities:
-                entity_name = entity_data.named_entity.strip()
-                if not entity_name:
-                    message = "  Entity name is empty. Skipping."
-                    print(message)
-                    self.log.dump_text(message)
+    def _cluster_similar_messages_optimized(self, messages: list) -> list:
+        """
+        Improved message clustering with better performance and accuracy.
+        """
+        if len(messages) <= 3:
+            return [(msg, [msg]) for msg in messages]
+        
+        clusters = []
+        unclustered = messages.copy()
+        CLUSTERING_SIMILARITY_THRESHOLD = 0.75  # Slightly lower for better clustering
+        
+        # Process messages by content length (longer messages first as better representatives)
+        unclustered.sort(key=lambda x: x.get('content_length', 0), reverse=True)
+        
+        while unclustered:
+            representative = unclustered.pop(0)
+            cluster = [representative]
+            
+            rep_content = json.dumps(representative['content']) if isinstance(representative['content'], dict) else str(representative['content'])
+            
+            # Skip very short messages as representatives
+            if len(rep_content.strip()) < 10:
+                clusters.append((representative, cluster))
+                continue
+            
+            try:
+                rep_embedding = self.embeddings_ai.make_embeddings(rep_content).squeeze()
+                rep_norm = np.linalg.norm(rep_embedding)
+                
+                if rep_norm == 0:
+                    clusters.append((representative, cluster))
                     continue
-
-                # Consolidate new characteristics and generate a query embedding
-                new_characteristics_text = ". ".join([char.characteristic for char in entity_data.characteristics])
-                new_characteristics_text = f"{entity_name}. {new_characteristics_text}"
-                if not new_characteristics_text:
-                    message = f"  No characteristics text for '{entity_name}'. Skipping."
-                    print(message)
-                    self.log.dump_text(message)
-                    continue
-
+                    
+            except Exception as e:
+                clusters.append((representative, cluster))
+                continue
+            
+            # Find similar messages with vectorized comparison
+            to_remove = []
+            for i, msg in enumerate(unclustered):
+                # Skip very different sources unless content is very similar
+                source_bonus = 0.1 if msg['source'] == representative['source'] else 0
+                
+                msg_content = json.dumps(msg['content']) if isinstance(msg['content'], dict) else str(msg['content'])
+                
                 try:
-                    query_embedding = self.embeddings_ai.make_embeddings(new_characteristics_text)
-                    query_embedding = query_embedding.squeeze()
-                    message = f"  Successfully generated embedding for '{entity_name}'."
-                    print(message)
-                    self.log.dump_text(message)
-                except Exception as e:
-                    message = f"  Error generating embedding for '{entity_name}': {e}"
-                    print(message)
-                    self.log.dump_text(message)
+                    msg_embedding = self.embeddings_ai.make_embeddings(msg_content).squeeze()
+                    msg_norm = np.linalg.norm(msg_embedding)
+                    
+                    if msg_norm == 0:
+                        continue
+                    
+                    similarity = np.dot(rep_embedding, msg_embedding) / (rep_norm * msg_norm)
+                    adjusted_threshold = CLUSTERING_SIMILARITY_THRESHOLD - source_bonus
+                    
+                    if similarity > adjusted_threshold:
+                        cluster.append(msg)
+                        to_remove.append(i)
+                        
+                except Exception:
                     continue
+            
+            # Remove clustered messages (reverse order to maintain indices)
+            for i in reversed(to_remove):
+                unclustered.pop(i)
+            
+            clusters.append((representative, cluster))
+        
+        return clusters
 
-                # Search for similar entities
-                similar_results = self.embedding_op.search_similar_characteristics(query_embedding, top_n=6)
+    def _get_or_generate_embedding_optimized(self, message: dict, message_key: str):
+        """
+        Optimized embedding generation with better error handling.
+        """
+        if message_key in self._message_embeddings_cache:
+            return self._message_embeddings_cache[message_key]
+        
+        try:
+            content_to_embed = json.dumps(message['content']) if isinstance(message['content'], dict) else str(message['content'])
+            
+            # Skip very short content
+            if len(content_to_embed.strip()) < 5:
+                return None
+                
+            query_embedding = self.embeddings_ai.make_embeddings(content_to_embed).squeeze()
+            
+            # Validate embedding
+            if np.linalg.norm(query_embedding) == 0:
+                return None
+                
+            self._message_embeddings_cache[message_key] = query_embedding
+            return query_embedding
+            
+        except Exception as e:
+            self.log.dump_text(f"Error generating embedding for message {message_key}: {e}")
+            return None
 
-                # Process and format similar results, now adding deduplication
-                for result in similar_results:
-                    # Only add if the characteristic ID hasn't been processed yet and meets threshold
-                    if result["characteristic_id"] not in processed_characteristic_ids and \
-                       result["similarity_score"] >= CHARACTERISTICS_SIMILARITY_THRESHOLD:
-                        memory_results.extend(self._process_similar_results(
-                            [result], CHARACTERISTICS_SIMILARITY_THRESHOLD, entity_name
-                        ))
-                        processed_characteristic_ids.add(result["characteristic_id"])
+    def _rank_and_filter_results_optimized(self, all_results: list, base_threshold: float,
+                                        max_results: int, processed_char_ids: set, processed_entity_ids: set) -> list:
+        """
+        Advanced ranking and filtering with entity-level deduplication.
+        """
 
+        # Remove already processed characteristics
+        filtered_results = [r for r in all_results if r["characteristic_id"] not in processed_char_ids]
 
-            memory_context = self._concatenate_n_strings(memory_results, "all")
+        if not filtered_results:
+            print("No new results to process after filtering.")
+            return []
 
-        else:  # No characteristics search (direct message embedding comparison)
-            message = "Process for No characteristics search:"
+        # Enhanced scoring with multiple factors
+        for result in filtered_results:
+            score = result["similarity_score"]
+            cluster_bonus = min(0.15, result.get('cluster_weight', 1) * 0.05)
+            recency_bonus = 0
+            if result.get('extracted_at_timestamp'):
+                try:
+                    timestamp = datetime.datetime.fromisoformat(result['extracted_at_timestamp'])
+                    days_old = (datetime.datetime.now() - timestamp).days
+                    recency_bonus = max(0, min(0.1, (30 - days_old) / 300))
+                except:
+                    pass
+            entity_diversity_bonus = 0.05 if result["entity_id"] not in processed_entity_ids else -0.1
+            result["final_score"] = score + cluster_bonus + recency_bonus + entity_diversity_bonus
+
+        # Sort by enhanced score
+        filtered_results.sort(key=lambda x: x["final_score"], reverse=True)
+
+        # Apply adaptive threshold with entity diversity
+        final_results = []
+        seen_entities = set()
+
+        # First pass: high-quality results
+        for result in filtered_results:
+            if (len(final_results) >= max_results or
+                result["final_score"] < base_threshold):
+                break
+            final_results.append(result)
+            seen_entities.add(result["entity_id"])
+            processed_entity_ids.add(result["entity_id"])
+
+        # Second pass: fill remaining slots with diverse entities if needed
+        if len(final_results) < max_results * 0.7:
+            remaining_slots = max_results - len(final_results)
+            diverse_results = [
+                r for r in filtered_results[len(final_results):]
+                if r["entity_id"] not in seen_entities and r["final_score"] >= base_threshold * 0.8
+            ][:remaining_slots]
+            final_results.extend(diverse_results)
+            for result in diverse_results:
+                seen_entities.add(result["entity_id"])
+                processed_entity_ids.add(result["entity_id"])
+
+        # --- NEW: Final pass for entity deduplication ---
+        deduplicated_results = []
+        final_seen_entities = set()
+        for result in final_results:
+            if result["entity_id"] not in final_seen_entities:
+                deduplicated_results.append(result)
+                final_seen_entities.add(result["entity_id"])
+
+        return deduplicated_results
+
+    def _format_results_optimized(self, results: list) -> list:
+        """
+        Format results with enhanced context and efficiency.
+        """
+        if not results:
+            return []
+        
+        # Batch get entity names for efficiency
+        entity_ids = list(set(r["entity_id"] for r in results))
+        entity_names = self.db_manager.get_entity_names_batch(entity_ids)
+        
+        formatted_results = []
+        
+        for result in results:
+            entity_name = entity_names.get(result["entity_id"], "Unknown Entity")
+            
+            # Get source messages efficiently
+            messages_dicts = self.db_manager.get_messages_for_entity_current_characteristic(result['entity_id'])
+            
+            # Process messages with error handling
+            messages_contents = []
+            if isinstance(messages_dicts, list):
+                for msg_dict in messages_dicts[:2]:  # Limit to first 2 message for brevity
+                    if isinstance(msg_dict, dict) and 'raw_json' in msg_dict:
+                        try:
+                            original_msg_data = msg_dict['raw_json']
+                            if isinstance(original_msg_data, dict) and 'content' in original_msg_data:
+                                content = original_msg_data['content']
+                                content_str = json.dumps(content) if isinstance(content, dict) else str(content)
+                                # Truncate very long messages
+                                if len(content_str) > 200:
+                                    content_str = content_str[:200] + "..."
+                                messages_contents.append(content_str)
+                        except Exception as e:
+                            print(f"Error processing message for entity {result['entity_id']}: {e}")
+            
+            # Create concise context string
+            source_context = " | ".join(messages_contents) if messages_contents else "No recent context"
+            
+            # Update entity access time for tracking
+            self.db_manager.update_entity_last_access(result["entity_id"])
+            
+            result_message = (
+                f"Entity: {entity_name} (Score: {result['final_score']:.3f})\n"
+                f"Characteristics: {result['raw_text']}\n"
+                f"Context: {source_context}\n"
+            )
+            
+            formatted_results.append(result_message)
+        
+        return formatted_results
+
+    def _handle_characteristics_search_optimized(self, memory_structure: dict, threshold: float, 
+                                            processed_ids: set, max_results: int) -> str:
+        """
+        Optimized characteristics-based search with similar improvements.
+        """
+        message = "Process for Characteristics search (OPTIMIZED):"
+        print(message)
+        self.log.dump_text(message)
+        
+        entities_result = self._search_entities(memory_structure)
+        
+        if not entities_result or not entities_result.entities:
+            message = "No entities found for characteristics search."
             print(message)
             self.log.dump_text(message)
-
-            # 1. Format and persist messages from short-term memory
-            all_messages = []
-            for source, messages in memory_structure.get("short_term", {}).items():
-                for msg in messages:
-                    msg_copy = msg.copy()
-                    msg_copy['source'] = source
-                    all_messages.append(msg_copy)
-
-            all_messages.sort(key=lambda x: x['timestamp'])
-
-            if not all_messages:
-                message = "No messages in short-term memory to process."
-                print(message)
-                self.log.dump_text(message)
-                return ""
-                        # Use an internal cache for message embeddings within this method call
-            # This cache is cleared with each call to quick_search for `else` block
-
-# Using the instance-level cache for message embeddings
-            for msg in all_messages:
-                # Use a unique identifier for the message for caching.
-                # A combination of 'source' and 'unique_id' is robust.
-                message_key = f"{msg['source']}-{msg['unique_id']}"
-
-                query_embedding = None
-                if message_key in self._message_embeddings_cache: # <-- NOW USING INSTANCE CACHE
-                    query_embedding = self._message_embeddings_cache[message_key]
-                    message = f"  Using cached embedding for message: {message_key}"
-                    print(message)
-                    self.log.dump_text(message)
-                else:
-                    try:
-                        # Ensure content is string for embedding
-                        content_to_embed = json.dumps(msg['content']) if isinstance(msg['content'], dict) else str(msg['content'])
-                        query_embedding = self.embeddings_ai.make_embeddings(content_to_embed)
-                        query_embedding = query_embedding.squeeze()
-                        self._message_embeddings_cache[message_key] = query_embedding # <-- NOW STORING IN INSTANCE CACHE
-                        message = f"  Generated and cached embedding for message: {message_key}"
-                        print(message)
-                        self.log.dump_text(message)
-                    except Exception as e:
-                        message = f"  Error generating embedding for message {message_key}: {e}"
-                        print(message)
-                        self.log.dump_text(message)
-                        continue
-
-                # Search for similar entities (or messages, depending on your DB indexing)
-                similar_results = self.embedding_op.search_similar_characteristics(query_embedding, top_n=4)
-
-                # Process and format similar results. Here, we don't have a specific 'entity_name'
-                # from the original message, so it will be an empty string in the print statement.
-                for result in similar_results:
-                    # Apply deduplication here as well, based on characteristic_id
-                    if result["characteristic_id"] not in processed_characteristic_ids and \
-                       result["similarity_score"] >= NO_CHAR_SIMILARITY_THRESHOLD:
-                        memory_results.extend(self._process_similar_results(
-                            [result], NO_CHAR_SIMILARITY_THRESHOLD
-                        ))
-                        processed_characteristic_ids.add(result["characteristic_id"])
-
-            memory_context = self._concatenate_n_strings(memory_results, "all")
-
-        debug_message = f"DEBUG MEMORIES EXTRACTED FROM QUICK SEARCH: \n - {memory_context}"
-        print(debug_message)
-        self.log.dump_text(f"MEMORIES EXTRACTED FROM QUICK SEARCH: \n - {memory_context}")
-        self.log.dump_text("DEEP MEMORIES QUICK SEARCH ENDED")
-        self.log.dump_text("###########")
-
-        return memory_context
+            return ""
         
+        memory_results = ["\n"]
+        processed_entity_ids = set()
+        
+        # Limit entity processing for performance
+        entities_to_process = entities_result.entities[:max_results]
+        
+        for entity_data in entities_to_process:
+            entity_name = entity_data.named_entity.strip()
+            if not entity_name:
+                continue
+            
+            # Consolidate characteristics
+            new_characteristics_text = ". ".join([char.characteristic for char in entity_data.characteristics])
+            new_characteristics_text = f"{entity_name}. {new_characteristics_text}"
+            
+            if not new_characteristics_text:
+                continue
+            
+            try:
+                query_embedding = self.embeddings_ai.make_embeddings(new_characteristics_text).squeeze()
+            except Exception as e:
+                print(f"Error generating embedding for '{entity_name}': {e}")
+                continue
+            
+            # Use optimized search
+            similar_results = self.embedding_op.search_similar_characteristics_optimized(
+                query_embedding, 
+                top_n=min(4, max_results // len(entities_to_process) + 1),
+                min_threshold=threshold
+            )
+            
+            # Process results with deduplication
+            for result in similar_results:
+                if (result["characteristic_id"] not in processed_ids and 
+                    result["entity_id"] not in processed_entity_ids and 
+                    len(memory_results) < max_results):
+                    
+                    formatted_result = self._format_single_result_optimized(result, entity_name)
+                    if formatted_result:
+                        memory_results.append(formatted_result)
+                        processed_ids.add(result["characteristic_id"])
+                        processed_entity_ids.add(result["entity_id"])
+        
+        memory_context = self._concatenate_n_strings(memory_results, "all")
+        return memory_context
+
+    def _format_single_result_optimized(self, result: dict, query_entity_name: str = "") -> str:
+        """
+        Format a single result efficiently.
+        """
+        try:
+            # Get entity name
+            name_record = self.db_manager.get_entity_by_id(result['entity_id'])
+            result_name = name_record.get('name') if name_record else "Unknown Entity"
+            
+            raw_qualities = result['raw_text']
+            
+            # Get limited message context
+            messages_dicts = self.db_manager.get_messages_for_entity_current_characteristic(result['entity_id'])
+            
+            if isinstance(messages_dicts, list) and messages_dicts:
+                # Take only first 2 messages and truncate
+                messages_contents = []
+                for msg_dict in messages_dicts[:2]:
+                    if isinstance(msg_dict, dict) and 'raw_json' in msg_dict:
+                        try:
+                            original_msg_data = msg_dict['raw_json']
+                            if isinstance(original_msg_data, dict) and 'content' in original_msg_data:
+                                content = original_msg_data['content']
+                                content_str = json.dumps(content) if isinstance(content, dict) else str(content)
+                                if len(content_str) > 150:
+                                    content_str = content_str[:150] + "..."
+                                messages_contents.append(content_str)
+                        except:
+                            continue
+                
+                concat = " | ".join(messages_contents) if messages_contents else "No context"
+            else:
+                concat = "No context"
+            
+            query_info = f" (Query: {query_entity_name})" if query_entity_name else ""
+            
+            return (f"Entity: {result_name}{query_info} (Score: {result['similarity_score']:.3f})\n"
+                    f"Qualities: {raw_qualities}\n"
+                    f"Context: {concat}\n")
+            
+        except Exception as e:
+            print(f"Error formatting result: {e}")
+            return None
+        
+
     def create_memory(self, memory_structure: dict):
         """
         Processes a memory structure to extract entities, and based on embedding similarity,
@@ -577,3 +742,153 @@ class DeepMemory:
     def search_memory_excerpts(self) -> List[str]:
         print("Function 'search_memory_excerpts' needs to be updated for SQLite integration.")
         return []
+
+
+
+
+    ###### rework
+
+    def quick_search_optimized(self, memory_structure: dict, characteristics_flag=False, current_context="") -> str:
+        """
+        Optimized version of quick_search with intelligent filtering, clustering, and deduplication.
+        Significantly reduces token usage while maintaining relevance.
+        """
+        self.log.dump_text("###########")
+        
+        init_message = "DEEP MEMORIES QUICK SEARCH INITIALIZED (OPTIMIZED)"
+        print(init_message)
+        self.log.dump_text(init_message)
+
+        # Adaptive thresholds based on database size
+        db_size = self.db_manager.get_total_characteristics_count()
+        #CHARACTERISTICS_SIMILARITY_THRESHOLD = max(0.65, 0.85 - (db_size / 5000))
+        NO_CHAR_SIMILARITY_THRESHOLD = max(0.55, 0.75 - (db_size / 5000))
+        
+        # Dynamic limits based on database size
+        if db_size < 100:
+            MAX_MEMORY_RESULTS = 20
+            MAX_MESSAGES_TO_PROCESS = 15
+        elif db_size < 500:
+            MAX_MEMORY_RESULTS = 15
+            MAX_MESSAGES_TO_PROCESS = 10
+        else:
+            MAX_MEMORY_RESULTS = 10
+            MAX_MESSAGES_TO_PROCESS = 8
+        
+        memory_results = ["\n"]
+        processed_characteristic_ids = set()
+        processed_entity_ids = set()  # Track entities to avoid duplicates
+
+        if not self.db_manager.has_data():
+            message = "Database is empty. No search can be performed."
+            print(message)
+            self.log.dump_text(message)
+            return ""
+
+        if characteristics_flag: # DO NOT USE THIS 
+            # return self._handle_characteristics_search_optimized(
+            #     memory_structure, CHARACTERISTICS_SIMILARITY_THRESHOLD, 
+            #     processed_characteristic_ids, MAX_MEMORY_RESULTS
+            # )
+            return "LLM Based quick search disabled."
+        
+        else:  # Optimized direct message embedding comparison
+            message = f"Process for No characteristics search (OPTIMIZED): Max {MAX_MESSAGES_TO_PROCESS} messages, {MAX_MEMORY_RESULTS} results"
+            print(message)
+            self.log.dump_text(message)
+
+            # 1. Prepare and intelligently filter messages
+            all_messages = self._prepare_and_filter_messages_optimized(memory_structure, MAX_MESSAGES_TO_PROCESS)
+            
+            if not all_messages:
+                message = "No messages in short-term memory to process."
+                print(message)
+                self.log.dump_text(message)
+                return ""
+            
+
+            # Add current context as a pseudo-message for embedding comparison
+            context_unique_id = f"context_{int(time.time() * 1000)}"
+
+
+            context_structure = {
+                "source": "current_context",
+                "content": current_context.strip(),
+                "timestamp": time.time(),
+                "content_length": len(current_context.strip()),
+                "unique_id": context_unique_id  # Now includes unique_id
+            }
+
+            all_messages.append(context_structure)
+
+            all_messages.sort(key=lambda x: x['timestamp'], reverse=True)
+
+            # 2. Cluster similar messages to reduce redundant processing
+            message_clusters = self._cluster_similar_messages_optimized(all_messages)
+            message = f"Clustered {len(all_messages)} messages into {len(message_clusters)} clusters"
+            print(message)
+            self.log.dump_text(message)
+            
+            # 3. Process clusters with smart result aggregation
+            all_similarity_results = []
+            
+            for cluster_representative, cluster_messages in message_clusters:
+                message_key = f"{cluster_representative['source']}-{cluster_representative['unique_id']}"
+                
+                # Get or generate embedding for representative message
+                query_embedding = self._get_or_generate_embedding_optimized(cluster_representative, message_key)
+                if query_embedding is None:
+                    continue
+                    
+                # Dynamic search parameters based on cluster size and database size
+                cluster_weight = min(2.0, len(cluster_messages) / 2.0)  # Larger clusters get more results
+                dynamic_top_n = min(8, max(3, int(4 * cluster_weight)))
+                
+                # Use optimized search
+                similar_results = self.embedding_op.search_similar_characteristics_optimized(
+                    query_embedding, 
+                    top_n=dynamic_top_n,
+                    min_threshold=NO_CHAR_SIMILARITY_THRESHOLD * 0.7  # Slightly lower for initial filtering
+                )
+
+                if cluster_representative.get('source') == 'current_context':
+                    cluster_weight *= 1.5  # Boost context relevance
+                
+                # Enhance results with cluster context
+                for result in similar_results:
+                    result['cluster_size'] = len(cluster_messages)
+                    result['cluster_weight'] = cluster_weight
+                    result['representative_message'] = cluster_representative
+                    all_similarity_results.append(result)
+
+            # DEBUG
+
+                print(f"Processed cluster: {cluster_representative['unique_id']} with {len(cluster_messages)} messages")
+
+            # 4. Intelligently rank, deduplicate and filter results
+            final_results = self._rank_and_filter_results_optimized(
+                all_similarity_results, 
+                NO_CHAR_SIMILARITY_THRESHOLD,
+                MAX_MEMORY_RESULTS,
+                processed_characteristic_ids,
+                processed_entity_ids
+            )
+            
+            message = f"Filtered {len(all_similarity_results)} raw results to {len(final_results)} final results"
+            print(message)
+            self.log.dump_text(message)
+            
+            # 5. Format results with enhanced context
+            memory_results.extend(self._format_results_optimized(final_results))
+
+            memory_context = self._concatenate_n_strings(memory_results, "all")
+
+        debug_message = f"OPTIMIZED QUICK SEARCH complete. Context length: {len(memory_context)} characters"
+        print(debug_message)
+        self.log.dump_text(f"MEMORIES EXTRACTED FROM OPTIMIZED QUICK SEARCH (Length: {len(memory_context)})")
+        self.log.dump_text("DEEP MEMORIES QUICK SEARCH ENDED")
+        self.log.dump_text("###########")
+
+        print(memory_context)
+
+        return memory_context
