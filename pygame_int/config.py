@@ -321,7 +321,7 @@ MESSAGE_PADDING = 3 # Example: 10 pixels of padding between messages
 
 
 # --- Garden Tick Configuration ---
-GARDEN_TICK_INTERVAL_MINUTES = 1 # Tick every 1 minute
+GARDEN_TICK_INTERVAL_MINUTES = 3 # Tick every 3 minutes
 GARDEN_TICK_INTERVAL_MS = GARDEN_TICK_INTERVAL_MINUTES * 60 * 1000
 
 # --- NEW: Lore Panel Constants ---

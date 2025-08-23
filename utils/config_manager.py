@@ -1,4 +1,5 @@
 import os
+import shutil
 from utils.generic_json_tool import GenericJsonTool
 
 class ConfigManager(GenericJsonTool):
@@ -47,11 +48,28 @@ class ConfigManager(GenericJsonTool):
         return self.archive.get(config_name)
 
 
-    def delete_config_from_archive(self, config_name):
+    def delete_pet_archive(self, config_name):
         """
         Deletes a configuration from the archive by its name.
+        And removes the associated pet folder from the file system.
         """
         if config_name in self.archive:
+            pet_folder=self.get_config_info(config_name).get("AI", {}).get("pets_folder")
+            pet_folder_path=os.path.join(self.base_path, "bots", pet_folder)
+
+            if not pet_folder:
+                print(f"No pet folder specified for configuration '{config_name}', skipping folder deletion.")
+            else:
+                if os.path.exists(pet_folder_path) and os.path.isdir(pet_folder_path):
+                    try:
+                        shutil.rmtree(pet_folder_path)
+                        print(f"Deleted pet folder '{pet_folder_path}'.")
+                    except Exception as e:
+                        print(f"Error deleting folder '{pet_folder_path}': {e}")
+                else:
+                    print(f"Pet folder '{pet_folder_path}' does not exist or is not a directory, skipping deletion.")
+           
+
             del self.archive[config_name]
             self._write_json(self.archive)
             print(f"Configuration '{config_name}' successfully deleted from archive.")

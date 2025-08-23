@@ -11,7 +11,6 @@ from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClie
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse # Import the new structure
 
 
-
 class ai_bot:
 
     def __init__(self, data_filepath="captured_text.txt", act_model="gpt-4.1-mini", 

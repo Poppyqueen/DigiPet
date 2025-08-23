@@ -175,12 +175,19 @@ def run_config_main_menu_ui(screen, font, config_manager):
                         result = button.handle_event(event, adjusted_mouse_pos)
                         if isinstance(result, tuple) and result[0] == "delete":
                             config_to_delete = result[1]
-                            message = f"Attempting to delete '{config_to_delete}'.\nThis action is irreversible. Confirm?"
+                            message = f"Attempting to delete '{config_to_delete}'. \nThis will delete all data associated with the relevant pet. \n\nThis action is irreversible. \n\nAre you sure you want to proceed?"
+
                             popup = Popup(screen, font, message)
                             if popup.run():
-                                config_manager.delete_config_from_archive(config_to_delete)
+                                config_manager.delete_pet_archive(config_to_delete)
                                 scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
                                 scroll_offset_y = 0
+                            else: # user cancelled
+                                print("Deletion cancelled by user.") 
+                                scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
+                                scroll_offset_y = 0
+                                
+
                             # Break to avoid processing other clicks in the same frame
                             break 
                     else: # If the loop didn't break, check main config buttons

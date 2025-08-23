@@ -17,6 +17,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
 
 
 def add_items(items_list, room):
@@ -432,7 +433,6 @@ initial_states_manager=InitialStateConst()
 # We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 if mock_running:
     from ai_managers.agents.mock_chatbot import MockChatbot
