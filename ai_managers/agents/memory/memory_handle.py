@@ -129,7 +129,7 @@ class memory_manager:
             "system_line": system_line_budget,
             "system_summarize": system_summarize_budget
         }
-    def current_memory_tokens(self, memory_type: str = "all") -> int:
+    def current_memory_tokens(self, memory_type: str = "all") -> int: 
         """
         Returns the current number of tokens in the memory structure based on its
         raw, stored format (short_term, long_term, base_memory).

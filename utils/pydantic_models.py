@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field
 from typing import List
 
 
+valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
+
+stringed_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
+
+item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bluesky_social"]
+
+
 ### ///// Classes (Deep memory entities)
 
 
@@ -28,35 +35,35 @@ class save_ner_structure(BaseModel):
 class ItemStatsEdit(BaseModel):
     """
     Defines the required structure for the stats_edit dictionary.
-    Must contain exactly 'fullness', 'hydration', and 'energy' as integers.
+    Must contain exactly 'fullness', 'hydration', and 'energy' as floats.
     """
-    fullness: float = Field(description="Integer change to fullness stat.")
-    hydration: float = Field(description="Integer change to hydration stat.")
-    energy: float = Field(description="Integer change to energy stat.")
-
+    fullness: float = Field(description="Float change to fullness stat. Can be negative for inflicting negative effects or punishments for consumption.")
+    hydration: float = Field(description="Float change to hydration stat. Can be negative for inflicting negative effects or punishments for consumption.")
+    energy: float = Field(description="Float change to energy stat. Can be negative for inflicting negative effects or punishments for consumption.")
 
 # --- Structure for the individual item definition ---
 class ItemDefinition(BaseModel):
     """
     Represents the data required to define a single item for creation.
-    Excludes the ID and the 'type' field as per requirements.
-    Includes a strictly defined stats_edit structure.
+    Excludes the ID as per requirements.
+    Includes a strictly defined stats_edit structure, but fields are optional based on type.
     """
-    name: str = Field(description="A unique string identifier for the item type (e.g., 'bowl_of_nuts').")
+    name: str = Field(description="A unique string identifier for the item type (e.g., 'bowl of nuts').")
     descriptions: List[str] = Field(description="A list of strings providing descriptions for the item.")
-    static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved).")
+    static: bool = Field(description="Indicates if the item is static (cannot be picked up or moved like furniture).")
+    # UPDATED: type is now List[str]
+    type: List[str] = Field(description=f"A list of strings defining item categories (e.g., ['consumable'], ['misc', 'tool'], ['consumable', 'seed'], ['seed']). Available categories: {", ".join(item_types)}.")    
+    stackable: bool = Field(default=True, description="Bool for the stackablity property of this item, if defaults to true. Small non-unique items should be set to true so they are stackable. Large and unique items should be set to FALSE")
+    # MAKE effects and stats_edit OPTIONAL
+    # Use | None for Pydantic V2 syntax for optional fields
+    # default=None allows the field to be missing in the input data without Pydantic error
 
-    # Use the specific ItemStatsEdit model to enforce the structure and keys
-    stats_edit: ItemStatsEdit = Field(description="A dictionary containing specific stat changes (fullness, hydration, energy).")
+    effects: List[str] |None= Field(default=None, description="A list of strings describing narrative and evocative effects upon use (only for 'consumable' items). i.e 'You feel refreshed after eating the apple', 'The apple gives a delicious juicy and sweet crunch'. Or, 'You eat the salt by itself, an overpowering slightly disgusting metalic flavor takes over you', 'You eat the raw eags, the slimy texture and the lack of taste make you gag', 'Eating the raw egss makes your stomach churn'")
+    stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items) Can be possitive or negative, i.e 'hydration' -10 for a salty snack. -50 hydration for dry rice, -50 energy for raw meat, +4 hydration for a fresh apple, etc.")
 
-    # 'effects' field from your example, assuming it's required for this definition structure
-    effects: List[str] = Field(description="A list of strings describing narrative effects upon use.")
+    plant_type: str  |None =Field(default=None, description=f"A string for the seed type, it should define the plant of seed this is for, from the valid options: {stringed_plant_types}")
 
-    type: List[str] = Field(description="A list of types for the item, e.g., ['consumable', 'seed'], from the possible, consumable, seed, furniture or misc. A misc item cannot be a consumable.")
-
-    
-# --- Structure that contains a list of these item definitions (Optional) ---
-# This is if you needed a container holding a list of objects matching the above definition
+# --- Structure that contains a list of these item definitions ---
 class ItemDefinitionListContainer(BaseModel):
     """
     A container model holding a list of item definitions.

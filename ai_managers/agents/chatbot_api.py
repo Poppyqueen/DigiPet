@@ -111,9 +111,6 @@ class CLIChatbot:
             self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager)  # Initialize the function builder
 
             self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=config_select_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
-            # REMOVED: self.tts = tts_flag # Set to True if you want to enable text-to-speech output
-            # REMOVED: self._current_tts_process = None
-
 
         except ImportError as e:
              print(f"FATAL: Could not import dependencies ({e}). Ensure ai_handle.py and memory_handle.py exist.")
@@ -364,38 +361,11 @@ class CLIChatbot:
         # 1. Save  input to short-term memory
         self.memory.save_to_memory(message, "short_term", f"{role}")
 
-        # 2. Search Deep Memory based on current context (before generating response)
-        deep_memory_context = ""
-        # if self.deep_memory_flag:
-        #     found_excerpts_list = self.memory.search_deep_memory()
-        #     if found_excerpts_list:
-        #         unique_excerpts_list = list(set(found_excerpts_list))
-
-        #         print(f"Found {len(unique_excerpts_list)} relevant excerpts (after deduplication).")
-        #         deep_memory_context = "\n\nRelevant information from deep memory:\n"
-        #         deep_memory_context += "\n".join([f"- {excerpt}" for excerpt in unique_excerpts_list])
-        #         deep_memory_context += joined_random_entity
-        #         deep_memory_context += "\n\n"
-        #     else:
-        #         print("No relevant excerpts found.")
-
         # 3. Get current standard memory structure
         mem_structure = self.memory.get_memory_structure() # This structure should include the user input we just added
         if mem_structure is None:
              print("Error: Could not load main memory structure. Proceeding without it.")
              mem_structure = {"short_term": {}, "long_term": [], "base_memory": ""} # Provide default empty
-
-        # 4. Construct the dynamic prompt including deep memory context
-        tools_context=self.functions_builder.construct_context()
-
-        # base_prompt = ""
-        # full_prompt = base_prompt + tools_context
-        # if deep_memory_context:
-        #      full_prompt += f"\n\n{deep_memory_context}\nUse any relevant information above to inform your response."
-
-        # steps=self.get_steps()
-
-        # full_prompt += f"\n\n You have been in your digital home for: {steps} steps. Your own size is relative to this!"
 
         # 5. Get AI response (now handled recursively)
         final_ai_response = await self._get_ai_response_sequence(
@@ -408,10 +378,7 @@ class CLIChatbot:
 
 # --- wellness stats check -----
         self._check_wellness_and_consequences()
-
 # --- extra part of the function -----
-
-
         # 6. Perform memory check (summarization, purging)
         print("Performing memory check...")
         self.last_response = final_ai_response # Store the last response for potential TTS
@@ -467,93 +434,3 @@ class CLIChatbot:
         if self.state_manager:
             self.state_manager.save_state()
         # REMOVED: self._current_tts_process.kill()
-
-
-def main():
-    """Examply entry point for the application."""
-    # This example neeeds updating
-
-    # This example demonstrates a synchronous CLI chat.
-    # If you intend to use `process_input` in an async context (e.g., a web server),
-    # you would need to run the main loop with `asyncio.run()`.
-    import asyncio # Import asyncio for demonstration if you want to run sync code with an async method
-
-    # Example usage: set deep_memory=True to enable
-    # MODIFIED: Changed tts_flag to tts_provider_id
-    # To use macOS 'say': tts_provider_id="macos_say"
-    # To use eSpeak NG: tts_provider_id="espeak_ng" (ensure espeak-ng is installed)
-    # To disable TTS: tts_provider_id=None (or any unrecognized string)
-    
-    # Example for testing with a specific provider:
-    # chatbot = CLIChatbot(
-    #     system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
-    #     sub_directory="base_bot",
-    #     deep_memory=False,
-    #     base_model="gpt-4.1-mini",
-    #     select_memory_model="gpt-4.1-mini",
-    #     tts_provider_id="macos_say" # or "espeak_ng"
-    # )
-
-    # To run a single async message:
-    # async def run_single_message():
-    #     chatbot = CLIChatbot(
-    #         system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
-    #         sub_directory="base_bot",
-    #         deep_memory=False,
-    #         base_model="gpt-4.1-mini",
-    #         select_memory_model="gpt-4.1-mini",
-    #         tts_provider_id="macos_say" # or "espeak_ng"
-    #     )
-    #     print("Sending initial message...")
-    #     response = await chatbot.process_input("Hello! How are you today?")
-    #     print(f"Bot's initial response: {response}")
-    #     chatbot.shutdown() # Ensure shutdown on single message completion
-    #
-    # asyncio.run(run_single_message())
-
-
-    # To use the chatbot with CLI (this will still work synchronously for input/output,
-    # but the internal async calls will implicitly run if not explicitly awaited in the loop context)
-    # For robust async CLI, you'd integrate an async event loop (like asyncio.run in a wrapper).
-    # For this current CLI `run` method, `await` is not used directly, which means the process_input
-    # will run, but `await` inside it will create a "nested" event loop if not already in one.
-    # This is a common pattern for "hybrid" sync/async applications.
-
-    # Recommended way to run a CLI that uses async methods:
-    async def cli_main_async():
-        chatbot = CLIChatbot(
-            system_prompt="You are a unique and independent digital entity. You can process function calls if needed.",
-            sub_directory="base_bot",
-            deep_memory=False,
-            base_model="gpt-4.1-mini",
-            select_memory_model="gpt-4.1-mini",
-            tts_provider_id="macos_say" # Set to "macos_say", "espeak_ng", or None
-        )
-        # We start the chatbot loop from within an async function
-        # This will allow `await` inside process_input to work correctly.
-        try:
-            while chatbot.running:
-                user_input = input("\n💬 You: ").strip()
-                if not user_input:
-                    continue
-                if chatbot.handle_special_commands(user_input):
-                    print("-" * 60)
-                    continue
-                # Await the async process_input call
-                await chatbot.process_input(user_input)
-                print("-" * 60)
-        except KeyboardInterrupt:
-            print("\n\nProgram interrupted by user. Exiting gracefully...")
-        except Exception as e:
-            print(f"\nAn unexpected error occurred: {e}")
-            import traceback
-            traceback.print_exc()
-        finally:
-            print("\nThank you for using the Memory-Enabled AI Chatbot!")
-            chatbot.shutdown()
-
-    asyncio.run(cli_main_async())
-
-
-if __name__ == "__main__":
-    main()

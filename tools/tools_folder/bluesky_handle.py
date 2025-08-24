@@ -416,9 +416,14 @@ class bluesky_bot:
                         print("--- END ANALYSIS ---\n")
                         # --- END NEW DEBUGGING BLOCK ---
 
-                        # Only include posts where someone mentioned us in the thread
-                        if thread_info["has_mention"]:
-                            valid_responses = thread_info["all_replies"]
+                        # Check if there are mentions and the list of replies is not empty
+                        if thread_info["has_mention"] and thread_info["all_replies"]:
+                            # Get the handle of the author of the very last reply
+                            last_reply_author_handle = thread_info["all_replies"][-1].get('handle', '').lower()
+                            
+                            # Only consider it needing a response if the last message was NOT from us
+                            if last_reply_author_handle != our_handle:
+                                valid_responses = thread_info["all_replies"]
 
                 except Exception as e:
                     #logging.warning(f"Failed to get replies for post {post.post.uri}: {e}")

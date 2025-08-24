@@ -660,6 +660,8 @@ class ALifeSimulation:
         and a list of entities with their ID, type ID (0, 1, or 2), position, and status.
         This is one of the three tools available to the AI.
         """
+        edit=-3
+        self.state_manager.adjust_stat("energy", edit)
         # Ensure history exists and current_tick is valid
         if not self.history:
              # Provide a minimal observation if simulation is just initialized but not run
@@ -732,6 +734,7 @@ class ALifeSimulation:
         """
         if not self.history:
              return "Simulation is not initialized or has no history to move forward."
+
 
         max_valid_tick = len(self.history) - 1
 

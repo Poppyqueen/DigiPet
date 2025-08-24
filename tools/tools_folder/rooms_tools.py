@@ -494,7 +494,7 @@ class room_garden:
         # --- Add signal call for digging ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png"})
         # -----------------------------------
-        if check_one_in(200):
+        if check_one_in(50):
             found_item=random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
             creation_message=self.state.create_item("inventory", None, found_item)
             message=f"While digging on the garden you found something! It is a {found_item["name"]}! It's been added to your inventory. All your stats have been lowered by {abs(edit)} for digging around."
@@ -606,6 +606,9 @@ class room_computer:
     def random_wikipedia(self):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         # --- Add signal call ---
+        edit=-2
+        self.state.adjust_stat("energy", edit)
+
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
         article=self.wiki.fetch_random_wiki_article()
@@ -614,6 +617,8 @@ class room_computer:
     
     def search_wikipedia_articles(self, query):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
+        edit=-2
+        self.state.adjust_stat("energy", edit)
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
@@ -623,6 +628,8 @@ class room_computer:
 
     def get_wikipedia_article_content(self, title):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
+        edit=-5
+        self.state.adjust_stat("energy", edit)
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------

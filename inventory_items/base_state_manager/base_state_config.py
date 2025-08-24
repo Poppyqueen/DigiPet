@@ -53,43 +53,6 @@ class InitialStateConst():
             
         return all_configs
 
-    def _load_states_from_multiple_dirs(self, root_dirs: list) -> dict:
-        """
-        Alternative method: Load configs from multiple root directories.
-        Each JSON file should contain a dictionary of state configurations.
-        """
-        all_configs = {}
-        
-        for root_dir in root_dirs:
-            if not os.path.exists(root_dir):
-                print(f"Config directory '{root_dir}' not found, skipping...")
-                continue
-                
-            try:
-                for root, dirs, files in os.walk(root_dir):
-                    for file in files:
-                        if file.endswith('.json'):
-                            file_path = os.path.join(root, file)
-                            try:
-                                with open(file_path, 'r') as f:
-                                    config_data = json.load(f)
-                                
-                                # Merge the configurations from this file
-                                if isinstance(config_data, dict):
-                                    all_configs.update(config_data)
-                                    #print(f"Loaded {len(config_data)} configs from {file_path}")
-                                else:
-                                    print(f"Warning: {file_path} does not contain a dictionary at root level")
-                                
-                            except (json.JSONDecodeError, KeyError) as e:
-                                print(f"Error loading config from {file_path}: {e}")
-                                continue
-                                
-            except Exception as e:
-                print(f"Error walking config directory {root_dir}: {e}")
-                
-        return all_configs
-
     def reload_configs(self):
         """
         Reload all configurations from the directory structure.
@@ -271,11 +234,3 @@ class InitialStateConst():
         }
 
         return initial_state
-
-
-# Alternative usage with multiple root directories:
-class InitialStateConstMultiDir(InitialStateConst):
-    def __init__(self, config_root_dirs: list):
-        self.items_store = ItemStore("inventory_items/items_provider/items_data")
-        self.config_root_dirs = config_root_dirs
-        self.states_configs = self._load_states_from_multiple_dirs(config_root_dirs)

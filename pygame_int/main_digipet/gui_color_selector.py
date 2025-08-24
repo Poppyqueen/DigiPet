@@ -277,6 +277,3 @@ def run_color_selection_ui(screen, font):
     rgb_input_values = ["", "", ""]
 
     return selected_color
-
-
-# huh
