@@ -47,6 +47,7 @@ class CLIChatbot:
     # MODIFIED: Changed tts_flag to tts_provider_id
     def __init__(self, config_manager, signal_callback=None, bots_archive_dir="data_archive"):
         """Initialize the CLI chatbot with AI bot and memory systems."""
+        print("Initializing CLI Chatbot...")
         # --- Use the subdirectory structure ---
         # Ensure the directory exists
         voice = config_manager.get_config('game_settings','selected_voice')

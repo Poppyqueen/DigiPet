@@ -522,9 +522,7 @@ else:
         chatbot = None # Ensure chatbot is None if initialization failed
 
 
-
-
-if chatbot_available and chatbot and callable(chatbot.state_manager.get_steps()):
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps'): 
     steps=chatbot.state_manager.get_steps()
 else:
     steps=0
@@ -536,7 +534,6 @@ gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 state.current_radius=size
-print(f"setting up pets size as {size}")
 
 
 # Ensure state.pet_color is initialized to the default before potential load/selection

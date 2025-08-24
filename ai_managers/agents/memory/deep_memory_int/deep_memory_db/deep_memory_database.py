@@ -734,7 +734,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         try:
             cursor.execute("UPDATE Entity SET last_access = ? WHERE id = ?", (now, entity_id))
             conn.commit()
