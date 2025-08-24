@@ -16,6 +16,8 @@ from pygame_int.main_digipet import gui_stat_icons
 
 import pygame
 
+from utils.loc_datetime import datetime
+
 from utils.time_manager import get_time_tag_from_now
 
 ALPHA_MULTIPLIERS = {
@@ -38,7 +40,9 @@ def draw_filter_overlay(screen):
     Args:
         screen (pygame.Surface): The main display surface.
     """
-    timetag = get_time_tag_from_now()
+    now = datetime.now()
+
+    timetag = get_time_tag_from_now(now)
 
     #timetag = "night"
 

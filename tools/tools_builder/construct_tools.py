@@ -22,7 +22,7 @@
 
 # Import tools and their definitions from the tools folder
 # Here we can import tools that don't need to interact inside the AI agent itself or the CLI, so we can construct them directly here
-from datetime import datetime
+from utils.loc_datetime import datetime
 import os.path
 import json
 import inspect
@@ -30,7 +30,6 @@ import inspect
 import traceback
 
 from tools.tools_folder import simulation
-
 
 
 # Import the tool definitions lists
@@ -56,7 +55,6 @@ from .my_tools import (
     art_book_tools
 )
 
-from utils import open_meteo_handle
 
 from tools.tools_folder.garden_tools import Garden_Mananger
 
@@ -70,7 +68,7 @@ from tools.tools_folder.images_lab import ImagesLab
 # Maybe update this to allow for certain item types to add functions to the room itself without needing to be in the pet's inventory
 
 class FunctionBuilder:
-    def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None):
+    def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
 
 
         # These booleans will dictate if the tools are *attempted* to be imported and initialized.
@@ -79,6 +77,8 @@ class FunctionBuilder:
         discogs_enabled = config_manager.get_config('Tools', "enable_discogs")
         musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
         bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
+
+        self.open_meteo = open_meteo    
 
 
         print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
@@ -121,7 +121,7 @@ class FunctionBuilder:
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager)
         self.A_Life = None # Initialized by _init_alife
-        self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback)
+        self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
         self._init_alife() # ALIFE is always initialized
 
 
@@ -649,7 +649,8 @@ class FunctionBuilder:
         # Add weather context ONLY if the room type is "garden"
         if "garden" in current_room_types:
              try:
-                 weather_info = open_meteo_handle.get_full_weather()
+                 now=datetime.now()
+                 weather_info = self.open_meteo.get_full_weather(now)
                  context.append("#############")
                  context.append("Current outdoor weather:")
                  context.append(weather_info)

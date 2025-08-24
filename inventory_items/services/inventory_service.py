@@ -1,6 +1,6 @@
 
 # services/inventory_service.py
-import datetime
+from utils.loc_datetime import datetime
 
 import json
 
@@ -230,7 +230,7 @@ class InventoryService:
                 break
 
         if found_item:
-            timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+            timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
             timed_description = f"{timestamp} {new_description.strip()}"
 
             descriptions_list = found_item.get("descriptions")

@@ -12,13 +12,15 @@
 
 # Perennials revert to mature stage after harvesting, while annuals get removed from the plot directly.
 
-from utils import open_meteo_handle
 from utils.generic_json_tool import GenericJsonTool
 import random
 import string
 import os
 import math
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from utils.loc_datetime import datetime
+
 
 from tools.tools_folder.tools_data.harvesting_data import (plant_types)
 
@@ -34,7 +36,7 @@ class Garden_Mananger(GenericJsonTool):
 
     _plant_types = plant_types
 
-    def __init__(self, state_manager, signal):
+    def __init__(self, state_manager, signal, open_meteo):
         """
         Initializes the Garden_Mananger.
         Args:
@@ -45,6 +47,7 @@ class Garden_Mananger(GenericJsonTool):
         self.json_filename = "garden_data.json"
         self.state_manager = state_manager
         self._signal_callback=signal
+        self.open_meteo = open_meteo
 
         # Load settings from the GARDEN_SETTINGS dictionary
         self.settings = GARDEN_SETTINGS
@@ -153,7 +156,8 @@ class Garden_Mananger(GenericJsonTool):
             float: The precipitation level (e.g., in mm/h), default to 0.0 if not available.
         """
         try:
-            weather_data = open_meteo_handle.get_structured_weather()
+            now = datetime.now()
+            weather_data = self.open_meteo.get_structured_weather(now)
             return weather_data.get("precipitation", 0.0)
         except Exception as e:
             print(f"Error getting weather data for rain: {e}")

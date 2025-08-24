@@ -1,6 +1,7 @@
 
 # services/room_manager.py
 from utils.time_manager import get_time_tag_from_now
+from utils.loc_datetime import datetime
 
 class RoomManager:
     def __init__(self, state_store, signal_callback):
@@ -74,8 +75,8 @@ class RoomManager:
     def set_current_room(self, room_id: int):
         if not isinstance(room_id, int):
             return f"Failed to move: Room ID must be an integer, received '{room_id}' ({type(room_id).__name__})."
-
-        time_tag = get_time_tag_from_now()
+        now = datetime.now()
+        time_tag = get_time_tag_from_now(now)
         target_room = self._find_room_by_id(room_id)
 
         if target_room:
@@ -115,7 +116,8 @@ class RoomManager:
     def get_current_room_description(self):
         current_room_id = self._state_store.get_state_section("current_room_id")
         room_data = self._find_room_by_id(current_room_id)
-        time_tag = get_time_tag_from_now()
+        now = datetime.now()
+        time_tag = get_time_tag_from_now(now)
 
         if room_data:
             room_display = self._format_room_for_display(room_data)

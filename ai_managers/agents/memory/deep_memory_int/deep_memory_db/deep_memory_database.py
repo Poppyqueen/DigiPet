@@ -2,7 +2,7 @@
 # deep_memory_database.py
 
 import sqlite3
-import datetime
+from utils.loc_datetime import datetime
 import json
 import pickle  # For serializing/deserializing numpy arrays
 import numpy as np  # For handling embeddings as numerical arrays
@@ -182,7 +182,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         try:
             sql = '''
                 INSERT INTO Entity (name, current_characteristics_id, creation_time, edit_time, last_access)
@@ -213,7 +213,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         embeddings_blob = None
         if embeddings_array is not None:
             # Serialize the numpy array into a bytes object using pickle
@@ -242,7 +242,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         try:
             sql = '''
                 UPDATE Entity
@@ -276,7 +276,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         raw_json = json.dumps(raw_data_dict)
         try:
             sql = '''
@@ -314,7 +314,7 @@ class DatabaseManager:
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
+        now = datetime.now().isoformat()
         try:
             sql = '''
                 INSERT INTO Characteristics_Messages (characteristic_id, message_id, contribution_timestamp, contribution_score)

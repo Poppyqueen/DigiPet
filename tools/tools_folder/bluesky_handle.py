@@ -2,7 +2,6 @@ import os
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from atproto import Client, models, AtUri
-from datetime import datetime, timezone
 
 from tools.tools_folder.tools_data.blsk_alt_text import alt_text
 

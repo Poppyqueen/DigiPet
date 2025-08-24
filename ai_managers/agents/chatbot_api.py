@@ -21,6 +21,20 @@ from tts_providers.espeak_ng_provider import ESpeakNGProvider
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
+from utils.loc_datetime import datetime
+
+from dotenv import load_dotenv
+
+
+from utils.open_meteo_handle import OpenMeteoLoc
+
+load_dotenv()
+
+my_latitude = os.getenv("LATITUDE")
+my_longitude = os.getenv("LONGITUDE")
+
+
+
 
 
 # Default filepaths 
@@ -39,6 +53,24 @@ class CLIChatbot:
         tts_provider_id = config_manager.get_config('game_settings','tts_provider')
         pet_name = config_manager.get_config('AI','pets_folder') # This will create a folder for the pet backend making a unique agent with its own memory and inventory and state
 
+        lat=config_manager.get_config('location','latitude')
+        long=config_manager.get_config('location','longitude')
+
+        message="using provided location from config."
+        if not lat or not long:
+            lat = my_latitude
+            long = my_longitude
+            message="using default location from environment variables."
+        self.open_meteo = OpenMeteoLoc(long=long, lat=lat) # Initialize with coordinates
+        datetime.set_coordinates(lat,long)
+
+        # Location data for the agent:
+        print(f"Agent {pet_name} Initialized with location info {message}:")
+        print(f"  Latitude: {lat}")
+        print(f"  Longitude: {long}")
+        print(f"  Timezone: {self.open_meteo.get_timezone()}")
+        print(f"  Current Weather: {self.open_meteo.get_full_weather(datetime.now())}")
+    
 
         sub_directory=os.path.join(bots_archive_dir,"bots",pet_name)
         os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
@@ -108,7 +140,7 @@ class CLIChatbot:
 
             self.state_manager=InventoryHouseManager(inventory_filepath, self._signal_callback, config_manager)
 
-            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager)  # Initialize the function builder
+            self.functions_builder = FunctionBuilder(state_manager=self.state_manager, signal=self._signal_callback, subdirectory=sub_directory, memory_manager=self.memory, config_manager=config_manager, open_meteo=self.open_meteo)  # Initialize the function builder
 
             self.ai = ai_bot(data_filepath=ai_data_filepath, act_model=config_select_model, functions_builder=self.functions_builder, state_manager=self.state_manager, signal=self._signal_callback, memory_manager=self.memory, llm_client=selected_client) # 4.1-nano is the newest widely available model
 

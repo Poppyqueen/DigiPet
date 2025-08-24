@@ -19,8 +19,8 @@ from ai_managers.ai_utils.ai_loader import EmbeddingsConfiguration, AIConfigurat
 
 
 import numpy as np
+from utils.loc_datetime import datetime
 
-import datetime
 
 class DeepMemory:
     """
@@ -351,8 +351,8 @@ class DeepMemory:
             recency_bonus = 0
             if result.get('extracted_at_timestamp'):
                 try:
-                    timestamp = datetime.datetime.fromisoformat(result['extracted_at_timestamp'])
-                    days_old = (datetime.datetime.now() - timestamp).days
+                    timestamp = datetime.fromisoformat(result['extracted_at_timestamp'])
+                    days_old = (datetime.now() - timestamp).days
                     recency_bonus = max(0, min(0.1, (30 - days_old) / 300))
                 except:
                     pass

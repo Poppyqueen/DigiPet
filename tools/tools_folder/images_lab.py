@@ -3,9 +3,10 @@ import json
 
 import re
 
-from datetime import datetime
+from utils.loc_datetime import datetime
 
 TOTAL_IMAGES_LIMIT=100
+
 
 def make_string_file_safe(input_string):
     """

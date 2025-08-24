@@ -1,4 +1,4 @@
-import datetime
+from utils.loc_datetime import datetime
 import random
 import json # Need json for loading
 import os   # Need os for checking file existence
@@ -56,9 +56,9 @@ def get_tv_program() -> str:
     and returns a random matching excerpt description.
     """
     # 1. Get the current time and corresponding tag
-    now = datetime.datetime.now()
+    now = datetime.now()
     current_hour = now.hour
-    current_tag = get_time_tag_from_now()
+    current_tag = get_time_tag_from_now(now)
 
     if current_tag is None:
         # With the current get_time_tag, this message indicates an issue

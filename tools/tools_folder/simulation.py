@@ -6,7 +6,7 @@ import random
 import copy
 from typing import List, Dict, Tuple, Any, Optional
 import os
-from datetime import datetime
+from utils.loc_datetime import datetime
 import time
 
 from tools.tools_folder.tools_helpers.alife_manager import ALifeManager

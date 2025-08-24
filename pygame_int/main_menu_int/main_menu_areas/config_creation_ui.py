@@ -102,8 +102,13 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
     title_surface, title_rect = draw_section_title(font, "Token Limits", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
-
     current_y = draw_labeled_dropdown_or_input(font, "max_tokens", "Max Tokens:", current_y, screen_width, elements, is_dropdown=False, default_text="44000")
+
+
+    title_surface, title_rect = draw_section_title(font, "Location", current_y, screen_width)
+    elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
+    current_y = draw_labeled_dropdown_or_input(font, "lat", "Latitude:", current_y, screen_width, elements, is_dropdown=False)
+    current_y = draw_labeled_dropdown_or_input(font, "long", "Longitude:", current_y, screen_width, elements, is_dropdown=False)
 
     title_surface, title_rect = draw_section_title(font, "Tools", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
@@ -297,6 +302,27 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                         else:
                             form_data["max_tokens"]["value"] = 44000  # Set default value
 
+                        if form_data["lat"]["value"] or form_data["long"]["value"]: # validate as a float
+                            try:
+                                form_data["lat"]["value"] = float(form_data["lat"]["value"])
+                            except ValueError:
+                                error_msg = "Latitude must be a float."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("lat")
+                                form_data["lat"]["component"].validation_error = True
+
+                            try:
+                                form_data["long"]["value"] = float(form_data["long"]["value"])
+                            except ValueError:
+                                error_msg = "Longitude must be a float."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("long")
+                                form_data["long"]["component"].validation_error = True
+
+                        else: # set default to None if not provided
+                            form_data["lat"]["value"] = None
+                            form_data["long"]["value"] = None
+
                         # 3. PROCESS the result of the validation
                         if validation_errors:
                             # If there are errors, print them and show popup
@@ -342,7 +368,10 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             user_prompt = text_inputs['sys_prompt'].text
                             final_prompt = base_prompt + " " + user_prompt if user_prompt else base_prompt
                             config_manager.set_config("AI", "sys_prompt", final_prompt)
-                            
+
+                            config_manager.set_config("location", "latitude", text_inputs['lat'].text)
+                            config_manager.set_config("location", "longitude", text_inputs['long'].text)
+
                             config_manager.save_config_to_archive(config_name)
                             gui.gui_popups.clear_all_popups()
                             running = False
