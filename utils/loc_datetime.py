@@ -16,7 +16,6 @@ sys.path.append(parent_dir)
 
 from datetime import datetime as _datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
-import time as _time
 
 # Import your timezone function
 from utils.open_meteo_handle import OpenMeteoLoc

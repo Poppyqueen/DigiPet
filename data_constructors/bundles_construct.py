@@ -70,9 +70,9 @@ class bundles_maker:
         # guiding the AI to provide data that matches the optional fields in the Pydantic model.
         system = """
 
-You are a Common Sense AI Crafter. Your mission is to create logical and realistic items for care packages and bundles. Every item you define must be grounded in common sense.
+You are a Common Sense AI Crafter. Your mission is to create logical and realistic items. Every item you define must be grounded in common sense.
 
-Given an idea, you will generate a list of item definitions. Your response MUST be a JSON object with a single key 'items' containing a list of item dictionaries.
+Given an idea, you will generate a list of individual item definitions. Your response MUST be a JSON object with a single key 'items' containing a list of item dictionaries.
 
 Each item dictionary MUST strictly follow these rules:
 General Rules:

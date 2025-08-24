@@ -107,8 +107,8 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
     title_surface, title_rect = draw_section_title(font, "Location", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
-    current_y = draw_labeled_dropdown_or_input(font, "lat", "Latitude:", current_y, screen_width, elements, is_dropdown=False)
-    current_y = draw_labeled_dropdown_or_input(font, "long", "Longitude:", current_y, screen_width, elements, is_dropdown=False)
+    current_y = draw_labeled_dropdown_or_input(font, "lat", "Latitude (optional):", current_y, screen_width, elements, is_dropdown=False)
+    current_y = draw_labeled_dropdown_or_input(font, "long", "Longitude (optional):", current_y, screen_width, elements, is_dropdown=False)
 
     title_surface, title_rect = draw_section_title(font, "Tools", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
@@ -227,7 +227,17 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                                 "value": text_inputs['max_tokens'].text,
                                 "component": text_inputs['max_tokens'],
                                 "type": "text"
-                            }
+                            },
+                            "lat": {
+                                "value": text_inputs['lat'].text,
+                                "component": text_inputs['lat'],
+                                "type": "text"
+                            },
+                            "long": {
+                            "value": text_inputs['long'].text,
+                            "component": text_inputs['long'],
+                            "type": "text"
+                        },
                         }
 
                         print("--- Form Data Collected ---")

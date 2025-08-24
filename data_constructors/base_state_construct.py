@@ -229,10 +229,10 @@ class BaseCrafter:
                 prompt_context = [desc for descs in room["descriptions"].values() for desc in descs]
                 final_descriptions = "\n".join(prompt_context)
                 final_prompt = (
-                    f"You are a creative AI tasked with generating a small to medium bundle of items "
+                    f"You are a creative AI tasked with generating a small to medium bundle of individual items "
                     f"for the following room: {room_name}. The room has the following descriptions: "
-                    f"{final_descriptions}. Based on this information, create a list of items that would "
-                    f"logically fit in this room. 10 items max per room."
+                    f"{final_descriptions}. Based on this information, create a list of specific single items that would "
+                    f"logically fit in this room. Furniture, consumables and/or misc, 10 max per room."
                 )
 
 
