@@ -507,10 +507,12 @@ class room_garden:
 
 
 class room_living_room:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, open_meteo=None):
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
+
+        self.open_meteo = open_meteo
 
         self.last_show_watched=""
         #print("Living room initialized.")
