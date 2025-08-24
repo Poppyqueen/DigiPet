@@ -42,16 +42,6 @@ class BundleCollectionConfig(BaseModel):
     collection_theme: str = Field(description="The overarching theme of the collection")
     bundles: List[BundleConfig] = Field(description="List of bundle configurations for this collection")
 
-# --- Structure for the fixed stats_edit dictionary ---
-class ItemStatsEdit(BaseModel):
-    """
-    Defines the required structure for the stats_edit dictionary.
-    Must contain exactly 'fullness', 'hydration', and 'energy' as floats.
-    """
-    fullness: float = Field(description="Float change to fullness stat. Can be negative for inflicting negative effects or punishments for consumption.")
-    hydration: float = Field(description="Float change to hydration stat. Can be negative for inflicting negative effects or punishments for consumption.")
-    energy: float = Field(description="Float change to energy stat. Can be negative for inflicting negative effects or punishments for consumption.")
-
 class bundles_maker:
 
 

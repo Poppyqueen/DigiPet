@@ -14,14 +14,13 @@ import asyncio
 import math
 
 from tools.tools_folder.tools_helpers import random_object, tv_handle
-from utils import open_meteo_handle
 
 from tools.tools_folder.tools_helpers.ai_cook import cook
 
 import random
 from tools.tools_folder.tools_helpers.services.wiki_handle import Wikipedia_handle
 
-
+from utils.loc_datetime import datetime
 
 def check_one_in(number: int):
   """
@@ -463,17 +462,19 @@ class room_bedroom:
 
 
 class room_garden:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, open_meteo=None):
         self._signal_callback=signal
         # Store the state_manager reference
         self.state = state_manager
+        self.open_meteo = open_meteo
         #print("Garden initialized.")
 
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
 
     def display_information(self):
-        return open_meteo_handle.get_full_weather()
+        now = datetime.now()
+        return self.open_meteo.get_full_weather(now)
         
 
     def lay_down(self):
@@ -571,7 +572,8 @@ class room_living_room:
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/window_icon.png"})
         # ------------------------
-        return open_meteo_handle.get_full_weather()
+        now = datetime.now()
+        return self.open_meteo.get_full_weather(now)
 
 
 
@@ -663,7 +665,7 @@ class room_white:
 
 # Define the main handler class
 class main_tools_handle:
-    def __init__(self, state_manager, signal=None, memory_manager=None, config_manager=None):
+    def __init__(self, state_manager, signal=None, memory_manager=None, config_manager=None, open_meteo=None):
         self.memory=memory_manager
         self.wiki=Wikipedia_handle(self.memory)
         print("Main tools handler initialized.")
@@ -671,13 +673,15 @@ class main_tools_handle:
         # Store the state_manager reference
         self.state = state_manager
 
+        self.open_meteo = open_meteo
+
         # Instantiate the room classes and store them as attributes
         # Pass the state_manager AND the signal callback to the room instances
         self.bathroom = room_bathroom(self.state, self._signal_callback)
         self.bedroom = room_bedroom(self.state, self._signal_callback, self.memory)
-        self.living_room= room_living_room(self.state, self._signal_callback)
+        self.living_room= room_living_room(self.state, self._signal_callback, self.open_meteo)
         self.computer = room_computer(self.state, self._signal_callback, self.wiki)
-        self.garden = room_garden(self.state, self._signal_callback)
+        self.garden = room_garden(self.state, self._signal_callback, self.open_meteo)
         # --- Fix: Removed the extra 'self' argument here ---
         self.white_room = room_white(self.state, self._signal_callback)
         # ---------------------------------------------------

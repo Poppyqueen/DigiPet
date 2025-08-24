@@ -1,18 +1,3 @@
-import os
-import sys
-
-# --- TEMPORARY FIX FOR DIRECT EXECUTION ---
-# This block allows the script to find the 'utils' package
-# when run directly from its current location.
-# Assuming 'utils' is in the parent directory of this script's location
-# This adds the parent directory to the Python path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(script_dir)
-sys.path.append(parent_dir)
-# -------------------------------------------
-
-
-
 
 from datetime import datetime as _datetime, timezone, timedelta
 from zoneinfo import ZoneInfo

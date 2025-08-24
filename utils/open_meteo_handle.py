@@ -1,23 +1,8 @@
-import os
-import sys
-
-# --- TEMPORARY FIX FOR DIRECT EXECUTION ---
-# This block allows the script to find the 'utils' package
-# when run directly from its current location.
-# Assuming 'utils' is in the parent directory of this script's location
-# This adds the parent directory to the Python path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(script_dir)
-sys.path.append(parent_dir)
-# -------------------------------------------
-
 
 
 import openmeteo_requests
 import requests_cache
 from retry_requests import retry
-import os
-import sys
 
 from utils.time_manager import get_time_tag_from_now
 

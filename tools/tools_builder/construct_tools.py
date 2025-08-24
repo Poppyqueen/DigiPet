@@ -119,7 +119,7 @@ class FunctionBuilder:
         self.sub_directory = subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
-        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager)
+        self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager, self.open_meteo)
         self.A_Life = None # Initialized by _init_alife
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
         self._init_alife() # ALIFE is always initialized
