@@ -18,7 +18,6 @@ from tools.tools_folder.tools_helpers import random_object, tv_handle
 from tools.tools_folder.tools_helpers.ai_cook import cook
 
 import random
-from tools.tools_folder.tools_helpers.services.wiki_handle import Wikipedia_handle
 
 from utils.loc_datetime import datetime
 
@@ -555,7 +554,7 @@ class room_living_room:
 
     def sit_on_couch(self):
         edit=1
-        message=f"You sit down on the couch for a while, you feel like you are sinking into it. Gained {edit} energy points."
+        message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
         if check_one_in(10):
             edit=5
             message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
@@ -669,7 +668,20 @@ class room_white:
 class main_tools_handle:
     def __init__(self, state_manager, signal=None, memory_manager=None, config_manager=None, open_meteo=None):
         self.memory=memory_manager
-        self.wiki=Wikipedia_handle(self.memory)
+
+        wikipedia_enabled = config_manager.get_config('Tools', "enable_wikipedia")
+
+
+        print(f"DEBUG: WIKPEDIA enabled (config): {wikipedia_enabled}")
+
+        self.wiki=None
+        if wikipedia_enabled:
+            try: 
+                from tools.tools_folder.tools_helpers.services.wiki_handle import Wikipedia_handle
+                self.wiki=Wikipedia_handle(self.memory)
+            except Exception as e:
+                print(f"Error initializing Wikipedia_handle: {e}")
+
         print("Main tools handler initialized.")
         self._signal_callback=signal # Store the main signal callback here
         # Store the state_manager reference

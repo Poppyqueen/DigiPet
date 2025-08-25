@@ -1463,7 +1463,7 @@ book_tools = [
     {
         "type": "function",
         "name": "update_chapter",
-        "description": "Update a chapter in a book.",
+        "description": "Update a chapter in a book. This function will delete and replace the current entire chapter content with the new input.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -1473,7 +1473,7 @@ book_tools = [
                 },
                 "chapter_title": {
                     "type": "string",
-                    "description": "The title of the chapter to update."
+                    "description": "The title of the chapter to replace."
                 },
                 "new_content": {
                     "type": "string",

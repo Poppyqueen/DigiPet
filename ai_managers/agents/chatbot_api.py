@@ -342,27 +342,27 @@ class CLIChatbot:
 
         low_stat_detected = False # Flag to determine if any stat has hit the critical pass-out threshold
 
-        if stats_data is not None:
-            for stat_name in stats_to_monitor:
-                # Retrieve current value, defaulting to infinity if stat is missing to avoid false positives
-                current_value = stats_data.get(stat_name, float('inf'))
+        # if stats_data is not None:
+        #     for stat_name in stats_to_monitor:
+        #         # Retrieve current value, defaulting to infinity if stat is missing to avoid false positives
+        #         current_value = stats_data.get(stat_name, float('inf'))
 
-                # Check for specific threshold messages and save them to memory
-                if stat_name in wellness_threshold_messages:
-                    # Iterate through the defined thresholds for the current stat
-                    for threshold, message in wellness_threshold_messages[stat_name]:
-                        if current_value <= threshold:
-                            # If the current value is at or below this threshold, save the associated message
-                            self.memory.save_to_memory(message, "short_term", "user")
+        #         # Check for specific threshold messages and save them to memory
+        #         if stat_name in wellness_threshold_messages:
+        #             # Iterate through the defined thresholds for the current stat
+        #             for threshold, message in wellness_threshold_messages[stat_name]:
+        #                 if current_value <= threshold:
+        #                     # If the current value is at or below this threshold, save the associated message
+        #                     self.memory.save_to_memory(message, "short_term", "user")
                             
-                            # If this specific threshold is the critical pass-out threshold,
-                            # set the flag to trigger a pass-out event after checking all stats.
-                            if threshold == low_threshold_for_passout:
-                                low_stat_detected = True
-                            break # Stop after finding the most severe applicable message for this stat
+        #                     # If this specific threshold is the critical pass-out threshold,
+        #                     # set the flag to trigger a pass-out event after checking all stats.
+        #                     if threshold == low_threshold_for_passout:
+        #                         low_stat_detected = True
+        #                     break # Stop after finding the most severe applicable message for this stat
 
-        else:
-            print("Warning: Could not retrieve valid stats data to check wellness thresholds.")
+        # else:
+        #     print("Warning: Could not retrieve valid stats data to check wellness thresholds.")
 
         # 3. If a critically low stat was detected, perform the consequences
         if low_stat_detected:

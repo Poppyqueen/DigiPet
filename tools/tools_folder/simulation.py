@@ -723,7 +723,7 @@ class ALifeSimulation:
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/alife_examine.png"})
 
         # Return the JSON string representation
-        return json.dumps(observed_state, indent=2)
+        return json.dumps(observed_state)
             
     def forward_ALIFE(self) -> str:
         """

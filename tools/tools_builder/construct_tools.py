@@ -78,6 +78,8 @@ class FunctionBuilder:
         musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
         bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
 
+        self.wikipedia_enabled = config_manager.get_config('Tools', "enable_wikipedia")
+
         self.open_meteo = open_meteo    
 
 
@@ -218,15 +220,6 @@ class FunctionBuilder:
                 },
                 "definitions": bathroom_tools
             },
-             "computer_room": {
-                "functions": {
-                     "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
-                     "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
-                     "random_wikipedia": self.room_tools.computer.random_wikipedia
-                },
-                "definitions": computer_room_tools,
-                "current_info": self.room_tools.computer.display_information
-            },
              "garden": {
                 "functions": {
                      "dig_hole": self.room_tools.garden.dig_hole,
@@ -265,62 +258,6 @@ class FunctionBuilder:
             }
             # Add entries for other static room types as needed
         }
-
-
-        # --- Dynamically Add Optional Tool Data if Enabled and Initialized ---
-        if self.musicbrainz_: # Check if the instance was successfully created
-            self._room_type_data["musicbrainz"] = {
-                "functions": {
-                    #"musicbrainz_search_artists_by_tags": self.musicbrainz_.search_artists_by_tags,
-                    #"musicbrainz_search_albums_by_tags": self.musicbrainz_.search_albums_by_tags,
-                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
-                    "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
-                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
-                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
-                    "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
-                },
-                "definitions": musicbrainz_tools
-            }
-            print("MusicBrainz tools added to room type data.")
-
-        if self.discogs_handle: # Check if the instance was successfully created
-            self._room_type_data["discogs"] = {
-                "functions": {
-                    "discogs_search_artist_by_name": self.discogs_handle.search_artist_by_name,
-                    "discogs_get_artist_master_releases_overview": self.discogs_handle.get_artist_master_releases_overview,
-                    "discogs_get_master_release_tracklist": self.discogs_handle.get_master_release_tracklist,
-                    "discogs_get_collection_summary": self.discogs_handle.get_collection_summary,
-                    "discogs_get_wantlist_summary": self.discogs_handle.get_wantlist_summary,
-                    "discogs_search_master_release_by_name": self.discogs_handle.search_master_release_by_name,
-                    "discogs_get_collection_unique_artists": self.discogs_handle.get_collection_unique_artists,
-                    "discogs_get_wantlist_unique_artists": self.discogs_handle.get_wantlist_unique_artists
-                },
-                "definitions": discogs_tools
-            }
-            print("Discogs tools added to room type data.")
-
-        if self.youtube: # Check if the instance was successfully created
-            self._room_type_data["youtube_playlists"] = {
-                "functions": {
-                    "youtube_search_video": self.youtube.search_video,
-                    "youtube_create_playlist": self.youtube.create_playlist,
-                    "youtube_add_video_to_playlist": self.youtube.add_video_to_playlist,
-                    "youtube_open_youtube_item": self.youtube.open_youtube_item
-                },
-                "definitions": youtube_playlister_tools,
-                "current_info": self.youtube.get_summary
-            }
-            print("YouTube Playlists tools added to room type data.")
-
-        # if self.bluesky: # Check if the instance was successfully created
-        #     self._room_type_data["bluesky_social"] = { # Using a distinct room type name
-        #         "functions": {
-        #             "post_bluesky": self.bluesky.post_bluesky
-        #         },
-        #         "definitions": bluesky_tools # Use the imported definitions list
-        #     }
-        #     print("Bluesky Social tools added to room type data.")
-
 
         # --- End Central Mapping ---
 
@@ -366,6 +303,10 @@ class FunctionBuilder:
             "art_book": art_book_tools
         }
 
+
+
+
+
         # 2. DUAL-USE: Tools available whether the item is in the room OR in the inventory.
         self._dual_use_item_functions = {
             "seat": {
@@ -376,24 +317,107 @@ class FunctionBuilder:
             "seat": seat_tools
         }
 
+
+
+        # --- Dynamically Add Optional Tool Data if Enabled and Initialized ---
+
+        if self.wikipedia_enabled:
+            wikipedia_functions={
+                    "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
+                    "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
+                    "random_wikipedia": self.room_tools.computer.random_wikipedia
+            }
+            self._inventory_only_functions["wikipedia"] = wikipedia_functions
+            self._inventory_only_definitions["wikipedia"] = computer_room_tools
+
+            self._room_type_data["computer_room"] = {
+                "functions": wikipedia_functions,
+                "definitions": computer_room_tools,
+                "current_info": self.room_tools.computer.display_information
+            }
+
+            print("Wikipedia tools added to room type data.")
+
+
+
+        if self.musicbrainz_: # Check if the instance was successfully created
+            music_brainz_functions={
+                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
+                    "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
+                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
+                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
+                    "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
+            }
+            self._inventory_only_functions["musicbrainz"] = music_brainz_functions
+            self._inventory_only_definitions["musicbrainz"] = musicbrainz_tools
+
+            print("MusicBrainz tools added to inventory-only definitions.")
+
+            self._room_type_data["musicbrainz"] = {
+                "functions": music_brainz_functions,
+                "definitions": musicbrainz_tools
+            }
+            print("MusicBrainz tools added to room type data.")
+
+        if self.discogs_handle: # Check if the instance was successfully created
+
+            discogs_functions={
+                    "discogs_search_artist_by_name": self.discogs_handle.search_artist_by_name,
+                    "discogs_get_artist_master_releases_overview": self.discogs_handle.get_artist_master_releases_overview,
+                    "discogs_get_master_release_tracklist": self.discogs_handle.get_master_release_tracklist,
+                    "discogs_get_collection_summary": self.discogs_handle.get_collection_summary,
+                    "discogs_get_wantlist_summary": self.discogs_handle.get_wantlist_summary,
+                    "discogs_search_master_release_by_name": self.discogs_handle.search_master_release_by_name,
+                    "discogs_get_collection_unique_artists": self.discogs_handle.get_collection_unique_artists,
+                    "discogs_get_wantlist_unique_artists": self.discogs_handle.get_wantlist_unique_artists
+            }
+
+            self._inventory_only_functions["discogs"] = discogs_functions
+            self._inventory_only_definitions["discogs"] = discogs_tools
+            print("Discogs tools added to inventory-only definitions.")
+
+            self._room_type_data["discogs"] = {
+                "functions": discogs_functions,
+                "definitions": discogs_tools
+            }
+            print("Discogs tools added to room type data.")
+
+        if self.youtube: # Check if the instance was successfully created
+            youtube_functions = {
+                "youtube_search_video": self.youtube.search_video,
+                "youtube_create_playlist": self.youtube.create_playlist,
+                "youtube_add_video_to_playlist": self.youtube.add_video_to_playlist,
+                "youtube_open_youtube_item": self.youtube.open_youtube_item
+            }
+
+            self._inventory_only_functions["youtube_playlists"] = youtube_functions
+            self._inventory_only_definitions["youtube_playlists"] = youtube_playlister_tools
+
+            self._room_type_data["youtube_playlists"] = {
+                "functions": youtube_functions,
+                "definitions": youtube_playlister_tools,
+                "current_info": self.youtube.get_summary
+            }
+            print("YouTube Playlists tools added to room type data.")
+
+
         # Moved bluesky here, probably move all other import conditional tools here too
         if self.bluesky:
+
+            bluesky_functions={
+                    "post_bluesky": self.bluesky.post_bluesky,
+                    "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
+                    "post_reply": self.bluesky.post_reply
+                }
+        
             # Add Bluesky tools to the inventory-only functions and definitions
-            self._inventory_only_functions["bluesky_social"] = {
-                "post_bluesky": self.bluesky.post_bluesky,
-                "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
-                "post_reply": self.bluesky.post_reply
-            }
+            self._inventory_only_functions["bluesky_social"] = bluesky_functions
             self._inventory_only_definitions["bluesky_social"] = bluesky_tools
             print("Bluesky Social tools added to inventory-only functions.")
 
         # 3. ROOM-SPECIFIC: Tools that are available based on the current room type.
             self._room_type_data["bluesky_social"] = { # Using a distinct room type name
-                "functions": {
-                    "post_bluesky": self.bluesky.post_bluesky,
-                    "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
-                    "post_reply": self.bluesky.post_reply
-                },
+                "functions": bluesky_functions,
                 "definitions": bluesky_tools # Use the imported definitions list
             }
 
@@ -636,14 +660,16 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
-        print("DEBUG ITEMS LIST")
-        print(self.state_manager.get_inventory_items())
+        # print("DEBUG ITEMS LIST")
+        # print(self.state_manager.get_inventory_items())
         context.append("#############")
         # context.append("In the current room the items are:")
         # context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary
         # context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())
+        print("DEBUG: Current stats context:")
+        print(self.state_manager.get_stats())
         context.append("\n#############\n")
 
         # Add weather context ONLY if the room type is "garden"

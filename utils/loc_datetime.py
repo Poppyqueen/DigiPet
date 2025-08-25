@@ -38,6 +38,8 @@ class CoordinateDateTime:
             
             try:
                 tz_obj = ZoneInfo(tz_name)
+                print(f"Timezone found: {tz_name} ({tz_abbrev})")
+                print("Using provided timezone information.")
                 return {
                     'name': tz_name,
                     'abbreviation': tz_abbrev,
