@@ -17,7 +17,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
 
 
 def add_items(items_list, room):

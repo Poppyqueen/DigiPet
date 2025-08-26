@@ -8,11 +8,18 @@ from inventory_items.inventory_manager import InventoryHouseManager
 import os
 from utils.capture_text import TextCapture # Import the text capture class
 
+from utils.open_meteo_handle import OpenMeteoLoc
+
+from utils.loc_datetime import datetime
+
 
 DEFAULT_INVENTORY_FOLDER = "inventory" 
 DEFAULT_MEMORY_DB = "cli_memory.json"
 DEFAULT_DEEP_MEMORY_DB = "cli_deep_memory.json"
 DEFAULT_TEXT_CAPTURE_DB = "logs_capture.txt"
+
+my_latitude = os.getenv("LATITUDE")
+my_longitude = os.getenv("LONGITUDE")
 
 
 # --- NEW: Mock Functions Builder Class ---
@@ -58,6 +65,26 @@ class MockChatbot:
         os.makedirs(sub_directory, exist_ok=True) # Ensure the target directory is created
 
         self._signal_callback = signal_callback
+
+
+        lat=config_manager.get_config('location','latitude')
+        long=config_manager.get_config('location','longitude')
+
+        message="using provided location from config."
+        if not lat or not long:
+            lat = my_latitude
+            long = my_longitude
+            message="using default location from environment variables."
+        self.open_meteo = OpenMeteoLoc(long=long, lat=lat) # Initialize with coordinates
+        datetime.set_coordinates(lat,long)
+
+        # Location data for the agent:
+        print(f"Agent {pet_name} Initialized with location info {message}:")
+        print(f"  Latitude: {lat}")
+        print(f"  Longitude: {long}")
+        print(f"  Timezone: {self.open_meteo.get_timezone()}")
+        print(f"  Current Weather: {self.open_meteo.get_full_weather()}")
+    
 
         # --- Mock Internal State (Simulating what the real bot holds) ---
         # self._is_color_configured = False

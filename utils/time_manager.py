@@ -1,4 +1,4 @@
-
+from utils.loc_datetime import datetime
 # --- Updated get_time_tag function ---
 def get_time_tag(hour: int) -> str | None:
     """
@@ -34,7 +34,7 @@ def get_time_tag(hour: int) -> str | None:
     # No need for an else here because 0-23 is fully covered by the checks above
 
 
-def get_time_tag_from_now(now) -> str | None:
+def get_time_tag_from_now() -> str | None:
     """
     Gets the current time and returns the corresponding time tag.
     Returns None if the hour is outside the 0-23 range.
@@ -49,6 +49,6 @@ def get_time_tag_from_now(now) -> str | None:
     - 20-23: 'night'
     
     """
-    #now = datetime.now()
+    now = datetime.now()
     current_hour = now.hour
     return get_time_tag(current_hour)

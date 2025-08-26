@@ -675,8 +675,7 @@ class FunctionBuilder:
         # Add weather context ONLY if the room type is "garden"
         if "garden" in current_room_types:
              try:
-                 now=datetime.now()
-                 weather_info = self.open_meteo.get_full_weather(now)
+                 weather_info = self.open_meteo.get_full_weather()
                  context.append("#############")
                  context.append("Current outdoor weather:")
                  context.append(weather_info)

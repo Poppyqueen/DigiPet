@@ -4,8 +4,6 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 
-from utils.time_manager import get_time_tag_from_now
-
 # Setup the Open-Meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after=900)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
@@ -70,8 +68,7 @@ class OpenMeteoLoc:
         }
         return time_zone_data
 
-    def get_structured_weather(self,now):
-        time_tag=get_time_tag_from_now(now)
+    def get_structured_weather(self):
         responses = openmeteo.weather_api(self.url, params=self.params)
         
         # Process the first location in the response
@@ -88,7 +85,6 @@ class OpenMeteoLoc:
         is_day = "True" if current_is_day == 1 else "False"
 
         weather_data={
-            "time":time_tag,
             "current humidity":current_relative_humidity_2m,
             "current temperature": current_apparent_temperature,
             "is_day": is_day,
@@ -99,10 +95,9 @@ class OpenMeteoLoc:
 
         return weather_data
 
-    def get_full_weather(self, now):
+    def get_full_weather(self):
 
-        weather_data = self.get_structured_weather(now)
-        time_tag = weather_data["time"]
+        weather_data = self.get_structured_weather()
         current_apparent_temperature = weather_data["current temperature"]
         current_relative_humidity_2m = weather_data["current humidity"]
         is_day = weather_data["is_day"]
@@ -114,7 +109,6 @@ class OpenMeteoLoc:
     Current apparent temperature: {current_apparent_temperature}°C
     Current relative humidity (2m): {current_relative_humidity_2m}%
     Is it daytime?: {is_day}, 
-    It is: {time_tag}
     Current wind speed (10m): {current_wind_speed_10m} m/s
     Current precipitation: {current_precipitation} mm
     Current cloud cover: {current_cloud_cover}%

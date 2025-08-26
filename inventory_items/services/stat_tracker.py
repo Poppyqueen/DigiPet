@@ -58,9 +58,9 @@ class StatTracker:
             return cleaned_stats
         else:
             return (f"Current Stats: "
-                    f"Fullness: {cleaned_stats.get('fullness', 'N/A')}/{self.MAX_STAT_VALUE}, "
-                    f"Hydration: {cleaned_stats.get('hydration', 'N/A')}/{self.MAX_STAT_VALUE}, "
-                    f"Energy: {cleaned_stats.get('energy', 'N/A')}/{self.MAX_STAT_VALUE}")
+                    f"Fullness: {cleaned_stats.get('fullness', 'N/A'):.1f}/{self.MAX_STAT_VALUE}, "
+                    f"Hydration: {cleaned_stats.get('hydration', 'N/A'):.1f}/{self.MAX_STAT_VALUE}, "
+                    f"Energy: {cleaned_stats.get('energy', 'N/A'):.1f}/{self.MAX_STAT_VALUE}")
 
     def adjust_stat(self, stat_name: str, amount: int|float) -> str:
         stat_name = stat_name.lower().strip()

@@ -156,8 +156,7 @@ class Garden_Mananger(GenericJsonTool):
             float: The precipitation level (e.g., in mm/h), default to 0.0 if not available.
         """
         try:
-            now = datetime.now()
-            weather_data = self.open_meteo.get_structured_weather(now)
+            weather_data = self.open_meteo.get_structured_weather()
             return weather_data.get("precipitation", 0.0)
         except Exception as e:
             print(f"Error getting weather data for rain: {e}")

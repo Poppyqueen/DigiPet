@@ -70,7 +70,7 @@ class CLIChatbot:
         print(f"  Latitude: {lat}")
         print(f"  Longitude: {long}")
         print(f"  Timezone: {self.open_meteo.get_timezone()}")
-        print(f"  Current Weather: {self.open_meteo.get_full_weather(datetime.now())}")
+        print(f"  Current Weather: {self.open_meteo.get_full_weather()}")
     
 
         sub_directory=os.path.join(bots_archive_dir,"bots",pet_name)

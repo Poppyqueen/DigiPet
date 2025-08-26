@@ -472,8 +472,7 @@ class room_garden:
     _send_signal = _send_signal # Assign the common helper function
 
     def display_information(self):
-        now = datetime.now()
-        return self.open_meteo.get_full_weather(now)
+        return self.open_meteo.get_full_weather()
         
 
     def lay_down(self):
@@ -529,7 +528,7 @@ class room_living_room:
             if "seat" in item_details["details"]["type"]:
                 print(f"Ok to sit on!")
                 edit=1
-                message=f"You sit down on the couch for a while, you feel like you are sinking into it. Gained {edit} energy points."
+                message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
                 if check_one_in(10):
                     edit=5
                     message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
@@ -573,8 +572,7 @@ class room_living_room:
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/window_icon.png"})
         # ------------------------
-        now = datetime.now()
-        return self.open_meteo.get_full_weather(now)
+        return self.open_meteo.get_full_weather()
 
 
 

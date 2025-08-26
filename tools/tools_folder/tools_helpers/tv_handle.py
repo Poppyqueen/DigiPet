@@ -56,16 +56,13 @@ def get_tv_program() -> str:
     and returns a random matching excerpt description.
     """
     # 1. Get the current time and corresponding tag
-    now = datetime.now()
-    current_hour = now.hour
-    current_tag = get_time_tag_from_now(now)
+    current_tag = get_time_tag_from_now()
 
     if current_tag is None:
         # With the current get_time_tag, this message indicates an issue
         # with the hour value (outside 0-23).
-        return f"Internal Error: Invalid hour value ({current_hour}). Cannot find a program tag."
+        return f"Internal Error: Invalid hour value. Cannot find a program tag."
 
-    print(f"Current time is {now.strftime('%H:%M')}. Looking for programs tagged '{current_tag}'.")
 
     # 2. Load TV data from file
     tv_data = load_tv_data()
