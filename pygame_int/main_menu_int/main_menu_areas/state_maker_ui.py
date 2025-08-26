@@ -23,7 +23,7 @@ from enum import Enum
 from data_constructors.base_state_construct import BaseCrafter
 
 
-from ai_managers.ai_utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration, ImagesConfiguration, UnifiedLoader
 
 from pygame_int.main_menu_int.main_menu_modules.pulsing_text import PulsingText
 
@@ -31,6 +31,13 @@ from pygame_int.main_menu_int.main_menu_modules.pulsing_text import PulsingText
 
 
 AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
+
+AVAILABLE_IMAGE_AI=UnifiedLoader.get_available_providers("images")
+
+AVAILABLE_IMAGE_AI.append("")
+
+print(f"STATE MAKER DEBUG, IMAGE AI:")
+print(AVAILABLE_IMAGE_AI)
 
 
 dropdowns = {}
@@ -65,7 +72,7 @@ processing_thread = None
 base_state_crafter_instance = None # To hold the crafter for shutdown requests
 
 
-def start_threaded_processing(crafter, user_prompt):
+def start_threaded_processing(crafter, user_prompt, image_provider, image_model):
     global processing_thread, process_state
     if process_state != ProcessState.IDLE:
         return False
@@ -146,8 +153,18 @@ def run_config_creation_twilight_zone(screen, font, init_states):
 
     elements = []
     current_y = 10
+
+    title_surface, title_rect = draw_section_title(font, "World Builder AI", current_y, screen_width)
+    elements.append((title_surface, title_rect))
+    current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     current_y = draw_labeled_dropdown_or_input(font, "ai_provider_name", "Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
     current_y = draw_labeled_dropdown_or_input(font, "select_model", "Model Name:", current_y, screen_width, elements, is_dropdown=False)
+    title_surface, title_rect = draw_section_title(font, "Image Generation (Optional)", current_y, screen_width)
+    elements.append((title_surface, title_rect))
+    current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
+    current_y = draw_labeled_dropdown_or_input(font, "image_provider_name", "Image Provider:", current_y, screen_width, elements, is_dropdown=True, options=AVAILABLE_IMAGE_AI)
+    current_y = draw_labeled_dropdown_or_input(font, "image_model_name", "Model Name:", current_y, screen_width, elements, is_dropdown=False)
+
     title_surface, title_rect = draw_section_title(font, "System Prompt", current_y, screen_width)
     elements.append((title_surface, title_rect))
     current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
@@ -244,17 +261,22 @@ def run_config_creation_twilight_zone(screen, font, init_states):
                         select_model = text_inputs['select_model']
                         select_data = [user_prompt.text, select_provider.selected_option, select_model.text]
 
+                        image_provider = dropdowns['image_provider_name']
+                        image_model = text_inputs['image_model_name']
+
                         if any(not item or not item.strip() for item in select_data):
-                            gui.gui_popups.show_popup_message("All fields must be filled out.", (255, 0, 0), True)
+                            gui.gui_popups.show_popup_message("All World Builder AI fields must be filled out.", (255, 0, 0), True)
                             continue
 
 
                         flavor_text_display.color = (100, 255, 100) # The original green color
                         base_state_crafter_instance = BaseCrafter(
                             select_model.text, select_provider.selected_option,
-                            initial_states_manager, signal_queue=signal_queue
+                            initial_states_manager, signal_queue=signal_queue,
+                            images_provider=image_provider.selected_option if image_provider.selected_option else None,
+                            images_model=image_model.text if image_model.text else None
                         )
-                        if start_threaded_processing(base_state_crafter_instance, user_prompt.text):
+                        if start_threaded_processing(base_state_crafter_instance, user_prompt.text, image_provider, image_model):
                             gui.gui_popups.show_popup_message("Starting environment creation...", (0, 255, 255), True)
                         else:
                             gui.gui_popups.show_popup_message("Processing already in progress.", (255, 255, 0), True)

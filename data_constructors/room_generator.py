@@ -10,7 +10,7 @@ import glob
 import json
 from pydantic import BaseModel, Field
 
-from ai_managers.ai_utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration, ImagesConfiguration
 
 from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
@@ -82,9 +82,13 @@ class Room(BaseModel):
 
 class room_crafter:
 
-    def __init__(self, select_model="gpt-5-mini", select_provider="openai", signal_queue=None):
+    def __init__(self, select_model="gpt-5-mini", select_provider="openai", signal_queue=None, images_model=None, images_provider=None):
         self.llm_client = AIConfiguration(provider=select_provider, model=select_model, mode="simple_ai").get_client()
         
+        self.images_client = None
+        if images_model and images_provider:
+            self.images_client = ImagesConfiguration(provider=images_provider, model=images_model).get_image_generator()
+
         # Add shutdown mechanism
         self.signal_queue = signal_queue
         self._shutdown_event = threading.Event()
@@ -301,83 +305,138 @@ class room_crafter:
         
         return available_images, available_music
 
-    def generate_rooms_config(self, initial_idea: str, 
-                            image_dirs: List[str] = None, 
+    def generate_rooms_config(self, initial_idea: str,
+                            image_dirs: List[str] = None,
                             music_dirs: List[str] = None,
                             max_rooms: int = 8) -> HouseConfig | None:
         """
-        Given a singular idea, the AI will create room configs for the rest of the process.
-        Now with shutdown support.
+        Given a singular idea, the AI will create room configs.
+        If an image generator (self.images_client) is available, it will generate,
+        save, and assign a unique image for each room. Otherwise, it will select
+        from pre-existing assets.
         """
-        # Check shutdown at start
         if self._check_shutdown("generating_rooms_config"):
             return None
 
         # Set default directories if none provided
         if image_dirs is None:
-            image_dirs = ["style/images/rooms_images", "style/images/local_rooms_images"]
+            image_dirs = ["style/images/rooms_images", "style/images/local_rooms_images", "style/images/local_rooms_images/local_ai_gens"]
         if music_dirs is None:
             music_dirs = ["style/sounds/music/rooms", "style/sounds/local_music/rooms"]
-        
-        # Scan for available assets
-        available_images, available_music = self.scan_asset_directories(image_dirs, music_dirs)
-        
-        # Check shutdown after asset scanning
-        if self._check_shutdown("after_asset_scanning"):
-            return None
-        
-        print(f"Found {len(available_images)} available images and {len(available_music)} available music tracks")
-        
-        system_prompt = (
+
+        # --- Base Prompt Setup ---
+        user_prompt = (
+            f"Create a house design based on this concept: '{initial_idea}'\n\n"
+            "Generate:\n"
+            "1. A creative house name that captures the essence of the concept.\n"
+
+            f"2. Between 3 and {max_rooms} rooms that work together to create a cohesive experience.\n"
+            "3. Each room should have varied purposes and atmospheres while fitting the overall theme.\n\n"
+            "Make sure room names are unique, concepts are detailed and evocative, and asset assignments make thematic sense."
+        )
+
+        system_prompt_base = (
             "You are a creative house designer and world builder. Given an initial concept, you will create "
             "a cohesive house design with multiple rooms that fit the theme. Generate both a creative name "
             "for the house and detailed room configurations.\n\n"
             f"Available room types: {', '.join(VALID_ROOM_TYPES)}\n"
-            f"Available images: {', '.join(available_images) if available_images else 'No images found - use generic names'}\n"
-            f"Available music: {', '.join(available_music) if available_music else 'No music found - use generic names'}\n\n"
-            "For each room:\n"
-            "- Create a unique, descriptive concept (2-3 sentences)\n"
-            "- Assign a short, unique name (no spaces, lowercase with underscores)\n"
-            "- Choose appropriate image and music from available assets (or create reasonable names if none available)\n"
-            "- Select relevant room types from the valid list\n"
-            "- If room type includes 'planting_garden', specify number of plots (1-20)\n\n"
-            f"Generate 3-{max_rooms} rooms that create a cohesive, interesting house experience."
         )
-        
-        user_prompt = (
-            f"Create a house design based on this concept: '{initial_idea}'\n\n"
-            "Generate:\n"
-            "1. A creative house name that captures the essence of the concept\n"
-            "2. Multiple rooms that work together to create a cohesive experience\n"
-            "3. Each room should have varied purposes and atmospheres while fitting the overall theme\n\n"
-            "Make sure room names are unique, concepts are detailed and evocative, and asset assignments make thematic sense."
-        )
-        
+
+        # --- Conditional Behavior: Generate Images vs. Use Assets ---
+        if self.images_client:
+            # BEHAVIOR 1: We have an image generator.
+            print("Image generator detected. Will generate new images for rooms.")
+            _, available_music = self.scan_asset_directories([], music_dirs)
+            
+            system_prompt = (
+                system_prompt_base +
+                f"Available music: {', '.join(available_music) if available_music else 'No music found - use generic names'}\n\n"
+                "For each room:\n"
+                "- Create a unique, descriptive concept (2-3 sentences). This concept will be used to generate an image.\n"
+                "- Assign a short, unique name (no spaces, lowercase with underscores).\n"
+                "- You DO NOT need to assign an image name. Use 'ai_generated_image' as a placeholder for the 'image' field.\n"
+                "- Choose appropriate music from the available assets.\n"
+                "- Select relevant room types from the valid list.\n"
+                "- If room type includes 'planting_garden', specify number of plots (1-20)."
+            )
+            
+        else:
+            # BEHAVIOR 2: No image generator. Use existing assets.
+            print("No image generator detected. Will use existing assets.")
+            available_images, available_music = self.scan_asset_directories(image_dirs, music_dirs)
+            if self._check_shutdown("after_asset_scanning"):
+                return None
+            print(f"Found {len(available_images)} available images and {len(available_music)} available music tracks")
+            
+            system_prompt = (
+                system_prompt_base +
+                f"Available images: {', '.join(available_images) if available_images else 'No images found - use generic names'}\n"
+                f"Available music: {', '.join(available_music) if available_music else 'No music found - use generic names'}\n\n"
+                "For each room:\n"
+                "- Create a unique, descriptive concept (2-3 sentences).\n"
+                "- Assign a short, unique name (no spaces, lowercase with underscores).\n"
+                "- Choose an appropriate image and music from the available asset lists.\n"
+                "- Select relevant room types from the valid list.\n"
+                "- If room type includes 'planting_garden', specify number of plots (1-20)."
+            )
+
+        # --- AI Call to Generate House Structure ---
         print(f"Generating house configuration for concept: '{initial_idea}'...")
-        
         try:
             response = self.llm_client.structured_output(
                 system=system_prompt,
                 user=user_prompt,
                 structure=HouseConfig
             )
-            
-            # Check shutdown after AI call
             if self._check_shutdown("after_house_config_generation"):
                 return None
-            
-            if response and response.rooms:
-                print(f"Generated house '{response.house_name}' with {len(response.rooms)} rooms:")
-                for i, room in enumerate(response.rooms, 1):
-                    print(f"  {i}. {room.name} ({', '.join(room.types)})")
-                return response
-            else:
-                print("Failed to generate valid house configuration")
-                return None
-                
         except Exception as e:
             print(f"Error generating house configuration: {e}")
             return None
+
+        if not response or not response.rooms:
+            print("Failed to generate valid house configuration.")
+            return None
+
+        print(f"Generated house structure for '{response.house_name}' with {len(response.rooms)} rooms.")
+
+        # --- Post-Processing: Generate Images if Needed ---
+        if self.images_client:
+            safe_house_name = re.sub(r'[^a-zA-Z0-9_-]', '_', response.house_name.lower())
+            gen_image_dir = "style/images/local_rooms_images/local_ai_gens"
+            os.makedirs(gen_image_dir, exist_ok=True)
+            print(f"Saving generated images to '{gen_image_dir}'")
+
+            for room in response.rooms:
+                if self._check_shutdown(f"image_generation_for_{room.name}"):
+                    return None
+
+                try:
+                    self._send_signal(CrafterSignal.FLAVOR_TEXT, f"Painting a picture of the {room.name}...")
+                    image_prompt = f"Interior design, rough black and white graphite sketch. No words or writings. {room.concept}"
+                    image_filename_no_ext = f"{safe_house_name}_{room.name}"
+                    image_save_path = os.path.join(gen_image_dir, f"{image_filename_no_ext}.jpg")
+                    
+                    print(f"  Generating image for '{room.name}'...")
+                    image_bytes = self.images_client.generate_image(image_prompt)
+                    
+                    if self._check_shutdown(f"after_image_bytes_for_{room.name}"):
+                        return None
+                        
+                    with open(image_save_path, 'wb') as f:
+                        f.write(image_bytes)
+                    
+                    room.image = image_filename_no_ext  # Update the room config with the new filename
+                    print(f"  ✓ Saved image to '{image_save_path}'")
+                except Exception as e:
+                    print(f"  ❌ Failed to generate or save image for room '{room.name}': {e}")
+                    # The room will keep its placeholder image name, which can be handled downstream
+        
+        # --- Final Output ---
+        print("House configuration generation complete.")
+        for i, room in enumerate(response.rooms, 1):
+            print(f"  {i}. {room.name} (Image: '{room.image}.jpg', Types: {', '.join(room.types)})")
+        return response
 
     def orchestrate_generation(self, initial_idea: str, 
                             output_dir: str = "inventory_items/base_state_manager/houses_data/local_ai_gen",
@@ -498,8 +557,3 @@ class room_crafter:
     
         
         return result
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    crafter = room_crafter()
-    result = crafter.orchestrate_generation("A mystical wizard's tower")

@@ -20,12 +20,14 @@ UNIQUE_TYPES = [
 ]
 
 class BaseCrafter:
-    def __init__(self, select_model="gpt-5-mini", select_provider="openai", initial_states_manager=None, signal_queue=None):
+    def __init__(self, select_model="gpt-5-mini", select_provider="openai", initial_states_manager=None, signal_queue=None, images_provider=None, images_model=None):
         print("Initializing BaseCrafter...")
         self.items_crafter = bundles_maker(select_model, select_provider)
-        self.rooms_crafter = room_crafter(select_model, select_provider, signal_queue=signal_queue)
+        self.rooms_crafter = room_crafter(select_model, select_provider, signal_queue=signal_queue, images_model=images_model, images_provider=images_provider)
         self.InitialStateConst = initial_states_manager
         self.signal_queue = signal_queue
+        self.images_provider = images_provider
+        self.images_model = images_model
         self._shutdown_event = threading.Event()
 
 
@@ -164,7 +166,8 @@ class BaseCrafter:
 
     def generate_base_state(self, initial_idea: str,
                            houses_output_dir: str = "inventory_items/base_state_manager/houses_data/local_ai_gens",
-                           configs_output_dir: str = "inventory_items/base_state_manager/houses_configs/local_ai_gens") -> Dict[str, Any] | None:
+                           configs_output_dir: str = "inventory_items/base_state_manager/houses_configs/local_ai_gens",
+                          ) -> Dict[str, Any] | None:
         """
         Complete orchestration of house + items generation from a single idea,
         instrumented with detailed signals for UI feedback.

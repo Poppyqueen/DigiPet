@@ -1,3 +1,6 @@
+import os
+
+
 # ai_loader.py
 from typing import Type, TypeVar, Union, Dict, Any, Optional, Literal
 from abc import ABC, abstractmethod
@@ -101,6 +104,15 @@ class UnifiedLoader:
                 "class": "OllamaEmbeddingProvider",
                 "required_libraries": ["ollama"]
             }
+        },
+
+        "images": {
+            "gemini": {
+                "module": "ai_managers.images_ai.providers.gemini",
+                "class": "GeminiImages",
+                "required_libraries": ["google.genai"],
+                "needs_model": True
+            }
         }
     }
     
@@ -171,6 +183,14 @@ class UnifiedLoader:
                 if component_type == "tokenizers":
                     result["needs_model"] = config["needs_model"]
                 return result
+            
+        elif component_type == "images":
+            component_class = cls._import_class(config["module"], config["class"])
+            if component_class is not None:
+                return {
+                    "class": component_class,
+                    "needs_model": config["needs_model"]
+                }
         
         return None
     
@@ -318,6 +338,30 @@ class EmbeddingsConfiguration(BaseConfiguration):
     def __repr__(self) -> str:
         return f"EmbeddingsConfiguration(provider='{self.provider}')"
 
+class ImagesConfiguration(BaseConfiguration):
+    """Configuration for image generation systems."""
+
+    def __init__(self, provider: str, model: str = None):
+        self.model = model
+        super().__init__("images", provider)
+
+    def get_image_generator(self) -> Any:
+        """Get an initialized image generator."""
+        config = self._components[self.provider]
+        image_class = config["class"]
+
+        print(f"Initializing image generator for {self.provider}")
+
+        if config["needs_model"]:
+            if self.model is None:
+                raise ValueError(f"Image generator '{self.provider}' requires a model parameter")
+            return image_class(self.model)
+        else:
+            return image_class()
+
+    def __repr__(self) -> str:
+        return f"ImagesConfiguration(provider='{self.provider}', model='{self.model}')"
+
 
 # Convenience functions for backward compatibility
 def get_available_ai_providers() -> list[str]:
@@ -332,6 +376,11 @@ def get_available_embeddings() -> list[str]:
     """Get available embeddings providers."""
     return UnifiedLoader.get_available_providers("embeddings")
 
+def get_available_image_providers() -> list[str]:
+    """Get available image providers."""
+    return UnifiedLoader.get_available_providers("images")
+
 def refresh_all_providers():
     """Refresh all provider caches."""
     UnifiedLoader.refresh_components()
+

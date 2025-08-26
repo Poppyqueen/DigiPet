@@ -558,7 +558,7 @@ def load_and_set_background(image_path):
     Loads an image and sets it as the background, checking a local directory first.
     """
     print(f"Attempting to load background image: {image_path}")
-    image_dirs = ["style/images/local_rooms_images", "style/images/rooms_images"]
+    image_dirs = ["style/images/local_rooms_images", "style/images/rooms_images", "style/images/local_rooms_images/local_ai_gens"]
     full_image_path = None
     
     # Check if the image_path has an extension
