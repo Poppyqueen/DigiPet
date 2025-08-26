@@ -1462,14 +1462,14 @@ book_tools = [
     },
     {
         "type": "function",
-        "name": "update_chapter",
-        "description": "Update a chapter in a book. This function will delete and replace the current entire chapter content with the new input.",
+        "name": "replace_chapter_contents",
+        "description": "Replace the contents in a chapter from a book. This function will delete and replace the current entire chapter content with the new input.",
         "parameters": {
             "type": "object",
             "properties": {
                 "book_item_id": {
                     "type": "number",
-                    "description": "The ID of the book to update a chapter in."
+                    "description": "The ID of the book to replace a chapter in."
                 },
                 "chapter_title": {
                     "type": "string",

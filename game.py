@@ -17,7 +17,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
 
 
 def add_items(items_list, room):
@@ -123,20 +123,20 @@ def trigger_lore_panel_update():
     """Fetches current room info and posts an event to update the lore panel."""
     global chatbot_available, chatbot
     if chatbot_available and chatbot and hasattr(chatbot, 'functions_builder') and \
-       hasattr(chatbot.functions_builder, 'get_current_room_info') and \
-       callable(chatbot.functions_builder.get_current_room_info):
+       hasattr(chatbot.functions_builder, 'get_current_tools_info') and \
+       callable(chatbot.functions_builder.get_current_tools_info):
         
-        current_room_info = chatbot.functions_builder.get_current_room_info()
+        current_room_info = chatbot.functions_builder.get_current_tools_info()
         
         # Ensure room_data is a dictionary, even if functions_builder returns None or non-dict
         if not isinstance(current_room_info, dict):
             current_room_info = {} # Fallback to empty dict
-            print("Warning: get_current_room_info did not return a dictionary. Lore panel may show default text.")
+            print("Warning: get_current_tools_info did not return a dictionary. Lore panel may show default text.")
 
         print(f"Triggering lore panel update with room data: {current_room_info.get('name', 'N/A')}")
         pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
     else:
-        print("Chatbot or its functions_builder.get_current_room_info is not available for lore update.")
+        print("Chatbot or its functions_builder.get_current_tools_info is not available for lore update.")
         # Post a default empty lore update if chatbot isn't ready
         pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data={
             'name': 'System Lore',
@@ -383,7 +383,7 @@ def garden_tick_worker(chatbot_instance):
         print("Garden tick processed successfully.")
 
 
-        current_room_info = chatbot_instance.functions_builder.get_current_room_info()
+        current_room_info = chatbot_instance.functions_builder.get_current_tools_info()
 
         if not isinstance(current_room_info, dict):
             current_room_info = {} # Fallback to empty dict

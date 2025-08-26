@@ -1,5 +1,5 @@
 short_term_prompt="""
-            Create a concise summary from the provided information that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors, objectives, objects or specific details for future reference to prevent repeated errors and guide planning.
+            Create a concise summary from the provided timestamped history of actions, exchanges and any other content that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors, objectives, objects or specific details for future reference to prevent repeated errors and guide planning.
 
             You will create a report that details the specific points to remember.
 
@@ -25,7 +25,7 @@ short_term_prompt="""
             - If any piece of information is mentioned as important to remember, you have to make sure to include a section with the specific details to remember.
             """
 long_term_prompt="""
-            Summarize memories into 'nuclear memories' that preserve essential information, focusing on key events, individual details, overarching states, changes, and objectives. The summary should be detailed enough to maintain the essence of the memory and written in the first person perspective.
+            Summarize the following timestamped memories into 'nuclear memories' that preserve essential information, focusing on key events, individual details, overarching states, changes, and objectives. The summary should be detailed enough to maintain the essence of the memory and written in the first person perspective.
             If any piece of information is mentioned as important to remember, you have to make sure to include a section with the specific details to remember.
 
             You will create a report that details the specific points to remember.

@@ -27,6 +27,7 @@ class OllamaProv(SimpleAI):
         :return: The content of the AI's response or None if an error occurs.
         """
         try:
+
             response: ChatResponse = chat(model=self.ai_model, messages=[
             {
                 'role': 'system',
@@ -40,7 +41,8 @@ class OllamaProv(SimpleAI):
             ],
             options={
                 "num_ctx": 1024
-            }
+            },
+            think=False
             )
             #print(response['message']['content'])
             # or access fields directly from the response object

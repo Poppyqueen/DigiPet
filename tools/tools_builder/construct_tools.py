@@ -20,20 +20,19 @@
 #     send_email
 # )
 
-# Import tools and their definitions from the tools folder
-# Here we can import tools that don't need to interact inside the AI agent itself or the CLI, so we can construct them directly here
+# construct_tools.py - Refactored with Unified Tool Definitions System
+# This file is responsible for constructing the tools and their definitions for an AI agent.
+# Now uses a single unified map to handle all tool cases: room types, inventory items, and base functions.
+
 from utils.loc_datetime import datetime
 import os.path
 import json
 import inspect
-
 import traceback
 
 from tools.tools_folder import simulation
 
-
 # Import the tool definitions lists
-# We still need to import these lists, but they will be organized differently below
 from .my_tools import (
     base_tools,
     library_tools,
@@ -50,135 +49,111 @@ from .my_tools import (
     youtube_playlister_tools,
     discogs_tools,
     musicbrainz_tools,
-    bluesky_tools, # Ensure bluesky_tools is imported if it has definitions
+    bluesky_tools,
     seat_tools,
     art_book_tools
 )
 
-
 from tools.tools_folder.garden_tools import Garden_Mananger
-
-
-# Import tools
-# We import the tool handlers/classes here
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
-
 from tools.tools_folder.images_lab import ImagesLab
-# Maybe update this to allow for certain item types to add functions to the room itself without needing to be in the pet's inventory
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
-
-
-        # These booleans will dictate if the tools are *attempted* to be imported and initialized.
-        # We will then use the instance itself (e.g., self.youtube is not None) to determine if it truly succeeded.
+        
+        # Configuration flags
         youtube_enabled = config_manager.get_config('Tools', "enable_youtube")
         discogs_enabled = config_manager.get_config('Tools', "enable_discogs")
         musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
         bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
-
         self.wikipedia_enabled = config_manager.get_config('Tools', "enable_wikipedia")
 
-        self.open_meteo = open_meteo    
-
-
-        print(f"DEBUG: YouTube enabled (config): {youtube_enabled}")
-        print(f"DEBUG: Discogs enabled (config): {discogs_enabled}")
-        print(f"DEBUG: MusicBrainz enabled (config): {musicbrainz_enabled} {type(musicbrainz_enabled)}")
-        print(f"DEBUG: Bluesky enabled (config): {bluesky_enabled}")
-
-        # --- Conditional Imports (Only import if enabled in config) ---
-        # This saves memory and avoids NameErrors if external libraries aren't installed.
-        # We assign these to global variables only if they are imported successfully.
-        # This pattern ensures that the 'from utils import x' lines are only executed when needed.
-        if youtube_enabled:
-            try:
-                from tools.tools_folder.tools_helpers.services import youtube_service
-            except ImportError as e:
-                print(f"Warning: Could not import youtube_service, disabling YouTube tools. Error: {e}")
-                youtube_enabled = False # Mark as disabled if import fails
-        if discogs_enabled:
-            try:
-                from tools.tools_folder.tools_helpers.services import discogs
-            except ImportError as e:
-                print(f"Warning: Could not import discogs, disabling Discogs tools. Error: {e}")
-                discogs_enabled = False
-        if musicbrainz_enabled:
-            try:
-                from tools.tools_folder.tools_helpers.services import musicbrainz
-            except ImportError as e:
-                print(f"Warning: Could not import musicbrainz, disabling MusicBrainz tools. Error: {e}")
-                musicbrainz_enabled = False
-        if bluesky_enabled:
-            try:
-                from tools.tools_folder.bluesky_handle import bluesky_bot
-            except ImportError as e:
-                print(f"Warning: Could not import bluesky_bot, disabling Bluesky tools. Error: {e}")
-                bluesky_enabled = False
-
+        # Initialize core components
+        self.open_meteo = open_meteo
         self.memory = memory_manager
         self.sub_directory = subdirectory
         self._signal_callback = signal
         self.state_manager = state_manager
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager, self.open_meteo)
-        self.A_Life = None # Initialized by _init_alife
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
-        self._init_alife() # ALIFE is always initialized
+        self.images_lab = ImagesLab(self.sub_directory)
+        self.A_Life = None
+        self._init_alife()
 
-
-        self.images_lab=ImagesLab(self.sub_directory)
-
-        # --- Conditional Initialization of Optional Tool Handlers ---
-        # Initialize to None first.
+        # Initialize optional tool handlers
         self.youtube = None
         self.discogs_handle = None
         self.musicbrainz_ = None
         self.bluesky = None
+        
+        # Conditional imports and initializations
+        self._init_optional_tools(youtube_enabled, discogs_enabled, musicbrainz_enabled, bluesky_enabled)
+        
+        # Initialize the unified tool definitions map
+        self._init_unified_tool_definitions()
+        
+        # Function map will be constructed dynamically
+        self.function_map = {}
 
-        # Use the globally determined `_enabled` flags to attempt instantiation
+    def _init_optional_tools(self, youtube_enabled, discogs_enabled, musicbrainz_enabled, bluesky_enabled):
+        """Initialize optional tool handlers based on configuration."""
+        
         if youtube_enabled:
             try:
-                # Check if the module was actually imported (prevent NameError if import failed silently)
-                    self.youtube = youtube_service.YouTubeTools()
-                    print("YouTubeTools instance created.")
+                from tools.tools_folder.tools_helpers.services import youtube_service
+                self.youtube = youtube_service.YouTubeTools()
+                print("YouTubeTools instance created.")
             except Exception as e:
-                print(f"Error instantiating YouTubeTools: {e}")
-                self.youtube = None # Ensure it's None if instantiation fails
-
+                print(f"Error with YouTube tools: {e}")
+                
         if discogs_enabled:
             try:
-                    self.discogs_handle = discogs.DiscogsTools()
-                    print("DiscogsTools instance created.")
+                from tools.tools_folder.tools_helpers.services import discogs
+                self.discogs_handle = discogs.DiscogsTools()
+                print("DiscogsTools instance created.")
             except Exception as e:
-                print(f"Error instantiating DiscogsTools: {e}")
-                self.discogs_handle = None
-
-        if musicbrainz_enabled: # This flag correctly indicates if the import was successful
+                print(f"Error with Discogs tools: {e}")
+                
+        if musicbrainz_enabled:
             try:
-                # Directly use the 'musicbrainz' object here, as it's available in the local scope
-                # if the 'from utils import musicbrainz' statement above succeeded.
+                from tools.tools_folder.tools_helpers.services import musicbrainz
                 self.musicbrainz_ = musicbrainz.MusicBrainzSearchTools()
                 print("MusicBrainzSearchTools instance created.")
             except Exception as e:
-                print(f"Error instantiating MusicBrainzSearchTools: {e}")
-                #traceback.print_exc()
-                self.musicbrainz_ = None
-
+                print(f"Error with MusicBrainz tools: {e}")
+                
         if bluesky_enabled:
             try:
-                    self.bluesky = bluesky_bot(self.state_manager, self._signal_callback, self.images_lab)
-                    #print(self.bluesky.get_posts_needing_responses(2))
-                    print("BlueskyBot instance created.")
+                from tools.tools_folder.bluesky_handle import bluesky_bot
+                self.bluesky = bluesky_bot(self.state_manager, self._signal_callback, self.images_lab)
+                print("BlueskyBot instance created.")
             except Exception as e:
-                print(f"Error instantiating BlueskyBot: {e}")
-                self.bluesky = None
+                print(f"Error with Bluesky tools: {e}")
 
-
-        # --- Central Mapping of Room Types to Functions and Definitions ---
-        # Initialize with only the *always-present* room types.
-        # Optional integrations will be added dynamically below if they are enabled and initialized.
-        self._room_type_data = {
+    def _init_unified_tool_definitions(self):
+        """Initialize the unified tool definitions map that handles all cases."""
+        
+        self.tool_definitions = {
+            # Base tools - always available
+            "base_functions": {
+                "functions": {
+                    "list_items_in_current_room": self.state_manager.list_items_in_current_room,
+                    "set_current_emote": self.state_manager.set_current_emote,
+                    "move_to_room": self.state_manager.set_current_room,
+                    "list_all_rooms": self.state_manager.get_all_rooms,
+                    "pickup_item": self.state_manager.pickup_item,
+                    "examine_item": self.state_manager.get_item_details,
+                    "drop_item": self.state_manager.drop_item,
+                    "consume_item": self.state_manager.consume_item,
+                    "add_item_description": self.state_manager.add_item_description,
+                    "emit_inner_thought": emit_inner_thought
+                },
+                "definitions": base_tools,
+                "use_level": "always_available"
+            },
+            
+            # Room-specific tools
             "planting_garden": {
                 "functions": {
                     "plant_seed": self.garden_manager.plant_seed,
@@ -188,180 +163,175 @@ class FunctionBuilder:
                     "water_plot": self.garden_manager.water_plot
                 },
                 "definitions": harvesting_garden_tools,
-                "current_info": self.garden_manager.get_garden_summary
+                "room_types": ["planting_garden"],
+                "display_information": self.garden_manager.get_garden_summary,
+                "use_level": "room_type"
             },
+            
             "library": {
                 "functions": {
                     "create_book_item": self.state_manager.create_book_item
                 },
-                "definitions": library_tools
+                "definitions": library_tools,
+                "room_types": ["library"],
+                "use_level": "room_type"
             },
+            
             "bedroom": {
                 "functions": {
                     "sleep": self.room_tools.bedroom.sleep,
                     "hug_pillow": self.room_tools.bedroom.hug_pillow,
                     "look_under_bed": self.room_tools.bedroom.look_under_bed
                 },
-                "definitions": bedroom_tools
+                "definitions": bedroom_tools,
+                "room_types": ["bedroom"],
+                "use_level": "room_type"
             },
+            
             "living_room": {
                 "functions": {
                     "watch_tv": self.room_tools.living_room.watch_tv,
                     "look_at_window": self.room_tools.living_room.look_at_window,
-                    #"sit_on_couch": self.room_tools.living_room.sit_on_couch
                 },
                 "definitions": living_room_tools,
-                "current_info": self.room_tools.living_room.display_information
+                "room_types": ["living_room"],
+                "display_information": self.room_tools.living_room.display_information,
+                "use_level": "room_type"
             },
-             "bathroom": {
+            
+            "bathroom": {
                 "functions": {
                     "drink_water": self.room_tools.bathroom.drink_water,
                     "wash_hands": self.room_tools.bathroom.wash_hands
                 },
-                "definitions": bathroom_tools
+                "definitions": bathroom_tools,
+                "room_types": ["bathroom"],
+                "use_level": "room_type"
             },
-             "garden": {
+            
+            "garden": {
                 "functions": {
-                     "dig_hole": self.room_tools.garden.dig_hole,
-                     "lay_down": self.room_tools.garden.lay_down
+                    "dig_hole": self.room_tools.garden.dig_hole,
+                    "lay_down": self.room_tools.garden.lay_down
                 },
                 "definitions": garden_room_tools,
-                "current_info": self.room_tools.garden.display_information
+                "room_types": ["garden"],
+                "display_information": self.room_tools.garden.display_information,
+                "use_level": "room_type"
             },
-             "white_room": {
+            
+            "white_room": {
                 "functions": {
-                     "meditate": self.room_tools.white_room.meditate
+                    "meditate": self.room_tools.white_room.meditate
                 },
-                "definitions": white_room_tools
+                "definitions": white_room_tools,
+                "room_types": ["white_room"],
+                "use_level": "room_type"
             },
+            
             "kitchen": {
                 "functions": {
                     "prepare_food": self.room_tools.kitchen.prepare_food
                 },
-                "definitions": kitchen_room_tools
+                "definitions": kitchen_room_tools,
+                "room_types": ["kitchen"],
+                "use_level": "room_type"
             },
-            "ALIFE_research":{
+            
+            "ALIFE_research": {
                 "functions": {
-                    "set_current_tick_ALIFE":self.A_Life.set_current_tick_ALIFE,
-                    "observe_ALIFE":self.A_Life.observe_ALIFE,
-                    "forward_ALIFE": self.A_Life.forward_ALIFE,
-                    "backward_ALIFE": self.A_Life.backward_ALIFE,
-                    "create_new_simulation": self.A_Life.create_new_simulation,
-                    "load_previous_simulation": self.A_Life.load_previous_simulation,
-                    "list_simulations": self.A_Life.simulations_manager.list_simulations,
-                    "details_of_simulation": self.A_Life.simulations_manager.details_of_simulation,
-                    "update_simulation_name": self.A_Life.simulations_manager.update_simulation_name,
-                    "add_simulation_detail": self.A_Life.simulations_manager.add_simulation_detail,
+                    "set_current_tick_ALIFE": self.A_Life.set_current_tick_ALIFE if self.A_Life else None,
+                    "observe_ALIFE": self.A_Life.observe_ALIFE if self.A_Life else None,
+                    "forward_ALIFE": self.A_Life.forward_ALIFE if self.A_Life else None,
+                    "backward_ALIFE": self.A_Life.backward_ALIFE if self.A_Life else None,
+                    "create_new_simulation": self.A_Life.create_new_simulation if self.A_Life else None,
+                    "load_previous_simulation": self.A_Life.load_previous_simulation if self.A_Life else None,
+                    "list_simulations": self.A_Life.simulations_manager.list_simulations if self.A_Life and self.A_Life.simulations_manager else None,
+                    "details_of_simulation": self.A_Life.simulations_manager.details_of_simulation if self.A_Life and self.A_Life.simulations_manager else None,
+                    "update_simulation_name": self.A_Life.simulations_manager.update_simulation_name if self.A_Life and self.A_Life.simulations_manager else None,
+                    "add_simulation_detail": self.A_Life.simulations_manager.add_simulation_detail if self.A_Life and self.A_Life.simulations_manager else None,
                 },
                 "definitions": lab_room_tools,
-                "current_info": self.A_Life.display_information
-            }
-            # Add entries for other static room types as needed
-        }
-
-        # --- End Central Mapping ---
-
-
-        # Create the mapping dictionary for base functions (always available)
-        # These functions are independent of room type or inventory.
-        self.base_function_map = {
-            # Global functions 
-
-            "list_items_in_current_room": self.state_manager.list_items_in_current_room,
-            "set_current_emote": self.state_manager.set_current_emote,
-            "move_to_room": self.state_manager.set_current_room,
-            "list_all_rooms": self.state_manager.get_all_rooms,
-            "pickup_item": self.state_manager.pickup_item,
-            "examine_item": self.state_manager.get_item_details,
-            "drop_item": self.state_manager.drop_item,
-            "consume_item": self.state_manager.consume_item,
-            #"trash_item": self.state_manager.trash_item,
-            "add_item_description": self.state_manager.add_item_description,
-            "emit_inner_thought": emit_inner_thought
-
-        }
-
-
-
-
-        # 1. INVENTORY-ONLY: Tools available only when the item is in the player's inventory.
-        self._inventory_only_functions = {
-            "book": {
-                "list_chapters": self.state_manager.list_book_chapters,
-                "add_chapter": self.state_manager.add_book_chapter,
-                "read_chapter": self.state_manager.read_book_chapter,
-                "delete_chapter": self.state_manager.delete_book_chapter,
-                "update_chapter": self.state_manager.update_book_chapter,
+                "room_types": ["ALIFE_research"],
+                "display_information": self.A_Life.display_information if self.A_Life else None,
+                "use_level": "room_type"
             },
-            "art_book":{
-                "create_svg_image": self.images_lab.create_svg_image,
-                "read_archive": self.images_lab.read_archive
-            }
-        }
-        self._inventory_only_definitions = {
-            "book": book_tools,
-            "art_book": art_book_tools
-        }
-
-
-
-
-
-        # 2. DUAL-USE: Tools available whether the item is in the room OR in the inventory.
-        self._dual_use_item_functions = {
+            
+            # Inventory-only item tools
+            "book": {
+                "functions": {
+                    "list_chapters": self.state_manager.list_book_chapters,
+                    "add_chapter": self.state_manager.add_book_chapter,
+                    "read_chapter": self.state_manager.read_book_chapter,
+                    "delete_chapter": self.state_manager.delete_book_chapter,
+                    "replace_chapter_contents": self.state_manager.update_book_chapter,
+                },
+                "definitions": book_tools,
+                "item_types": ["book"],
+                "use_level": "inventory_only"
+            },
+            
+            "art_book": {
+                "functions": {
+                    "create_svg_image": self.images_lab.create_svg_image,
+                    "read_archive": self.images_lab.read_archive
+                },
+                "definitions": art_book_tools,
+                "item_types": ["art_book"],
+                "use_level": "inventory_only"
+            },
+            
+            # Dual-use item tools (available in room or inventory)
             "seat": {
-                "take_a_seat": self.room_tools.living_room.take_a_seat
+                "functions": {
+                    "take_a_seat": self.room_tools.living_room.take_a_seat
+                },
+                "definitions": seat_tools,
+                "item_types": ["seat"],
+                "use_level": "dual_use"
             }
         }
-        self._dual_use_item_definitions = {
-            "seat": seat_tools
-        }
+        
+        # Add conditional tools if they were successfully initialized
+        self._add_conditional_tools()
 
-
-
-        # --- Dynamically Add Optional Tool Data if Enabled and Initialized ---
-
+    def _add_conditional_tools(self):
+        """Add optional tools to the unified map if they were successfully initialized."""
+        
         if self.wikipedia_enabled:
-            wikipedia_functions={
+            self.tool_definitions["wikipedia"] = {
+                "functions": {
                     "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
                     "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
                     "random_wikipedia": self.room_tools.computer.random_wikipedia
-            }
-            self._inventory_only_functions["wikipedia"] = wikipedia_functions
-            self._inventory_only_definitions["wikipedia"] = computer_room_tools
-
-            self._room_type_data["computer_room"] = {
-                "functions": wikipedia_functions,
+                },
                 "definitions": computer_room_tools,
-                "current_info": self.room_tools.computer.display_information
+                "room_types": ["computer_room"],
+                "item_types": ["wikipedia", "cellphone"],
+                "display_information": self.room_tools.computer.display_information,
+                "use_level": "inventory_only"
             }
+            print("Wikipedia tools added to unified definitions.")
 
-            print("Wikipedia tools added to room type data.")
-
-
-
-        if self.musicbrainz_: # Check if the instance was successfully created
-            music_brainz_functions={
-                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
-                    "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
-                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
-                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
-                    "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
+        if self.youtube:
+            self.tool_definitions["youtube_playlists"] = {
+                "functions": {
+                    "youtube_search_video": self.youtube.search_video,
+                    "youtube_create_playlist": self.youtube.create_playlist,
+                    "youtube_add_video_to_playlist": self.youtube.add_video_to_playlist,
+                    "youtube_open_youtube_item": self.youtube.open_youtube_item
+                },
+                "definitions": youtube_playlister_tools,
+                "room_types": ["youtube_playlists"],
+                "item_types": ["youtube_playlists"],
+                "display_information": self.youtube.get_summary,
+                "use_level": "inventory_only"
             }
-            self._inventory_only_functions["musicbrainz"] = music_brainz_functions
-            self._inventory_only_definitions["musicbrainz"] = musicbrainz_tools
+            print("YouTube tools added to unified definitions.")
 
-            print("MusicBrainz tools added to inventory-only definitions.")
-
-            self._room_type_data["musicbrainz"] = {
-                "functions": music_brainz_functions,
-                "definitions": musicbrainz_tools
-            }
-            print("MusicBrainz tools added to room type data.")
-
-        if self.discogs_handle: # Check if the instance was successfully created
-
-            discogs_functions={
+        if self.discogs_handle:
+            self.tool_definitions["discogs"] = {
+                "functions": {
                     "discogs_search_artist_by_name": self.discogs_handle.search_artist_by_name,
                     "discogs_get_artist_master_releases_overview": self.discogs_handle.get_artist_master_releases_overview,
                     "discogs_get_master_release_tracklist": self.discogs_handle.get_master_release_tracklist,
@@ -370,265 +340,289 @@ class FunctionBuilder:
                     "discogs_search_master_release_by_name": self.discogs_handle.search_master_release_by_name,
                     "discogs_get_collection_unique_artists": self.discogs_handle.get_collection_unique_artists,
                     "discogs_get_wantlist_unique_artists": self.discogs_handle.get_wantlist_unique_artists
+                },
+                "definitions": discogs_tools,
+                "room_types": ["discogs"],
+                "item_types": ["discogs"],
+                "use_level": "inventory_only"
             }
+            print("Discogs tools added to unified definitions.")
 
-            self._inventory_only_functions["discogs"] = discogs_functions
-            self._inventory_only_definitions["discogs"] = discogs_tools
-            print("Discogs tools added to inventory-only definitions.")
-
-            self._room_type_data["discogs"] = {
-                "functions": discogs_functions,
-                "definitions": discogs_tools
+        if self.musicbrainz_:
+            self.tool_definitions["musicbrainz"] = {
+                "functions": {
+                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
+                    "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
+                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
+                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
+                    "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
+                },
+                "definitions": musicbrainz_tools,
+                "room_types": ["musicbrainz"],
+                "item_types": ["musicbrainz"],
+                "use_level": "inventory_only"
             }
-            print("Discogs tools added to room type data.")
+            print("MusicBrainz tools added to unified definitions.")
 
-        if self.youtube: # Check if the instance was successfully created
-            youtube_functions = {
-                "youtube_search_video": self.youtube.search_video,
-                "youtube_create_playlist": self.youtube.create_playlist,
-                "youtube_add_video_to_playlist": self.youtube.add_video_to_playlist,
-                "youtube_open_youtube_item": self.youtube.open_youtube_item
-            }
-
-            self._inventory_only_functions["youtube_playlists"] = youtube_functions
-            self._inventory_only_definitions["youtube_playlists"] = youtube_playlister_tools
-
-            self._room_type_data["youtube_playlists"] = {
-                "functions": youtube_functions,
-                "definitions": youtube_playlister_tools,
-                "current_info": self.youtube.get_summary
-            }
-            print("YouTube Playlists tools added to room type data.")
-
-
-        # Moved bluesky here, probably move all other import conditional tools here too
         if self.bluesky:
-
-            bluesky_functions={
+            self.tool_definitions["bluesky_social"] = {
+                "functions": {
                     "post_bluesky": self.bluesky.post_bluesky,
                     "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
                     "post_reply": self.bluesky.post_reply
-                }
-        
-            # Add Bluesky tools to the inventory-only functions and definitions
-            self._inventory_only_functions["bluesky_social"] = bluesky_functions
-            self._inventory_only_definitions["bluesky_social"] = bluesky_tools
-            print("Bluesky Social tools added to inventory-only functions.")
-
-        # 3. ROOM-SPECIFIC: Tools that are available based on the current room type.
-            self._room_type_data["bluesky_social"] = { # Using a distinct room type name
-                "functions": bluesky_functions,
-                "definitions": bluesky_tools # Use the imported definitions list
+                },
+                "definitions": bluesky_tools,
+                "room_types": ["bluesky_social"],
+                "item_types": ["bluesky_social"],
+                "use_level": "inventory_only"
             }
-
-            print("Bluesky Social tools added to room type data.")
-
-        # self.function_map will be constructed dynamically by construct_map
-        self.function_map = {} # Initialize as empty; filled by construct_map
+            print("Bluesky tools added to unified definitions.")
 
     def _init_alife(self):
-        """
-        Initializes the ALifeSimulation instance.
-        Loads the first existing simulation from the archive if available,
-        otherwise creates a new simulation run and archives it.
-        Leaves the ALifeSimulation instance ready to view at tick 0 of the loaded/new history.
-        """
-        # Define the directory where simulation archives will be stored
-        # This path is passed to ALifeSimulation, which passes it to ALifeManager.
-        archive_dir = os.path.join(self.sub_directory, "simulation_archives") # Using a clear name
+        """Initialize the ALifeSimulation instance."""
+        archive_dir = os.path.join(self.sub_directory, "simulation_archives")
         os.makedirs(archive_dir, exist_ok=True)
-        print(f"Ensured archive directory exists at: {archive_dir}")
-
-        # --- Step 1: Initialize ALifeSimulation (which also initializes ALifeManager) ---
-        # We initialize it first so we have the manager instance available to query.
-        # We don't pass a specific config here yet, let it load defaults initially.
-        try: # Added try-except for ALife initialization as well
+        
+        try:
             self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
-            print("ALifeSimulation instance created, including its manager.")
+            print("ALifeSimulation instance created.")
+            
+            # Load existing simulation or create new one
+            manager = self.A_Life.simulations_manager
+            if manager:
+                sim_ids = list(manager._state.keys())
+                current_sim_id = None
+                current_step = 0
+                
+                if sim_ids:
+                    state_info = self.state_manager.get_sim_state()
+                    sim_id = state_info.get("id_value", None)
+                    current_step = state_info.get("sim_current_step", 0)
+                    
+                    if not sim_id or sim_id not in sim_ids:
+                        current_sim_id = sim_ids[0]
+                    else:
+                        current_sim_id = sim_id
+                    
+                    load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
+                    print(f"Loaded simulation: {load_message}")
+                else:
+                    message = self.A_Life.create_new_simulation()
+                    current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager._state else "N/A"
+                    print(f"Created new simulation: {message}")
+                
+                if self.A_Life and self.A_Life.history:
+                    self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
+                    
         except Exception as e:
-            print(f"Error initializing ALifeSimulation: {e}. ALife features will be unavailable.")
-            self.A_Life = None # Ensure A_Life is None if it fails
-            # Remove ALIFE_research from _room_type_data if A_Life is None
-            # This requires dynamic _room_type_data for ALIFE too, or handling this specific case.
-            # For now, _room_type_data is hardcoded for ALIFE, so ALIFE_research functions would fail if A_Life is None.
-            # A more robust solution might move ALIFE_research into the dynamic section as well.
-            return # Exit if ALife failed to initialize
-
-        # --- Step 2: Check the ALifeManager for existing simulations ---
-        # We can directly access the manager instance created within ALifeSimulation
-        manager = self.A_Life.simulations_manager
-
-        if not manager:
-             print("Error: ALifeManager failed to initialize. Cannot proceed.")
-             # Handle this error appropriately, perhaps raise an exception
-             return
-
-        # Get the list of simulation IDs from the manager's state
-        sim_ids = list(manager._state.keys()) # Accessing the internal state is safe here
-
-        current_sim_id = None # Initialize to None
-        current_step = 0
-
-        if sim_ids:
-            # --- Step 3: Existing simulations found - Load the first one ---
-            state_info = self.state_manager.get_sim_state()
-            sim_id = state_info.get("id_value", None)
-            print(f"Simulation ID from state manager: {sim_id}")
-            current_step = state_info.get("sim_current_step", 0)
-
-            if not sim_id or sim_id not in sim_ids: # Also check if the stored sim_id actually exists
-                print("Warning: No valid simulation ID found in state manager or ID does not exist. Loading the first available simulation.")
-                current_sim_id = sim_ids[0]
-            else:
-                current_sim_id = sim_id
-            print(f"Found {len(sim_ids)} existing simulation(s). Attempting to load last open/first available with ID: '{current_sim_id}'")
-            load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
-
-            print(f"Load Status: {load_message}")
-
-        else:
-            # --- Step 4: No existing simulations found - Create, Run, and Archive a new one ---
-            print("No existing simulations found in the archive.")
-            print("Creating, running, and archiving a new simulation with default configuration.")
-
-            message = self.A_Life.create_new_simulation()
-            current_step = 0
-            # Get the ID of the newly created simulation
-            current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager and self.A_Life.simulations_manager._state else "N/A (Error)"
-
-            print(f"New Simulation ID: {message}")
-
-        # --- Step 5: Final Confirmation ---
-        print(f"\nALife initialization complete.")
-        if self.A_Life and self.A_Life.history:
-             self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
-             print(f"Currently loaded Simulation ID: '{current_sim_id}'")
-             print(f"Current Tick: {self.A_Life.current_tick}")
-             print(f"Total ticks in loaded history: {len(self.A_Life.history)-1}") # Last tick index is len-1
-        else:
-             print("Warning: ALifeSimulation instance created, but history is empty after initialization.")
-
+            print(f"Error initializing ALifeSimulation: {e}")
+            self.A_Life = None
 
     def get_current_room_types(self):
-        """Retrieves the list of types for the current room."""
+        """Retrieve the list of types for the current room."""
         current_id = self.state_manager.get_current_room_id()
-        room = self.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
+        room = self.state_manager.room_manager._find_room_by_id(current_id)
         if room and "room_types" in room:
-            #print(f"DEBUG: Current room types: {room['room_types']}")
             return room["room_types"]
-        #print("DEBUG: No room types found or room not found.")
-        return [] # Return empty list if no types found
+        return []
     
-     
+
+    def _tool_should_be_available(self, tool_config, current_room_types, items_in_room, inventory_items):
+        """
+        Determine if a tool should be available based on current context.
+        A tool is available if ANY of its criteria match the current context.
+        """
+        # Skip if functions are None (failed initialization)
+        functions = tool_config.get("functions", {})
+        if any(func is None for func in functions.values()):
+            return False
+        
+        # Always available tools
+        use_level = tool_config.get("use_level", "")
+        if use_level == "always_available":
+            return True
+        
+        # Check room types
+        room_types = tool_config.get("room_types", [])
+        if room_types and any(rt in current_room_types for rt in room_types):
+            return True
+        
+        # Check item types (in inventory)
+        item_types = tool_config.get("item_types", [])
+        if item_types:
+            # Check inventory items
+            for inv_item in inventory_items:
+                if isinstance(inv_item, dict):
+                    inv_item_types = inv_item.get("type", [])
+                    if any(it in item_types for it in inv_item_types):
+                        return True
+            
+            # Check room items
+            for room_item in items_in_room:
+                if isinstance(room_item, dict):
+                    room_item_types = room_item.get("type", [])
+                    if any(it in item_types for it in room_item_types):
+                        return True
+        
+        return False
+
 
     def construct_map(self):
-        """
-        Constructs the function mapping based on the current room's types,
-        and a two-category system for items: inventory-only and dual-use.
-        """
+        """Construct the function mapping based on current state using the unified system."""
         self.function_map = {}
-        print("DEBUG: Initializing empty function map for dynamic construction.")
-
-        # 1. Add room-type specific functions
-        current_types = self.get_current_room_types()
-        for room_type in current_types:
-            if room_type in self._room_type_data and "functions" in self._room_type_data[room_type]:
-                self.function_map.update(self._room_type_data[room_type]["functions"])
-                print(f"DEBUG: Added functions for room type: {room_type}")
-
-        # 2. Add functions for items in the room (can only be DUAL-USE)
+        available_tool_keys = set()
+        
+        print("DEBUG: Constructing function map from unified tool definitions...")
+        
+        # Get current context
+        current_room_types = self.get_current_room_types()
         items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        for item in items_in_room:
-            if isinstance(item, dict):
-                item_types = item.get("type", [])
-                if isinstance(item_types, list):
-                    for item_type in item_types:
-                        # Only dual-use items provide functions when in the environment
-                        if item_type in self._dual_use_item_functions:
-                            self.function_map.update(self._dual_use_item_functions[item_type])
-                            print(f"DEBUG: Added DUAL-USE functions (from environment) for item type: {item_type}")
-
-        # 3. Add functions for items in inventory (INVENTORY-ONLY and DUAL-USE)
         inventory_items = self.state_manager.get_inventory_items(internal=True) or []
-        for item_in_inventory in inventory_items:
-            if isinstance(item_in_inventory, dict):
-                item_types_list = item_in_inventory.get("type", [])
-                if isinstance(item_types_list, list):
-                    for individual_type_str in item_types_list:
-                        # Check inventory-only list
-                        if individual_type_str in self._inventory_only_functions:
-                            self.function_map.update(self._inventory_only_functions[individual_type_str])
-                            print(f"DEBUG: Added INVENTORY-ONLY functions for item type: {individual_type_str}")
-                        # Check dual-use list
-                        if individual_type_str in self._dual_use_item_functions:
-                            self.function_map.update(self._dual_use_item_functions[individual_type_str])
-                            print(f"DEBUG: Added DUAL-USE functions (from inventory) for item type: {individual_type_str}")
-
-        # 4. Finally, add base functions
-        self.function_map.update(self.base_function_map)
-        print(f"DEBUG: Added base functions. Final map keys: {list(self.function_map.keys())}")
-
+        
+        # Process each tool definition
+        for tool_key, tool_config in self.tool_definitions.items():
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+                functions = tool_config.get("functions", {})
+                self.function_map.update(functions)
+                available_tool_keys.add(tool_key)
+                print(f"DEBUG: Added functions from tool: {tool_key}")
+        
+        print(f"DEBUG: Final function map has {len(self.function_map)} functions from tools: {available_tool_keys}")
 
     def construct_tools(self):
-        """
-        Constructs the list of tool definitions using the two-category system,
-        ensuring no duplicate definitions are added.
-        """
-        self.construct_map() # Ensure function_map is up-to-date
-
-        all_potential_definitions = []
-        seen_tool_names = set() # This is key to avoiding duplicates
-
-        # Helper function to add definitions uniquely
-        def add_unique_definitions(definitions_list):
-            for definition in definitions_list:
-                tool_name = definition.get('name')
-                if tool_name and tool_name not in seen_tool_names:
-                    all_potential_definitions.append(definition)
-                    seen_tool_names.add(tool_name)
-
-        # 1. Add room-type specific definitions
-        current_types = self.get_current_room_types()
-        for room_type in current_types:
-            if room_type in self._room_type_data and "definitions" in self._room_type_data[room_type]:
-                add_unique_definitions(self._room_type_data[room_type]["definitions"])
-
-        # 2. Add definitions for items in the room (DUAL-USE only)
-        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        for item in items_in_room:
-            if isinstance(item, dict):
-                item_types = item.get("type", [])
-                for item_type in item_types:
-                    if item_type in self._dual_use_item_definitions:
-                        add_unique_definitions(self._dual_use_item_definitions[item_type])
-
-        # 3. Add definitions for items in inventory (INVENTORY-ONLY and DUAL-USE)
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
-        for item_in_inventory in inventory_items:
-            if isinstance(item_in_inventory, dict):
-                item_types_list = item_in_inventory.get("type", [])
-                for individual_type_str in item_types_list:
-                    if individual_type_str in self._inventory_only_definitions:
-                        add_unique_definitions(self._inventory_only_definitions[individual_type_str])
-                    if individual_type_str in self._dual_use_item_definitions:
-                        add_unique_definitions(self._dual_use_item_definitions[individual_type_str])
-
-        # 4. Add base tools
-        add_unique_definitions(base_tools)
-
-        # 5. Final filtering based on the function map (this logic remains the same)
-        available_tools_definitions = []
+        """Construct the list of tool definitions based on current state."""
+        self.construct_map()  # Ensure function_map is up-to-date
+        
+        all_definitions = []
+        seen_tool_names = set()
         available_function_names = set(self.function_map.keys())
-        for definition in all_potential_definitions:
-            tool_name = definition.get('name')
-            if tool_name and tool_name in available_function_names:
-                available_tools_definitions.append(definition)
+        
+        print("DEBUG: Constructing tool definitions from unified system...")
+        
+        # Get current context
+        current_room_types = self.get_current_room_types()
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
+        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        
+        # Process each tool definition
+        for tool_key, tool_config in self.tool_definitions.items():
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+                definitions = tool_config.get("definitions", [])
+                
+                # Add definitions uniquely, only for functions that are actually available
+                for definition in definitions:
+                    tool_name = definition.get('name')
+                    if (tool_name and 
+                        tool_name not in seen_tool_names and 
+                        tool_name in available_function_names):
+                        all_definitions.append(definition)
+                        seen_tool_names.add(tool_name)
+        
+        print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools")
+        print(f"DEBUG: Tool names: {[d['name'] for d in all_definitions]}")
+        
+        return all_definitions
 
-        print(f"DEBUG: Final available tool definitions count: {len(available_tools_definitions)}")
-        print(f"DEBUG: Final available tool definition names: {[d['name'] for d in available_tools_definitions]}")
+    async def call_function(self, name, args):
+        """Call the function mapped to the given name."""
+        self.construct_map()  # Ensure function_map is up-to-date
+        
+        func = self.function_map.get(name)
+        
+        if func:
+            try:
+                print(f"Calling {name} with args: {args}")
+                
+                if not isinstance(args, dict):
+                    print(f"Warning: Arguments for {name} were not a dictionary.")
+                    if inspect.iscoroutinefunction(func):
+                        result = await func(args) if args else await func()
+                    else:
+                        result = func(args) if args else func()
+                else:
+                    if inspect.iscoroutinefunction(func):
+                        result = await func(**args)
+                    else:
+                        result = func(**args)
+                        
+                print(f"{name} returned: {result}")
+                return result
+                
+            except TypeError as e:
+                print(f"Error calling function {name}: Argument mismatch: {e}")
+                return f"Error: Invalid arguments for function '{name}'. Details: {e}"
+            except Exception as e:
+                print(f"Unexpected error during execution of {name}: {e}")
+                return f"Error executing function '{name}'. Details: {e}"
+        else:
+            current_room_name = self.state_manager.get_current_room_name()
+            print(f"Warning: Unknown function: {name} in room '{current_room_name}'")
+            return f"Error: Unknown function '{name}' is not available in your current location ({current_room_name}) or with your current inventory."
+        
 
-        return available_tools_definitions
+
+
+    def get_current_tools_info(self):
+        """
+        Constructs and returns specific information about the current context
+        by checking all currently available tools for display_information functions.
+        """
+        current_room_id = self.state_manager.get_current_room_id()
+        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
+        
+        if not full_room:
+            print(f"Error: Could not find room with ID: {current_room_id}")
+            return {"title": "Unknown Room", "body": "Could not retrieve information about this room."}
+        
+        room_name = full_room.get("name", "Unknown Room")
+        room_description = self.state_manager.get_current_room_description()
+        
+        # Start with the general room description
+        body_parts = [room_description] if room_description else []
+        
+        # Get current context to determine what tools are available
+        current_room_types = self.get_current_room_types()
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
+        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        
+        # Check all tool definitions for display_information functions
+        for tool_key, tool_config in self.tool_definitions.items():
+            display_info_func = tool_config.get("display_information")
+            
+            # Skip if no display function
+            if not display_info_func:
+                continue
+            
+            # Check if this tool should be included based on current context
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+                try:
+                    type_info = display_info_func()
+                    if type_info:
+                        # Format the tool name for display
+                        display_name = tool_key.replace('_', ' ').title()
+                        body_parts.append(f"\n--- {display_name} Details ---\n{type_info}")
+                        print(f"DEBUG: Added display info from tool: {tool_key}")
+                except Exception as e:
+                    print(f"Warning: Error calling display_information for tool '{tool_key}': {e}")
+                    display_name = tool_key.replace('_', ' ').title()
+                    body_parts.append(f"\n--- {display_name} Details ---\n(Error retrieving details: {e})")
+        
+        # If no information was collected, provide a default message
+        if not any(body_parts):
+            body_parts = ["No specific information available for this room."]
+        
+        # Join all parts, filtering out empty strings
+        body_content = "\n".join([part for part in body_parts if part])
+        
+        info = {
+            "title": room_name,
+            "body": body_content
+        }
+        
+        print(f"DEBUG: Room info constructed with {len(body_parts)} sections")
+        return info
     
+
 
     def construct_context(self):
         """
@@ -690,109 +684,3 @@ class FunctionBuilder:
         context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")
         string_context = "\n".join(context)
         return string_context
-
-    def get_current_room_info(self): 
-        
-        # This is currently used to update and display information into the GUI about the current room based on the types. 
-        # It retrieves information a function tied to each room type for the room we are in and returns this to the pygame integration
-        # I don't know if it should be here
-        """
-        Constructs and returns specific information about the current room
-        including room-type-specific functions for information retrieval.
-        """
-        current_room_id = self.state_manager.get_current_room_id()
-        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
-
-        if not full_room:
-            print(f"Error: Could not find room with ID: {current_room_id}")
-            return {"title": "Unknown Room", "body": "Could not retrieve information about this room."}
-
-        room_name = full_room.get("name", "Unknown Room")
-        
-        # Get the general description of the room from the state manager
-        
-        # Get the list of types associated with the current room
-        room_types = self.get_current_room_types()
-
-        room_description = self.state_manager.get_current_room_description()
-
-        # Initialize a list to hold all parts of the body content
-        body_parts = [room_description] # Start with the general room description
-
-        # Iterate through room types to find and call specific info functions
-        for room_type in room_types:
-            # Check if this room type has specific data and a 'current_info' function defined
-            # Ensure it's in the dynamically built _room_type_data
-            if room_type in self._room_type_data and "current_info" in self._room_type_data[room_type]:
-                info_function = self._room_type_data[room_type]["current_info"]
-                try:
-                    # Call the specific info function for this room type
-                    type_info = info_function()
-                    if type_info:
-                        # Append the specific info, formatted for clarity
-                        body_parts.append(f"\n--- {room_type.replace('_', ' ').title()} Details ---\n{type_info}")
-                except Exception as e:
-                    # Handle potential errors during the call to the info function
-                    print(f"Warning: Error calling current_info for room type '{room_type}': {e}")
-                    body_parts.append(f"\n--- {room_type.replace('_', ' ').title()} Details ---\n(Error retrieving specific details: {e})")
-
-        # If after collecting all parts, the body is still empty (e.g., no description, no type-specific info)
-        if not any(body_parts): # Check if all elements in body_parts are empty/None/False-like
-            body_parts = ["No specific information available for this room."]
-        
-        # Join all collected parts into a single string
-        body_content = "\n".join([part for part in body_parts if part]) # Filter out any None or empty strings that might have snuck in
-
-        info = {
-            "title": room_name,
-            "body": body_content
-        }
-        return info
-
-    async def call_function(self, name, args):
-        """
-        Calls the function mapped to the given name.
-        The function map is constructed dynamically BEFORE the call.
-        Supports both synchronous and asynchronous functions.
-        """
-        # Ensure the function_map is up-to-date based on the current state BEFORE attempting to call.
-        # We no longer pass current_room explicitly here; construct_map gets it from state_manager
-        self.construct_map()
-
-        # Look up the function in the map built by construct_map
-        func = self.function_map.get(name)
-
-        if func:
-            try:
-                print(f"Calling {name} with args: {args}")
-                # Ensure args is a dictionary for **args
-                if not isinstance(args, dict):
-                    print(f"Warning: Arguments for {name} were not a dictionary. Attempting direct pass.")
-                    # Handle cases where args might not be a dict, though tool calls usually provide dicts
-                    if inspect.iscoroutinefunction(func):
-                        result = await func(args) if args else await func()
-                    else:
-                        result = func(args) if args else func() # Basic handling, might need refinement
-                else:
-                    if inspect.iscoroutinefunction(func):
-                        result = await func(**args)
-                    else:
-                        result = func(**args) # func is either a global function or a method object
-                print(f"{name} returned: {result}")
-                return result
-            except TypeError as e:
-                # Specific error for argument mismatch
-                print(f"Error calling function {name}: Argument mismatch or type error: {e}")
-                # Provide feedback that includes the function name
-                return f"Error: Invalid arguments provided for function '{name}'. Details: {e}"
-            except Exception as e:
-                # Catch any other unexpected errors during the function's execution
-                print(f"An unexpected error occurred during execution of {name}: {e}")
-                # Provide feedback that includes the function name
-                return f"Error executing function '{name}'. Details: {e}"
-        else:
-            # Handle unknown function names for the *current* map configuration
-            # Get the current room name for a more helpful error message
-            current_room_name = self.state_manager.get_current_room_name()
-            print(f"Warning: Attempted to call unknown function: {name} in room '{current_room_name}' or with current inventory.")
-            return f"Error: Unknown function '{name}' is not available in your current location ({current_room_name}) or with your current inventory."

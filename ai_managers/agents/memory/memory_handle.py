@@ -632,7 +632,7 @@ class memory_manager:
 
             summarized_content_raw = self.bot_instance.response_output(
                 system=short_term_prompt,
-                message=structured_short_term_for_ai,
+                message="Summarize this: \n" + structured_short_term_for_ai,
             )
             summarized_content = summarized_content_raw
             message=f"Short-term memory summarized to: {summarized_content}"
