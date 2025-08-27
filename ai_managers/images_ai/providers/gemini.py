@@ -1,7 +1,3 @@
-# To run this code you need to install the following dependencies:
-# pip install google-genai
-
-
 import os
 from google import genai
 from google.genai import types
@@ -34,7 +30,8 @@ class GeminiImages(ImagesAI):
         ]
         generate_content_config = types.GenerateContentConfig(
             response_modalities=[
-                "IMAGE"
+                "IMAGE",
+                "TEXT"
             ],
             
         )

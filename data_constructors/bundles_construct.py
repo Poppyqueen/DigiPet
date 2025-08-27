@@ -42,12 +42,12 @@ class BundleCollectionConfig(BaseModel):
     collection_theme: str = Field(description="The overarching theme of the collection")
     bundles: List[BundleConfig] = Field(description="List of bundle configurations for this collection")
 
+
 class bundles_maker:
 
 
     def __init__(self, select_model="gpt-5-mini", select_provider="openai"):
         self.llm_client=AIConfiguration(provider=select_provider,model=select_model,mode="simple_ai").get_client()
-        #self.llm_client=LLMCONFIG(select_model,select_provider).get_provider()
 
 
     def prepare_bundle(self, concept: str) -> List[Dict[str, Any]]:
@@ -171,11 +171,11 @@ Generate max 15 items max per room.
         """
         
         system_prompt = (
-            "You are a creative item curator and bundle designer. Given an initial concept, you will create "
+            "You are a creative item curator designer. Given an initial concept, you will create "
             "a cohesive bundle name and refine the concept for item generation.\n\n"
             "Your task:\n"
             "1. Generate a short creative, descriptive bundle name (use underscores, lowercase)\n"
-            "2. Create a refined, short concept that specifies what items would create the perfect atmosphere or be a perfect representation for the given idea\n\n"
+            "2. Create a refined, short concept that specifies what individual items would create the perfect atmosphere or be a perfect representation for the given idea\n\n"
             "The refined concept should be a short, descriptive text specific about item categories, themes, and vibes."
             #f"Main item types: {", ".join(item_types)}"
 
@@ -198,7 +198,7 @@ Generate max 15 items max per room.
             # Use a simple dictionary structure instead of complex Pydantic models
             class SimpleBundleConfig(BaseModel):
                 bundle_name: str = Field(description="A creative name for the bundle (lowercase with underscores)")
-                refined_concept: str = Field(description="A detailed concept description specifying what items to include")
+                refined_concept: str = Field(description="A detailed concept description specifying what individual items to include")
             
             response = self.llm_client.structured_output(
                 system=system_prompt,

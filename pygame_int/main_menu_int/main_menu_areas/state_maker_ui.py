@@ -23,7 +23,7 @@ from enum import Enum
 from data_constructors.base_state_construct import BaseCrafter
 
 
-from ai_managers.ai_utils.ai_loader import AIConfiguration, ImagesConfiguration, UnifiedLoader
+from ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
 
 from pygame_int.main_menu_int.main_menu_modules.pulsing_text import PulsingText
 
@@ -35,9 +35,6 @@ AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
 AVAILABLE_IMAGE_AI=UnifiedLoader.get_available_providers("images")
 
 AVAILABLE_IMAGE_AI.append("")
-
-print(f"STATE MAKER DEBUG, IMAGE AI:")
-print(AVAILABLE_IMAGE_AI)
 
 
 dropdowns = {}
