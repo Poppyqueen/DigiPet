@@ -26,9 +26,7 @@
 
 from utils.loc_datetime import datetime
 import os.path
-import json
 import inspect
-import traceback
 
 from tools.tools_folder import simulation
 
@@ -177,20 +175,8 @@ class FunctionBuilder:
                 "use_level": "room_type"
             },
             
-            "bedroom": {
-                "functions": {
-                    "sleep": self.room_tools.bedroom.sleep,
-                    "hug_pillow": self.room_tools.bedroom.hug_pillow,
-                    "look_under_bed": self.room_tools.bedroom.look_under_bed
-                },
-                "definitions": bedroom_tools,
-                "room_types": ["bedroom"],
-                "use_level": "room_type"
-            },
-            
             "living_room": {
                 "functions": {
-                    "watch_tv": self.room_tools.living_room.watch_tv,
                     "look_at_window": self.room_tools.living_room.look_at_window,
                 },
                 "definitions": living_room_tools,
@@ -280,7 +266,6 @@ class FunctionBuilder:
                 "item_types": ["art_book"],
                 "use_level": "inventory_only"
             },
-            
             # Dual-use item tools (available in room or inventory)
             "seat": {
                 "functions": {
@@ -289,7 +274,38 @@ class FunctionBuilder:
                 "definitions": seat_tools,
                 "item_types": ["seat"],
                 "use_level": "dual_use"
-            }
+            },
+
+            "bed": {
+                "functions": {
+                    "sleep": self.room_tools.bedroom.sleep,
+                    "look_under_bed": self.room_tools.bedroom.look_under_bed
+                },
+                "definitions": bedroom_tools,
+                "item_types": ["bed"],
+                "use_level": "dual_use",
+                #"room_types": ["bedroom"]
+            },
+
+            "pillow":{
+                "functions":{
+                    "hug_pillow": self.room_tools.bedroom.hug_pillow
+                },
+                "definitions": bedroom_tools,
+                "item_types": ["pillow"],
+                "use_level": "dual_use",
+                #"room_types": ["bedroom"]
+            },
+
+            "tv":{
+                "functions":{
+                    "watch_tv": self.room_tools.living_room.watch_tv,
+                },
+                "definitions": living_room_tools,
+                "item_types": ["tv"],
+                "use_level": "dual_use",
+                #"room_types": ["living_room"]
+            },
         }
         
         # Add conditional tools if they were successfully initialized
@@ -306,10 +322,10 @@ class FunctionBuilder:
                     "random_wikipedia": self.room_tools.computer.random_wikipedia
                 },
                 "definitions": computer_room_tools,
-                "room_types": ["computer_room"],
-                "item_types": ["wikipedia", "cellphone"],
+                #"room_types": ["computer_room"],
+                "item_types": ["wikipedia", "laptop"],
                 "display_information": self.room_tools.computer.display_information,
-                "use_level": "inventory_only"
+                "use_level": "dual_use"
             }
             print("Wikipedia tools added to unified definitions.")
 
@@ -322,8 +338,8 @@ class FunctionBuilder:
                     "youtube_open_youtube_item": self.youtube.open_youtube_item
                 },
                 "definitions": youtube_playlister_tools,
-                "room_types": ["youtube_playlists"],
-                "item_types": ["youtube_playlists"],
+                "room_types": ["youtube_playlists", "music_room"],
+                "item_types": ["youtube_playlists", "iPod"],
                 "display_information": self.youtube.get_summary,
                 "use_level": "inventory_only"
             }
@@ -342,8 +358,8 @@ class FunctionBuilder:
                     "discogs_get_wantlist_unique_artists": self.discogs_handle.get_wantlist_unique_artists
                 },
                 "definitions": discogs_tools,
-                "room_types": ["discogs"],
-                "item_types": ["discogs"],
+                "room_types": ["discogs", "music_room"],
+                "item_types": ["discogs", "iPod"],
                 "use_level": "inventory_only"
             }
             print("Discogs tools added to unified definitions.")
@@ -358,8 +374,8 @@ class FunctionBuilder:
                     "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
                 },
                 "definitions": musicbrainz_tools,
-                "room_types": ["musicbrainz"],
-                "item_types": ["musicbrainz"],
+                "room_types": ["musicbrainz", "music_room"],
+                "item_types": ["musicbrainz", "iPod"],
                 "use_level": "inventory_only"
             }
             print("MusicBrainz tools added to unified definitions.")
@@ -373,7 +389,7 @@ class FunctionBuilder:
                 },
                 "definitions": bluesky_tools,
                 "room_types": ["bluesky_social"],
-                "item_types": ["bluesky_social"],
+                "item_types": ["bluesky_social", "cellphone"],
                 "use_level": "inventory_only"
             }
             print("Bluesky tools added to unified definitions.")

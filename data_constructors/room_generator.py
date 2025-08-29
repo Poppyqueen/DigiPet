@@ -15,8 +15,10 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration, ImagesConfiguration
 from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 # --- Pydantic Models for Room Data Generation ---
+from utils.pydantic_models import room_types
 
-VALID_ROOM_TYPES=["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research"]
+
+VALID_ROOM_TYPES=room_types
 
 class RoomConfig(BaseModel):
     """Represents a single room configuration to be generated."""

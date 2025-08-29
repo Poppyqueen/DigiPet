@@ -129,7 +129,9 @@
         ],
         "static": false,
         "type": [
-            "misc"
+            "misc",
+            "pillow",
+            "seat"
         ],
         "stackable": true
     },
@@ -195,7 +197,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     },
@@ -315,7 +318,8 @@
         "static": false,
         "type": [
             "misc",
-            "seat"
+            "seat",
+            "pillow"
         ],
         "stackable": true
     },
@@ -351,7 +355,7 @@
             "A soft, fluffy pillow on the bed."
         ],
         "static": false,
-        "type": ["furniture", "seat"],
+        "type": ["furniture", "seat", "pillow"],
         "stackable": true
 
     }

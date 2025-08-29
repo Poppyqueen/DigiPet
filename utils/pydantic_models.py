@@ -10,8 +10,9 @@ valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry',
 
 stringed_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
 
-item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bluesky_social"]
+item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "tv", "pillow", "laptop", "iPod", "cellphone"]
 
+room_types = ["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research", "computer_room"]
 
 ### ///// Classes (Deep memory entities)
 

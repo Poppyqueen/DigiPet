@@ -387,7 +387,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     },
@@ -415,7 +416,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     },
@@ -429,7 +431,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     },
@@ -457,7 +460,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     },
@@ -497,7 +501,8 @@
         "static": true,
         "type": [
             "furniture",
-            "seat"
+            "seat",
+            "bed"
         ],
         "stackable": false
     }

@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 # Import your timezone function
 from utils.open_meteo_handle import OpenMeteoLoc
 
-
 class CoordinateDateTime:
     """
     A complete datetime replacement that uses coordinates to determine timezone.

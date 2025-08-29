@@ -29,6 +29,7 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 from utils.pydantic_models import ItemDefinitionListContainer # Import the item definition model
 
 
+
 class BundleConfig(BaseModel):
     """Represents a single bundle configuration to be generated."""
     concept: str = Field(description="A detailed concept description for the bundle")

@@ -8,7 +8,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -21,7 +22,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -34,7 +36,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -47,7 +50,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -60,7 +64,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -73,7 +78,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -86,7 +92,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -139,7 +146,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -152,7 +160,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -192,7 +201,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -205,7 +215,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -219,7 +230,8 @@
         "static": true,
         "type": [
             "furniture",
-            "misc"
+            "misc",
+            "tv"
         ],
         "stackable": false
     },
@@ -245,7 +257,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -258,7 +271,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -271,7 +285,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -285,7 +300,8 @@
         "static": true,
         "type": [
             "furniture",
-            "misc"
+            "misc",
+            "tv"
         ],
         "stackable": false
     },
@@ -298,7 +314,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -311,7 +328,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -324,7 +342,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -337,7 +356,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -376,7 +396,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -428,7 +449,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },
@@ -454,7 +476,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "tv"
         ],
         "stackable": false
     },

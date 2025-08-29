@@ -4,9 +4,12 @@ from utils.loc_datetime import datetime
 
 import json
 
+from utils.pydantic_models import item_types
+
+
 class InventoryService:
     MAX_INVENTORY_SLOTS = 30
-    ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed", "seat", "art_book", "bluesky_social"]
+    ALLOWED_ITEM_TYPES = item_types
 
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store
