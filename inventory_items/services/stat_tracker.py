@@ -127,7 +127,7 @@ class StatTracker:
             return f"Failed to consume: Item with ID '{item_id}' not found anywhere."
 
         item_data = item_info["item_data"]
-        item_display = self._inventory_service._format_item_for_display(item_data)
+        item_display = self._inventory_service._format_item_for_display(item_data, False)
 
         if item_info["location"] != "inventory":
             return f"Failed to consume {item_display}: You can only consume items from your inventory. It is in {item_info['location']}."

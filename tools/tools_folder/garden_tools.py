@@ -428,6 +428,7 @@ class Garden_Mananger(GenericJsonTool):
         Returns:
             str: A message indicating success or failure.
         """
+
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
         # Use the logical tick counter from Garden_Mananger itself for planting
         current_logical_tick = self._garden_logical_tick_counter
@@ -512,9 +513,16 @@ class Garden_Mananger(GenericJsonTool):
         # If successfully planted, remove the seed item from inventory
         self.state_manager.remove_item(item_id)
 
+        edit=-5
+        self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("fullness", edit)
+
+        stats_message=f"{edit} to energy, hydration, and fullness"
+
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/seed.png", "popup_type": 2})
 
-        return f"Successfully planted {plant_type} with UID {new_plant_uid} in plot {plot_id} of garden {current_room_id}. It is currently in the '{initial_stage_name}' stage. Seed consumed."
+        return f"Successfully planted {plant_type} with UID {new_plant_uid} in plot {plot_id} of garden {current_room_id}. It is currently in the '{initial_stage_name}' stage. Seed consumed. {stats_message}"
 
     def check_plant_state(self, plot_id: str) -> str:
         """
@@ -576,10 +584,20 @@ class Garden_Mananger(GenericJsonTool):
                 water_status_desc = "is overwatered."
             else:
                 water_status_desc = "has optimal water levels."
+
+
+            edit=-2.5
+            self.state_manager.adjust_stat("energy", edit)
+            self.state_manager.adjust_stat("hydration", edit)
+            self.state_manager.adjust_stat("fullness", edit)
+
+            stats_message=f"{edit} to energy, hydration, and fullness"
+
             
             return (f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is "
                     f"{current_stage_name} (Elapsed time: {elapsed_ticks} logical ticks). "
-                    f"Its current water level is {water_level:.2f}, and it {water_status_desc}")
+                    f"Its current water level is {water_level:.2f}, and it {water_status_desc}"
+                    f"{stats_message}")
         else:
             return (f"Plant {plant_type} (UID: {plant_uid}) in plot {plot_id} is "
                     f"{current_stage_name} (Elapsed time: {elapsed_ticks} logical ticks). Water level: {water_level:.2f}. "
@@ -695,6 +713,14 @@ class Garden_Mananger(GenericJsonTool):
             harvest_yield_message = "It yielded no items due to poor conditions."
 
 
+        edit=-10
+        self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("fullness", edit)
+
+        stats_message=f"{edit} to energy, hydration, and fullness"
+
+
         # Determine the life cycle of the plant for post-harvest behavior
         life_cycle = plant_info.get("life_cycle", "annual") # Default to annual if not specified
 
@@ -734,7 +760,8 @@ class Garden_Mananger(GenericJsonTool):
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png", "popup_type": 2})
 
             return (f"{harvest_message_prefix} {harvest_yield_message} "
-                    f"The plant is now in the 'mature' stage and will regrow for future harvests.")
+                    f"The plant is now in the 'mature' stage and will regrow for future harvests."
+                    f"{stats_message}")
         else:
             # For annual or biennial plants, or if life_cycle is not recognized, remove the plant from the plot
             self._state[current_room_id]["plots"][plot_index]["plants"] = []
@@ -742,7 +769,8 @@ class Garden_Mananger(GenericJsonTool):
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/harvest.png", "popup_type": 2})
 
             return (f"{harvest_message_prefix} {harvest_yield_message} "
-                    f"The plant has completed its life cycle. The plot is now empty.")
+                    f"The plant has completed its life cycle. The plot is now empty."
+                    f"{stats_message}")
         
 
     def _calculate_harvest_yield(self, plant_data: dict, plant_type_info: dict) -> dict:
@@ -821,11 +849,28 @@ class Garden_Mananger(GenericJsonTool):
                 return "good"
             else:
                 return "average"
+            
+
+    def ai_get_garden_summary(self) -> str:
+        """
+        Provides a summary of the garden in the current room for AI.
+        """
+        summary = self.get_garden_summary()
+        edit = -2.5
+        self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("fullness", edit)
+
+        stats_message = f"{edit} to energy, hydration, and fullness"
+        summary+=f"\n{stats_message}"
+
+        return summary
 
     def get_garden_summary(self) -> str:
         """
         Provides a summary of the garden in the current room.
         """
+
         current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
         current_logical_tick = self._garden_logical_tick_counter # Use logical tick for summary
 
@@ -878,7 +923,7 @@ class Garden_Mananger(GenericJsonTool):
                     f"    Stage: {current_stage_name} (Time Grown: {elapsed_ticks_display})\n"
                     f"    Water: {water_level:.2f} ({water_status_desc})"
                 )
-        
+
         return "\n".join(summary_lines)
     
     def water_plot(self, plot_id: str, water_level_type: str) -> str:

@@ -200,7 +200,7 @@ class InventoryService:
         return True, ""
 
 
-    def _format_item_for_display(self, item_dict):
+    def _format_item_for_display(self, item_dict, show_quantity=True):
         if not isinstance(item_dict, dict):
             return "Invalid Item Data"
         item_id = item_dict.get('id', -1)
@@ -208,11 +208,11 @@ class InventoryService:
         if not isinstance(item_id, int):
             return f"{item_name} (ID:INVALID)"
         
-        # --- NEW: Display quantity for stackable items ---
+        # Only show quantity if requested and conditions are met
         quantity = item_dict.get('quantity', 1)
-        if item_dict.get('stackable', False) and quantity > 1:
+        if show_quantity and item_dict.get('stackable', False) and quantity > 1:
             return f"{item_name} (ID:{item_id:06d}) x{quantity}"
-        # --- END NEW ---
+        
         return f"{item_name} (ID:{item_id:06d})"
 
     # --- Public Inventory Methods ---

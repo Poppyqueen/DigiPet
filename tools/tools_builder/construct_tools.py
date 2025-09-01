@@ -157,7 +157,7 @@ class FunctionBuilder:
                     "plant_seed": self.garden_manager.plant_seed,
                     "check_plant_state": self.garden_manager.check_plant_state,
                     "harvest_plant": self.garden_manager.harvest_plant,
-                    "get_current_garden_information": self.garden_manager.get_garden_summary,
+                    "get_current_garden_information": self.garden_manager.ai_get_garden_summary,
                     "water_plot": self.garden_manager.water_plot
                 },
                 "definitions": harvesting_garden_tools,
@@ -441,7 +441,7 @@ class FunctionBuilder:
         if room and "room_types" in room:
             return room["room_types"]
         return []
-    
+        
 
     def _tool_should_be_available(self, tool_config, current_room_types, items_in_room, inventory_items):
         """
@@ -458,30 +458,53 @@ class FunctionBuilder:
         if use_level == "always_available":
             return True
         
-        # Check room types
+        # Get room and item type lists
         room_types = tool_config.get("room_types", [])
-        if room_types and any(rt in current_room_types for rt in room_types):
-            return True
-        
-        # Check item types (in inventory)
         item_types = tool_config.get("item_types", [])
-        if item_types:
-            # Check inventory items
-            for inv_item in inventory_items:
-                if isinstance(inv_item, dict):
-                    inv_item_types = inv_item.get("type", [])
-                    if any(it in item_types for it in inv_item_types):
-                        return True
-            
-            # Check room items
-            for room_item in items_in_room:
-                if isinstance(room_item, dict):
-                    room_item_types = room_item.get("type", [])
-                    if any(it in item_types for it in room_item_types):
-                        return True
         
-        return False
-
+        # Track if we found a match
+        room_match = False
+        item_match = False
+        
+        # Check room types if they exist
+        if room_types and any(rt in current_room_types for rt in room_types):
+            room_match = True
+        
+        # Check item types if they exist
+        if item_types:
+            # For inventory_only tools, only check inventory
+            if use_level == "inventory_only":
+                for inv_item in inventory_items:
+                    if isinstance(inv_item, dict):
+                        inv_item_types = inv_item.get("type", [])
+                        if any(it in item_types for it in inv_item_types):
+                            item_match = True
+                            break
+            
+            # For dual_use and room_type tools, check both inventory and room items
+            else:  # covers both "dual_use" and "room_type"
+                # Check inventory items
+                for inv_item in inventory_items:
+                    if isinstance(inv_item, dict):
+                        inv_item_types = inv_item.get("type", [])
+                        if any(it in item_types for it in inv_item_types):
+                            item_match = True
+                            break
+                
+                # If not found in inventory, check room items
+                if not item_match:
+                    for room_item in items_in_room:
+                        if isinstance(room_item, dict):
+                            room_item_types = room_item.get("type", [])
+                            if any(it in item_types for it in room_item_types):
+                                item_match = True
+                                break
+        
+        # Tool is available if ANY condition is met:
+        # - Has room_types and we're in a matching room
+        # - Has item_types and we have a matching item (based on use_level rules)
+        # - Has both and either condition is met
+        return room_match or item_match
 
     def construct_map(self):
         """Construct the function mapping based on current state using the unified system."""
@@ -670,8 +693,8 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
-        # print("DEBUG ITEMS LIST")
-        # print(self.state_manager.get_inventory_items())
+        print("DEBUG ITEMS LIST")
+        print(self.state_manager.get_inventory_items())
         context.append("#############")
         # context.append("In the current room the items are:")
         # context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary
