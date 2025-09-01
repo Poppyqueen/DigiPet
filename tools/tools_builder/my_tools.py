@@ -5,6 +5,102 @@
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
 
+laptop_tools=[
+    {
+        "type": "function",
+        "name": "get_currency",
+        "description": "Gets the your currency balance.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "browse_auction_house",
+        "description": "Allows you to browse the auction house.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "type": "number",
+                    "description": "The pagination number for browsing inventory. Defaults to 0."
+                },
+                "list_type": {
+                    "type": "string",
+                    "description": "The type of list to retrieve. From: 'buy', 'sell', 'both'. Defaults to 'both'."
+                },
+                "category":{
+                    "type": "string",
+                    "description": "The category of items to filter by. Use with 'categories' to list all available categories."
+                }
+
+            },
+            "required": ["pagination"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lookup_auction_house_item",
+        "description": "Looks up an item in the auction house by its name.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_name": {
+                    "type": "string",
+                    "description": "The name of the item to look up."
+                }
+            },
+            "required": ["item_name"],
+            "additionalProperties": False
+        }
+    }, #buy_item
+    {
+        "type": "function",
+        "name": "buy_item",
+        "description": "Allows buying an item from the auction house.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_name": {
+                    "type": "string",
+                    "description": "The name of the item to buy."
+                },
+                "quantity": {
+                    "type": "number",
+                    "description": "The quantity of the item to buy."
+                }
+            },
+            "required": ["item_name", "quantity"],
+            "additionalProperties": False
+        }
+    }, #sell_item
+    {
+        "type": "function",
+        "name": "sell_item",
+        "description": "Allows selling an item from the auction house with its ID, from your inventory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The number ID of the item to sell."
+                },
+                "quantity": {
+                    "type": "number",
+                    "description": "The quantity of the item to sell."
+                }
+            },
+            "required": ["item_id", "quantity"],
+            "additionalProperties": False
+        }
+    }
+
+]
+
 art_book_tools=[
     {
         "type": "function",

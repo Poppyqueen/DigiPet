@@ -1,5 +1,17 @@
 [
     {
+        "name": "Modern Laptop",
+        "descriptions": [
+            "Sleek and lightweight laptop with a 14-inch display and a fast SSD.",
+            "Ideal for both work and play, featuring a long-lasting battery."
+        ],
+        "static": false,
+        "type": [
+            "laptop"
+        ],
+        "stackable": false
+    },
+    {
         "name": "mid-century wooden nightstand",
         "descriptions": [
             "Compact two-drawer nightstand with warm walnut veneer and tapered legs.",

@@ -49,13 +49,16 @@ from .my_tools import (
     musicbrainz_tools,
     bluesky_tools,
     seat_tools,
-    art_book_tools
+    art_book_tools,
+    laptop_tools
 )
 
 from tools.tools_folder.garden_tools import Garden_Mananger
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
 from tools.tools_folder.images_lab import ImagesLab
+
+from tools.tools_folder.auction_house import AuctionHouse
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
@@ -76,6 +79,9 @@ class FunctionBuilder:
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager, self.open_meteo)
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
         self.images_lab = ImagesLab(self.sub_directory)
+
+        self.auction_house=AuctionHouse(state_manager)
+
         self.A_Life = None
         self._init_alife()
 
@@ -306,6 +312,19 @@ class FunctionBuilder:
                 "use_level": "dual_use",
                 #"room_types": ["living_room"]
             },
+
+            "auction":{
+                "functions":{
+                    "browse_auction_house": self.auction_house.get_pretty_items_list,
+                    "lookup_auction_house_item": self.auction_house.lookup_item,
+                    "buy_item": self.auction_house.buy_item,
+                    "sell_item": self.auction_house.sell_item,
+                    "get_currency": self.auction_house.get_currency
+                },
+                "definitions": laptop_tools,
+                "item_types": ["laptop"],
+                "use_level": "dual_use"
+            }
         }
         
         # Add conditional tools if they were successfully initialized

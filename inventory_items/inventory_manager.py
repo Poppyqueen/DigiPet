@@ -117,8 +117,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def trash_item(self, item_id: int, confirm: bool) -> str:
         return self.inventory_service.trash_item(item_id, confirm)
 
-    def remove_item(self, item_id: int, internal=False):
-        return self.inventory_service.remove_item(item_id, internal)
+    def remove_item(self, item_id: int, internal=False, quantity=1):
+        return self.inventory_service.remove_item(item_id, internal, quantity)
 
     def get_all_rooms(self):
         return self.room_manager.get_all_rooms()

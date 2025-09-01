@@ -215,6 +215,20 @@ class StateStore(GenericJsonTool):
                 stats_data[stat_key] = max(0, min(200, stat_value))
                 needs_save = True
 
+        ## --- Validate Currency State --- 
+
+        currency_data = self._state.get("currency")
+        default_currency_data = self._default_state.get("currency", 150)
+
+        if currency_data is None or not isinstance(currency_data, (int, float)):
+            print(f"Validation Warning: 'currency' missing or invalid ({currency_data}). Resetting to default ({default_currency_data}).")
+            self._state["currency"] = default_currency_data
+            needs_save = True
+        elif currency_data < 0:
+            print(f"Validation Warning: 'currency' value ({currency_data}) is negative. Clamping to 0.")
+            self._state["currency"] = 0
+            needs_save = True
+
         # --- Validate Rooms ---
         room_ids_seen = set()
         valid_rooms = []
@@ -455,6 +469,22 @@ class StateStore(GenericJsonTool):
             self._state["sim_current_step"] = default_sim_current_step
             needs_save = True
 
+
+        # -- new validate currency state --
+        currency_value = self._state.get("currency")
+        default_currency_value = 0
+
+        if not isinstance(currency_value, (int, float)):
+            print(f"Validation Warning: 'currency' missing or not a number ({type(currency_value).__name__}). Setting to default ({default_currency_value}).")
+            self._state["currency"] = default_currency_value
+            needs_save = True
+        elif currency_value < 0:
+            print(f"Validation Warning: 'currency' value ({currency_value}) is negative. Resetting to default ({default_currency_value}).")
+            self._state["currency"] = default_currency_value
+            needs_save = True
+
+            
         if needs_save:
             print(f"Correcting state based on validation warnings for StateStore. Saving state.")
             self.save_state()
+

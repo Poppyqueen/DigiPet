@@ -3,7 +3,7 @@ import copy
 from pathlib import Path
 
 class ItemStore:
-    def __init__(self, root_dir_path: str):
+    def __init__(self, root_dir_path: str= "inventory_items/items_provider/items_data"):
         self._items = {}
         self._item_to_file_map = {}
         self._root_dir = Path(root_dir_path) # Store the root directory as a Path object

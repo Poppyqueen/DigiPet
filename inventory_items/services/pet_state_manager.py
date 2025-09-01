@@ -135,3 +135,35 @@ class PetStateManager:
             return
         current_steps = self.get_steps()
         self._state_store.update_state_section("steps", current_steps + amount)
+
+
+    # --- Currency Getters and Setters ---
+    def get_currency(self) -> int:
+        currency_value = self._state_store.get_state_section("currency")
+        if not isinstance(currency_value, int) or currency_value < 0:
+            print(f"Warning: get_currency found invalid state value ({currency_value}). Returning default 0.")
+            return 0
+        return currency_value
+
+    def set_currency(self, amount: int):
+        if not isinstance(amount, int):
+            print(f"Error: Attempted to set 'currency' with non-integer value: {amount}. Ignoring.")
+            return
+        if amount < 0:
+            print(f"Error: Attempted to set 'currency' with negative value: {amount}. Clamping to 0.")
+            amount = 0
+        self._state_store.update_state_section("currency", amount)
+
+    def adjust_currency(self, amount: int):
+        """
+        Adjusts the current currency possiteviley or negatively
+        """
+        if not isinstance(amount, int):
+            print(f"Error: Attempted to adjust 'currency' with non-integer amount: {amount}. Ignoring.")
+            return
+        current_currency = self.get_currency()
+        new_currency = current_currency + amount
+        if new_currency < 0:
+            print(f"Warning: Adjustment would set 'currency' below 0. Clamping to 0.")
+            new_currency = 0
+        self._state_store.update_state_section("currency", new_currency)
