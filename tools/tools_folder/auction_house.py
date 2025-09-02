@@ -23,10 +23,11 @@ class AuctionHouse:
             "food_n_drinks/staples.json": { "minimum": 25, "maximum": 50, "available_for_purchase": True },
             "food_n_drinks/condiments_n_sauces.json": { "minimum": 5, "maximum": 15, "available_for_purchase": True },
             "gardening/seeds.json": { "minimum": 40, "maximum": 100, "available_for_purchase": True },
-            "gardening/harvest.json": { "minimum": 5, "maximum": 10, "available_for_purchase": False }
+            "gardening/harvest.json": { "minimum": 5, "maximum": 15, "available_for_purchase": False }
         }
 
         # Populate the catalogs
+        self.item_to_source_map = {}
         self.currently_selling = {}  # Items available for purchase
         self.accepted_for_selling = set()  # Items accepted for selling
         
@@ -66,23 +67,28 @@ class AuctionHouse:
             buy_price = self.currently_selling[item_name]["price"]
             return int(buy_price * 0.8)
         
-        # For sell-only items, find the source config and calculate based on that
-        item_data = self.item_store.get_item(item_name)
-        if not item_data:
-            return 1
-            
-        # Find which source this item belongs to
-        source_path = item_data.get('__source_path__')
-        config = self.price_ranges.get(source_path)
+        # For sell-only items, use our item-to-source mapping
+        source_path = self.item_to_source_map.get(item_name)
+        if not source_path:
+            # Fallback: try to get item from store to see if we can find source
+            item_data = self.item_store.get_item(item_name)
+            if item_data and '__source_path__' in item_data:
+                source_path = item_data['__source_path__']
+                # Cache it for next time
+                self.item_to_source_map[item_name] = source_path
         
-        if config:
-            # Use the configured price range for sell-only items
-            mini = config["minimum"]
-            maxi = config["maximum"]
-            base_price = self._calc_buy_price(mini, maxi, item_data)
-            return int(base_price * 0.8)  # Apply same 80% sell rate
+        if source_path:
+            config = self.price_ranges.get(source_path)
+            if config:
+                # Get item data for stats calculation
+                item_data = self.item_store.get_item(item_name)
+                if item_data:
+                    mini = config["minimum"]
+                    maxi = config["maximum"]
+                    base_price = self._calc_buy_price(mini, maxi, item_data)
+                    return int(base_price * 0.8)  # Apply same 80% sell rate
         
-        # Fallback if no config found
+        # Final fallback if no config found
         return 1
 
     def _map_items(self):
@@ -101,6 +107,9 @@ class AuctionHouse:
             for item in items:
                 name = item["name"]
                 
+                # Map item name to source path for sell price calculation
+                self.item_to_source_map[name] = source_path
+                
                 # All items are accepted for selling
                 self.accepted_for_selling.add(name)
                 
@@ -112,9 +121,7 @@ class AuctionHouse:
                         "price": price
                     }
 
-
     #### ------ AI Facing Functions ------ #####
-
 
 
     def get_pretty_items_list(self, list_type: str = "both", pagination: int = 0, category: str = None) -> str:
@@ -263,7 +270,7 @@ class AuctionHouse:
             
         return response
     
-        
+    
     def lookup_item(self, item_name: str) -> str:
         """
         Looks up an item by name and returns its buying price, selling price,
@@ -358,9 +365,6 @@ class AuctionHouse:
             
         item_info = self.state_manager.inventory_service.get_item_details(item_id, True)
 
-        print("DEBUG SELL ITEMS: ITEMS INFO")
-        print(item_info)
-
         if not item_info:
             return f"Item with id {item_id} not found."
 
@@ -404,6 +408,7 @@ class AuctionHouse:
                 return f"Successfully sold {quantity}x {item_name} for {total_earned} currency total ({sold_price_per_item} each). You earned currency! {message}"
         else:
             return f"Failed to sell {item_name}. Please try again later."
+        
 
     def get_currency(self):
         """
