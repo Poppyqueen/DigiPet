@@ -261,20 +261,22 @@ class room_kitchen:
         for generated_item_data in list_generated_items_data:
             item_name = generated_item_data.get('name', 'Unnamed Item')
 
-            # Attempt to create the item at the specified location
-            # Assuming create_item returns the new item_id (e.g., an integer) on success, and False/None on failure
-            new_item_id = self.state.create_item(creation_location_type, creation_location_id, generated_item_data, internal=True)
+            # The function returns a LIST of new IDs on success (or False/[] on failure)
+            new_item_ids = self.state.create_item(creation_location_type, creation_location_id, generated_item_data, internal=True)
 
-            # Check for successful ID return (an integer ID is truthy, None/False are falsy)
-            if new_item_id is not None and new_item_id is not False: # Be explicit about checking for non-None and non-False
-                 print(f"Successfully created item '{item_name}' with ID {new_item_id} in {creation_location_type} {creation_location_id}.")
-                 # Store info for potential rollback (removing the newly created item)
-                 successfully_created_items_info.append({
-                     "id": new_item_id,
-                     "location_type": creation_location_type,
-                     "location_id": creation_location_id,
-                     "name": item_name # Store name for reporting/logging in rollback
-                 })
+            print(f"new_item_ids: {new_item_ids}")
+
+            # Check if creation was successful (a list of IDs is truthy)
+            if new_item_ids and isinstance(new_item_ids, list):
+                for new_item_id in new_item_ids: # Iterate over the returned list of IDs
+                    print(f"Successfully created item '{item_name}' with ID {new_item_id} in {creation_location_type} {creation_location_id}.")
+                    # Store info for potential rollback
+                    successfully_created_items_info.append({
+                        "id": new_item_id, # Store the single ID
+                        "location_type": creation_location_type,
+                        "location_id": creation_location_id,
+                        "name": item_name # Store name for reporting/logging in rollback
+                    })
             else:
                 # Creation failed for this item
                 print(f"Error: Failed to create item '{item_name}' in {creation_location_type} {creation_location_id}. Check state manager logs.")
@@ -313,26 +315,24 @@ class room_kitchen:
         rollback_add_location_id = None # Inventory typically doesn't have a room ID
 
         for item_data in removed_ingredients_data:
-            item_id = item_data.get('id', '?') # Get original ID for logging
+            item_id = item_data.get('id', '?')
             item_name = item_data.get('name', 'Unnamed')
             print(f"Attempting to add back ingredient: '{item_name}' (Original ID: {item_id}) to inventory.")
-            # Assuming create_item can add to "inventory" with location_id=None
-            # And assuming create_item returns the new item's ID on success, False/None on failure
-            new_item_id_after_rollback_add = self.state.create_item(rollback_add_location_type, rollback_add_location_id, item_data, internal=True)
+            
+            # create_item returns a list of IDs on success, or an empty list on failure.
+            new_item_ids_list = self.state.create_item(rollback_add_location_type, rollback_add_location_id, item_data, internal=True)
 
-            if new_item_id_after_rollback_add is None or new_item_id_after_rollback_add is False:
-                 # This is a critical error: an ingredient was removed and could not be put back.
-                 print(f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' (Original ID: {item_id}) during rollback. Item may be lost from inventory! Manual restoration needed.")
-                 # --- Add signal call for critical rollback failure (ingredient lost) ---
-                 self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' during rollback. Item may be lost!", "urgent": True})
-                 # ---------------------------------------------------------------------
+            # A non-empty list is "truthy", an empty list is "falsy". This is the correct check.
+            if not new_item_ids_list:
+                # This block now correctly executes on failure.
+                print(f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' (Original ID: {item_id}) during rollback. Item may be lost!")
+                self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' during rollback. Item may be lost!", "urgent": True})
             else:
-                 # Note: The ID might change when re-added depending on state manager implementation
-                 print(f"Successfully added back ingredient '{item_name}'. New ID: {new_item_id_after_rollback_add}")
-                 # --- Add signal call for successful ingredient rollback ---
-                 self._send_signal({"type": "show_message", "message": f"Successfully added back ingredient '{item_name}'."})
-                 # --------------------------------------------------------
-
+                # Extract the ID from the list for clearer logging.
+                # Using new_item_ids_list[0] as we are only adding one item at a time here.
+                new_id = new_item_ids_list[0]
+                print(f"Successfully added back ingredient '{item_name}'. New ID: {new_id}")
+                self._send_signal({"type": "show_message", "message": f"Successfully added back ingredient '{item_name}'."})
 
         # 2. Remove items that were successfully created
         print(f"Attempting to remove {len(created_items_info)} created items...")

@@ -77,8 +77,8 @@ To set up the project, you will typically follow these steps:
 
 2.  **Configure Location:** For features like weather integration (`open_meteo_handle`), the system reads latitude and longitude from the environment. **You must add `LATITUDE`, `LONGITUDE` and `OPENAI_API_KEY` to your `.env` file**.
     ```env
-    LATITUDE=your_latitude_here
-    LONGITUDE=your_longitude_here
+    LATITUDE=any_latitude_here
+    LONGITUDE=any_longitude_here
     OPENAI_API_KEY=your_openai_key
     ```
     **Failure to set these variables will result in an error and exit**.

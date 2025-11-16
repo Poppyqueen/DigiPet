@@ -14,14 +14,19 @@ The system dynamically constructs both function mappings (what the agent can act
 
 ## How does the system work?
 
-### Core Architecture
+### Core Architecture - The Unified Tool Definition Map
 
-The `FunctionBuilder` class uses several key data structures:
+The `FunctionBuilder` class now uses a single, unified data structure, **`self.tool_definitions`**, to manage all tools and their availability logic. Each entry in this map defines a *Tool Block* and its conditions for use via the `use_level` key:
 
-1. **`_room_type_data`** - Maps room types to their available functions and definitions
-2. **`_environmental_item_functions`** - Functions available when specific item types are present in the room
-3. **`_item_specific_functions`** - Functions available when specific item types are in the agent's inventory
-4. **`base_function_map`** - Always-available core functions
+| Key Structure | Description |
+| :--- | :--- |
+| `tool_definitions` | The singular dictionary containing all Tool Blocks. |
+| **`"functions"`** | A dictionary mapping function names to actual Python method references. |
+| **`"definitions"`** | A list of JSON-like tool definitions (for the LLM). |
+| **`"use_level"`** | The key that defines availability: `"always_available"`, `"room_type"`, `"inventory_only"`, or `"dual_use"`. |
+| **`"room_types"`** | *Optional List*. A list of room type strings that enable the tool. |
+| **`"item_types"`** | *Optional List*. A list of item type strings (in inventory or environment) that enable the tool. |
+| **`"display_information"`** | *Optional Function*. A method reference that provides string-based state information for the GUI. |
 
 ### Dynamic Tool Construction Process
 
@@ -45,27 +50,30 @@ available_tools = function_builder.construct_tools()
 result = await function_builder.call_function("function_name", {"arg1": "value1"})
 ```
 
-## How to add new room types and their tools?
+## How to add a New Tool Block (Room, Item, or Base Tools)?
+
+The process for adding any new tool set (whether room-based, item-based, or dual-use) is unified:
 
 ### Step 1: Create your tool functions
 
-First, create your tool functions in the appropriate module within `tools/tools_folder/`:
+Create your tool functions in the appropriate module within `tools/tools_folder/` and instantiate the handler class in `FunctionBuilder.__init__`.
 
 ```python
-# In tools/tools_folder/my_new_room_tools.py
-class MyNewRoomTools:
+# In tools/tools_folder/my_new_tools.py
+class MyNewTools:
     def __init__(self, state_manager, signal_callback):
         self.state_manager = state_manager
         self.signal_callback = signal_callback
     
-    def take_a_seat(self, item_id):
+    def take_a_seat(self, item_id: int):
         """A function for you to sit on any seat, chair or valid item you see around."""
+        # ... implementation ...
         return f"Sat on: {item_id}"
 ```
 
 ### Step 2: Create tool definitions
 
-Create the JSON-like tool definitions in `tools/my_tools.py`:
+Create the JSON-like tool definitions list in a dedicated file (e.g., `tools/my_tools.py`) and import it into `construct_tools.py`.
 
 ```python
 # In tools/my_tools.py
@@ -86,203 +94,150 @@ seat_tools=[
             "additionalProperties": False
         }
     }
-    ...
+    # ... more tools ...
 ]
 ```
 
-### Step 3: Import and register in construct_tools.py
+### Step 3: Register in `_init_unified_tool_definitions`
 
-Add your imports at the top:
+Add a new entry to the `self.tool_definitions` map within `FunctionBuilder._init_unified_tool_definitions` (or `_add_conditional_tools` for optional tools), configuring the `use_level` and contextual requirements.
 
-```python
-# Import your tool definitions
-from .my_tools import seat_tools
+#### Example 1: Room-Type Specific Tool Block (`use_level: "room_type"`)
 
-# Import your tool handler
-from tools.tools_folder.my_new_room_tools import MyNewRoomTools
-```
-
-Initialize your tool handler in `__init__`:
+Tools only available when the agent is in a room with a specific type.
 
 ```python
-def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None):
-    # ... existing initialization ...
-    
-    # Initialize your room tools
-    self.my_new_room = MyNewRoomTools(self.state_manager, self._signal_callback)
-```
-
-Add to `_room_type_data`:
-
-```python
-self._room_type_data = {
-    # ... existing room types ...
-    "my_special_room": {
-        "functions": {
-            "special_room_action": self.my_new_room.special_room_action
-        },
-        "definitions": my_new_room_tools,
-        "current_info": self.my_new_room.get_room_info  # Optional info function * 
-    }
+self.tool_definitions["my_special_room"] = {
+    "functions": {
+        "take_a_seat": self.my_new_tools.take_a_seat
+    },
+    "definitions": seat_tools,
+    "room_types": ["my_special_room"],
+    "display_information": self.my_new_tools.get_room_info, # Optional
+    "use_level": "room_type"
 }
 ```
-* current_info is an optional function for those tools tied to a room, it should return a string that gives information for display in the GUI about the state of this tool. i.e our gardening room informs about the state of the plots. 
 
-## How to add optional external integrations?
+#### Example 2: Inventory-Only Item Tool Block (`use_level: "inventory_only"`)
+
+Tools only available if an item of a specific type is in the agent's inventory.
+
+```python
+self.tool_definitions["my_inventory_item"] = {
+    "functions": {
+        "use_special_item": self.state_manager.use_special_item
+    },
+    "definitions": my_item_tools,
+    "item_types": ["special_key"],
+    "use_level": "inventory_only"
+}
+```
+
+#### Example 3: Dual-Use Item Tool Block (`use_level: "dual_use"`)
+
+Tools available if an item of a specific type is in the inventory *or* present in the current room.
+
+```python
+self.tool_definitions["interactive_furniture"] = {
+    "functions": {
+        "interact_with_furniture": self.room_tools.interact_with_furniture
+    },
+    "definitions": furniture_interaction_tools,
+    "item_types": ["interactive_furniture"],
+    "use_level": "dual_use"
+}
+```
+
+#### Example 4: Always Available Base Tool Block (`use_level: "always_available"`)
+
+The core tool set, available regardless of location or inventory. This block only requires the `functions`, `definitions`, and `use_level` keys.
+
+```python
+self.tool_definitions["base_functions"] = {
+    "functions": {
+        "move_to_room": self.state_manager.set_current_room,
+        "emit_inner_thought": emit_inner_thought
+    },
+    "definitions": base_tools,
+    "use_level": "always_available"
+}
+```
+
+## How to add Optional External Integrations?
+
+Optional external services (like YouTube, Bluesky, etc.) are handled by conditional initialization in `__init__` and registration in `_add_conditional_tools`.
 
 ### Step 1: Add configuration option
 
-In your configuration system, add an enable flag:
+Ensure your configuration system has an enable flag (e.g., `[Tools] enable_my_service = true`).
 
-```python
-# In your config file
-[Tools]
-enable_my_service = true
-```
-
-### Step 2: Conditional import and initialization
-
-Add conditional logic in `FunctionBuilder.__init__`:
+### Step 2: Conditional initialization in `__init__`
 
 ```python
 def __init__(self, ...):
+    # ... other initialization ...
+    
     # Get configuration
     my_service_enabled = config_manager.get_config('Tools', "enable_my_service")
-    
-    # Conditional import
-    if my_service_enabled:
-        try:
-            from utils import my_service_handler
-        except ImportError as e:
-            print(f"Warning: Could not import my_service_handler, disabling. Error: {e}")
-            my_service_enabled = False
-    
-    # Initialize to None first
     self.my_service = None
     
-    # Conditional initialization
+    # Conditional import and initialization
     if my_service_enabled:
         try:
+            from tools.tools_folder.services import my_service_handler
             self.my_service = my_service_handler.MyServiceTools()
             print("MyServiceTools instance created.")
         except Exception as e:
-            print(f"Error instantiating MyServiceTools: {e}")
+            print(f"Error with MyService tools: {e}")
             self.my_service = None
+            
+    # ...
+    self._add_conditional_tools()
 ```
 
-### Step 3: Dynamic registration
+### Step 3: Dynamic registration in `_add_conditional_tools`
 
-Add to the dynamic section of `_room_type_data`:
+Add the Tool Block to the unified map only if the handler was successfully initialized.
 
 ```python
-def __init__(self, ...):
-    # ... after base _room_type_data initialization ...
+def _add_conditional_tools(self):
+    """Add optional tools to the unified map if they were successfully initialized."""
+    # ... existing conditional tools ...
     
-    # Dynamically add optional integrations
     if self.my_service:
-        self._room_type_data["my_service_type"] = {
+        self.tool_definitions["my_service_tools"] = {
             "functions": {
                 "my_service_function": self.my_service.some_function
             },
-            "definitions": my_service_tools
+            "definitions": my_service_tools_definitions,
+            # Tools can be available via room type or a portable item
+            "room_types": ["my_service_room_type"],
+            "item_types": ["my_service_item_type"], 
+            "use_level": "dual_use" 
         }
-        print("My service tools added to room type data.")
+        print("My service tools added to unified definitions.")
 ```
 
-## How to add item-specific functions?
+## Context and Information System (Updated)
 
-### For inventory items (items the agent carries):
-
-```python
-# Add to _item_specific_functions
-self._item_specific_functions = {
-    "my_item_type": {
-        "use_special_item": self.state_manager.use_special_item,
-        "examine_closely": self.state_manager.examine_item_closely
-    }
-}
-
-# Add corresponding definitions
-self._item_specific_definitions = {
-    "my_item_type": my_item_tools
-}
-```
-
-### For environmental items (items present in room):
-
-```python
-# Add to _environmental_item_functions
-self._environmental_item_functions = {
-    "interactive_furniture": {
-        "interact_with_furniture": self.room_tools.interact_with_furniture
-    }
-}
-
-# Add corresponding definitions
-self._environmental_item_definitions = {
-    "interactive_furniture": furniture_interaction_tools
-}
-```
-
-## How to add always-available base functions?
-
-Add to the `base_function_map` in `__init__`:
-
-```python
-self.base_function_map = {
-    # ... existing base functions ...
-    "my_global_function": self.my_global_handler.global_function,
-    "another_base_function": self.state_manager.another_function
-}
-```
-
-Don't forget to add the corresponding definitions to `base_tools` in `tools/my_tools.py`.
-
-## Important implementation notes
-
-**Tool Definition Requirements:**
-- Tool definition `name` must exactly match the function name in the mapping
-- Parameter names and types in definitions must match the actual function signatures
-- The `required` array should list all non-optional parameters
-
-**Dynamic Construction:**
-- `construct_map()` is called automatically before each function call
-- The system checks room types, environmental items, and inventory every time
-- Functions are only available when their contextual requirements are met
-
-**Error Handling:**
-- Failed imports disable entire optional integrations gracefully
-- Missing functions return helpful error messages to the agent
-- The system continues working even if individual components fail
-
-**Performance Considerations:**
-- Tool construction happens dynamically but caching could be added
-- Large numbers of conditional imports may slow initialization
-- Consider lazy loading for heavy external services
-
-**Configuration Dependencies:**
-- Optional integrations require proper configuration management
-- Failed services should disable cleanly without breaking the system
-- Always provide fallback behavior when external services are unavailable
-
-## Context and Information System
-
-The system also provides contextual information to the AI agent:
+The system also provides contextual information to the AI agent and the GUI:
 
 ```python
 # Get current context for the LLM
 context = function_builder.construct_context()
 
-# Get room-specific information for GUI
-room_info = function_builder.get_current_room_info()
+# Get room-specific information for GUI (Updated function name)
+room_info = function_builder.get_current_tools_info() 
 ```
+
+The function **`get_current_tools_info()`** dynamically checks all *available* Tool Blocks for a defined **`"display_information"`** function and executes it, compiling all contextual information into a single, comprehensive string for display in the GUI.
 
 **Context includes:**
 - Current time and location
 - Agent's emotional state and available emotes
-- Inventory and room contents
+- Inventory and room contents (details kept minimal for LLM)
 - Current stats (hunger, energy, etc.)
-- Weather information (for outdoor rooms)
-- Room-type-specific details
+- Weather information (for outdoor rooms, only if `garden` room type is active)
+- Room-type-specific details (collected from available tool's `display_information` functions)
 
 This ensures the AI agent always has complete awareness of its current situation and capabilities.

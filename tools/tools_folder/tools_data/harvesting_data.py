@@ -127,7 +127,8 @@ plant_types = {
     "harvest_items": [
         {"item": cc.get_item("Rose Stem"), "base_harvest_yield": 3},
         {"item": cc.get_item("Cut Rose Head"), "base_harvest_yield": 1},
-        {"item": cc.get_item("rose seed"), "base_harvest_yield": 1}
+        {"item": cc.get_item("rose seed"), "base_harvest_yield": 1},
+        {"item": cc.get_item("Edible Rose Petals"), "base_harvest_yield": 6}
 
     ],
     "life_cycle": "perennial"

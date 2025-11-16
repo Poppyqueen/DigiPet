@@ -37,35 +37,51 @@ This is a singular JSON structure. It expects a key called `initial_room` as a s
 
 Following, you need a key for each of the rooms in your Base House, and inside this key there is a list of the items we will use by name as they are in our ItemStore.
 
+
 ## How do they work?
 
-This specific implementation is up to change, but for now to introduce new initial states, after you create your configuration and base house files, go into `inventory_items/base_state_manager/base_state_config.py`
+This specific implementation is up to change, but for now to introduce new initial states, the process has been updated to be more dynamic and modular by loading configurations from a dedicated directory structure rather than modifying specific Python files.
 
-Here we can change `self.states_configs` which maps a name for your initial state and the two files:
+### Configuration Loading
 
-```python
-self.states_configs = {
-    "base_state": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/prime_house.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
-    },
-    "dev_room": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
+Initial state configurations are now loaded dynamically by recursively walking a configuration root directory. By default, this directory is:
+
+`inventory_items/base_state_manager/configs`
+
+### Introducing a New Initial State
+
+To introduce a new initial state (e.g., `"my_new_state"`), follow these steps:
+
+1.  **Create your Base House** file (`my_new_house.json`) and **Room Configuration** file (`my_new_house_config.json`) as described in the previous sections.
+2.  **Create a New Configuration Map File** (or modify an existing one) within the `config_root_dir` (e.g., `inventory_items/base_state_manager/configs/my_ai_generated_states.json`).
+
+3.  This JSON file must contain a dictionary where the keys are the initial state names, and the values are dictionaries specifying the paths to the base house and items configuration files:
+
+    ```json
+    {
+        "my_new_state": {
+            "b_house_path": "inventory_items/base_state_manager/houses_data/my_new_house.json",
+            "items_config": "inventory_items/base_state_manager/houses_configs/my_new_house_config.json"
+        }
     }
-}
-```
+    ```
 
-Here you have to add your mapping.
+    *   All JSON files found in the configuration directory will be merged, making the new state name (`"my_new_state"`) automatically available for use during agent initialization.
 
-`inventory_items/inventory_manager.py` also needs changes. For `available_states` you have to add the name you just created in this `states_config`:
+### Item Configuration Flexibility (Update)
 
-```python
-available_states = [
-    "base_state",
-    "dev_room",
-    "my_new_state"  # add it here
-]
-```
+The item specification in the room configuration file (`houses_configs/*.json`) is now more flexible and can also include a key for the agent's starting **inventory**:
 
-**Note:** One has to change the GUI code to add this to the interface for now. We will have to update this involved process, but if you don't need it on the GUI it will be enough to do the steps above for it to be a valid configuration.
+| Key | Description |
+| :--- | :--- |
+| **`initial_room`** | *string*. Name of the room to start in. |
+| **`[Room Name]`** | *list of strings* or *string*. Specifies items for that room. Can be: <ul><li>A **list of item names** (e.g., `["bed_single", "desk"]`) which are looked up in the ItemStore.</li><li>A **string path** (e.g., `"inventory_items/item_sets/living_room.json"`) which is treated as a `__source_path__` filter to load all items defined in that specific file.</li></ul> |
+| **`inventory`** | *list of strings* or *string* (Optional). Specifies items the agent starts with in their inventory. Follows the same list/path format as room items. |
+
+### Configuration Management Utility
+
+The system includes methods to manage the configurations dynamically:
+
+-   **`list_available_configs()`**: Returns a list of all state names loaded from the directory structure.
+-   **`reload_configs()`**: Forces a complete reload of all configuration map files from the disk.
+-   **`add_state_configuration(config_map, subdirectory="")`**: Programmatically adds a new configuration dictionary and saves it to a new JSON file within the specified (or default) config directory.

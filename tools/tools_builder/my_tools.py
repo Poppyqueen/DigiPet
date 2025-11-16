@@ -30,11 +30,11 @@ laptop_tools=[
                 },
                 "list_type": {
                     "type": "string",
-                    "description": "The type of list to retrieve. From: 'buy', 'sell', 'both'. Defaults to 'both'."
+                    "description": "The type of list to retrieve. From: 'buy', 'sell', 'both', 'categories'. Defaults to 'both'. Use with 'categories' to list all available categories."
                 },
                 "category":{
                     "type": "string",
-                    "description": "The category of items to filter by. Use with 'categories' to list all available categories."
+                    "description": "The category of items to filter by."
                 }
 
             },
@@ -1558,22 +1558,26 @@ book_tools = [
     },
     {
         "type": "function",
-        "name": "replace_chapter_contents",
-        "description": "Replace the contents in a chapter from a book. This function will delete and replace the current entire chapter content with the new input.",
+        "name": "update_book_chapter",
+        "description": "Update the content of a chapter in a book. You can either append to the existing content or replace it entirely.",
         "parameters": {
             "type": "object",
             "properties": {
                 "book_item_id": {
                     "type": "number",
-                    "description": "The ID of the book to replace a chapter in."
+                    "description": "The ID of the book to update a chapter in."
                 },
                 "chapter_title": {
                     "type": "string",
-                    "description": "The title of the chapter to replace."
+                    "description": "The title of the chapter to update."
                 },
                 "new_content": {
                     "type": "string",
                     "description": "The new content of the chapter."
+                },
+                "operation": {
+                    "type": "string",
+                    "description": "The operation to perform on the chapter content: 'append' or 'replace'. Defaults to 'append'."
                 }
             },
             "required": [

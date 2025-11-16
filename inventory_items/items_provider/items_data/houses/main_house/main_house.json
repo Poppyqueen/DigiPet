@@ -498,7 +498,6 @@
         "name": "tall oak bookshelf",
         "descriptions": [
             "A floor-to-ceiling bookshelf made of warm-stained oak with adjustable shelves.",
-            "Holds a mix of reference volumes, novels, and a few decorative objects.",
             "Anchors the room and gives the library its classic, cozy atmosphere."
         ],
         "static": true,
@@ -667,7 +666,8 @@
         ],
         "static": true,
         "type": [
-            "furniture"
+            "furniture",
+            "seat"
         ],
         "stackable": false
     },
@@ -868,8 +868,8 @@
     {
         "name": "desktop computer (tower)",
         "descriptions": [
-            "Mid-tower desktop case with a quiet fan, SSD, and a modest RGB glow for ambient color.",
-            "Primary workstation. It seems to at least allow you to access wikipedia..."
+            "Mid-tower desktop case with a quiet fan, SSD, and a modest RGB glow for ambient color."
+            
         ],
         "static": true,
         "type": [
@@ -1467,7 +1467,6 @@
         "name": "Built-in Narrow White Bookshelf",
         "descriptions": [
             "A tall, recessed bookshelf painted the same white as the walls, with shallow shelves for small objects.",
-            "Some shelves are intentionally sparse \u2014 a single object on each \u2014 maintaining the room's deliberate minimalism.",
             "It provides storage and breaks an expanse of wall with quiet rhythm."
         ],
         "static": true,

@@ -1,3 +1,4 @@
+# I'm sorry
 
 _color_selection_options = [
     # chromatic color palette

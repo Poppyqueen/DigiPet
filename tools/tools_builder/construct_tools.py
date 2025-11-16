@@ -256,7 +256,7 @@ class FunctionBuilder:
                     "add_chapter": self.state_manager.add_book_chapter,
                     "read_chapter": self.state_manager.read_book_chapter,
                     "delete_chapter": self.state_manager.delete_book_chapter,
-                    "replace_chapter_contents": self.state_manager.update_book_chapter,
+                    "update_book_chapter": self.state_manager.update_book_chapter,
                 },
                 "definitions": book_tools,
                 "item_types": ["book"],

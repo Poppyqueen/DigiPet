@@ -234,7 +234,7 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 if is_input_locked:
                     display_text = "Waiting for bot..."
                     try:
-                        text_surface = gui_core._font.render(display_text, True, config.GREY)
+                        text_surface = gui_core._font.render(display_text, True, state.game_theme_colors["original_pet_color"])
                         text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2
                         text_y = input_text_draw_area.top + (input_text_draw_area.height - text_surface.get_height()) // 2
                         screen.blit(text_surface, (text_x, text_y))

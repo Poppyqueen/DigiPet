@@ -624,7 +624,7 @@ class InventoryService:
             return f"Failed to drop {item_display}. " + " ".join(messages)
 
     def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
-        #print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")
+        print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")
 
         failed_items_info = []
         messages = []
@@ -783,6 +783,10 @@ class InventoryService:
         self._state_store.update_state_section("inventory", inventory_list)
         self._state_store.update_state_section("rooms", rooms_list)
 
+        if internal:
+            return successfully_created_ids # Return the list of IDs for internal calls
+        
+        
         if overall_successful_creation_count > 0:
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
             self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})

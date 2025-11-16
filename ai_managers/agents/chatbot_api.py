@@ -88,7 +88,7 @@ class CLIChatbot:
 
         #print(f"DEBUG DEEP MEMORY FLAG {self.deep_memory_flag}")
         # Add a recursion depth limit to prevent infinite loops
-        self.max_recursion_depth = 8 # Allow up to 10 consecutive AI calls (including function calls and final response)
+        self.max_recursion_depth = 8 # Allow up to n consecutive AI calls (including function calls and final response)
 
         # REMOVED: self.tts = tts_flag
         self.last_response = None # Store the last response for potential use
@@ -192,15 +192,15 @@ class CLIChatbot:
             }
             self.memory.save_to_memory(context_memory, "short_term", "system")
 
-        if depth >= self.max_recursion_depth:
-            print(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached.")
-            stats_to_monitor = ["fullness", "hydration", "energy"]
-            #  Decrease the stats
-            # Decrease stats each function call set
-            for stat_name in stats_to_monitor:
-                self.state_manager.adjust_stat(stat_name, -10)
+        # if depth >= self.max_recursion_depth:
+        #     print(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached.")
+        #     stats_to_monitor = ["fullness", "hydration", "energy"]
+        #     #  Decrease the stats
+        #     # Decrease stats each function call set
+        #     for stat_name in stats_to_monitor:
+        #         self.state_manager.adjust_stat(stat_name, -10)
 
-            self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) You have been heavily penalized with some of your wellness stats", "short_term", "user")
+            self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth for actions ({self.max_recursion_depth})", "short_term", "user")
             #self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
             return "Error: Max recursion depth reached while processing AI response chain."
 

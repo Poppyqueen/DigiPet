@@ -156,7 +156,7 @@ class BookService:
         return f"Chapter '{chapter_title}' successfully added to '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
 
 
-    def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str) -> str:
+    def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str = "append") -> str:
         if not isinstance(new_content, str) or not new_content.strip():
             return "Error: New chapter content cannot be empty."
 
@@ -167,7 +167,10 @@ class BookService:
         target_chapter = next((c for c in chapters if c.get("title", "").lower() == chapter_title.lower()), None)
 
         if target_chapter:
-            target_chapter["content"] = new_content.strip()
+            if operation == "append":
+                target_chapter["content"] += "\n" + new_content.strip()
+            elif operation == "replace":
+             target_chapter["content"] = new_content.strip()
 
             item_info = self._inventory_service._find_item_info_by_id(book_item_id)
             if item_info and item_info["location"] == "inventory":

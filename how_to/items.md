@@ -54,9 +54,8 @@ After creating the correct blueprint structure for your item, it will be accessi
 
 **Notes:**
 
-*1 Item 'type' key: This is a list of strings from a valid pool of item types. For example, an item can be both a seed and a consumable. You can see the valid item types inside `inventory_items/services/inventory_service.py`.
+*1 Item 'type' key: This is a list of strings from a valid pool of item types. For example, an item can be both a seed and a consumable. You can see the valid item types inside `utils/pydantic_models.py`.
 
-`ALLOWED_ITEM_TYPES = ["tool", "consumable", "misc", "key", "weapon", "armor", "furniture", "book", "seed", "chair"]`
 
 Adding a new allowed item type without extra keys only requires you to add its type name into this list. 
 
@@ -66,4 +65,4 @@ Different item types afford the agent with varied functions; these are mapped in
 
 When creating an item blueprint, changing the item type will change the tool affordances for the agent actions while holding them or some by being in a room that holds them. Those types that give the agent tools currently are `book`, `seed`, `chair` and `consumable`. `chair` is the only example of an environmental item that affords actions or tools to the agent. The rest need to be in inventory.
 
-*2 Plant type: In `tools/tools_folder/tools_data/harvesting_data.py` you will find definitions of plant harvesting structures that determine their behavior for growing. Here we can find all the valid plant types that exist in the garden simulator. If you are creating a seed, this `plant_type` key maps the seed to its specific behavior. i.e., you can make a seed object called "magical seed" and if the plant type is set as 'lettuce' it will behave as a lettuce and grow a lettuce. Make sure to use existing plant types in this garden manager.
+*2 Plant type: In `tools/tools_folder/tools_data/harvesting_data.py` you will find definitions of plant harvesting structures that determine their behavior for growing. Here we can find all the valid plant types that exist in the garden simulator. If you are creating a seed, this `plant_type` key maps the seed to its specific behavior. i.e., you can make a seed object called "magical seed" and if the plant type is set as 'lettuce' it will behave as a lettuce and grow a lettuce. Make sure to use existing plant types in this garden manager or expand on it.

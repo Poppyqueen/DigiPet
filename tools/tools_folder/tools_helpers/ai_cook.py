@@ -6,6 +6,8 @@
 # and create new items based on a given process.
 # The current implementation is being used by an AI agent to manage crafting tasks.
 
+
+# Update this, creating a food item should inform of the ID it has 
 from typing import List, Dict, Any
 from utils.pydantic_models import ItemDefinitionListContainer
 from ai_managers.ai_utils.ai_loader import AIConfiguration
