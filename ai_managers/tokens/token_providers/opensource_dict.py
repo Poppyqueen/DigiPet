@@ -11,8 +11,9 @@ mapped_models={
     "cogito:3b":"deepcogito/cogito-v1-preview-llama-3B",
     "phi4-mini:3.8b":"microsoft/Phi-4-mini-instruct",
     "llama3.2:3b":"meta-llama/Llama-3.2-3B-Instruct",
-    "llama-bizarre:latest": "meta-llama/Llama-3.2-3B-Instruct",
 
+    "gemma-3-1b-it-BF16": "google/gemma-3-1b-it", 
+    
     "qwen3:8b-q4_K_M":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", 
 }
 

@@ -147,8 +147,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def add_book_chapter(self, book_item_id: int, chapter_title: str, content: str) -> str:
         return self.book_service.add_book_chapter(book_item_id, chapter_title, content)
 
-    def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str) -> str:
-        return self.book_service.update_book_chapter(book_item_id, chapter_title, new_content)
+    def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str) -> str:
+        return self.book_service.update_book_chapter(book_item_id, chapter_title, new_content, operation)
 
     def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
         return self.book_service.delete_book_chapter(book_item_id, chapter_title)

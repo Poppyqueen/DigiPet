@@ -593,7 +593,7 @@ class memory_manager:
             self._archive_memory(memory_data, "short_term")
 
             if self.deep_memory_flag:
-                self.create_deep_memory()
+                self.create_deep_memory() # Creating a "Deep Memory" when a short-term summarization process is triggered
 
             all_short_term_entries = []
             for tag, entries_list in memory_data.get("short_term", {}).items():

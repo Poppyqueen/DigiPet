@@ -562,6 +562,9 @@ class DeepMemory:
         Processes a memory structure to extract entities, and based on embedding similarity,
         either creates a new entity or merges information with an existing one.
 
+        Uses a large AI LLM call, basically re-ingesting the recent short-term memories up to their token limits
+        It analyzes the whole entries and tries to extract entities alongside sources.
+
         Args:
             memory_structure (dict): A dictionary containing the agent's short-term memory.
         """

@@ -18,8 +18,8 @@ room_types = ["planting_garden","library","bedroom","living_room","bathroom","ga
 
 
 class characteristic_structure(BaseModel):
-    characteristic: str = Field(description="The distinguishable intrinsic characteristic or propertie of this entity, I.E, colors, shapes, materials, sensations, interests, etc. You have to directly write the characteristics identified as an individual")
     messages_sources_ids: List[str] = Field(description="A list of IDs from the message where this specific characteristic for the entity is mentioned or extracted from.")
+    characteristic: str = Field(description="The distinguishable intrinsic characteristic or propertie of this entity, I.E, colors, shapes, materials, sensations, interests, etc. You have to directly write the characteristics identified as an individual")
 
 class entity_dict(BaseModel):
     named_entity: str = Field(description="The entity identified in the memory structure")

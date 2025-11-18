@@ -291,11 +291,11 @@ class room_kitchen:
         print(f"Successfully created {len(successfully_created_items_info)} new items.")
 
         # 8. Return success result
-        created_item_names = [item_info.get('name', f"ID {item_info.get('id', '?')}") for item_info in successfully_created_items_info]
         # --- Add signal call for successful preparation ---
+        item_names_and_IDs = [f"{item_info.get('name', 'Unnamed')} (ID: {item_info.get('id', '?')})" for item_info in successfully_created_items_info]
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/plate_icon.png", "popup_type": 2})
         # --------------------------------------------------
-        return f"Preparation successful! All used consumable items in the preparation have been removed. New items created and placed in {creation_location_type}: {', '.join(created_item_names)}."
+        return f"Preparation successful! All used consumable items in the preparation have been removed. New items created and placed in {creation_location_type}: {', '.join(item_names_and_IDs)}."
 
 
     def _rollback_preparation(self, removed_ingredients_data, created_items_info):

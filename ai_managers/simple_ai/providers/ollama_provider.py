@@ -40,7 +40,7 @@ class OllamaProv(SimpleAI):
 
             ],
             options={
-                "num_ctx": 1024
+                #"num_ctx": 1024
             },
             think=False
             )
@@ -74,7 +74,7 @@ class OllamaProv(SimpleAI):
                     model=self.ai_model,
                     format=structure.model_json_schema(),
                     options={
-                        "num_ctx": 1024
+                        #"num_ctx": 1024
                     }
                 )
                 # This is where the ValidationError is raised

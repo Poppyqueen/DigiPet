@@ -1,4 +1,11 @@
 # game.py
+import pygame
+import sys
+import threading
+import asyncio
+
+
+
 from pygame_int import config
 from pygame_int import state
 from pygame_int.main_digipet import gui
@@ -7,17 +14,14 @@ from pygame_int.main_digipet import gui_lore_panel
 from pygame_int.main_digipet import gui_color_selector
 from pygame_int.juke_box import jukebox 
 from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
-import pygame
-import sys
-import threading
-import asyncio
 
 
 from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
+                    # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!
 
 
 def add_items(items_list, room):
@@ -1004,13 +1008,6 @@ while running:
         #else:
         # --- Inventory Panel IS NOT Open (Normal Game Behavior) ---
             # Check the combined input lock state FIRST for user input events
-
-        # # --- 2. Improve the is_currently_asleep check to use absolute time comparison ---
-        # # Before the drawing section, update the is_currently_asleep calculation:
-        # is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
-        # is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
-
-
 
         # --- NEW: Handle MOUSEMOTION for hover effect ---
         if event.type == pygame.MOUSEMOTION:

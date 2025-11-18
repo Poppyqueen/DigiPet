@@ -531,8 +531,8 @@ class InventoryService:
         if item_info["location"] != "inventory":
             return f"Failed to drop {item_display}: It is not in your inventory."
 
-        if item_data_in_source.get("static", False):
-            return f"You cannot drop the {item_display}. It is a static item."
+        # if item_data_in_source.get("static", False):
+        #     return f"You cannot drop the {item_display}. It is a static item."
         
         if not current_room or not isinstance(current_room.get("items"), list):
              return f"Error: Cannot drop {item_display} here. Current room ({current_room_display}) has corrupted item data."
@@ -685,10 +685,10 @@ class InventoryService:
                 failed_items_info.append((display_name, f"Template validation failed: {error_msg}"))
                 continue
 
-            # Check if a static item is trying to be created in inventory (which makes no sense conceptually)
-            if item_data_template.get("static", False) and target_location_lower == "inventory":
-                 failed_items_info.append((self._format_item_for_display(item_data_template), "Cannot create a static item directly in inventory."))
-                 continue
+            # # Check if a static item is trying to be created in inventory (which makes no sense conceptually) # We now allow it to retain its static flag for items like furniture placed in inventory
+            # if item_data_template.get("static", False) and target_location_lower == "inventory":
+            #      failed_items_info.append((self._format_item_for_display(item_data_template), "Cannot create a static item directly in inventory."))
+            #      continue
 
             current_quantity_to_add = quantity # The total quantity for this template type
 
@@ -783,9 +783,7 @@ class InventoryService:
         self._state_store.update_state_section("inventory", inventory_list)
         self._state_store.update_state_section("rooms", rooms_list)
 
-        if internal:
-            return successfully_created_ids # Return the list of IDs for internal calls
-        
+
         
         if overall_successful_creation_count > 0:
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
@@ -814,6 +812,9 @@ class InventoryService:
         if not final_report_messages:
             return "No item creation attempts were processed."
         
+        if internal:
+            return successfully_created_ids # Return the list of IDs for internal calls
+        
         return "\n".join(final_report_messages)
 
 
@@ -839,8 +840,8 @@ class InventoryService:
             
             # If the item is static (e.g., a non-movable piece of furniture that somehow ended up in inventory),
             # prevent it from being trashed. This is a failsafe.
-            if item_data.get("static", False):
-                return f"You cannot trash the {item_display}. It is a static item."
+            # if item_data.get("static", False):
+            #     return f"You cannot trash the {item_display}. It is a static item."
 
             # Determine actual quantity to trash
             available_quantity = item_data.get("quantity", 1)
@@ -878,9 +879,9 @@ class InventoryService:
         
         # If the item is static, it should not be removable by the player through general means.
         # This is a strong failsafe.
-        if item_data_to_remove.get("static", False):
-            if internal: return (False, f"Cannot remove {item_display}. It is a static item.")
-            return f"Failed to remove {item_display}: It is a static item."
+        # if item_data_to_remove.get("static", False):
+        #     if internal: return (False, f"Cannot remove {item_display}. It is a static item.")
+        #     return f"Failed to remove {item_display}: It is a static item."
 
 
         available_quantity = item_data_to_remove.get("quantity", 1)

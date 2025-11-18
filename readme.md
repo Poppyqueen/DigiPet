@@ -24,11 +24,11 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **GUI configurations manager:** A dedicated menu to managing the loading and creation of different Pets.
 
+
 ## Real life context integration:
 
-Room/environment descriptions, which are prompted into the Pet each time it changes environments change based on the current time from the user's PC using datetime, the system also uses OpenMeteo to retrieve weather data from given coordinates set up inside the .env file. This weather data is currently used as context information for the agent if in the garden room, or tied to specific functions (look out the window is a function that retrieves the weather for the agent). The weather also affects the gardening system, which applies water levels to the plots based on real life rain information every 30 minutes.
+Room/environment descriptions, which are prompted into the Pet each time it changes environments, change based on the current time of the simulation. **The system now uses the configured `LATITUDE` and `LONGITUDE` from the `.env` file to correctly determine the local timezone** using the `OpenMeteoLoc` service. All time-dependent features, such as the time of day for room descriptions, are calculated based on this localized time, ensuring the simulation's time context matches the agent's defined location rather than the user's machine time.
 
-While the coordinates are configurable right now, the time is not. There are a few areas that would have to change for us to be able to set the time based on the configured coordinates instead of the direct machine current time. 
 
 It includes optional integrations for the Agent to use *YouTube*, *MusicBrainz*, *Discogs* and *Bluesky* with conditional importing.
 

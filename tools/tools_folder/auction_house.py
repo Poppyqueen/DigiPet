@@ -351,9 +351,9 @@ class AuctionHouse:
         self.state_manager.pet_state_manager.adjust_currency(-total_cost)
 
         if quantity == 1:
-            return f"Successfully bought {item_name} for {item_price}. {messages[0]}"
+            return f"Successfully bought {item_name} for {item_price}. {messages}"
         else:
-            return f"Successfully bought {quantity}x {item_name} for {total_cost} currency total ({item_price} each)."
+            return f"Successfully bought {quantity}x {item_name} for {total_cost} currency total ({item_price} each). {message}"
 
     def sell_item(self, item_id, quantity=1):
         """
