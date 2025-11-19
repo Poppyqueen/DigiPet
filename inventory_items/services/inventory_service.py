@@ -941,3 +941,46 @@ class InventoryService:
 
         if internal: return (True, message)
         return message
+
+    def persist_item_changes(self, item_id: int) -> str | None:
+        """
+        Persists changes made to an item's data to the central state store.
+        Finds the item by ID, determines its location, and updates the appropriate state section.
+        Returns None on success, or an error message string on failure.
+        """
+        item_info = self._find_item_info_by_id(item_id)
+        if not item_info:
+            return f"Error: Item {item_id} moved or lost during operation."
+
+        location = item_info["location"]
+        
+        if location == "inventory":
+            inventory_list = self._state_store.get_state_section("inventory", [])
+            # The item data in inventory_list is a reference, so it might already be updated if modified in place.
+            # We trigger the update on the store to ensure persistence (e.g. writing to file).
+            self._state_store.update_state_section("inventory", inventory_list)
+        elif location == "room":
+            rooms_list = self._state_store.get_state_section("rooms", [])
+            self._state_store.update_state_section("rooms", rooms_list)
+        else:
+            return f"Error: Item in unmanageable location: {location}"
+            
+        return None
+
+    def get_validated_item_data(self, item_id: int, required_type: str = None) -> tuple[dict | None, str | None]:
+        """
+        Retrieves item data by ID and validates it.
+        Optionally checks if the item has a specific type.
+        Returns (item_data, None) on success, or (None, error_message) on failure.
+        """
+        item_info = self._find_item_info_by_id(item_id)
+        if not item_info:
+            return None, f"Item {item_id} not found."
+
+        item_data = item_info["item_data"]
+        
+        if required_type:
+            if required_type not in item_data.get("type", []):
+                return None, f"Item {item_id} is not a {required_type}."
+        
+        return item_data, None

@@ -38,20 +38,20 @@ class MyItemTools:
 ```
 
 ### Best Practices
-*   **State Access**: Use `self.state.inventory_service` to find and validate items.
+*   **State Access**: Use `self.state.inventory_service.get_validated_item_data()` to find and validate items.
     ```python
-    item_info = self.state.inventory_service._find_item_info_by_id(item_id)
-    item_data = item_info["item_data"]
+    # Returns item_data if found and valid, else returns None and an error message
+    item_data, error = self.state.inventory_service.get_validated_item_data(item_id, required_type="my_new_type")
+    if error:
+        return error
     ```
 *   **Item Creation**: Use `self.state.create_item()` to add new items to the world. Fetch blueprints using `self.item_store.get_item("Item Name")`.
-*   **State Persistence**: Modify the `item_data` dictionary directly (e.g., `item_data["custom_state_key"] = new_value`), then explicitly persist the changes to the `StateStore`.
+*   **State Persistence**: Modify the `item_data` dictionary directly (e.g., `item_data["custom_state_key"] = new_value`), then use `persist_item_changes` to save to the `StateStore`.
     ```python
     # Helper to persist changes
-    state_store = self.state._state_store
-    if location == "inventory":
-        state_store.update_state_section("inventory", state_store.get_state_section("inventory"))
-    elif location == "room":
-        state_store.update_state_section("rooms", state_store.get_state_section("rooms"))
+    persist_error = self.state.inventory_service.persist_item_changes(item_id)
+    if persist_error:
+        return persist_error
     ```
 *   **UI Feedback**: Use `self._send_signal()` to show popups or messages.
     ```python

@@ -15,50 +15,9 @@ class DispenserTools:
             except Exception as e:
                 print(f"Error sending signal from DispenserTools: {e}")
 
-    def _get_dispenser_data(self, item_id: int):
-        """
-        Retrieves the item data for a dispenser and validates it.
-        Returns (item_data, error_message).
-        """
-        # Access InventoryService via InventoryHouseManager
-        if not hasattr(self.state, 'inventory_service'):
-            return None, "Error: InventoryService not available."
 
-        item_info = self.state.inventory_service._find_item_info_by_id(item_id)
-        if not item_info:
-            return None, f"Item {item_id} not found."
 
-        item_data = item_info["item_data"]
-        
-        # Validate type
-        if "dispenser" not in item_data.get("type", []):
-            return None, "This item is not a candy dispenser."
-            
-        return item_data, None
 
-    # We could move this to InventoryHouseManager and we should do that
-    # Also, change any other tools that use this pattern
-    def _persist_changes(self, item_id: int):
-        """
-        Persists changes made to an item's data to the central state store.
-        """
-        item_info = self.state.inventory_service._find_item_info_by_id(item_id)
-        if not item_info:
-            return "Error: Item moved or lost during operation."
-
-        location = item_info["location"]
-        state_store = self.state._state_store
-
-        if location == "inventory":
-            inventory_list = state_store.get_state_section("inventory", [])
-            state_store.update_state_section("inventory", inventory_list)
-        elif location == "room":
-            rooms_list = state_store.get_state_section("rooms", [])
-            state_store.update_state_section("rooms", rooms_list)
-        else:
-            return f"Error: Item in unmanageable location: {location}"
-            
-        return None
 
     def _update_description(self, item_data, count):
         """Updates the visible description of the dispenser."""
@@ -121,7 +80,7 @@ class DispenserTools:
         self._update_description(item_data, new_count)
         
         # Persist
-        persist_error = self._persist_changes(item_id)
+        persist_error = self.state.inventory_service.persist_item_changes(item_id)
         if persist_error:
             return persist_error
 
@@ -144,7 +103,7 @@ class DispenserTools:
             return "You don't have a Candy Refill Bag in your inventory."
 
         # Get Dispenser Data
-        item_data, error = self._get_dispenser_data(item_id)
+        item_data, error = self.state.inventory_service.get_validated_item_data(item_id, required_type="dispenser")
         if error:
             return error
 
@@ -158,7 +117,7 @@ class DispenserTools:
         self._update_description(item_data, max_capacity)
 
         # Persist
-        persist_error = self._persist_changes(item_id)
+        persist_error = self.state.inventory_service.persist_item_changes(item_id)
         if persist_error:
             return persist_error
 

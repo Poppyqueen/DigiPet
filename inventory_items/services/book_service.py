@@ -18,26 +18,7 @@ class BookService:
             except Exception as e:
                 print(f"Error sending signal: {e}")
 
-    # Helper method to find a book item's actual data from state
-    # This assumes find_item_info_by_id from InventoryService is reliable
-    def _get_book_data_from_id(self, book_item_id):
-        if not self._inventory_service:
-            print("Error: InventoryService not set in BookService.")
-            return None, "InventoryService not available."
 
-        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-        if not item_info:
-            return None, f"No item found with ID '{book_item_id}'."
-
-        item_data = item_info["item_data"]
-        is_valid_book, validation_msg = self._inventory_service._is_valid_item_data(item_data, check_id=True)
-
-        if not is_valid_book or "book" not in item_data.get("type", []):
-            if "book" not in item_data.get("type", []):
-                return None, f"Item with ID '{book_item_id}' ('{item_data.get('name', 'Unnamed')}') is not a book. Found types: {item_data.get('type', [])}."
-            else:
-                return None, f"Item with ID '{book_item_id}' found but data is corrupted: {validation_msg}"
-        return item_data, None # Return data and no error message
 
     def create_book_item(self, book_name: str, description: str) -> str:
         if not isinstance(book_name, str) or not book_name.strip():
@@ -84,7 +65,7 @@ class BookService:
             return "Your books:\n" + "\n".join(book_lines)
 
     def list_book_chapters(self, book_item_id: int) -> str:
-        book_data, error_msg = self._get_book_data_from_id(book_item_id)
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
 
         # Check accessibility (moved from InventoryHouseManager)
@@ -102,7 +83,7 @@ class BookService:
         return f"Chapters in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id}):\n" + "\n".join(chapter_titles)
 
     def read_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-        book_data, error_msg = self._get_book_data_from_id(book_item_id)
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
 
         # Check accessibility
@@ -128,7 +109,7 @@ class BookService:
         if not isinstance(content, str) or not content.strip():
             return "Error: Chapter content cannot be empty."
 
-        book_data, error_msg = self._get_book_data_from_id(book_item_id)
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
 
         chapters = book_data.get("chapters", [])
@@ -139,18 +120,9 @@ class BookService:
         book_data["chapters"] = chapters # Ensure the list is updated in the dict
 
         # Now, you need to persist this change to the overall state
-        # Find the item in its original location and update it
-        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-        if item_info and item_info["location"] == "inventory":
-            inventory_list = self._state_store.get_state_section("inventory", [])
-            # Update the item directly in the list (since book_data is a reference)
-            self._state_store.update_state_section("inventory", inventory_list)
-        elif item_info and item_info["location"] == "room":
-            rooms_list = self._state_store.get_state_section("rooms", [])
-            # The direct modification of book_data (which is inside rooms_list) should reflect
-            self._state_store.update_state_section("rooms", rooms_list)
-        else:
-            return f"Error: Book with ID {book_item_id} moved or is in an unmanageable location after lookup."
+        persist_error = self._inventory_service.persist_item_changes(book_item_id)
+        if persist_error:
+            return persist_error
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png", "popup_type": 2})
         return f"Chapter '{chapter_title}' successfully added to '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
@@ -160,7 +132,7 @@ class BookService:
         if not isinstance(new_content, str) or not new_content.strip():
             return "Error: New chapter content cannot be empty."
 
-        book_data, error_msg = self._get_book_data_from_id(book_item_id)
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
 
         chapters = book_data.get("chapters", [])
@@ -172,15 +144,9 @@ class BookService:
             elif operation == "replace":
              target_chapter["content"] = new_content.strip()
 
-            item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-            if item_info and item_info["location"] == "inventory":
-                inventory_list = self._state_store.get_state_section("inventory", [])
-                self._state_store.update_state_section("inventory", inventory_list)
-            elif item_info and item_info["location"] == "room":
-                rooms_list = self._state_store.get_state_section("rooms", [])
-                self._state_store.update_state_section("rooms", rooms_list)
-            else:
-                return f"Error: Book with ID {book_item_id} moved or is in an unmanageable location after lookup."
+            persist_error = self._inventory_service.persist_item_changes(book_item_id)
+            if persist_error:
+                return persist_error
 
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"})
             return f"Chapter '{chapter_title}' in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id}) successfully updated."
@@ -188,7 +154,7 @@ class BookService:
             return f"Chapter '{chapter_title}' not found in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
 
     def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-        book_data, error_msg = self._get_book_data_from_id(book_item_id)
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
 
         chapters = book_data.get("chapters", [])
@@ -198,15 +164,9 @@ class BookService:
         if len(updated_chapters) < original_chapter_count:
             book_data["chapters"] = updated_chapters
 
-            item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-            if item_info and item_info["location"] == "inventory":
-                inventory_list = self._state_store.get_state_section("inventory", [])
-                self._state_store.update_state_section("inventory", inventory_list)
-            elif item_info and item_info["location"] == "room":
-                rooms_list = self._state_store.get_state_section("rooms", [])
-                self._state_store.update_state_section("rooms", rooms_list)
-            else:
-                return f"Error: Book with ID {book_item_id} moved or is in an unmanageable location after lookup."
+            persist_error = self._inventory_service.persist_item_changes(book_item_id)
+            if persist_error:
+                return persist_error
 
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"})
             return f"Chapter '{chapter_title}' successfully deleted from '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
