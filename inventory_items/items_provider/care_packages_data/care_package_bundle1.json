@@ -205,5 +205,11 @@
             "sunflower seed",
             "rose seed"
         ]
+    },
+    "gadgets_pack": {
+        "package_color": "cheat",
+        "items": [
+            "Cellphone"
+        ]
     }
 }

@@ -90,7 +90,6 @@ class AuctionHouse:
         
         # Final fallback if no config found
         return 1
-
     def _map_items(self):
         """Creates maps of items for both buying and selling based on price_ranges config."""
         for source_path, config in self.price_ranges.items():
@@ -105,6 +104,12 @@ class AuctionHouse:
             available_for_purchase = config.get("available_for_purchase", True)
 
             for item in items:
+                # --- FIX STARTS HERE ---
+                # Manually add the source path to the item dictionary itself
+                # so it can be used for category filtering later.
+                item['__source_path__'] = source_path
+                # --- FIX ENDS HERE ---
+
                 name = item["name"]
                 
                 # Map item name to source path for sell price calculation
@@ -176,8 +181,7 @@ class AuctionHouse:
             elif list_type == "sell":
                 # Get all items from this category that are accepted for selling
                 filters = {
-                    '__source_path__': matching_source,
-                    'type': ["consumable"]
+                    '__source_path__': matching_source
                 }
                 category_items = self.item_store.find_items(filters)
                 item_names = [item['name'] for item in category_items if item['name'] in self.accepted_for_selling]
@@ -186,8 +190,7 @@ class AuctionHouse:
             else:  # both
                 # Get all items from this category
                 filters = {
-                    '__source_path__': matching_source,
-                    'type': ["consumable"]
+                    '__source_path__': matching_source
                 }
                 category_items = self.item_store.find_items(filters)
                 all_category_items = set(item['name'] for item in category_items)

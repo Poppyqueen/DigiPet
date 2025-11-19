@@ -3,12 +3,14 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from atproto import Client, models, AtUri
 
+import grapheme
+
 from tools.tools_folder.tools_data.blsk_alt_text import alt_text
 
 from tools.tools_folder.tools_helpers.bluesky.svg_manager import SVGManager
 # Configure #logging (keep it outside the class)
 ##logging.basicConfig(level=#logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+BLUESKY_LIMIT_POST_LENGTH = 300  # Example limit for Bluesky posts in Graphemes
 class bluesky_bot:
     def __init__(self, state, signal, images_lab):
         self._signal_callback = signal
@@ -57,7 +59,13 @@ class bluesky_bot:
             print(f"Failed to extract DID from URI {uri}: {e}")
             return
 
-
+    def check_length_limit(self, text: str, limit: int = BLUESKY_LIMIT_POST_LENGTH) -> bool:
+        """Check if text exceeds length limit. Returns True if within limit, False if exceeded.
+        """
+        text_length = grapheme.length(text)
+        if text_length > limit:
+            return False, text_length
+        return True, text_length
 
     def update_description(self, description: str):
         """Update the profile description."""
@@ -99,6 +107,10 @@ class bluesky_bot:
         if not self.is_ready:
             #logging.warning("Bluesky bot not ready, cannot post response.")
             return "Bluesky bot not ready."
+        
+        is_within_limit, text_length = self.check_length_limit(response_text, limit=BLUESKY_LIMIT_POST_LENGTH)
+        if not is_within_limit:
+            return f"Error: Message exceeds the 300 Graphemes limit for Bluesky posts (current length: {text_length}). Please shorten your message."
 
         #logging.info(f"Attempting to post reply to {uri}...")
         
@@ -292,7 +304,7 @@ class bluesky_bot:
             responses = post_data["responses_needing_reply"]
             
             formatted_output.append(f"POST #{i}")
-            formatted_output.append(f"URI: {original['uri']}")
+            #formatted_output.append(f"POST URI: {original['uri']}")
             formatted_output.append(f"ORIGINAL POST: {original['text']}")
             formatted_output.append(f"POSTED: {original['created_at']}")
             formatted_output.append(f"STATS: {original['stats']['likes']} likes, {original['stats']['replies']} replies")
@@ -482,6 +494,11 @@ class bluesky_bot:
             hashtag_list = [tag.strip() for tag in hashtags.split('#') if tag.strip()]
             hashtag_text = ' ' + ' '.join([f'#{tag}' for tag in hashtag_list])
             processed_message = message + hashtag_text 
+
+        # Ensure message length is within limits
+        is_within_limit, text_length = self.check_length_limit(processed_message, limit=BLUESKY_LIMIT_POST_LENGTH)
+        if not is_within_limit:
+            return f"Error: Message exceeds the 300 Graphemes limit for Bluesky posts (current length: {text_length}). Please shorten your message."
         
         #logging.info(f"Attempting to send post: '{processed_message}' (Image: {image_post})")
         

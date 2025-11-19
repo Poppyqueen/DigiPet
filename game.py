@@ -1332,6 +1332,8 @@ while running:
 
         print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
+        #play a sound effect for autonomous action trigger
+        music_player.play_sound_effect("style/sounds/auto_action_trigger.mp3")
 
         # Start the autonomous action request. This sets state.chatbot_is_processing = True
         # The response event CHATBOT_RESPONSE_EVENT will set it back to False later.

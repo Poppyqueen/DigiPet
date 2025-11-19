@@ -338,7 +338,7 @@ class FunctionBuilder:
                 "functions": {
                     "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
                     "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
-                    "random_wikipedia": self.room_tools.computer.random_wikipedia
+                    #"random_wikipedia": self.room_tools.computer.random_wikipedia
                 },
                 "definitions": computer_room_tools,
                 #"room_types": ["computer_room"],
