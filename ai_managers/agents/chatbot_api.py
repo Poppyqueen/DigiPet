@@ -28,6 +28,7 @@ from dotenv import load_dotenv
 
 from utils.open_meteo_handle import OpenMeteoLoc
 
+import asyncio
 load_dotenv()
 
 my_latitude = os.getenv("LATITUDE")
@@ -186,19 +187,14 @@ class CLIChatbot:
         """
         time.sleep(2)
 
-        if current_full_prompt:
-            context_memory={
-                "context": current_full_prompt
-            }
-            self.memory.save_to_memory(context_memory, "short_term", "system")
 
-        # if depth >= self.max_recursion_depth:
+        if depth >= self.max_recursion_depth:
         #     print(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached.")
         #     stats_to_monitor = ["fullness", "hydration", "energy"]
         #     #  Decrease the stats
         #     # Decrease stats each function call set
         #     for stat_name in stats_to_monitor:
-        #         self.state_manager.adjust_stat(stat_name, -10)
+        # #         self.state_manager.adjust_stat(stat_name, -10)
 
             self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth for actions ({self.max_recursion_depth})", "short_term", "user")
             #self.memory.save_to_memory(f"\n⚠️ Warning: Max recursion depth ({self.max_recursion_depth}) reached. Do not output any more functions.", "short_term", "system")
@@ -297,15 +293,16 @@ class CLIChatbot:
             if self.tts_provider:
                 self.tts_provider.stop() # Even if not available, ensure internal process is cleaned up
 
-    def _check_wellness_and_consequences(self):
+    async def _check_wellness_and_consequences(self):
         """
         Monitors the AI agent's wellness stats (fullness, hydration, energy).
         Decreases stats, checks against predefined thresholds, applies specific
         messages to memory based on severity, and triggers a "pass out" state
         with subsequent recovery if any stat drops to a critical level.
         """
+        print("Checking wellness and consequences...")
         stats_to_monitor = ["fullness", "hydration", "energy"]
-        low_threshold_for_passout = 10  # The critical threshold below which passing out occurs
+        low_threshold_for_passout = 20  # The critical threshold below which passing out occurs
         recovery_amount = 40            # The amount stats are recovered after passing out
 
         # Define thresholds and messages for different severity levels for each stat.
@@ -357,8 +354,9 @@ class CLIChatbot:
                             
                             # If this specific threshold is the critical pass-out threshold,
                             # set the flag to trigger a pass-out event after checking all stats.
-                            if threshold == low_threshold_for_passout:
+                            if current_value <= low_threshold_for_passout:
                                 low_stat_detected = True
+                                print("Low stat detected: " + stat_name + " is at or below threshold: " + str(threshold))
                             break # Stop after finding the most severe applicable message for this stat
 
         else:
@@ -366,12 +364,15 @@ class CLIChatbot:
 
         # 3. If a critically low stat was detected, perform the consequences
         if low_stat_detected:
+            print("Triggering pass-out consequences...")
             # Send a signal to the system that the agent has passed out and needs to 'sleep'
-            self._send_signal({"type": "sleep", "duration": 900}) # 15 minutes = 900 seconds
+            self._send_signal({"type": "start_sleep"}) # 15 minutes = 900 seconds
+            await asyncio.sleep(900)
+            self._send_signal({"type": "end_sleep"})
 
             # Save pass-out specific messages to the agent's memory
-            self.memory.save_to_memory("You passed out! Be more careful with your basic necessities.", "short_term", "user")
-            self.memory.save_to_memory("After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "user")
+            self.memory.save_to_memory("Internal message: You passed out! Be more careful with your basic necessities.", "short_term", "user")
+            self.memory.save_to_memory("Internal message: After 15 minutes you wake up on the exact same spot you fainted, still feeling weak.", "short_term", "user")
 
             # 4. Increase the stats for recovery after passing out
             for stat_name in stats_to_monitor:
@@ -410,7 +411,7 @@ class CLIChatbot:
 
 
 # --- wellness stats check -----
-        self._check_wellness_and_consequences()
+        await self._check_wellness_and_consequences()
 # --- extra part of the function -----
         # 6. Perform memory check (summarization, purging)
         print("Performing memory check...")

@@ -15,6 +15,7 @@ mapped_models={
     "gemma-3-1b-it-BF16": "google/gemma-3-1b-it", 
     
     "qwen3:8b-q4_K_M":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", 
+    "qwen3:1.7b-fp16":"Qwen/Qwen3-1.7B"
 }
 
 # This should map the models to use from Groq or Ollama (or other opensource provider)

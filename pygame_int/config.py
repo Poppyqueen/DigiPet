@@ -44,7 +44,8 @@ TARGET_BRIGHTNESS = 0.3 # Transparent overlay brightness (0.0 to 1.0)
 SCROLL_SPEED = 25  # Pixels to scroll per mouse wheel tick
 MAX_MESSAGE_HISTORY = 50  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
-IDLE_TIMEOUT_MINUTES = 5 # Minutes until pet is considered idle ### I don't know why this is here... probably put it somewhere much more accessible
+#IDLE_TIMEOUT_MINUTES = 5 # Minutes until pet is considered idle ### I don't know why this is here... probably put it somewhere much more accessible
+IDLE_TIMEOUT_MINUTES = 1 # Minutes until pet is considered idle ### I don't know why this is here... probably put it somewhere much more accessible
 IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
 # Background
 fallback_bg_color = (50, 50, 70) # Default background color
@@ -100,6 +101,26 @@ STAT_THRESHOLDS = {
 
 
 # --- Animation Configuration ---
+# Sleep Animation
+
+# --- Sleep Animation Configuration ---
+SLEEP_DROP_DURATION_MS = 2000        # Time to fall asleep (settle down)
+SLEEP_WAKE_DURATION_MS = 4000        # Time to wake up (rise up)
+SLEEP_DROP_AMOUNT = 100               # How far down the pet settles
+
+# Sleeping Loop (Breathing/Swaying)
+SLEEP_SWAY_FREQUENCY_HZ = 0.5        # Slow, rhythmic breathing speed
+SLEEP_SWAY_AMPLITUDE_X = 5.0         # Gentle horizontal sway
+SLEEP_SWAY_AMPLITUDE_Y = 0.0         # Gentle vertical sway (breathing)
+
+# Dreaming / Twitching
+SLEEP_TWITCH_MIN_INTERVAL_MS = 9000  # Minimum time between twitches
+SLEEP_TWITCH_MAX_INTERVAL_MS = 40000  # Maximum time between twitches
+SLEEP_TWITCH_DURATION_MS = 1000       # How long a twitch lasts
+SLEEP_TWITCH_INTENSITY = 2.0         # How hard it shakes during a twitch
+SLEEP_TWITCH_FREQUENCY_HZ = 7.5     # Fast vibration frequency
+SLEEP_TWITCH_SIZE_CHANGE = 0.15      # +/- 15% size change during twitch
+
 # General Base Animation (Applies when idle/neutral)
 BASE_BOB_AMPLITUDE = 5    # Vertical bobbing distance
 BASE_BOB_FREQUENCY = 0.5  # Vertical bobbing frequency (Hz)
@@ -353,3 +374,5 @@ LORE_PANEL_TOGGLE_BUTTON_TEXT_COLOR = (255, 255, 255) # White text
 LORE_PANEL_CONTENT_EVENT = pygame.event.custom_type() # Ensure this is a unique number, higher than existing USEREVENTs
 
 UPDATE_LORE_DISPLAY_EVENT = pygame.event.custom_type()
+
+END_SLEEP_EVENT = pygame.event.custom_type()

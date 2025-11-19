@@ -226,14 +226,14 @@ def handle_chatbot_signal(signal_data):
             if sound_path:
                 print(f"Signal type 'emote_changed' received with sound path: {sound_path}. Using Jukebox.")
                 music_player.play_sound_effect(sound_path)
-        elif action_type == "sleep":
-            sleep_duration_seconds = signal_data.get("duration", 0)
-            if sleep_duration_seconds > 0:
-                sleep_duration_ms = sleep_duration_seconds * 1000
-                print(f"Signal type 'sleep' received with duration: {sleep_duration_seconds}s, posting START_SLEEP_EVENT.")
-                pygame.event.post(pygame.event.Event(config.START_SLEEP_EVENT, duration_ms=sleep_duration_ms))
-            else:
-                 print(f"Signal 'sleep' received with invalid or zero duration: {sleep_duration_seconds}")
+        elif action_type == "start_sleep":
+                animation.start_sleep_animation()
+                print("Signal type 'start_sleep' received, posting START_SLEEP_EVENT.")
+                pygame.event.post(pygame.event.Event(config.START_SLEEP_EVENT))
+        elif action_type == "end_sleep":
+            animation.wake_up_pet()
+            print("Signal type 'end_sleep' received, posting END_SLEEP_EVENT.")
+            pygame.event.post(pygame.event.Event(config.END_SLEEP_EVENT))
 
         elif action_type == "stat_changed": # This signal does not change the stats for the backend, it is only signaling changes from it 
             stat_name = signal_data.get("stat_name")
@@ -750,7 +750,6 @@ while running:
     if state.chatbot_is_processing:
         state.last_activity_time = current_time_ms
 
-    is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
 
     # --- Event Handling ---
     for event in pygame.event.get():
@@ -878,23 +877,13 @@ while running:
 
         # --- 1. Fix the START_SLEEP_EVENT handler to properly calculate end time ---
         elif event.type == config.START_SLEEP_EVENT:
-            sleep_duration_ms = getattr(event, 'duration_ms', 0)
-            if sleep_duration_ms > 0:
-                # Calculate sleep end time
-                sleep_end_time_ms = current_time_ms + sleep_duration_ms
+            state.agent_sleeping=True
+            gui.gui_text_utils.add_message_to_history(f"Entering sleep state.", 'system')
+            continue
 
-                # Update the autonomous_action_paused_until_ms to be AFTER the sleep ends
-                # This ensures no autonomous action triggers during sleep
-                state.autonomous_action_paused_until_ms = sleep_end_time_ms
-
-                # Also reset the last_activity_time to the end of sleep
-                # This prevents autonomous action from triggering immediately after sleep
-                state.last_activity_time = sleep_end_time_ms
-
-                print(f"Sleep signal processed in main loop. Locking input until {state.autonomous_action_paused_until_ms} ms (for {sleep_duration_ms} ms).")
-                gui.gui_text_utils.add_message_to_history(f"Entering sleep state for {sleep_duration_ms // 1000} seconds.", 'system')
-            else:
-                print(f"Received START_SLEEP_EVENT with zero or negative duration.")
+        elif event.type == config.END_SLEEP_EVENT:
+            state.agent_sleeping=False
+            gui.gui_text_utils.add_message_to_history("Woke up from sleep.", 'system')
             continue
 
         elif event.type == config.MESSAGE_POPUP:
@@ -1319,8 +1308,7 @@ while running:
 
     # --- 3. Update the is_currently_asleep check to use absolute time comparison ---
     # Before the drawing section, update the is_currently_asleep calculation:
-    is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
-    is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
+    is_input_locked_by_state = state.agent_sleeping or state.chatbot_is_processing
 
 
     # In the autonomous action trigger section:
@@ -1363,8 +1351,7 @@ while running:
 
     # --- 2. Improve the is_currently_asleep check to use absolute time comparison ---
     # Before the drawing section, update the is_currently_asleep calculation:
-    is_currently_asleep = current_time_ms < state.autonomous_action_paused_until_ms
-    is_input_locked_by_state = is_currently_asleep or state.chatbot_is_processing
+    is_input_locked_by_state = state.agent_sleeping or state.chatbot_is_processing
 
 
     # --- Drawing ---

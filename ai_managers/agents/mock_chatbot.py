@@ -297,8 +297,10 @@ class MockChatbot:
                 self.state_manager.adjust_stat("energy", random.uniform(40, 80))
                 self.state_manager.adjust_stat("happiness", -random.uniform(5, 10))
                 # Signal sleep event (mock duration: 10-30 seconds)
-                sleep_duration = random.randint(10, 30)
-                self._signal_callback({"type": "sleep", "duration": sleep_duration})
+                sleep_duration = 120
+                self._signal_callback({"type": "start_sleep"})
+                await asyncio.sleep(sleep_duration)
+                self._signal_callback({"type": "end_sleep"})
                 signal_sent = True
 
             elif "clean" in lower_input or "bathe" in lower_input or "wash" in lower_input:

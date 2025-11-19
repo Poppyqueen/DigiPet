@@ -7,7 +7,17 @@ import pygame
 import math # Needed for sine/cosine calculations
 from pygame_int.main_digipet import gui # Needed to add system messages to history (e.g., input locked)
 
+import random
 # --- Helper functions to clear specific animation states and variables ---
+
+def _clear_sleep_state():
+    state.sleep_state = 0
+    state.sleep_phase_start_time = 0
+    state.original_radius_before_sleep = None
+    state.sleep_twitch_active = False
+    state.sleep_twitch_start_time = 0
+    state.next_twitch_time = 0
+    # state.pet_radius = state.current_radius # Safety reset
 def _clear_sad_state():
     state.sad_state = 0
     state.original_radius_before_sad = None
@@ -53,15 +63,15 @@ def _clear_shake_state():
 # --- Animation Priority Order (Highest to Lowest) ---
 # Each tuple is (animation_name, lambda_check_if_active, function_to_clear_state)
 
-
 ANIMATION_PRIORITY = [
+    ('sleep',     lambda: state.sleep_state != 0,     _clear_sleep_state), # <--- NEW HIGHEST PRIORITY
     ('sad',       lambda: state.sad_state != 0,       _clear_sad_state),
     ('happy',     lambda: state.happy_state != 0,     _clear_happy_state),
     ('angry',     lambda: state.angry_state != 0,     _clear_angry_state),
     ('excited',   lambda: state.excited_state != 0,   _clear_excited_state),
     ('thinking',  lambda: state.is_thinking,          _clear_thinking_state),
     ('curious',   lambda: state.is_curious,           _clear_curious_state),
-    ('confused',  lambda: state.confused_state != 0,  _clear_confused_state), # <-- UPDATED CONFUSED ENTRY
+    ('confused',  lambda: state.confused_state != 0,  _clear_confused_state),
     ('shake',     lambda: state.is_shaking,           _clear_shake_state),
 ]
 # Base movement is lower priority than 'shake' and is the default when none above are active.
@@ -120,6 +130,35 @@ def start_circle_shake():
     else:
         pass # print("Shake signal received, but another animation is active or already shaking. Ignoring general shake.")
 
+# --- Function to start the sleep animation sequence ---
+
+def start_sleep_animation():
+    """Starts the sleep sequence: Falling asleep -> Deep Sleep (Loop)."""
+    # Sleep forces itself regardless of input lock (it CAUSES the input lock logic usually)
+    current_time_ms = pygame.time.get_ticks()
+    
+    # Only start if not already sleeping
+    if state.sleep_state == 0:
+        state.sleep_state = 1 # Phase 1: Falling Asleep
+        state.sleep_phase_start_time = current_time_ms
+        
+        # Clear EVERYTHING else, as sleep is top priority
+        clear_lower_priority_animations('sleep') 
+        
+        state.original_radius_before_sleep = state.pet_radius
+
+def wake_up_pet():
+    """Triggers the waking up sequence."""
+    current_time_ms = pygame.time.get_ticks()
+    if state.sleep_state == 2: # Only wake if in deep sleep
+        state.sleep_state = 3 # Phase 3: Waking Up
+        state.sleep_phase_start_time = current_time_ms
+    elif state.sleep_state == 0:
+        pass # Already awake
+    else:
+        # If falling asleep (1), force wake immediately
+        state.sleep_state = 3
+        state.sleep_phase_start_time = current_time_ms
 
 # --- Function to start the sad animation sequence ---
 # --- Function to start the sad animation sequence ---
@@ -326,40 +365,92 @@ def update_animation_state(current_time_ms):
     is_any_specific_animation_active = False
 
 
-    # --- Handle Sad Animation State (Highest Priority) ---
-    if state.sad_state == 1: # Moving down
+    # --- Handle Sleep Animation State (Highest Priority) ---
+    if state.sleep_state == 1: # Falling Asleep
         is_any_specific_animation_active = True
-        elapsed_phase_time = current_time_ms - state.sad_phase_start_time
-        if elapsed_phase_time >= config.SAD_DROP_DURATION_MS:
-            state.sad_state = 2 # Transition to shaking down phase
-            state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 2 start
-            state.shake_start_time = current_time_ms # Start shake timer for state 2's specific shake
-            #print("Sad state: Dropping complete, starting shake down.")
+        elapsed_phase_time = current_time_ms - state.sleep_phase_start_time
+        
+        if elapsed_phase_time >= config.SLEEP_DROP_DURATION_MS:
+            state.sleep_state = 2 # Transition to Deep Sleep
+            state.sleep_phase_start_time = current_time_ms
+            
+            # Initialize Twitch Timing
+            state.sleep_twitch_active = False
+            # Set first random twitch time
+            state.next_twitch_time = current_time_ms + random.randint(
+                config.SLEEP_TWITCH_MIN_INTERVAL_MS, 
+                config.SLEEP_TWITCH_MAX_INTERVAL_MS
+            )
+            # print("Sleep state: Deep sleep loop started.")
 
-    elif state.sad_state == 2: # Shaking down
+    elif state.sleep_state == 2: # Deep Sleep Loop (Sway + Random Twitch)
         is_any_specific_animation_active = True
-        elapsed_shake_time = current_time_ms - state.shake_start_time # Use the shake timer specific to phase 2
-        if elapsed_shake_time >= config.SAD_SHAKE_DURATION_MS: # Check against state 2's shake duration
-            state.sad_state = 3 # Transition to rising phase
-            state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 3 start
-            #print("Sad state: Shaking down complete, starting rise.")
+        
+        # -- Twitch Logic --
+        if state.sleep_twitch_active:
+            # Check if twitch is over
+            if current_time_ms - state.sleep_twitch_start_time >= config.SLEEP_TWITCH_DURATION_MS:
+                state.sleep_twitch_active = False
+                state.pet_radius = state.original_radius_before_sleep # Reset size immediately
+                
+                # Schedule next twitch
+                state.next_twitch_time = current_time_ms + random.randint(
+                    config.SLEEP_TWITCH_MIN_INTERVAL_MS, 
+                    config.SLEEP_TWITCH_MAX_INTERVAL_MS
+                )
+                # print("Twitch ended.")
+        else:
+            # Check if it's time to twitch
+            if current_time_ms >= state.next_twitch_time:
+                state.sleep_twitch_active = True
+                state.sleep_twitch_start_time = current_time_ms
+                # print("Twitch started (Dreaming).")
 
-    elif state.sad_state == 3: # Moving up
+    elif state.sleep_state == 3: # Waking Up
         is_any_specific_animation_active = True
-        elapsed_phase_time = current_time_ms - state.sad_phase_start_time
-        if elapsed_phase_time >= config.SAD_RISE_DURATION_MS:
-            state.sad_state = 0 # Transition back to idle state
-            # --- CLEANUP SIZE STATE FOR SAD ---
-            state.original_radius_before_sad = None # <-- Reset
-            state.target_sad_radius = None # <-- Reset
-            state.pet_radius = state.current_radius # Ensure radius is reset
-            # ----------------------------------
-            #print("Sad state: Rising complete, returning to idle.")
+        elapsed_phase_time = current_time_ms - state.sleep_phase_start_time
+        
+        if elapsed_phase_time >= config.SLEEP_WAKE_DURATION_MS:
+            state.sleep_state = 0 # Fully Awake
+            state.original_radius_before_sleep = None
+            state.pet_radius = state.current_radius # Reset to base
+            print("Sleep animation: Fully awake.")
+
+    # IMPORTANT: All lower priority animations must check `if state.sleep_state == 0:`
+    if state.sleep_state == 0: 
+        if state.sad_state == 1: # Moving down
+            is_any_specific_animation_active = True
+            elapsed_phase_time = current_time_ms - state.sad_phase_start_time
+            if elapsed_phase_time >= config.SAD_DROP_DURATION_MS:
+                state.sad_state = 2 # Transition to shaking down phase
+                state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 2 start
+                state.shake_start_time = current_time_ms # Start shake timer for state 2's specific shake
+                #print("Sad state: Dropping complete, starting shake down.")
+
+        elif state.sad_state == 2: # Shaking down
+            is_any_specific_animation_active = True
+            elapsed_shake_time = current_time_ms - state.shake_start_time # Use the shake timer specific to phase 2
+            if elapsed_shake_time >= config.SAD_SHAKE_DURATION_MS: # Check against state 2's shake duration
+                state.sad_state = 3 # Transition to rising phase
+                state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 3 start
+                #print("Sad state: Shaking down complete, starting rise.")
+
+        elif state.sad_state == 3: # Moving up
+            is_any_specific_animation_active = True
+            elapsed_phase_time = current_time_ms - state.sad_phase_start_time
+            if elapsed_phase_time >= config.SAD_RISE_DURATION_MS:
+                state.sad_state = 0 # Transition back to idle state
+                # --- CLEANUP SIZE STATE FOR SAD ---
+                state.original_radius_before_sad = None # <-- Reset
+                state.target_sad_radius = None # <-- Reset
+                state.pet_radius = state.current_radius # Ensure radius is reset
+                # ----------------------------------
+                #print("Sad state: Rising complete, returning to idle.")
 
 
     # --- Handle Happy Animation State (Second Highest Priority) ---
     # Check if Sad is not active before processing Happy transitions
-    if state.sad_state == 0:
+    if state.sad_state == 0 and state.sleep_state == 0:
         if state.happy_state == 1: # Dipping down
             is_any_specific_animation_active = True
             elapsed_phase_time = current_time_ms - state.happy_phase_start_time
@@ -392,7 +483,7 @@ def update_animation_state(current_time_ms):
     # --- Handle Angry Animation State (Third Highest Priority) ---
     # Check if Sad and Happy are not active before processing Angry transitions
     # This block already exists and handles size changes correctly.
-    if state.sad_state == 0 and state.happy_state == 0:
+    if state.sad_state == 0 and state.happy_state == 0 and state.sleep_state == 0:
         if state.angry_state == 1: # Tense down (Phase 1)
             is_any_specific_animation_active = True
             elapsed_phase_time = current_time_ms - state.angry_phase_start_time
@@ -424,7 +515,7 @@ def update_animation_state(current_time_ms):
 
     # --- Handle Excited Animation State (Fourth Highest Priority) ---
     # Check if Sad, Happy, Angry are not active before processing Excited transitions
-    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0:
+    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.sleep_state == 0:
         if state.excited_state == 1: # Quick bounce up
             is_any_specific_animation_active = True
             elapsed_phase_time = current_time_ms - state.excited_phase_start_time
@@ -453,7 +544,7 @@ def update_animation_state(current_time_ms):
 
     # --- Handle Thinking Animation State (Fifth Highest Priority) ---
     # Check if higher priorities are not active before processing Thinking
-    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and state.is_thinking:
+    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and state.is_thinking and state.sleep_state == 0:
         is_any_specific_animation_active = True
         elapsed_segment_time = current_time_ms - state.thinking_segment_start_time
 
@@ -483,7 +574,7 @@ def update_animation_state(current_time_ms):
     # --- Handle Curious Animation State (Sixth Highest Priority) ---
     # Check if higher priorities are not active before processing Curious end
     # (Implicit check due to elif structure after higher priorities)
-    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and not state.is_thinking and state.is_curious:
+    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and not state.is_thinking and state.is_curious and state.sleep_state == 0:
         is_any_specific_animation_active = True
         elapsed_time = current_time_ms - state.curious_start_time
         if elapsed_time >= config.CURIOUS_DURATION_MS:
@@ -531,7 +622,7 @@ def update_animation_state(current_time_ms):
     # --- Handle General Shake (Eighth Highest Priority) ---
     # Check if all higher priorities are not active before processing General Shake end
 
-    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and not state.is_thinking and not state.is_curious and state.confused_state == 0 and state.is_shaking: # <-- Updated check for Confused
+    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and not state.is_thinking and not state.is_curious and state.confused_state == 0 and state.is_shaking and state.sleep_state == 0: # <-- Updated check for Confused
          is_any_specific_animation_active = True
          elapsed_shake_time = current_time_ms - state.shake_start_time
          if elapsed_shake_time >= config.SHAKE_DURATION_MS:
@@ -547,17 +638,86 @@ def update_animation_state(current_time_ms):
 
 # --- Function to calculate the animation offset ---
 # --- Function to calculate the animation offset ---
+
+# --- Function to calculate the animation offset ---
 def calculate_circle_offset(current_time_ms):
-    """Calculates the current pixel offset (x, y) and potentially size based on animation state.
-       This function ONLY calculates the visual effect for the CURRENT state; it does NOT change state."""
+    """Calculates the current pixel offset (x, y) and size based on animation state."""
     offset_x = 0
     offset_y = 0
-    time_in_seconds = current_time_ms / 1000.0 # Total elapsed time for base movement
+    time_in_seconds = current_time_ms / 1000.0 
+
+    # --- Sleep Animation (Highest Priority) ---
+    if state.sleep_state == 1: # Falling Asleep
+        elapsed_phase_time = current_time_ms - state.sleep_phase_start_time
+        progress = min(1.0, elapsed_phase_time / config.SLEEP_DROP_DURATION_MS)
+        
+        # Easing: Ease-Out Quadratic
+        eased_progress = -(progress) * (progress - 2)
+        
+        offset_y = eased_progress * config.SLEEP_DROP_AMOUNT
+        # Slight shrink while falling asleep to look cozy
+        if state.original_radius_before_sleep is not None:
+            state.pet_radius = state.original_radius_before_sleep * (1.0 - (0.1 * eased_progress))
+
+    elif state.sleep_state == 2: # Deep Sleep (Sway + Twitch)
+        # 1. Base Settle Position
+        offset_y = config.SLEEP_DROP_AMOUNT
+        
+        # 2. Soft Swaying (Breathing)
+        elapsed_sleep_time = current_time_ms - state.sleep_phase_start_time
+        sway_angle = (elapsed_sleep_time / 1000.0) * config.SLEEP_SWAY_FREQUENCY_HZ * 2 * math.pi
+        
+        sway_x = config.SLEEP_SWAY_AMPLITUDE_X * math.sin(sway_angle)
+        sway_y = config.SLEEP_SWAY_AMPLITUDE_Y * math.sin(sway_angle) # Breathing motion
+        
+        offset_x = sway_x
+        offset_y += sway_y
+        
+        # Base radius is slightly shrunk (from Phase 1 end)
+        if state.original_radius_before_sleep is not None:
+            current_base_radius = state.original_radius_before_sleep * 0.9
+        else:
+            current_base_radius = state.current_radius
+
+        # 3. Random Twitch / Dreaming Logic
+        if state.sleep_twitch_active:
+            elapsed_twitch = current_time_ms - state.sleep_twitch_start_time
+            
+            # High frequency vibration
+            twitch_angle = (elapsed_twitch / 1000.0) * config.SLEEP_TWITCH_FREQUENCY_HZ * 2 * math.pi
+            twitch_offset_x = config.SLEEP_TWITCH_INTENSITY * math.sin(twitch_angle)
+            twitch_offset_y = config.SLEEP_TWITCH_INTENSITY * math.cos(twitch_angle)
+            
+            offset_x += twitch_offset_x
+            offset_y += twitch_offset_y
+            
+            # Rapid Size Change
+            # Using a sine squared to keep it positive or chaotic
+            size_pulse = math.sin(twitch_angle) * config.SLEEP_TWITCH_SIZE_CHANGE
+            state.pet_radius = current_base_radius * (1.0 + size_pulse)
+        else:
+            # Just the cozy shrunk size
+            state.pet_radius = current_base_radius
+
+    elif state.sleep_state == 3: # Waking Up
+        elapsed_phase_time = current_time_ms - state.sleep_phase_start_time
+        progress = min(1.0, elapsed_phase_time / config.SLEEP_WAKE_DURATION_MS)
+        
+        # Easing: Ease-Out Quadratic
+        eased_progress = -(progress) * (progress - 2)
+        
+        # Interpolate from Drop Amount back to 0
+        offset_y = (1.0 - eased_progress) * config.SLEEP_DROP_AMOUNT
+        
+        # Restore size
+        if state.original_radius_before_sleep is not None:
+            current_base_radius = state.original_radius_before_sleep * 0.9
+            state.pet_radius = current_base_radius + (progress * (state.original_radius_before_sleep - current_base_radius))
 
     # Priority Order (Highest to Lowest): Sad > Happy > Angry > Excited > Thinking > Curious > Confused > General Shake > Base
 
     # --- Calculate offsets based on Sad Animation State (Highest Priority) ---
-    if state.sad_state == 1: # Moving down
+    elif state.sad_state == 1: # Moving down
         elapsed_phase_time = current_time_ms - state.sad_phase_start_time
         progress = min(1.0, elapsed_phase_time / config.SAD_DROP_DURATION_MS)
         offset_y = progress * config.SAD_DROP_AMOUNT

@@ -118,7 +118,7 @@ def handle_gui_event(event):
         # Check if the panel is visible and the input_rect exists (i.e., the input box is drawn)
         if event.button == 1 and not state.chatbot_is_processing: # was it a left click and not a scroll or other button? is the bot free?
 
-            if state.panel_visible and input_rect:
+            if state.panel_visible and input_rect and not state.agent_sleeping and not state.chatbot_is_processing:
                 if not input_rect.collidepoint(mouse_pos):
                     # If the click was outside the input box, set cursor_visible to Fals
                     if state.cursor_active:
@@ -232,7 +232,10 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
                 text_color = state.game_theme_colors["user_message_color"]
                 if is_input_locked:
-                    display_text = "Waiting for bot..."
+                    if state.agent_sleeping:
+                        display_text = "The bot is currently sleeping."
+                    else:
+                        display_text = "Waiting for bot..."
                     try:
                         text_surface = gui_core._font.render(display_text, True, state.game_theme_colors["original_pet_color"])
                         text_x = input_text_draw_area.left + (input_text_draw_area.width - text_surface.get_width()) // 2

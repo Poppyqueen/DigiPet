@@ -331,12 +331,12 @@ class memory_manager:
                         "function_name": text_or_object.get("function_name"),
                         "arguments": text_or_object.get("arguments")
                     })
-                elif isinstance(text_or_object, str):
-                    print(f"Warning: Plain string system message found for tag '{key_tag}'. Treating as 'user'")
-                    structured_memory["conversation_history"].append({
-                        "type": "user",
-                        "content": text_or_object
-                    })
+                # elif isinstance(text_or_object, str):
+                #     print(f"Warning: Plain string system message found for tag '{key_tag}'. Treating as 'user'")
+                #     structured_memory["conversation_history"].append({
+                #         "type": "user",
+                #         "content": text_or_object
+                #     })
             else:
                 role = key_tag
                 valid_roles = ["user", "assistant"]

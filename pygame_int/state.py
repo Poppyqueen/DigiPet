@@ -12,6 +12,7 @@ autonomous_action_paused_until_ms = 0 # Time in milliseconds until the autonomou
 chatbot_is_processing = False # Indicates if the chatbot is currently generating a response.
 is_initial_popup_phase = True # Flag for displaying initial game information popups.
 
+agent_sleeping = False
 
 # --- Chat and Input State ---
 # Variables managing the chat interface, input box, and history.
@@ -49,6 +50,16 @@ current_radius = 0 # Appears potentially redundant with pet_radius, but kept as 
 # General Animation State
 is_shaking = False # General shake state (e.g., for incorrect input).
 shake_start_time = 0 # Time in milliseconds when the general shake started.
+
+# Sleep Animation State
+sleep_state = 0 # 0: Idle, 1: Falling Asleep, 2: Deep Sleep, 3: Waking Up.
+sleep_phase_start_time = 0 # Time when the current sleep phase began.
+original_radius_before_sleep = None # Stores pet_radius at start.
+
+# New variables for the "Dreaming/Twitch" mechanic
+sleep_twitch_active = False       # Is it currently twitching?
+sleep_twitch_start_time = 0       # When did the current twitch start?
+next_twitch_time = 0              # Timestamp for when the next twitch should happen
 
 # Sad Animation State
 sad_state = 0 # 0: Idle, 1: Dropping, 2: Shaking Down, 3: Rising (Sad animation state).
