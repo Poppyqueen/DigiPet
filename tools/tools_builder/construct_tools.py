@@ -50,13 +50,15 @@ from .my_tools import (
     bluesky_tools,
     seat_tools,
     art_book_tools,
-    laptop_tools
+    laptop_tools,
+    dispenser_tools
 )
 
 from tools.tools_folder.garden_tools import Garden_Mananger
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
 from tools.tools_folder.images_lab import ImagesLab
+from tools.tools_folder.dispenser_tools import DispenserTools
 
 from tools.tools_folder.auction_house import AuctionHouse
 
@@ -79,6 +81,7 @@ class FunctionBuilder:
         self.room_tools = main_tools_handle(self.state_manager, self._signal_callback, self.memory, config_manager, self.open_meteo)
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
         self.images_lab = ImagesLab(self.sub_directory)
+        self.dispenser_tools = DispenserTools(self.state_manager, self._signal_callback)
 
         self.auction_house=AuctionHouse(state_manager)
 
@@ -323,6 +326,16 @@ class FunctionBuilder:
                 },
                 "definitions": laptop_tools,
                 "item_types": ["laptop"],
+                "use_level": "dual_use"
+            },
+
+            "dispenser": {
+                "functions": {
+                    "dispense_candy": self.dispenser_tools.dispense_candy,
+                    "refill_dispenser": self.dispenser_tools.refill_dispenser
+                },
+                "definitions": dispenser_tools,
+                "item_types": ["dispenser"],
                 "use_level": "dual_use"
             }
         }

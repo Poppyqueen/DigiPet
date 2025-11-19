@@ -23,7 +23,8 @@ class AuctionHouse:
             "food_n_drinks/staples.json": { "minimum": 25, "maximum": 50, "available_for_purchase": True },
             "food_n_drinks/condiments_n_sauces.json": { "minimum": 5, "maximum": 15, "available_for_purchase": True },
             "gardening/seeds.json": { "minimum": 40, "maximum": 100, "available_for_purchase": True },
-            "gardening/harvest.json": { "minimum": 5, "maximum": 15, "available_for_purchase": False }
+            "gardening/harvest.json": { "minimum": 5, "maximum": 15, "available_for_purchase": False },
+            "furniture/sellable_furniture.json": { "minimum": 150, "maximum": 300, "available_for_purchase": True }
         }
 
         # Populate the catalogs
@@ -94,8 +95,7 @@ class AuctionHouse:
         """Creates maps of items for both buying and selling based on price_ranges config."""
         for source_path, config in self.price_ranges.items():
             filters = {
-                '__source_path__': source_path,
-                'type': ["consumable"]
+                '__source_path__': source_path
             }
             items = self.item_store.find_items(filters)
             

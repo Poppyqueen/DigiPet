@@ -216,6 +216,7 @@ class InventoryService:
         return f"{item_name} (ID:{item_id:06d})"
 
     # --- Public Inventory Methods ---
+
     def add_item_description(self, item_id: int, new_description: str) -> str:
         if not isinstance(item_id, int):
             return f"Failed to add description: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."

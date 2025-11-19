@@ -8,9 +8,11 @@ Item definitions/structures, or 'blueprints', are JSON definitions inside our `i
 
 All items have requirements for certain keys on their blueprints, depending on the types they are, while always including certain specific basic values.
 
-## How to use an item?
+## How to use instantiate an item?
 
 `tools/tools_folder/tools_data/harvesting_data.py` displays the usage of the ItemStore. It involves initializing our store with the path to the directory where we keep our item blueprints, and then we can query the store to get item definitions with the item name. We receive the item blueprint which we can manipulate as we like inside the game, i.e., calling a create item method with this blueprint retrieved.
+
+It is simple to import a new item store, and use it to get the item blueprints with their name.
 
 ```python
 from inventory_items.items_provider.item_store import ItemStore # import item store

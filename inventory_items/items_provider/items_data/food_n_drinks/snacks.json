@@ -799,6 +799,49 @@
         }
     },
     {
+        "name": "Candy Refill Bag",
+        "descriptions": [
+            "A large bag filled with colorful hard candies, perfect for refilling a dispenser.",
+            "Contains enough candy to fully restock a standard candy dispenser."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "misc"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat a handful of candies from the bag. Sugar rush!",
+            "It's meant for refilling, but it's tasty on its own too."
+        ],
+        "stats_edit": {
+            "fullness": 5.0,
+            "hydration": -2.0,
+            "energy": 10.0
+        }
+    },
+    {
+        "name": "Single Candy",
+        "descriptions": [
+            "A small, round hard candy. Sweet and simple.",
+            "A little treat dispensed from a machine."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You pop the candy in your mouth. It dissolves slowly, releasing a sweet fruit flavor.",
+            "A small moment of happiness."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 5.0
+        }
+    },
+    {
         "name": "salted pretzel knot (single)",
         "descriptions": [
             "A small, crunchy pretzel knot with visible flakes of coarse salt and a glossy, baked surface.",

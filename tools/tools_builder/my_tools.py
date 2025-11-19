@@ -101,6 +101,41 @@ laptop_tools=[
 
 ]
 
+dispenser_tools=[
+    {
+        "type": "function",
+        "name": "dispense_candy",
+        "description": "Interact with a candy dispenser to get a single candy.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The item ID of the candy dispenser."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "refill_dispenser",
+        "description": "Refill a candy dispenser using a Candy Refill Bag from your inventory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The item ID of the candy dispenser to refill."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    }
+]
+
 art_book_tools=[
     {
         "type": "function",

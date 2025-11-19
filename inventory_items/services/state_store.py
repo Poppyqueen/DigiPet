@@ -487,4 +487,3 @@ class StateStore(GenericJsonTool):
         if needs_save:
             print(f"Correcting state based on validation warnings for StateStore. Saving state.")
             self.save_state()
-
