@@ -24,7 +24,8 @@ class AuctionHouse:
             "food_n_drinks/condiments_n_sauces.json": { "minimum": 5, "maximum": 15, "available_for_purchase": True },
             "gardening/seeds.json": { "minimum": 40, "maximum": 100, "available_for_purchase": True },
             "gardening/harvest.json": { "minimum": 5, "maximum": 15, "available_for_purchase": False },
-            "furniture/sellable_furniture.json": { "minimum": 150, "maximum": 300, "available_for_purchase": True }
+            "furniture/sellable_furniture.json": { "minimum": 150, "maximum": 300, "available_for_purchase": True },
+            "gadgets/discount_electronics.json": { "minimum": 25, "maximum": 80, "available_for_purchase": True }
         }
 
         # Populate the catalogs

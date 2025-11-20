@@ -4,7 +4,59 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
-
+maze_tools=[
+    {
+        "type": "function",
+        "name": "VMaze-create_maze",
+        "description": "Allows you to create a virtual maze.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "width": {
+                    "type": "number",
+                    "description": "The width of the maze to create."
+                },
+                "height": {
+                    "type": "number",
+                    "description": "The height of the maze to create."
+                },
+                "seed": {
+                    "type": "number",
+                    "description": "Optional, random if not given. The seed for the maze to create."
+                }
+            },
+            "required": ["width", "height"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "VMaze-observe_environment",
+        "description": "Allows you to observe the environment of the virtual maze. Fog Of War applies.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "VMaze-move",
+        "description": "Allows you to move in the virtual maze.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "description": "The direction to move in. One of 'NORTH', 'SOUTH', 'EAST', 'WEST'."
+                }
+            },
+            "required": ["direction"],
+            "additionalProperties": False
+        }
+    }
+]
 laptop_tools=[
     {
         "type": "function",
@@ -30,7 +82,7 @@ laptop_tools=[
                 },
                 "list_type": {
                     "type": "string",
-                    "description": "The type of list to retrieve. From: 'buy', 'sell', 'both', 'categories'. Defaults to 'both'. Use with 'categories' to list all available categories."
+                    "description": "The type of list to retrieve. One of 'buy', 'sell', 'both', 'categories'. Defaults to 'both'. Use with 'categories' to list all available categories."
                 },
                 "category":{
                     "type": "string",

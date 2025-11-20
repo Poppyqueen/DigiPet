@@ -2,7 +2,7 @@
     {
         "name": "Modern Laptop",
         "descriptions": [
-            "Sleek and lightweight laptop with a 14-inch display and a fast SSD.",
+            "Portable, Sleek and lightweight laptop with a 14-inch display and a fast SSD.",
             "Ideal for both work and play, featuring a long-lasting battery."
         ],
         "static": false,
@@ -869,7 +869,6 @@
         "name": "desktop computer (tower)",
         "descriptions": [
             "Mid-tower desktop case with a quiet fan, SSD, and a modest RGB glow for ambient color."
-            
         ],
         "static": true,
         "type": [
@@ -1862,7 +1861,6 @@
         "name": "Arts Notebook",
         "descriptions": [
             "A digital notebook that allows you to create images"
-            
         ],
         "static": false,
         "type": [

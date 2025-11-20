@@ -1,15 +1,13 @@
 {
-    "initial_room":"living_room",
-
-    "living_room":[
+    "initial_room": "living_room",
+    "living_room": [
         "Potted houseplant",
         "three-seater sofa",
         "arc floor lamp",
         "TV remote control",
-        "Retro CRT Television",
-        "Modern Laptop"
+        "Retro CRT Television"
     ],
-    "kitchen":[
+    "kitchen": [
         "soy jar candle (vanilla & cedar)",
         "small walnut side table",
         "Copper Utensil Holder",
@@ -19,39 +17,39 @@
         "Ripe Jackfruit Chunks (ready-to-eat)",
         "Iced Tea",
         "Greek Yogurt Cup"
-        ],
-    "library":[
+    ],
+    "library": [
         "tall oak bookshelf",
         "overstuffed reading armchair",
         "adjustable brass floor lamp",
         "plate of shortbread cookies",
         "potted ficus"
     ],
-    "bathroom":[
+    "bathroom": [
         "Scented soy candle in tin",
         "Ceramic soap dish",
         "Heated towel rail (wall-mounted)",
         "Wall-mounted vanity mirror with slim shelf",
         "Arts Notebook"
     ],
-    "bedroom":[
-        "Oversized bean bag chair", 
-        "large bed", 
-        "Bottled Water", 
+    "bedroom": [
+        "Oversized bean bag chair",
+        "large bed",
+        "Bottled Water",
         "Indoor Plant Stand with Terracotta Pots",
         "pillow",
         "Nightstand",
         "Bedside lamp",
         "knitted throw blanket"
     ],
-    "computer_room":[
+    "computer_room": [
         "potted rubber plant",
         "desktop computer (tower)",
         "monitor",
         "adjustable office chair",
         "sturdy wooden desk"
     ],
-    "garden":[
+    "garden": [
         "ceramic cup of chamomile tea",
         "tomato seed packet",
         "rustic lantern (candle)",
@@ -60,7 +58,7 @@
         "bottled chamomile tea",
         "wooden garden bench"
     ],
-    "white_room":[
+    "white_room": [
         "Whiteboard Wall Panel",
         "Wall-Mounted White Picture Frame (empty)",
         "Built-in Narrow White Bookshelf",
@@ -71,12 +69,11 @@
         "Minimal White Armchair",
         "Small Ceramic Planter (dried white branches)"
     ],
-    "lab_room":[
+    "lab_room": [
         "A-LIFE Terminal Interface",
         "Stainless Steel Lab Workbench",
         "Adjustable Ergonomic Lab Chair",
         "Bowl of Mixed Nuts"
     ],
-    "inventory":[
-    ]
+    "inventory": []
 }

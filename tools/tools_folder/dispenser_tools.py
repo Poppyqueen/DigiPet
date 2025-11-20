@@ -87,8 +87,8 @@ class DispenserTools:
         persist_error = self.state.inventory_service.persist_item_changes(item_id)
         if persist_error:
             return persist_error
+        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/candy.png", "popup_type": 2})
 
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/candy_icon.png"})
         return f"You turn the handle. Clatter! A {selected_candy} falls out. You have {new_total} candies left."
 
     def refill_dispenser(self, item_id: int):

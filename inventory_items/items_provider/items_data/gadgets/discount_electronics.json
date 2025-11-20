@@ -1,0 +1,14 @@
+[
+    {
+        "name": "(Almost) Retro Laptop",
+        "descriptions": [
+            "Portable, old-school laptop with a 14-inch display. Has a basic keyboard and mouse.",
+            "Manages to have an online connection, but it's not very fast."
+        ],
+        "static": false,
+        "type": [
+            "laptop"
+        ],
+        "stackable": false
+    }
+]

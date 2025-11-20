@@ -51,7 +51,8 @@ from .my_tools import (
     seat_tools,
     art_book_tools,
     laptop_tools,
-    dispenser_tools
+    dispenser_tools,
+    maze_tools
 )
 
 from tools.tools_folder.garden_tools import Garden_Mananger
@@ -61,6 +62,8 @@ from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
 
 from tools.tools_folder.auction_house import AuctionHouse
+
+from tools.tools_folder.maze import MazeEnvironment
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
@@ -84,6 +87,8 @@ class FunctionBuilder:
         self.dispenser_tools = DispenserTools(self.state_manager, self._signal_callback)
 
         self.auction_house=AuctionHouse(state_manager)
+
+        self.maze=MazeEnvironment(state_manager, self._signal_callback)
 
         self.A_Life = None
         self._init_alife()
@@ -284,6 +289,17 @@ class FunctionBuilder:
                 "definitions": seat_tools,
                 "item_types": ["seat"],
                 "use_level": "dual_use"
+            },
+
+            "maze": {
+                "functions": {
+                    "VMaze-create_maze": self.maze.create_maze,
+                    "VMaze-observe_environment": self.maze.observe_environment,
+                    "VMaze-move": self.maze.move
+                },
+                "definitions": maze_tools,
+                "item_types": ["maze"],
+                "use_level": "room_only"
             },
 
             "bed": {

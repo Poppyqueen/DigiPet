@@ -288,7 +288,13 @@ def handle_chatbot_signal(signal_data):
                  pygame.event.post(pygame.event.Event(config.MESSAGE_POPUP, message=message, color=color))
             else:
                  print("Signal 'show_message_popup' received but no 'message' in data.")
-
+        elif action_type == "play_sound":
+            sound_path = signal_data.get("sound_path")
+            if sound_path:
+                 print(f"Signal type 'play_sound' received with path: {sound_path}.")
+                 music_player.play_sound_effect(sound_path)
+            else:
+                 print("Signal 'play_sound' received but no 'sound_path' in data.")
         else:
              print(f"Unknown signal type received: {action_type}")
     else:

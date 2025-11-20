@@ -14,5 +14,18 @@
         "dispenser_state": {
             "contents": {}
         }
+    },
+    {
+        "name": "Virtual Maze Console",
+        "descriptions": [
+            "A console that allows you to create and navigate virtual mazes.",
+            "Needs to be placed in a room to be used."
+        ],
+        "static": true,
+        "type": [
+            "furniture",
+            "maze"
+        ],
+        "stackable": false
     }
 ]
