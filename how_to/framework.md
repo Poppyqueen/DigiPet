@@ -30,6 +30,7 @@ Tools represent the actions that the AI agent can perform. Unlike static abiliti
     *   **`always_available`:** The tool is always present (e.g., `move_to_room`).
     *   **`room_type`:** The tool is available only if the current room's `room_types` list contains a required type (e.g., `planting_garden`).
     *   **`inventory_only`:** The tool is available only if the agent's inventory contains an item with a required `type` (e.g., a `book` item enables `read_chapter`).
+    *   **`room_only`:** The tool is available only if the current room contains an item with a required `type` (e.g., a `dispenser` item enables `refill_dispenser`).
     *   **`dual_use`:** The tool is available if a required `item_type` is found either in the agent's inventory *or* as an environmental item in the current room (e.g., a `laptop` enables `browse_auction_house` whether carried or placed on a desk).
 
 **In essence, the `type` fields of Items and the `room_types` of Environments act as explicit, structured affordances that the Tool Construction System uses to decide which actions the agent can perform based on its `use_level` criteria.**

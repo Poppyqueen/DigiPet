@@ -1193,6 +1193,17 @@ base_tools=[
             ],
             "additionalProperties": False
         }
+    },
+    {
+        "type": "function",
+        "name": "list_items_in_inventory",
+        "description": "Lists all items currently in your inventory.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
     }
 ]
 
@@ -1288,188 +1299,7 @@ library_tools = [    {
             ],
             "additionalProperties": False
         }
-    },
-    # {
-    #     "type": "function",
-    #     "name": "save_note",
-    #     "description": "Given a title, content and a shelve name, save the note in the shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "A shelve name to save the note in. It should be a valid shelve from the list."
-    #             },
-    #             "note_name": {
-    #                 "type": "string",
-    #                 "description": "The title of the note."
-    #             },
-    #             "note_content": {
-    #                 "type": "string",
-    #                 "description": "The content of the note."
-    #             }
-    #         },
-    #         "required": [
-    #             "shelve_name",
-    #             "note_name",
-    #             "note_content"
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "general_look_shelves",
-    #     "description": "A tool to look at the available shelves.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "look_at_shelves": {
-    #                 "type": "boolean",
-    #                 "description": "A boolean to look at the shelves."
-    #             }
-    #         },
-    #         "required": [
-    #             "look_at_shelves"
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "targeted_look_shelves",
-    #     "description": "A tool to look at the contents of a specific shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "Given a shelve name, look at the notes in it."
-    #             }
-    #         },
-    #         "required": [
-    #             "shelve_name"
-                
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "read_note",
-    #     "description": "Read the full content of a note from a shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "note_name": {
-    #                 "type": "string",
-    #                 "description": "Read a full note from a shelve."
-    #             },
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "A shelve name to read the note from. It should be a valid shelve from the list."
-    #             }
-    #         },
-    #         "required": [
-    #             "note_name",
-    #             "shelve_name"
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "create_shelve",
-    #     "description": "Create a new shelve if necessary.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "Create a new shelve."
-    #             }
-    #         },
-    #         "required": [
-    #             "shelve_name"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "delete_note",
-    #     "description": "Delete a note from a shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "note_name": {
-    #                 "type": "string",
-    #                 "description": "Delete a note from a shelve."
-    #             },
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "A shelve name to delete the note from. It should be a valid shelve from the list."
-    #             }
-    #         },
-    #         "required": [
-    #             "note_name",
-    #             "shelve_name"
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "delete_shelve",
-    #     "description": "Delete a shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "Delete a shelve."
-    #             }
-    #         },
-    #         "required": [
-    #             "shelve_name"
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "name": "update_note",
-    #     "description": "Update a note in a shelve.",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "shelve_name": {
-    #                 "type": "string",
-    #                 "description": "A shelve name to update the note in. It should be a valid shelve from the list."
-    #             },
-    #             "note_name": {
-    #                 "type": "string",
-    #                 "description": "The title of the note."
-    #             },
-    #             "new_content": {
-    #                 "type": "string",
-    #                 "description": "The new content of the note."
-    #             }
-    #         },
-    #         "required": [
-    #             "shelve_name",
-    #             "note_name",
-    #             "new_content"
-
-    #         ],
-    #         "additionalProperties": False
-    #     }
-    # }
+    }
 ]
 
 

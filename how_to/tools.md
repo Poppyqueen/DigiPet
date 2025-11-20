@@ -23,9 +23,9 @@ The `FunctionBuilder` class now uses a single, unified data structure, **`self.t
 | `tool_definitions` | The singular dictionary containing all Tool Blocks. |
 | **`"functions"`** | A dictionary mapping function names to actual Python method references. |
 | **`"definitions"`** | A list of JSON-like tool definitions (for the LLM). |
-| **`"use_level"`** | The key that defines availability: `"always_available"`, `"room_type"`, `"inventory_only"`, or `"dual_use"`. |
-| **`"room_types"`** | *Optional List*. A list of room type strings that enable the tool. |
-| **`"item_types"`** | *Optional List*. A list of item type strings (in inventory or environment) that enable the tool. |
+| **`"use_level"`** | The key that defines availability: `"always_available"`, `"room_type"`, `"inventory_only"`, `"room_only"`, `"dual_use"`. It determines how the tool is enabled based on the agent's context and dictates the required keys in the Tool Block. |
+| **`"room_types"`** | *Optional List*. A list of room type strings that enable the tool. Required for use level: `"room_type"`. |
+| **`"item_types"`** | *Optional List*. A list of item type strings (in inventory or environment) that enable the tool. Required for use levels: `"inventory_only"`, `"room_only"`, `"dual_use"`. |
 | **`"display_information"`** | *Optional Function*. A method reference that provides string-based state information for the GUI. |
 
 ### Dynamic Tool Construction Process
@@ -73,7 +73,7 @@ class MyNewTools:
 
 ### Step 2: Create tool definitions
 
-Create the JSON-like tool definitions list in a dedicated file (e.g., `tools/my_tools.py`) and import it into `construct_tools.py`.
+Create the JSON-like tool definitions list in a dedicated file (e.g., `tools/my_tools.py`) and import it into `construct_tools.py`. These match the OpenAI tool schema.
 
 ```python
 # In tools/my_tools.py
@@ -160,6 +160,21 @@ self.tool_definitions["base_functions"] = {
     },
     "definitions": base_tools,
     "use_level": "always_available"
+}
+```
+
+#### Example 5: Room-Only Item Tool Block (`use_level: "room_only"`)
+
+Tools only available if an item of a specific type is present in the current room.
+
+```python
+self.tool_definitions["my_room_item"] = {
+    "functions": {
+        "use_special_item": self.state_manager.use_special_item
+    },
+    "definitions": my_item_tools,
+    "item_types": ["special_key"],
+    "use_level": "room_only"
 }
 ```
 

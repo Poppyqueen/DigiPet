@@ -154,7 +154,8 @@ class FunctionBuilder:
                     "drop_item": self.state_manager.drop_item,
                     "consume_item": self.state_manager.consume_item,
                     "add_item_description": self.state_manager.add_item_description,
-                    "emit_inner_thought": emit_inner_thought
+                    "emit_inner_thought": emit_inner_thought,
+                    "list_items_in_inventory": self.state_manager.get_inventory_items,
                 },
                 "definitions": base_tools,
                 "use_level": "always_available"
@@ -329,6 +330,8 @@ class FunctionBuilder:
                 "use_level": "dual_use"
             },
 
+            # Room Only Tools
+
             "dispenser": {
                 "functions": {
                     "dispense_candy": self.dispenser_tools.dispense_candy,
@@ -336,7 +339,7 @@ class FunctionBuilder:
                 },
                 "definitions": dispenser_tools,
                 "item_types": ["dispenser"],
-                "use_level": "dual_use"
+                "use_level": "room_only"
             }
         }
         
@@ -510,6 +513,14 @@ class FunctionBuilder:
                     if isinstance(inv_item, dict):
                         inv_item_types = inv_item.get("type", [])
                         if any(it in item_types for it in inv_item_types):
+                            item_match = True
+                            break
+
+            elif use_level == "room_only":
+                for room_item in items_in_room:
+                    if isinstance(room_item, dict):
+                        room_item_types = room_item.get("type", [])
+                        if any(it in item_types for it in room_item_types):
                             item_match = True
                             break
             
@@ -705,6 +716,7 @@ class FunctionBuilder:
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
         context.append("MAIN SOURCE OF UNIVERSAL TRUTH:")
+        context.append("This source at any point seen, is the most up to date grounded state.")
         context.append("#############")
         context.append("Current State:")
         context.append(f"Current time: {f}")

@@ -5,12 +5,14 @@
             "A retro-style glass and metal candy dispenser. It has a mechanical lever to dispense treats.",
             "Status: 0 candies left"
         ],
-        "candy_count": 0,
         "static": true,
         "type": [
             "furniture",
             "dispenser"
         ],
-        "stackable": false
+        "stackable": false,
+        "dispenser_state": {
+            "contents": {}
+        }
     }
 ]

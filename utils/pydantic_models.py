@@ -10,7 +10,7 @@ valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry',
 
 stringed_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
 
-item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "tv", "pillow", "laptop", "iPod", "cellphone", "book", "bluesky_social", "dispenser"]
+item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "tv", "pillow", "laptop", "iPod", "cellphone", "book", "bluesky_social", "dispenser", "candy_bag"]
 
 room_types = ["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research", "computer_room"]
 
@@ -61,6 +61,8 @@ class ItemDefinition(BaseModel):
 
     effects: List[str] |None= Field(default=None, description="A list of strings describing narrative and evocative effects upon use (only for 'consumable' items). i.e 'You feel refreshed after eating the apple', 'The apple gives a delicious juicy and sweet crunch'. Or, 'You eat the salt by itself, an overpowering slightly disgusting metalic flavor takes over you', 'You eat the raw eags, the slimy texture and the lack of taste make you gag', 'Eating the raw egss makes your stomach churn'")
     stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items) Can be possitive or negative, i.e 'hydration' -10 for a salty snack. -50 hydration for dry rice, -50 energy for raw meat, +4 hydration for a fresh apple, etc.")
+    
+    contents: dict[str, int] | None = Field(default=None, description="A dictionary mapping item names to quantities, used for container items like 'candy_bag'.")
 
     plant_type: str  |None =Field(default=None, description=f"A string for the seed type, it should define the plant of seed this is for, from the valid options: {stringed_plant_types}")
 

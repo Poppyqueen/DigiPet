@@ -47,6 +47,7 @@ class AuctionHouse:
         
         # Calculate positive stats bonus
         stats_edit = item.get('stats_edit', {})
+
         positive_stats_sum = sum(max(0, value) for value in stats_edit.values())
         
         # Stats multiplier (every 10 positive stats adds 10% to price)

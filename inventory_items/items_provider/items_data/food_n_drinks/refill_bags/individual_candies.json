@@ -1,0 +1,170 @@
+[
+    {
+        "name": "Banana Gum",
+        "descriptions": [
+            "A small, yellow, chewy gum with a strong artificial banana flavor.",
+            "Classic yellow wrapper. It loses flavor quickly but is fun while it lasts."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Chewy and sweet, with that distinct banana taste.",
+            "Good for blowing small bubbles."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 2.0
+        }
+    },
+    {
+        "name": "Mini Chocolate Bar",
+        "descriptions": [
+            "A tiny, bite-sized bar of milk chocolate.",
+            "Wrapped in shiny foil. Melts in your mouth instantly."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "A quick hit of smooth chocolate.",
+            "Just enough to satisfy a tiny craving."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": 0.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "Red Hard Candy",
+        "descriptions": [
+            "A bright red, cherry-flavored hard candy.",
+            "Translucent and shiny. Lasts a long time if you don't crunch it."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Sweet and tart cherry flavor.",
+            "Stains your tongue red."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Green Hard Candy",
+        "descriptions": [
+            "A bright green, apple-flavored hard candy.",
+            "Sour apple taste that makes your mouth water."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Zesty sour apple flavor.",
+            "Refreshing and sweet."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 3.0
+        }
+    },
+    {
+        "name": "Blue Soft Candy",
+        "descriptions": [
+            "A soft, blue raspberry flavored chew.",
+            "Stretchy and sweet, leaves a blue tint on your teeth."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Intense blue raspberry sweetness.",
+            "Chewy texture that sticks to your teeth a little."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "Pink Soft Candy",
+        "descriptions": [
+            "A soft, strawberry flavored chew.",
+            "Sweet and creamy strawberry flavor."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "Mild strawberry sweetness.",
+            "Soft and easy to chew."
+        ],
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.0,
+            "energy": 4.0
+        }
+    },
+    {
+        "name": "gummy bear",
+        "descriptions": [
+            "A tiny, translucent gummy bear, slightly tacky and fruit-scented.",
+            "Soft and elastic, about the size of a fingertip."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew the gummy bear; its sticky, sugary chew bursts with bright artificial fruit flavor.",
+            "It leaves a sugary film on your teeth and makes you want a sip of water afterward."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -1.0,
+            "energy": 6.0
+        }
+    },
+    {
+        "name": "Individual Fruit Gummy",
+        "descriptions": [
+            "A tiny, translucent gummy fruit, slightly tacky and fruit-scented.",
+            "Soft and elastic, about the size of a fingertip."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chew the gummy fruit; its sticky, sugary chew bursts with bright artificial fruit flavor.",
+            "It leaves a sugary film on your teeth and makes you want a sip of water afterward."
+        ],
+        "stats_edit": {
+            "fullness": 2.0,
+            "hydration": -1.0,
+            "energy": 6.0
+        }
+    }
+]

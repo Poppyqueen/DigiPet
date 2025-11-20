@@ -72,7 +72,7 @@ You need to register your new tools in two places.
         },
         "definitions": my_item_tools_json, # Defined in step 3B
         "item_types": ["my_new_type"],
-        "use_level": "dual_use" # or "room_type", "inventory_only"
+        "use_level": "dual_use" # or "room_type", "inventory_only", "room_only"
     }
     ```
 

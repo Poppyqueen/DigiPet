@@ -233,22 +233,16 @@
     {
         "name": "Fruit Gummies Pouch",
         "descriptions": [
-            "A resealable pouch of assorted fruit-flavored gummy candies.",
+            "A pouch of assorted fruit-flavored gummy candies.",
             "Chewy, brightly colored pieces with a sweet syrupy center."
         ],
         "static": false,
         "type": [
-            "consumable"
+            "candy_bag"
         ],
         "stackable": true,
-        "effects": [
-            "The sugary chew gives a quick burst of sweetness and a small mood lift.",
-            "The pouch is easy to share or snack on over time."
-        ],
-        "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 2.0,
-            "energy": 12.0
+        "contents": {
+            "Individual Fruit Gummy": 10
         }
     },
     {
@@ -694,27 +688,6 @@
         }
     },
     {
-        "name": "Sweet fruit gummies pack",
-        "descriptions": [
-            "A small bag of chewy, brightly colored fruit-flavored gummy candies.",
-            "Soft, sticky sweets that are easy to portion but very sugary."
-        ],
-        "static": false,
-        "type": [
-            "consumable"
-        ],
-        "stackable": true,
-        "effects": [
-            "Chewy and intensely flavored; gives a quick sugar lift and playful mouthfeel.",
-            "Can leave a sticky residue on teeth and promote a brief energy surge."
-        ],
-        "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 1.0,
-            "energy": 20.0
-        }
-    },
-    {
         "name": "Beef jerky stick",
         "descriptions": [
             "A single dried, seasoned strip of processed beef jerky \u2014 dense and salty.",
@@ -806,18 +779,11 @@
         ],
         "static": false,
         "type": [
-            "consumable",
-            "misc"
+            "candy_bag"
         ],
         "stackable": true,
-        "effects": [
-            "You eat a handful of candies from the bag. Sugar rush!",
-            "It's meant for refilling, but it's tasty on its own too."
-        ],
-        "stats_edit": {
-            "fullness": 5.0,
-            "hydration": -2.0,
-            "energy": 10.0
+        "contents": {
+            "Single Candy": 10
         }
     },
     {
@@ -926,27 +892,6 @@
         }
     },
     {
-        "name": "gummy bear (single)",
-        "descriptions": [
-            "A tiny, translucent gummy bear, slightly tacky and fruit-scented.",
-            "Soft and elastic, about the size of a fingertip."
-        ],
-        "static": false,
-        "type": [
-            "consumable"
-        ],
-        "stackable": true,
-        "effects": [
-            "You chew the gummy bear; its sticky, sugary chew bursts with bright artificial fruit flavor.",
-            "It leaves a sugary film on your teeth and makes you want a sip of water afterward."
-        ],
-        "stats_edit": {
-            "fullness": 2.0,
-            "hydration": -1.0,
-            "energy": 6.0
-        }
-    },
-    {
         "name": "mini chocolate chip cookie",
         "descriptions": [
             "A small round cookie studded with tiny dark chocolate chips, slightly crisp at the edges.",
@@ -1049,6 +994,71 @@
             "fullness": 9.0,
             "hydration": -1.0,
             "energy": 22.0
+        }
+    },
+    {
+        "name": "Bag of Banana Gum",
+        "descriptions": [
+            "A small bag filled with yellow banana-flavored gum balls.",
+            "Refill for a candy dispenser."
+        ],
+        "static": false,
+        "type": [
+            "candy_bag"
+        ],
+        "stackable": true,
+        "contents": {
+            "Banana Gum": 10
+        }
+    },
+    {
+        "name": "Bag of Hard Candies",
+        "descriptions": [
+            "A bag of mixed red and green hard candies.",
+            "Refill for a candy dispenser."
+        ],
+        "static": false,
+        "type": [
+            "candy_bag"
+        ],
+        "stackable": true,
+        "contents": {
+            "Red Hard Candy": 5,
+            "Green Hard Candy": 5
+        }
+    },
+    {
+        "name": "Assorted Candy Bag",
+        "descriptions": [
+            "A colorful bag containing a mix of all candy types.",
+            "Refill for a candy dispenser."
+        ],
+        "static": false,
+        "type": [
+            "candy_bag"
+        ],
+        "stackable": true,
+        "contents": {
+            "Banana Gum": 2,
+            "Mini Chocolate Bar": 2,
+            "Red Hard Candy": 2,
+            "Green Hard Candy": 2,
+            "Blue Soft Candy": 1,
+            "Pink Soft Candy": 1
+        }
+    },
+    {
+        "name": "Mini Chocolate Bar Bag",
+        "descriptions": [
+            "A bag of small chocolate bars."
+        ],
+        "static": false,
+        "type": [
+            "candy_bag"
+        ],
+        "stackable": true,
+        "contents": {
+            "Mini Chocolate Bar": 10
         }
     }
 ]

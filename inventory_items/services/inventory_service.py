@@ -816,6 +816,12 @@ class InventoryService:
         if internal:
             return successfully_created_ids # Return the list of IDs for internal calls
         
+        final_items_list=[]
+        for item_id in successfully_created_ids:
+            item_info=self._find_item_info_by_id(item_id)
+            final_items_list.append(self._format_item_for_display(item_info["item_data"]))
+
+        final_report_messages.append("\n".join(final_items_list))
         return "\n".join(final_report_messages)
 
 
