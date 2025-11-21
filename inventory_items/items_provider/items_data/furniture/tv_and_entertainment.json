@@ -11,7 +11,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "1970s Wood-Panel Entertainment Console",
@@ -25,7 +26,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "1980s VHS Entertainment Center",
@@ -39,7 +41,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Roll-Top CRT TV Cart (1990s)",
@@ -53,7 +56,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Early-2000s Glass-Shelf Entertainment Unit",
@@ -67,7 +71,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Wall-Mounted Modern OLED TV",
@@ -81,7 +86,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Home Theater Projector with Retractable Screen",
@@ -95,7 +101,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Upright Arcade Cabinet",
@@ -149,7 +156,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Art Deco Salon Television",
@@ -163,7 +171,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Minimalist Wall-Mounted OLED",
@@ -204,7 +213,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Industrial Metal Frame Television",
@@ -218,7 +228,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Boho Upcycled TV Cabinet",
@@ -233,7 +244,8 @@
             "misc",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Steampunk Brass Tube Television",
@@ -246,7 +258,8 @@
         "type": [
             "furniture"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Japanese Low-Profile Chabudai TV Stand",
@@ -260,7 +273,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "1980s Neon Accent TV",
@@ -274,7 +288,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Victorian Parlor Ornate Television",
@@ -288,7 +303,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Portable Suitcase TV",
@@ -303,7 +319,8 @@
             "misc",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Mid-Century Console TV",
@@ -317,7 +334,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Retro CRT Television",
@@ -331,7 +349,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Modern Wall-Mounted Smart TV",
@@ -345,7 +364,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Art Deco Television Cabinet",
@@ -359,7 +379,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Minimalist Floating Media Shelf",
@@ -399,7 +420,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Victorian Mahogany TV Armoire",
@@ -452,7 +474,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Mid-century Entertainment Console",
@@ -479,7 +502,8 @@
             "furniture",
             "tv"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "Modular Media Unit",

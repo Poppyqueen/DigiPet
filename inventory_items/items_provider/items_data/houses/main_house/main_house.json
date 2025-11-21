@@ -9,7 +9,8 @@
         "type": [
             "laptop"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "mid-century wooden nightstand",
@@ -875,7 +876,8 @@
             "misc",
             "laptop"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     },
     {
         "name": "monitor",

@@ -40,6 +40,11 @@ Some items have extra required keys, alongside the base ones.
 
 Items with certain specific 'types' might require specific keys. Here are all the specific items that require extra keys and what they require:
 
+**Optional Keys:**
+- `power_toggle` - bool, optional, truthy value, if missing the item is not a power toggled item. If true, the item is considered to be On as default, if false it is considered to be Off as default. The agent can use this toggle with a tool to toggle the tools avalibility related to this item. i.e, A computer being on and Off changing the availability of the wikipedia or other tools related to it. If the key is missing, the item will follow the default behavior of conditional rules.
+
+The power conditional toggle is on top of the conditional rules, and the standard conditional rules are applied after the power toggle.
+
 **Types:**
 
 **seed:**

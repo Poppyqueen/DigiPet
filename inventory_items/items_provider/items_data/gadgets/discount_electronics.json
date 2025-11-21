@@ -9,6 +9,7 @@
         "type": [
             "laptop"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     }
 ]

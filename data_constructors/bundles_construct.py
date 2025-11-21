@@ -82,9 +82,15 @@ If a seed type is present, you MUST include 'plant_type' (string) with one of th
 Seats: 
 For any furniture where one can sit on, beds, chairs and sofas of all kinds.
 
+Maze:
+Maze item types are items that give access to Virtual maze games. Can be used in entertanment gadgets, or electronic devices.
 Effects:
 Narrative effects for items assume items are consumed AS IS, meaning, for example: If your item is a bag of raw coffee beans, make a narrative of someone consuming the raw dry coffee beans. Do not assume any extra preparation.
 Other example: If your item is raw sugar, you assume someone just ate a raw package of sugar and make a narrative text for it, even if it is a negative or uncomfortable experience/effect.
+
+Power Toggles:
+For any item that can be turned on and off, like 'tv' or 'iPod', 'cellphone', etc. you MUST include 'power_toggle' (boolean) with a either true or false value.
+For items that do not have a power toggle this key should not be included.
 
 Generate max 15 items max per room.
 """
@@ -319,6 +325,6 @@ if __name__ == "__main__":
     crafter = bundles_maker()
 
 
-    results=crafter.orchestrate_bundle_generation("Survival essentials for wilderness camping")
+    results=crafter.orchestrate_bundle_generation("Items in a living room, electronics and consumables")
 
     print(results)

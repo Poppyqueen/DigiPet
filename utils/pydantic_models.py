@@ -10,7 +10,12 @@ valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry',
 
 stringed_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
 
-item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "tv", "pillow", "laptop", "iPod", "cellphone", "book", "bluesky_social", "dispenser", "candy_bag", "maze"]
+toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop"]
+
+item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag"]
+# Might want to add validation for the dispenser and candy_bag items
+
+item_types.extend(toggable_items)
 
 room_types = ["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research", "computer_room"]
 
@@ -62,9 +67,11 @@ class ItemDefinition(BaseModel):
     effects: List[str] |None= Field(default=None, description="A list of strings describing narrative and evocative effects upon use (only for 'consumable' items). i.e 'You feel refreshed after eating the apple', 'The apple gives a delicious juicy and sweet crunch'. Or, 'You eat the salt by itself, an overpowering slightly disgusting metalic flavor takes over you', 'You eat the raw eags, the slimy texture and the lack of taste make you gag', 'Eating the raw egss makes your stomach churn'")
     stats_edit: ItemStatsEdit |None = Field(default=None, description="A dictionary containing specific stat changes (fullness, hydration, energy) (only for 'consumable' items) Can be possitive or negative, i.e 'hydration' -10 for a salty snack. -50 hydration for dry rice, -50 energy for raw meat, +4 hydration for a fresh apple, etc.")
     
-    contents: dict[str, int] | None = Field(default=None, description="A dictionary mapping item names to quantities, used for container items like 'candy_bag'.")
+    contents: dict[str, int] | None = Field(default=None, description="A dictionary mapping item names to quantities, Only used for container items 'candy_bag' No other items should use this. To use this correctly, the string should be the item name and the int should be the quantity, crucially, a separate item should be created for each item in the container with the unique names referenced in the dictionary of the container item. I.E, if the container item is a 'candy_bag' and it contains 5 candies, then the dictionary should be {'candy': 5}, and a separate blueprint should be created for that 'candy' definition.")
 
-    plant_type: str  |None =Field(default=None, description=f"A string for the seed type, it should define the plant of seed this is for, from the valid options: {stringed_plant_types}")
+    plant_type: str  |None =Field(default=None, description=f"Seeds Key: A string for the seed type, it should define the plant of seed this is for, from the valid options: {stringed_plant_types}")
+
+    power_toggle: bool | None = Field(default=None, description=f"Optional Key: A boolean for the power toggle property of this item. List of the only item types that accept and require this key: {", ".join(toggable_items)}")
 
 # --- Structure that contains a list of these item definitions ---
 class ItemDefinitionListContainer(BaseModel):

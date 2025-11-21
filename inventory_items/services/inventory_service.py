@@ -285,6 +285,8 @@ class InventoryService:
                     return inventory_list
                 return f"Items in your inventory: {', '.join(items_display)}"
             else:
+                if internal:
+                    return []
                 return "Your inventory is empty."
         else:
             return "Error: Could not access inventory. State might be corrupted."
@@ -954,6 +956,7 @@ class InventoryService:
         Finds the item by ID, determines its location, and updates the appropriate state section.
         Returns None on success, or an error message string on failure.
         """
+        item_id = int(item_id)
         item_info = self._find_item_info_by_id(item_id)
         if not item_info:
             return f"Error: Item {item_id} moved or lost during operation."
@@ -979,6 +982,7 @@ class InventoryService:
         Optionally checks if the item has a specific type.
         Returns (item_data, None) on success, or (None, error_message) on failure.
         """
+        item_id = int(item_id)
         item_info = self._find_item_info_by_id(item_id)
         if not item_info:
             return None, f"Item {item_id} not found."

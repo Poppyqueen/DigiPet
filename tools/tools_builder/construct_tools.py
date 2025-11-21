@@ -445,6 +445,128 @@ class FunctionBuilder:
             }
             print("Bluesky tools added to unified definitions.")
 
+
+# Toggle Implementation
+# Toggle Implementation
+
+    def _get_power_toggle_tools(self, items_in_room, inventory_items):
+        """
+        Generate dynamic toggle tools for items with power_toggle capability.
+        Returns: (toggle_definitions, powered_on_items, powered_off_items)
+        """
+
+        toggle_definitions = []
+        powered_on_items = set()  # item IDs that are ON
+        powered_off_items = set()  # item IDs that are OFF
+        
+        # Check all items (both inventory and room)
+
+        all_items = inventory_items + items_in_room
+
+        
+        for item in all_items:
+            if not isinstance(item, dict):
+                continue
+                
+            # Check if item has power_toggle capability
+            if "power_toggle" not in item:
+                continue
+                
+            item_id = item.get("id")
+            item_name = item.get("name", "Unknown Item")
+            is_powered_on = item.get("power_toggle", False)
+            
+            if is_powered_on:
+                powered_on_items.add(item_id)
+                # Create "toggle OFF" tool
+                toggle_definitions.append(
+                {
+                "type": "function",
+                "name":f"toggle_OFF_{item_id}",
+                "description":f"Turn OFF the {item_name} {item_id}. This will disable its functions until turned back on.",
+                "parameters":{
+                    "type":"object",
+                    "properties":{
+                        "item_id":{
+                            "type":"number",
+                            "description":f"The ID of the item to toggle OFF (use: {item_id})"
+                        }
+                    },
+                    "required":["item_id"],
+                    "additionalProperties":False
+                }
+                }
+                )
+            else:
+                powered_off_items.add(item_id)
+                # Create "toggle ON" tool
+                toggle_definitions.append(
+                {
+                "type": "function",
+                "name":f"toggle_ON_{item_id}",
+                "description":f"Turn ON the {item_name} {item_id}. This will enable its functions.",
+                "parameters":{
+                    "type":"object",
+                    "properties":{
+                        "item_id":{
+                            "type":"number",
+                            "description":f"The ID of the item to toggle ON (use: {item_id})"
+                        }
+                    },
+                    "required":["item_id"],
+                    "additionalProperties":False
+                }
+                }
+                )
+        
+        return toggle_definitions, powered_on_items, powered_off_items
+
+    def _toggle_item_power(self, item_id: str, turn_on: bool):
+        """
+        Toggle the power state of an item.
+        
+        Args:
+            item_id: The ID of the item to toggle
+            turn_on: True to turn ON, False to turn OFF
+        
+        Returns:
+            Success or error message
+        """
+        # Get and validate the item
+        item_data, error = self.state_manager.inventory_service.get_validated_item_data(item_id)
+        if error:
+            return error
+        
+        # Check if item has power_toggle capability
+        if "power_toggle" not in item_data:
+            return f"Error: Item '{item_data.get('name', 'Unknown')}' does not have power toggle capability."
+        
+        # Get current state
+        current_state = item_data.get("power_toggle", False)
+        item_name = item_data.get("name", "Unknown Item")
+        
+        # Check if already in desired state
+        if current_state == turn_on:
+            state_str = "ON" if turn_on else "OFF"
+            return f"The {item_name} is already turned {state_str}."
+        
+        # Toggle the state
+        item_data["power_toggle"] = turn_on
+        
+        # Persist the changes
+        persist_error = self.state_manager.inventory_service.persist_item_changes(item_id)
+        if persist_error:
+            return persist_error
+        
+        # Send feedback
+        state_str = "ON" if turn_on else "OFF"
+        self._signal_callback({
+            "type": "show_message",
+            "message": f"Toggled {item_name} {state_str}"
+        })
+        
+        return f"Successfully turned {state_str} the {item_name}."
+
     def _init_alife(self):
         """Initialize the ALifeSimulation instance."""
         archive_dir = os.path.join(self.sub_directory, "simulation_archives")
@@ -494,10 +616,13 @@ class FunctionBuilder:
         return []
         
 
-    def _tool_should_be_available(self, tool_config, current_room_types, items_in_room, inventory_items):
+    def _tool_should_be_available(self, tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
         """
         Determine if a tool should be available based on current context.
         A tool is available if ANY of its criteria match the current context.
+        
+        Args:
+            powered_off_items: Set of item IDs that are currently powered OFF
         """
         # Skip if functions are None (failed initialization)
         functions = tool_config.get("functions", {})
@@ -523,46 +648,34 @@ class FunctionBuilder:
         
         # Check item types if they exist
         if item_types:
+            # Helper to check if item is powered and matches types
+            def check_item_match(item):
+                if not isinstance(item, dict):
+                    return False
+                item_id = item.get("id")
+                item_types_list = item.get("type", [])
+                type_matches = any(it in item_types for it in item_types_list)
+                
+                # If item has power_toggle and is OFF, exclude it
+                if type_matches and "power_toggle" in item and item_id in powered_off_items:
+                    return False
+                
+                return type_matches
+            
             # For inventory_only tools, only check inventory
             if use_level == "inventory_only":
-                for inv_item in inventory_items:
-                    if isinstance(inv_item, dict):
-                        inv_item_types = inv_item.get("type", [])
-                        if any(it in item_types for it in inv_item_types):
-                            item_match = True
-                            break
-
+                item_match = any(check_item_match(inv_item) for inv_item in inventory_items)
+            
             elif use_level == "room_only":
-                for room_item in items_in_room:
-                    if isinstance(room_item, dict):
-                        room_item_types = room_item.get("type", [])
-                        if any(it in item_types for it in room_item_types):
-                            item_match = True
-                            break
+                item_match = any(check_item_match(room_item) for room_item in items_in_room)
             
             # For dual_use and room_type tools, check both inventory and room items
-            else:  # covers both "dual_use" and "room_type"
-                # Check inventory items
-                for inv_item in inventory_items:
-                    if isinstance(inv_item, dict):
-                        inv_item_types = inv_item.get("type", [])
-                        if any(it in item_types for it in inv_item_types):
-                            item_match = True
-                            break
-                
-                # If not found in inventory, check room items
-                if not item_match:
-                    for room_item in items_in_room:
-                        if isinstance(room_item, dict):
-                            room_item_types = room_item.get("type", [])
-                            if any(it in item_types for it in room_item_types):
-                                item_match = True
-                                break
+            else:
+                item_match = (
+                    any(check_item_match(inv_item) for inv_item in inventory_items) or
+                    any(check_item_match(room_item) for room_item in items_in_room)
+                )
         
-        # Tool is available if ANY condition is met:
-        # - Has room_types and we're in a matching room
-        # - Has item_types and we have a matching item (based on use_level rules)
-        # - Has both and either condition is met
         return room_match or item_match
 
     def construct_map(self):
@@ -577,9 +690,25 @@ class FunctionBuilder:
         items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
         inventory_items = self.state_manager.get_inventory_items(internal=True) or []
         
+        # Get power toggle info
+        _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
+        
+        # Add dynamic toggle functions to function map
+        all_items = inventory_items + items_in_room
+        for item in all_items:
+            if not isinstance(item, dict) or "power_toggle" not in item:
+                continue
+            item_id = item.get("id")
+            is_powered_on = item.get("power_toggle", False)
+            
+            if is_powered_on:
+                self.function_map[f"toggle_OFF_{item_id}"] = lambda item_id=item_id: self._toggle_item_power(item_id, False)
+            else:
+                self.function_map[f"toggle_ON_{item_id}"] = lambda item_id=item_id: self._toggle_item_power(item_id, True)
+        
         # Process each tool definition
         for tool_key, tool_config in self.tool_definitions.items():
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
                 functions = tool_config.get("functions", {})
                 self.function_map.update(functions)
                 available_tool_keys.add(tool_key)
@@ -602,9 +731,16 @@ class FunctionBuilder:
         items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
         inventory_items = self.state_manager.get_inventory_items(internal=True) or []
         
+        # Get power toggle tools and info
+        toggle_definitions, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
+        
+        # Add toggle tools first
+        all_definitions.extend(toggle_definitions)
+        seen_tool_names.update(d['name'] for d in toggle_definitions)
+        
         # Process each tool definition
         for tool_key, tool_config in self.tool_definitions.items():
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
                 definitions = tool_config.get("definitions", [])
                 
                 # Add definitions uniquely, only for functions that are actually available
@@ -616,8 +752,7 @@ class FunctionBuilder:
                         all_definitions.append(definition)
                         seen_tool_names.add(tool_name)
         
-        print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools")
-        print(f"DEBUG: Tool names: {[d['name'] for d in all_definitions]}")
+        print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools (including {len(toggle_definitions)} toggle tools)")
         
         return all_definitions
 
@@ -690,9 +825,11 @@ class FunctionBuilder:
             # Skip if no display function
             if not display_info_func:
                 continue
+
+            _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
             
             # Check if this tool should be included based on current context
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items):
+            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
                 try:
                     type_info = display_info_func()
                     if type_info:
