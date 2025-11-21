@@ -208,6 +208,11 @@ class GeminiClient(AbstractLLMClient):
             
         return gemini_contents, system_context
 
+    def sanitize_function_name(self, name): # Gemini function responses sometimes have a "default_api." prefix. Random behavior.
+        if name.startswith("default_api."):
+            return name.replace("default_api.", "")
+        return name
+
     # The rest of GeminiClient class is the same:
     async def generate_response(
         self,
@@ -274,7 +279,7 @@ class GeminiClient(AbstractLLMClient):
                         # print(f"📮📮📮📮📮📮Function call ID: {function_call.id}")
                         normalized_function_calls.append(
                             FunctionCallDetails(
-                                name=function_call.name,
+                                name=self.sanitize_function_name(function_call.name),
                                 arguments=dict(function_call.args),
                                 call_id=function_call.id
                             )

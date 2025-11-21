@@ -1870,18 +1870,5 @@
             "art_book"
         ],
         "stackable": true
-    },
-    {
-        "name": "Cellphone",
-        "descriptions": [
-            "A compact smartphone with a sleek design and a vibrant display.",
-            "It allows you to communicate, browse the internet, and access various applications."
-        ],
-        "static": false,
-        "type": [
-            "misc",
-            "bluesky_social"
-        ],
-        "stackable": false
     }
 ]

@@ -299,7 +299,8 @@ class FunctionBuilder:
                 },
                 "definitions": maze_tools,
                 "item_types": ["maze"],
-                "use_level": "room_only"
+                "use_level": "room_only",
+                "display_information": self.maze.display_information
             },
 
             "bed": {

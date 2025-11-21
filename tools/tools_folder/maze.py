@@ -418,6 +418,17 @@ class MazeEnvironment:
         
         return '\n'.join(''.join(row) for row in grid)
 
+    def display_information(self):
+        string_response=f"Maze Size: {self.width}x{self.height}\n"
+        string_response+=f"Maze Agent Position: {self.agent_position}\n"
+        string_response+=f"Maze Goal Position: {self.goal}\n"
+        string_response+=f"Maze Start Position: {self.start}\n"
+        string_response+=f"Maze Steps Taken: {self.steps_taken}\n"
+        string_response+=f"Maze Active: {self.maze_active}\n"
+
+        maze_visualization=self.visualize_human()
+        string_response+=f"Maze Visualization:\n{maze_visualization}\n"
+        return string_response
 
 # Demo usage simulating an agent
 if __name__ == "__main__":
