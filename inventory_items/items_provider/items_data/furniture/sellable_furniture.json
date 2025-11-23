@@ -26,6 +26,7 @@
             "furniture",
             "maze"
         ],
-        "stackable": false
+        "stackable": false,
+        "power_toggle": false
     }
 ]

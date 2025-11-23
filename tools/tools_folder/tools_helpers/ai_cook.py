@@ -58,7 +58,7 @@ class cook:
 
         for item_definition in response.items:
             # Convert the Pydantic ItemDefinition model instance to a dictionary
-            item_dict = item_definition.model_dump() # Or .dict() for Pydantic V1
+            item_dict = item_definition.model_dump(exclude_none=True) # Or .dict() for Pydantic V1
 
             # --- Post-processing: Remove keys for 'misc' items ---
             if item_dict.get("type") == "misc":

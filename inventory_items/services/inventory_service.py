@@ -197,6 +197,16 @@ class InventoryService:
                 item_id_for_log = item_data.get('id', 'unknown')
                 return False, f"Seed item '{item_name}' (ID:{item_id_for_log}) 'plant_type' key is not a string"
 
+        if "dispenser" in item_type:
+            dispenser_state = item_data.get("dispenser_state")
+            if not isinstance(dispenser_state, dict):
+                item_id_for_log = item_data.get('id', 'unknown')
+                return False, f"Dispenser item '{item_name}' (ID:{item_id_for_log}) 'dispenser_state' key is not a dictionary"
+        if "candy_bag" in item_type:
+            candy_bag_state = item_data.get("contents")
+            if not isinstance(candy_bag_state, dict):
+                item_id_for_log = item_data.get('id', 'unknown')
+                return False, f"Candy bag item '{item_name}' (ID:{item_id_for_log}) 'contents' key is not a dictionary"
         return True, ""
 
 

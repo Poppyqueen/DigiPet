@@ -418,7 +418,7 @@ def start_garden_tick_request():
         return False
 
     # Only proceed if the chatbot is NOT currently processing a user request
-    if state.chatbot_is_processing: # <--- UNCOMMENT THIS LINE
+    if state.chatbot_is_processing and not state.agent_sleeping: # <--- UNCOMMENT THIS LINE
         #print("Chatbot is currently busy processing, deferring garden tick.") # Keep this line for debugging if needed
         return False # And this line
 
@@ -1335,8 +1335,6 @@ while running:
             # last_activity_time is NOT reset here immediately, it's reset when the bot *responds*
             # This prevents spamming requests if the bot is slow to respond.
             pass # Do nothing here, last_activity_time is reset on CHATBOT_RESPONSE_EVENT
-
-
 
     # NEW: Garden Tick Logic
     if current_time_ms >= state.next_garden_tick_time:

@@ -431,7 +431,6 @@ class memory_manager:
         point for potential future enhancements to memory management.
         """
         print("Relevance process is a placeholder and not currently active.")
-
     def process_short_term_system(self) -> int:
         """
         Processes short-term memory by creating a "token timeline" of the entire
@@ -441,6 +440,8 @@ class memory_manager:
 
         This function should be run periodically as it has no internal "total token" trigger.
         """
+
+        keep_tool_entry_count = 3
         memory_data = self._load_memory()
         if memory_data is None:
             return 0
@@ -451,7 +452,7 @@ class memory_manager:
         for tag, entries_list in short_term_memory.items():
             if isinstance(entries_list, list):
                 for entry in entries_list:
-                    entry['original_tag'] = tag # Temporarily tag for rebuilding
+                    entry['original_tag'] = tag  # Temporarily tag for rebuilding
                     all_entries.append(entry)
 
         if not all_entries:
@@ -459,12 +460,20 @@ class memory_manager:
 
         all_entries.sort(key=lambda x: x.get('timestamp', 0))
 
+        # Identify which entries should be safeguarded
+        tool_entries_indices = [
+            i for i, entry in enumerate(all_entries)
+            if entry.get('original_tag') in ['system', 'tool']
+        ]
+        # Get indices of the last 'keep_tool_entry_count' tool messages
+        safeguarded_indices = set(tool_entries_indices[-keep_tool_entry_count:]) if tool_entries_indices else set()
+
         # --- Step 2: Walk the "token timeline" and process messages ---
         cumulative_tokens = 0
         final_entries = []
         summarized_count = 0
 
-        for entry in all_entries:
+        for idx, entry in enumerate(all_entries):
             start_token_position = cumulative_tokens
             content_data = entry.get("content", "")
 
@@ -476,13 +485,16 @@ class memory_manager:
                 "result" in content_data
             )
 
-            if is_structured_tool_message:
+            # Check if this specific entry is safeguarded
+            is_safeguarded = idx in safeguarded_indices
+
+            if is_structured_tool_message and not is_safeguarded:
                 result_text = str(content_data.get("result", ""))
                 result_tokens = self.token_manager.count_tokens(result_text)
 
                 # Now check if it meets the criteria for summarization
                 if (start_token_position > self.calc_budgets()["system_line"] and
-                    result_tokens > self.calc_budgets()["system_summarize"]):
+                        result_tokens > self.calc_budgets()["system_summarize"]):
 
                     print(f"Tool/System message (ID: {entry.get('unique_id')}) at token position {start_token_position} is a candidate for summarization.")
 
@@ -518,7 +530,6 @@ class memory_manager:
             else:
                 timeline_tokens = self.token_manager.count_tokens(str(content_data))
             cumulative_tokens += timeline_tokens
-
 
         # --- Step 3: Rebuild and save the short-term memory if changes were made ---
         if summarized_count > 0:

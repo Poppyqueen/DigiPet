@@ -18,6 +18,20 @@ class BookService:
             except Exception as e:
                 print(f"Error sending signal: {e}")
 
+    def _validate_book_location(self, book_item_id: int, level="inventory")->bool:
+        "2 levels, inventory and dual (room and inventory)"
+        current_room_id = self._state_store.get_state_section("current_room_id")
+        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
+        if not item_info:
+            return False
+        item_loc_id=item_info["location_id"]
+        item_location = item_info["location"]
+        if level == "inventory":
+            return item_location == "inventory"
+        elif level == "dual":
+            return item_location == "inventory" or (item_location == "room" and item_loc_id == current_room_id)
+        return False
+        
 
 
     def create_book_item(self, book_name: str, description: str) -> str:
@@ -69,12 +83,10 @@ class BookService:
         if error_msg: return f"Error: {error_msg}"
 
         # Check accessibility (moved from InventoryHouseManager)
-        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        is_accessible = (item_info["location"] == "inventory") or (item_info["location"] == "room" and item_info["location_id"] == current_room_id)
+        is_accessible = self._validate_book_location(book_item_id, "inventory")
         if not is_accessible:
             item_display = self._inventory_service._format_item_for_display(book_data)
-            return f"You can only examine items in your current location or inventory. Item {item_display} is not here."
+            return f"You can only examine items in your inventory. Item {item_display} is not here."
 
         chapters = book_data.get("chapters", [])
         if not chapters:
@@ -87,12 +99,10 @@ class BookService:
         if error_msg: return f"Error: {error_msg}"
 
         # Check accessibility
-        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        is_accessible = (item_info["location"] == "inventory") or (item_info["location"] == "room" and item_info["location_id"] == current_room_id)
+        is_accessible = self._validate_book_location(book_item_id, "inventory")
         if not is_accessible:
             item_display = self._inventory_service._format_item_for_display(book_data)
-            return f"You can only read books in your current location or inventory. Item {item_display} is not here."
+            return f"You can only read books in your inventory. Item {item_display} is not here."
 
         chapters = book_data.get("chapters", [])
         target_chapter = next((c for c in chapters if c.get("title", "").lower() == chapter_title.lower()), None)
@@ -104,13 +114,21 @@ class BookService:
             return f"Chapter '{chapter_title}' not found in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
 
     def add_book_chapter(self, book_item_id: int, chapter_title: str, content: str) -> str:
+
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
+        if error_msg: return f"Error: {error_msg}"
+
+        # Check accessibility
+        is_accessible = self._validate_book_location(book_item_id, "inventory")
+        if not is_accessible:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"You can only add chapters to books in your inventory. Item {item_display} is not here."
+
         if not isinstance(chapter_title, str) or not chapter_title.strip():
             return "Error: Chapter title cannot be empty."
         if not isinstance(content, str) or not content.strip():
             return "Error: Chapter content cannot be empty."
 
-        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
-        if error_msg: return f"Error: {error_msg}"
 
         chapters = book_data.get("chapters", [])
         if any(c.get("title", "").lower() == chapter_title.lower() for c in chapters):
@@ -129,11 +147,18 @@ class BookService:
 
 
     def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str = "append") -> str:
+        # Check accessibility
+        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
+        if error_msg: return f"Error: {error_msg}"
+
+        is_accessible = self._validate_book_location(book_item_id, "inventory")
+        if not is_accessible:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"You can only update chapters of books in your inventory. Item {item_display} is not here."
+
         if not isinstance(new_content, str) or not new_content.strip():
             return "Error: New chapter content cannot be empty."
 
-        book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
-        if error_msg: return f"Error: {error_msg}"
 
         chapters = book_data.get("chapters", [])
         target_chapter = next((c for c in chapters if c.get("title", "").lower() == chapter_title.lower()), None)
@@ -154,8 +179,16 @@ class BookService:
             return f"Chapter '{chapter_title}' not found in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
 
     def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
+
         book_data, error_msg = self._inventory_service.get_validated_item_data(book_item_id, required_type="book")
         if error_msg: return f"Error: {error_msg}"
+
+        # Check accessibility
+        is_accessible = self._validate_book_location(book_item_id, "inventory")
+        if not is_accessible:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"You can only delete chapters of books in your inventory. Item {item_display} is not here."
+
 
         chapters = book_data.get("chapters", [])
         original_chapter_count = len(chapters)
