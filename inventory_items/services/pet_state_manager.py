@@ -37,6 +37,26 @@ class PetStateManager:
             return
         self._state_store.update_state_section("is_color_configured", configured)
 
+    # --- Pet Sound Getters and Setters ---
+    def get_pet_sound(self) -> str | None:
+        return self._state_store.get_state_section("pet_sound", "")
+
+    def set_pet_sound(self, sound: str):
+        if not isinstance(sound, str):
+            print(f"Error: Attempted to set invalid pet sound format: {sound}. Ignoring.")
+            return
+        self._state_store.update_state_section("pet_sound", sound)
+
+    def is_sound_configured(self) -> bool:
+        return self._state_store.get_state_section("is_sound_configured", False)
+
+    def set_sound_configured(self, configured: bool):
+        if not isinstance(configured, bool):
+            print(f"Error: Attempted to set 'is_sound_configured' with non-boolean value: {configured}. Ignoring.")
+            return
+        print(f"Setting 'is_sound_configured' to {configured}")
+        self._state_store.update_state_section("is_sound_configured", configured)
+
     # --- Emote Management ---
     def get_current_emote(self, internal: bool = False) -> str | dict:
         current_emote = self._state_store.get_state_section("current_emote", "unknown")

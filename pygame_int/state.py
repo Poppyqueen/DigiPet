@@ -39,6 +39,7 @@ pet_stats = {
 pet_color = (100, 255, 100) # Default RGB tuple for drawing the pet.
 game_theme_colors = {} # Dictionary to hold theme colors for the game.
 # This value will be updated by game.py based on loaded config or user selection.
+pet_sound = "mellow_friend.mp3" # Default sound for the pet.
 
 pet_radius = 0 # The current drawing radius of the pet.
 current_radius = 0 # Appears potentially redundant with pet_radius, but kept as provided.

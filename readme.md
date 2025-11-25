@@ -47,16 +47,21 @@ It includes optional integrations for the Agent to use *YouTube*, *MusicBrainz*,
 
 ## Setup
 
-To set up the project, you will typically follow these steps:
+To set up the project, follow these steps:
 
-1.  **Clone the Repository:** Obtain the project files. (This step is not explicitly described in the sources but is a standard prerequisite).
 
-   
-2.  **Create a Virtual Environment:** It is highly recommended to use a virtual environment to manage dependencies.
+1.  **Install Git LFS:** Install Git LFS to handle large files in the repository.
+    * Make sure you have Git LFS installed to make sure the assets are downloaded correctly.
+    * You can download it from [here](https://git-lfs.github.com/).
+
+2.  **Clone the Repository:** Obtain the project files. (This step is not explicitly described in the sources but is a standard prerequisite).
+
+3.  **Create a Virtual Environment:** It is highly recommended to use a virtual environment to manage dependencies.
     ```bash
     python -m venv .venv
     ```
-3.  **Activate the Virtual Environment:**
+
+4.  **Activate the Virtual Environment:**
     *   On Windows:
         ```bash
         .venv\Scripts\activate
@@ -66,7 +71,7 @@ To set up the project, you will typically follow these steps:
         source .venv/bin/activate
         ```
 
-4.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `requirements.txt` file.
+5.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `requirements.txt` file.
     ```bash
     pip install -r requirements.txt
     ```

@@ -336,11 +336,11 @@ class FunctionBuilder:
 
             "auction":{
                 "functions":{
-                    "browse_auction_house": self.auction_house.get_pretty_items_list,
-                    "lookup_auction_house_item": self.auction_house.lookup_item,
-                    "buy_item": self.auction_house.buy_item,
-                    "sell_item": self.auction_house.sell_item,
-                    "get_currency": self.auction_house.get_currency
+                    "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
+                    "computer_lookup_auction_house_item": self.auction_house.lookup_item,
+                    "computer_buy_item": self.auction_house.buy_item,
+                    "computer_sell_item": self.auction_house.sell_item,
+                    "computer_get_currency": self.auction_house.get_currency
                 },
                 "definitions": laptop_tools,
                 "item_types": ["laptop"],
@@ -369,8 +369,8 @@ class FunctionBuilder:
         if self.wikipedia_enabled:
             self.tool_definitions["wikipedia"] = {
                 "functions": {
-                    "search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
-                    "get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
+                    "computer_search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
+                    "computer_get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
                     #"random_wikipedia": self.room_tools.computer.random_wikipedia
                 },
                 "definitions": computer_room_tools,
@@ -891,16 +891,13 @@ class FunctionBuilder:
         context.append("\n#############\n")
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
-        print("DEBUG ITEMS LIST")
-        print(self.state_manager.get_inventory_items())
         context.append("#############")
         # context.append("In the current room the items are:")
         # context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary
         # context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())
-        print("DEBUG: Current stats context:")
-        print(self.state_manager.get_stats())
+
         context.append("\n#############\n")
 
         # Add weather context ONLY if the room type is "garden"

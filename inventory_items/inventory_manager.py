@@ -170,9 +170,21 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     def is_color_configured(self) -> bool:
         return self.pet_state_manager.is_color_configured()
-
+    
     def set_color_configured(self, configured: bool):
         return self.pet_state_manager.set_color_configured(configured)
+
+    def is_sound_configured(self) -> bool:
+        return self.pet_state_manager.is_sound_configured()
+
+    def set_sound_configured(self, configured: bool):
+        return self.pet_state_manager.set_sound_configured(configured)
+
+    def get_pet_sound(self) -> str:
+        return self.pet_state_manager.get_pet_sound()
+    
+    def set_pet_sound(self, sound: str):
+        return self.pet_state_manager.set_pet_sound(sound)
 
     def get_steps(self) -> int:
         return self.pet_state_manager.get_steps()

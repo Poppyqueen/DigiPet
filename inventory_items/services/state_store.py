@@ -435,6 +435,19 @@ class StateStore(GenericJsonTool):
                 print(f"Validation Warning: 'pet_theme_color' values ({pet_theme_color_val}) outside 0-255 range or not integers. Clamping to {clamped_color}.")
                 self._state["pet_theme_color"] = clamped_color
                 needs_save = True
+        
+        # New: Validate Sound State
+        is_sound_configured_val = self._state.get("is_sound_configured")
+        if not isinstance(is_sound_configured_val, bool):
+            print(f"Validation Warning: 'is_sound_configured' missing or not boolean ({type(is_sound_configured_val).__name__}). Setting to default (False).")
+            self._state["is_sound_configured"] = False
+            needs_save = True
+
+        pet_sound_val = self._state.get("pet_sound")
+        if not isinstance(pet_sound_val, str):
+            print(f"Validation Warning: 'pet_sound' missing or not string ({type(pet_sound_val).__name__}). Setting to default ('').")
+            self._state["pet_sound"] = ""
+            needs_save = True
 
         # --- NEW: Validate Steps State ---
         steps_value = self._state.get("steps")

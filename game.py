@@ -11,7 +11,7 @@ from pygame_int import state
 from pygame_int.main_digipet import gui
 from pygame_int.main_digipet import animation
 from pygame_int.main_digipet import gui_lore_panel
-from pygame_int.main_digipet import gui_color_selector
+from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
 from pygame_int.juke_box import jukebox 
 from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
 
@@ -20,7 +20,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
+mock_running = True # If set to True, the mock will run and simulate the chatbot behavior. 
                     # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!
 
 
@@ -78,7 +78,7 @@ def splash_sound():
             sound = pygame.mixer.Sound("style/sounds/intro.mp3") # Load your sound file
             sound.set_volume(0.5)
             sound.play()
-            print("Playing sound from GUI Core init.") # Modified print statement
+            print("Playing sound from splash_sound function.") # Modified print statement
         except pygame.error as e:
             print(f"Could not play sound: {e}")
     else:
@@ -554,7 +554,8 @@ if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_color_co
         # --- Run Color Selection UI ---
         print("Color not configured. Starting color selection UI...")
         # Call the blocking UI function
-        selected_color = gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font
+        selected_color = gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font.  #### We want to clone this behavior, right after it for a "sound alarm" selector
+
 
         if selected_color is not None:
             # Color was selected, save it via the chatbot
@@ -590,6 +591,49 @@ else:
 
 gui.gui_core.gui_construct_colors.set_color_theme() 
 
+
+# =============================================================================
+# NEW: Autonomous Action Sound Selection Logic
+# =============================================================================
+
+SOUNDS_DIR = "style/sounds/autonomous_action/" 
+
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_sound_configured') and callable(chatbot.state_manager.is_sound_configured):
+    
+    # Check if sound is NOT configured yet
+    if not chatbot.state_manager.is_sound_configured():
+        print("Sound alarm not configured. Starting sound selection UI...")
+        
+        # --- Run Sound Selection UI ---
+        selected_sound_filename = gui_sound_selector.run_sound_selection_ui(screen, font, SOUNDS_DIR)
+
+        if selected_sound_filename is not None:
+            # Sound was selected and confirmed
+            print(f"Sound selected: {selected_sound_filename}. Saving configuration...")
+            if hasattr(chatbot.state_manager, 'set_pet_sound'):
+                chatbot.state_manager.set_pet_sound(selected_sound_filename)
+            
+            # Mark as configured
+            chatbot.state_manager.set_sound_configured(True)
+            
+            # Update runtime state
+            state.pet_sound = selected_sound_filename
+            print(f"Sound selected: {selected_sound_filename}. Saving configuration...")
+            print("Sound configuration saved and applied.")
+        else:
+            # User pressed 'Back' or quit
+            print("User quit during sound selection. Exiting game.")
+            running = False # Set main game loop flag to False
+    else:
+        # --- Load Configured Sound ---
+        print("Sound already configured. Loading saved sound...")
+        if hasattr(chatbot.state_manager, 'get_pet_sound'):
+            loaded_sound = chatbot.state_manager.get_pet_sound()
+            if loaded_sound:
+                state.pet_sound = loaded_sound
+                print(f"Loaded pet sound: {state.pet_sound}")
+            else:
+                state.pet_sound = "mellow_friend.mp3" # Fallback
 
 
 # --- Initial Background Load ---
@@ -1327,7 +1371,7 @@ while running:
         print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
         #play a sound effect for autonomous action trigger
-        music_player.play_sound_effect("style/sounds/auto_action_trigger.mp3")
+        music_player.play_sound_effect(f"style/sounds/autonomous_action/{state.pet_sound}")
 
         # Start the autonomous action request. This sets state.chatbot_is_processing = True
         # The response event CHATBOT_RESPONSE_EVENT will set it back to False later.

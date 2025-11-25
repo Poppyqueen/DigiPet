@@ -71,7 +71,7 @@ laptop_tools=[
     },
     {
         "type": "function",
-        "name": "browse_auction_house",
+        "name": "computer_browse_auction_house",
         "description": "Allows you to browse the auction house.",
         "parameters": {
             "type": "object",
@@ -96,7 +96,7 @@ laptop_tools=[
     },
     {
         "type": "function",
-        "name": "lookup_auction_house_item",
+        "name": "computer_lookup_auction_house_item",
         "description": "Looks up an item in the auction house by its name.",
         "parameters": {
             "type": "object",
@@ -112,7 +112,7 @@ laptop_tools=[
     }, #buy_item
     {
         "type": "function",
-        "name": "buy_item",
+        "name": "computer_buy_item",
         "description": "Allows buying an item from the auction house.",
         "parameters": {
             "type": "object",
@@ -132,7 +132,7 @@ laptop_tools=[
     }, #sell_item
     {
         "type": "function",
-        "name": "sell_item",
+        "name": "computer_sell_item",
         "description": "Allows selling an item from the auction house with its ID, from your inventory.",
         "parameters": {
             "type": "object",
@@ -934,7 +934,7 @@ computer_room_tools=[
     },
     {
         "type": "function",
-        "name": "search_wikipedia_articles",
+        "name": "computer_search_wikipedia_articles",
         "description": "Searches Wikipedia based on a keyword query and returns a list of potential matching article titles, page IDs, and brief snippets. Use this to find relevant article titles before retrieving content. It does NOT return the full article content.",
         "parameters": {
             "type": "object",
@@ -952,7 +952,7 @@ computer_room_tools=[
     },
     {
         "type": "function",
-        "name": "get_wikipedia_article_content",
+        "name": "computer_get_wikipedia_article_content",
         "description": "Retrieves the main content extract of a specific Wikipedia article given its exact title. Use this after getting a title from 'search_wikipedia_articles' or if you already know the exact title.",
         "parameters": {
             "type": "object",
