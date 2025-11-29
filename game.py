@@ -20,7 +20,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = True # If set to True, the mock will run and simulate the chatbot behavior. 
+mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
                     # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!
 
 
@@ -227,11 +227,14 @@ def handle_chatbot_signal(signal_data):
                 print(f"Signal type 'emote_changed' received with sound path: {sound_path}. Using Jukebox.")
                 music_player.play_sound_effect(sound_path)
         elif action_type == "start_sleep":
-                animation.start_sleep_animation()
-                print("Signal type 'start_sleep' received, posting START_SLEEP_EVENT.")
-                pygame.event.post(pygame.event.Event(config.START_SLEEP_EVENT))
+            state.time_to_sleep = signal_data.get("time_to_sleep")
+
+            animation.start_sleep_animation()
+            print("Signal type 'start_sleep' received, posting START_SLEEP_EVENT.")
+            pygame.event.post(pygame.event.Event(config.START_SLEEP_EVENT))
         elif action_type == "end_sleep":
             animation.wake_up_pet()
+            state.time_to_sleep = None
             print("Signal type 'end_sleep' received, posting END_SLEEP_EVENT.")
             pygame.event.post(pygame.event.Event(config.END_SLEEP_EVENT))
 

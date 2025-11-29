@@ -55,6 +55,9 @@ _lore_panel_text_start_x_offset = 0
 # --- NEW: Lore Panel Toggle Button Rect ---
 _lore_toggle_button_rect = None
 
+# --- NEW: Clock Rects ---
+_current_time_clock_rect = None
+_sleep_duration_clock_rect = None
 
 
 # --- Initialization Function ---
@@ -79,6 +82,8 @@ def init_gui_elements(font, line_height, current_panel_width):
            _lore_panel_close_button_rect, _lore_panel_text_draw_width, \
            _lore_panel_text_start_x_offset # Add new globals
     global _lore_toggle_button_rect # Add new global for lore toggle button
+
+    global _current_time_clock_rect, _sleep_duration_clock_rect # Add new global for clock rects
 
 
     _font = font
@@ -291,6 +296,20 @@ def init_gui_elements(font, line_height, current_panel_width):
         config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
     )
 
+    # --- NEW: Initialize Clock Rects ---
+    _current_time_clock_rect = pygame.Rect(
+        config.WIDTH - config.CLOCK_WIDTH -  current_panel_width,
+        config.PADDING,
+        config.CLOCK_WIDTH,
+        config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+    )
+    _sleep_duration_clock_rect = pygame.Rect(
+        config.WIDTH - config.CLOCK_WIDTH - current_panel_width,
+        config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT + config.PADDING,
+        config.CLOCK_WIDTH,
+        config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+    )
+
 
 
 
@@ -342,6 +361,7 @@ def update_gui_rects(current_panel_width):
            _lore_panel_close_button_rect, _lore_panel_text_draw_width, \
            _lore_panel_text_start_x_offset # Add new globals
     global _lore_toggle_button_rect # Add new global for lore toggle button
+    global _current_time_clock_rect, _sleep_duration_clock_rect # Add new global for clock rects
 
 
     _panel_rect = pygame.Rect(config.WIDTH - current_panel_width, 0, current_panel_width, config.HEIGHT)
@@ -496,6 +516,7 @@ def update_gui_rects(current_panel_width):
     _lore_panel_text_draw_width = max(1, _lore_panel_text_draw_width)
     _lore_panel_text_start_x_offset = config.LORE_PANEL_PADDING
 
+
     # --- NEW: Recalculate Lore Panel Toggle Button Rect ---
     if state.panel_visible:
         # If right panel is visible, move button to account for it
@@ -505,6 +526,7 @@ def update_gui_rects(current_panel_width):
             config.LORE_PANEL_TOGGLE_BUTTON_WIDTH,
             config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
         )
+
     else:
         # If  panel is not visible, keep button at the center
         _lore_toggle_button_rect = pygame.Rect(
@@ -513,7 +535,41 @@ def update_gui_rects(current_panel_width):
             config.LORE_PANEL_TOGGLE_BUTTON_WIDTH,
             config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
         )
+ 
 
+    # 1. Determine Height based on state
+    # If expanded: Use the standard button height.
+    # If collapsed: Use a thin "window shade" height (e.g., 10px).
+    if getattr(state, 'clock_expanded', True):
+        current_clock_height = config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+        sleep_duration_height = config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT
+    else:
+        current_clock_height = config.LORE_PANEL_TOGGLE_BUTTON_HEIGHT // 2  # Thin strip height
+        sleep_duration_height = 0
+
+
+
+    # 2. Determine X Position (Flush against the panel or screen edge)
+    if state.panel_visible:
+        clock_x = config.WIDTH - current_panel_width - config.CLOCK_WIDTH
+    else:
+        clock_x = config.WIDTH - config.CLOCK_WIDTH - (config.PADDING*2) -(config.MUTE_BUTTON_SIZE + (config.MUTE_BUTTON_SIZE // 2))
+
+    # Current Time (Top)
+    _current_time_clock_rect = pygame.Rect(
+        clock_x,
+        config.PADDING, # Top of screen
+        config.CLOCK_WIDTH,
+        current_clock_height
+    )
+
+    # Sleep Duration (Stacked immediately below Time)
+    _sleep_duration_clock_rect = pygame.Rect(
+        clock_x,
+        config.PADDING + current_clock_height, # Starts where Time ends
+        config.CLOCK_WIDTH,
+        sleep_duration_height
+    )
 
 # --- Helper function to load stat icons ---
 def _load_stat_icons():
@@ -606,6 +662,7 @@ def get_button_rects():
      """Returns a dictionary of button rects."""
      global _inventory_toggle_button_rect, _mute_button_rect, _panel_toggle_button_rect # Add panel_toggle_button_rect
      global _lore_toggle_button_rect # Add new global
+     global _current_time_clock_rect, _sleep_duration_clock_rect # NEW: Add clock rects
      rects = {}
      if _inventory_toggle_button_rect is not None:
          rects['inventory_toggle'] = _inventory_toggle_button_rect
@@ -615,6 +672,10 @@ def get_button_rects():
          rects['panel_toggle'] = _panel_toggle_button_rect
      if _lore_toggle_button_rect is not None: # NEW: Add lore toggle button
          rects['lore_toggle'] = _lore_toggle_button_rect
+     if _current_time_clock_rect is not None: # NEW: Add current time clock rect
+         rects['current_time_clock'] = _current_time_clock_rect
+     if _sleep_duration_clock_rect is not None: # NEW: Add sleep duration clock rect
+         rects['sleep_duration_clock'] = _sleep_duration_clock_rect
      return rects
 
 
@@ -656,3 +717,5 @@ def get_lore_panel_rects():
         'lore_body_area': _lore_panel_body_area_rect,
         'lore_close_button': _lore_panel_close_button_rect
     }
+
+

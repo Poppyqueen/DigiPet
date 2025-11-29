@@ -12,7 +12,7 @@ from pygame_int.main_digipet import gui_care_package
 
 from pygame_int.main_digipet import gui_lore_panel # NEW: Import the new lore panel module
 from pygame_int.main_digipet import gui_stat_icons
-
+from pygame_int.main_digipet import gui_clock
 
 import pygame
 
@@ -73,78 +73,74 @@ def draw_filter_overlay(screen):
 
 
 # --- NEW: Function to handle GUI-related events ---
+# gui.py
+
+# ... imports remain the same ...
+
 def handle_gui_event(event):
     """
-    Handles Pygame events related to the GUI, specifically for managing input box focus.
-    This function should be called from your main event loop for each event.
+    Handles Pygame events related to the GUI.
     """
     if event.type == pygame.MOUSEBUTTONDOWN:
         mouse_pos = event.pos
 
-        # Retrieve the current GUI rects.
-        # It's assumed that gui_core.update_gui_rects() has been called
-        # at the start of the frame to ensure these rects are up-to-date.
+        # Retrieve rects
         current_gui_rects = gui_core.get_gui_rects()
         input_rect = current_gui_rects.get('input_rect')
 
-
+        # --- 1. PRIORITY: Lore Panel (Modal) ---
         if state.lore_panel_visible:
             lore_panel_rects = gui_core.get_lore_panel_rects()
             lore_body_area_rect = lore_panel_rects.get('lore_body_area')
             lore_close_button_rect = lore_panel_rects.get('lore_close_button')
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # Handle Mouse Wheel Scrolling for Lore Panel Body
-                if event.button in (4, 5) and lore_body_area_rect and lore_body_area_rect.collidepoint(event.pos):
-                    scroll_speed = config.LORE_PANEL_SCROLL_SPEED * (-1 if event.button == 4 else 1)
-                    state.lore_panel_scroll_y += scroll_speed
-                    # Clamp scroll
-                    lore_content_height = gui_lore_panel.calculate_lore_body_height(state.lore_panel_content)
-                    max_lore_scroll = max(0, lore_content_height - lore_body_area_rect.height)
-                    state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_lore_scroll))
-                    return # Event consumed by scroll
+            # Handle Mouse Wheel Scrolling
+            if event.button in (4, 5) and lore_body_area_rect and lore_body_area_rect.collidepoint(event.pos):
+                scroll_speed = config.LORE_PANEL_SCROLL_SPEED * (-1 if event.button == 4 else 1)
+                state.lore_panel_scroll_y += scroll_speed
+                lore_content_height = gui_lore_panel.calculate_lore_body_height(state.lore_panel_content)
+                max_lore_scroll = max(0, lore_content_height - lore_body_area_rect.height)
+                state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_lore_scroll))
+                return 
 
-                # Handle Lore Close Button Click
-                if event.button == 1 and lore_close_button_rect and lore_close_button_rect.collidepoint(event.pos):
-                    print("Lore panel close button clicked. Closing panel.")
-                    state.lore_panel_visible = False # Snap closed
-                    return # Event consumed by close button
+            # Handle Lore Close Button
+            if event.button == 1 and lore_close_button_rect and lore_close_button_rect.collidepoint(event.pos):
+                print("Lore panel close button clicked. Closing panel.")
+                state.lore_panel_visible = False 
+                return 
 
-            # If the click wasn't on scroll or close button, consume it to block interaction with background
-            return # Consume ALL other events when lore panel is open
-        
-            
-        
-        # Check if the panel is visible and the input_rect exists (i.e., the input box is drawn)
-        if event.button == 1 and not state.chatbot_is_processing: # was it a left click and not a scroll or other button? is the bot free?
+            # If Lore Panel is open, we consume ALL clicks so you can't click things behind it
+            return 
+
+
+        # --- 2. PRIORITY: Clock Toggles ---
+        # We check this BEFORE the main panel logic.
+        # We use the function from gui_clock to handle the logic and state change.
+        if event.button == 1:
+            if gui_clock.handle_clock_click(mouse_pos):
+                return # Click handled by clock, stop processing
+
+
+        # --- 3. PRIORITY: Main GUI (Panel, Input, etc.) ---
+        # Check if the panel is visible and valid
+        if event.button == 1 and not state.chatbot_is_processing: 
 
             if state.panel_visible and input_rect and not state.agent_sleeping and not state.chatbot_is_processing:
                 if not input_rect.collidepoint(mouse_pos):
-                    # If the click was outside the input box, set cursor_visible to Fals
+                    # Clicked outside input box -> Unfocus
                     if state.cursor_active:
-                        gui_text_utils.add_message_to_history(
-                            "Input box inactive, now the bot is not listening and will act autonomously.", "system")
+                        gui_text_utils.add_message_to_history("Input box inactive...", "system")
                     state.cursor_active = False
                     state.cursor_visible = False
- 
-                    # Optional: If you manage an 'active_input_box' state, you might set it to None here:
-                    # state.active_input_box = None
                 else:
-                    # If the click was inside the input box, set cursor_visible to True.
-                    # (Note: draw_gui's 'is_input_locked' logic will still override this to False if locked).
+                    # Clicked inside input box -> Focus
                     if not state.cursor_active:
-                        gui_text_utils.add_message_to_history(
-                            "Input box active, the bot is listening to you and will not act until it is freed.", "system")
+                        gui_text_utils.add_message_to_history("Input box active...", "system")
                     state.cursor_active = True
-                    # Optional: If you manage an 'active_input_box' state, you might set it here:
-                    # state.active_input_box = 'main_input_box' # Or some identifier for this specific input box
             else:
-                # If the panel is not visible or input_rect is not available (no input box to focus on),
-                # ensure the cursor is hidden.
+                # Panel hidden -> Ensure cursor inactive
                 state.cursor_active = False
                 state.cursor_visible = False
-
-                # Optional: state.active_input_box = None
 
 # --- Function to draw the entire GUI panel ---
 def draw_gui(screen, current_time_ms, is_input_locked):
@@ -380,6 +376,8 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 line_end = (button_rect.right - button_rect.width // 4, button_rect.bottom - button_rect.height // 4)
                 pygame.draw.line(screen, icon_color, line_start, line_end, 2)
 
+        gui_clock.draw_current_time(screen)
+        gui_clock.draw_sleep_duration(screen) # TODO: Implement sleep duration clock
 
         # NEW: Draw Lore Panel if visible (highest layer, after other modals)
         if state.lore_panel_visible:

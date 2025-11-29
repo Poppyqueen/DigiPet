@@ -14,6 +14,8 @@ is_initial_popup_phase = True # Flag for displaying initial game information pop
 
 agent_sleeping = False
 
+time_to_sleep = None # Time in seconds until the agent will wake up.
+
 # --- Chat and Input State ---
 # Variables managing the chat interface, input box, and history.
 
@@ -155,3 +157,5 @@ package_scroll_y = 0
 highlight_items_list = []
 
 hover_stat=None
+
+clock_expanded = False # New flag

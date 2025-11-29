@@ -365,9 +365,10 @@ class CLIChatbot:
         # 3. If a critically low stat was detected, perform the consequences
         if low_stat_detected:
             print("Triggering pass-out consequences...")
+            time_to_sleep = 900 # 15 minutes = 900 seconds
             # Send a signal to the system that the agent has passed out and needs to 'sleep'
-            self._send_signal({"type": "start_sleep"}) # 15 minutes = 900 seconds
-            await asyncio.sleep(900)
+            self._send_signal({"type": "start_sleep", "time_to_sleep": time_to_sleep})
+            await asyncio.sleep(time_to_sleep)
             self._send_signal({"type": "end_sleep"})
 
             # Save pass-out specific messages to the agent's memory

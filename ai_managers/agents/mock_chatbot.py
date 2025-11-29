@@ -296,9 +296,9 @@ class MockChatbot:
                 # Simulate stat changes - signals are handled by adjust_stat
                 self.state_manager.adjust_stat("energy", random.uniform(40, 80))
                 self.state_manager.adjust_stat("happiness", -random.uniform(5, 10))
-                # Signal sleep event (mock duration: 10-30 seconds)
-                sleep_duration = 120
-                self._signal_callback({"type": "start_sleep"})
+                # Signal sleep event (mock duration: n-n seconds)
+                sleep_duration = random.uniform(30, 240)
+                self._signal_callback({"type": "start_sleep", "time_to_sleep": sleep_duration})
                 await asyncio.sleep(sleep_duration)
                 self._signal_callback({"type": "end_sleep"})
                 signal_sent = True

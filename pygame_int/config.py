@@ -376,3 +376,8 @@ LORE_PANEL_CONTENT_EVENT = pygame.event.custom_type() # Ensure this is a unique 
 UPDATE_LORE_DISPLAY_EVENT = pygame.event.custom_type()
 
 END_SLEEP_EVENT = pygame.event.custom_type()
+
+
+
+CLOCK_WIDTH = 100
+CLOCK_HEIGHT = 20

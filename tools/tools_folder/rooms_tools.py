@@ -428,7 +428,7 @@ class room_bedroom:
         self._send_signal({"type": "show_message_popup", "message": f"Entering sleep for {seconds} seconds!"})
         #int_gain=int(energy_gain)
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
-        self._send_signal({"type": "start_sleep"})
+        self._send_signal({"type": "start_sleep", "time_to_sleep": seconds})
         await asyncio.sleep(seconds)
         self._send_signal({"type": "end_sleep"})
         self.state.adjust_stat("energy", energy_gain)
