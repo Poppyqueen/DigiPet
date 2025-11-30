@@ -132,7 +132,7 @@ It is also configurable on a GUI but it will fallback to the environment variabl
 
 ## Running the Project
 
-The main entry point for the Pygame version of the game is `game.py`. The `CLIChatbot` also appears to have a command-line interface mode.
+The main entry point for the Pygame version of the game is `game.py`.
 
 1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
 

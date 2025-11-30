@@ -23,7 +23,6 @@ from inventory_items.base_state_manager.base_state_config import InitialStateCon
 mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
                     # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!
 
-
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
     current_time_ms = pygame.time.get_ticks()
