@@ -1,8 +1,7 @@
 import pygame # For font operations if directly used
-
-from .. import config
-from .. import state
-from . import gui_core # To access _font, _line_height, _text_width_limit
+from pygame_int import config
+from pygame_int import state
+from pygame_int.main_digipet import gui_core # To access _font, _line_height, _text_width_limit
 
 # --- Text Wrapping Function ---
 def wrap_text(text, max_width, prefix=""):

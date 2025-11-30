@@ -1,10 +1,10 @@
 import pygame
 import os
 import sys
-from .. import gui_config
-from .. import config
-from ..main_menu_int.main_menu_modules.button import Button
-from .. import state
+from pygame_int import gui_config
+from pygame_int import config
+from pygame_int.main_menu_int.main_menu_modules.button import Button
+from pygame_int import state
 
 
 def pop_colors():

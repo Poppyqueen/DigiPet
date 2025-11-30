@@ -5,7 +5,7 @@ import copy # For deep copying default state
 
 # Assuming generic_json_tool.py is in utils, adjust import if different
 try:
-    from ...utils.generic_json_tool import GenericJsonTool
+    from utils.generic_json_tool import GenericJsonTool
 except ImportError:
     print("Error: generic_json_tool.py not found. Make sure it's in the same directory or PYTHONPATH.")
     import sys; sys.exit(1)

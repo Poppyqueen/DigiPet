@@ -1,35 +1,31 @@
+from pygame_int import gui_config
+from pygame_int import config
+from pygame_int import state
+import pygame
+
+from pygame_int.main_digipet import gui
+
+from pygame_int.main_menu_int.main_menu_modules.button import Button
+from pygame_int.main_menu_int.main_menu_modules.checkbox import Checkbox
+from pygame_int.main_menu_int.main_menu_modules.dropdown_menu import DropdownMenu
+from pygame_int.main_menu_int.main_menu_modules.text_input_box import TextInputBox
+
+from pygame_int.main_menu_int.main_menu_modules.main_menu_utils import (calculate_total_content_height, draw_section_title)
+
+from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 import sys
 import threading
 import queue
 from enum import Enum
-import pygame
-
-
-from ....pygame_int import gui_config
-from ....pygame_int import config
-from ....pygame_int import state
-
-from ...main_digipet import gui
-
-from ..main_menu_modules.button import Button
-from ..main_menu_modules.checkbox import Checkbox
-from ..main_menu_modules.dropdown_menu import DropdownMenu
-from ..main_menu_modules.text_input_box import TextInputBox
-from ..main_menu_modules.pulsing_text import PulsingText
-
-
-from ..main_menu_utils import (calculate_total_content_height, draw_section_title)
-
-from .crafter_signal import CrafterSignal
-
 
 # imports for our threaded process
-from ....data_constructors.base_state_construct import BaseCrafter
+from data_constructors.base_state_construct import BaseCrafter
 
 
-from ....ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
+from ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
 
+from pygame_int.main_menu_int.main_menu_modules.pulsing_text import PulsingText
 
 
 

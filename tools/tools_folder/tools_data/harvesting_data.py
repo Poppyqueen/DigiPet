@@ -1,6 +1,6 @@
 # --- Item Definitions for Harvest and Seeds ---
 # These items will be created and added to the inventory upon harvest or used for planting.
-from ....inventory_items.items_provider.item_store import ItemStore
+from inventory_items.items_provider.item_store import ItemStore
 
 # Existing Items. Now from the store.
 cc=ItemStore("inventory_items/items_provider/items_data")

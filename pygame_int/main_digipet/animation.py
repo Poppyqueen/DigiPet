@@ -1,13 +1,13 @@
 # animation.py
+
+from pygame_int import config # Needed for animation constants and event types
+from pygame_int import state # Needed for accessing/modifying animation state variables and sleep state
+
 import pygame
 import math # Needed for sine/cosine calculations
+from pygame_int.main_digipet import gui # Needed to add system messages to history (e.g., input locked)
+
 import random
-
-from .. import config # Needed for animation constants and event types
-from .. import state # Needed for accessing/modifying animation state variables and sleep state
-
-from . import gui # Needed to add system messages to history (e.g., input locked)
-
 # --- Helper functions to clear specific animation states and variables ---
 
 def _clear_sleep_state():

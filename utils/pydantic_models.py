@@ -2,6 +2,9 @@
 from typing import List
 from pydantic import BaseModel
 
+from pydantic import BaseModel, Field
+from typing import List
+
 
 valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
 

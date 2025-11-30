@@ -2,10 +2,9 @@
 
 import pygame
 import random
-
-from .. import config
-from .. import state
-from . import gui_core # For _font, _gui_rects, etc.
+from pygame_int import config
+from pygame_int import state
+from pygame_int.main_digipet import gui_core # For _font, _gui_rects, etc.
 
 # --- Popup Message Class (Text) ---
 class PopupMessage:

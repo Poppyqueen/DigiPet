@@ -1,10 +1,11 @@
+from utils.generic_json_tool import GenericJsonTool
+
 import string
 
 import json
+
+
 import random
-
-from ....utils.generic_json_tool import GenericJsonTool
-
 
 class ALifeManager(GenericJsonTool):
     """

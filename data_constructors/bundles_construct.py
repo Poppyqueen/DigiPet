@@ -22,9 +22,11 @@ import json
 from pydantic import BaseModel, Field, ValidationError # Import ValidationError
 
 
-from ..ai_managers.ai_utils.ai_loader import AIConfiguration
+#from utils.utils_ai_providers.simple_ai_config import LLMCONFIG
 
-from ..utils.pydantic_models import ItemDefinitionListContainer # Import the item definition model
+from ai_managers.ai_utils.ai_loader import AIConfiguration
+
+from utils.pydantic_models import ItemDefinitionListContainer # Import the item definition model
 
 
 

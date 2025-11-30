@@ -3,11 +3,11 @@
 import pygame
 import os
 
-from .. import config # Needed for colors, padding, dimensions, max history
-from .. import state # Needed for accessing/modifying chat_history, input_text, etc.
-from . import gui_construct_colors
+from pygame_int import config # Needed for colors, padding, dimensions, max history
+from pygame_int import state # Needed for accessing/modifying chat_history, input_text, etc.
+from pygame_int.main_digipet import gui_construct_colors
 
-from . import gui_stat_icons
+from pygame_int.main_digipet import gui_stat_icons
 # --- Internal Module State (Initialized by init_gui) ---
 _font = None
 _line_height = 0

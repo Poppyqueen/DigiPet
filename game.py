@@ -6,25 +6,19 @@ import asyncio
 
 
 
-# Relative Imports for Modules/Packages located directly within DigiPet/
-# The 'pygame_int' module is a direct sibling of 'game.py'.
-
-from .pygame_int import config
-from .pygame_int import state
-# The 'pygame_int' sub-package contains 'main_digipet', which contains the modules below.
-from .pygame_int.main_digipet import gui
-from .pygame_int.main_digipet import animation
-from .pygame_int.main_digipet import gui_lore_panel
-from .pygame_int.main_digipet import gui_color_selector, gui_sound_selector
-from .pygame_int.juke_box import jukebox 
-from .pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
+from pygame_int import config
+from pygame_int import state
+from pygame_int.main_digipet import gui
+from pygame_int.main_digipet import animation
+from pygame_int.main_digipet import gui_lore_panel
+from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
+from pygame_int.juke_box import jukebox 
+from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
 
 
-# Relative Imports for Modules/Packages located directly within DigiPet/
-# The 'utils', 'inventory_items', and other folders are direct siblings of 'game.py'.
-from .utils.config_manager import ConfigManager
+from utils.config_manager import ConfigManager
 
-from .inventory_items.base_state_manager.base_state_config import InitialStateConst
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
 mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
                     # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!

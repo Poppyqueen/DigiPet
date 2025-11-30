@@ -3,11 +3,10 @@
 # The sleep duration clock is not currently implemented. It is a placeholder for future functionality.
 
 import pygame
-
-from .. import state
-from .. import config
-from . import gui_core
-from ...utils.loc_datetime import datetime
+from pygame_int import state
+from pygame_int import config
+from pygame_int.main_digipet import gui_core
+from utils.loc_datetime import datetime
 from datetime import timedelta
 
 

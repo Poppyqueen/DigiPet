@@ -1,19 +1,19 @@
 import pygame
 import sys
-
+from pygame_int import gui_config, state
+from pygame_int import config
 import json
 
 
-from ...pygame_int import gui_config, state
-from ...pygame_int import config
 
-from .main_menu_modules.button import Button          # Use single dot for same directory imports
-from .main_menu_modules.pop_up import Popup           # Use single dot for same directory imports
+from pygame_int.main_menu_int.main_menu_modules.button import Button
 
-from .main_menu_areas.config_creation_ui import run_config_creation_ui
-from .main_menu_areas.state_maker_ui import run_config_creation_twilight_zone
+from pygame_int.main_menu_int.main_menu_modules.pop_up import Popup
 
-from ...inventory_items.base_state_manager.base_state_config import InitialStateConst
+from pygame_int.main_menu_int.main_menu_areas.config_creation_ui import run_config_creation_ui
+from pygame_int.main_menu_int.main_menu_areas.state_maker_ui import run_config_creation_twilight_zone
+
+from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
 
 initial_states_manager=InitialStateConst()

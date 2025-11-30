@@ -2,7 +2,7 @@ import os
 from google import genai
 from google.genai import types
 
-from ..images_ai_abc import ImagesAI
+from ai_managers.images_ai.images_ai_abc import ImagesAI
 
 
 class GeminiImages(ImagesAI):

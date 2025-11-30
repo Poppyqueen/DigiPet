@@ -1,6 +1,6 @@
 import pygame
 
-from ....pygame_int import gui_config
+from pygame_int import gui_config
 
 class Button:
     def __init__(self, x, y, w, h, text, font, action=None, border_color=None, border_width=0, text_color=None, button_color=None, hover_color=None):

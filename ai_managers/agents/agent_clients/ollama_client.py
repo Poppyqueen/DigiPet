@@ -1,12 +1,10 @@
 # ollama client
 
 import ollama
+from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClient
+from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 import json # For parsing arguments from OpenAI's string format (retained as per original code, though not used here now)
-
-from ..agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
-
-from .abstract_llm_client import AbstractLLMClient
 
 
 class OllamaClient(AbstractLLMClient):

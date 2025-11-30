@@ -1,12 +1,12 @@
 import pygame
 
-from ....pygame_int import gui_config
+from pygame_int import gui_config
 
-from .button import Button
+from pygame_int.main_menu_int.main_menu_modules.button import Button
 
 import sys
 
-from ....pygame_int import config
+from pygame_int import config
 
 class Popup:
     """A class to handle confirmation popups."""

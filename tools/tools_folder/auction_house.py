@@ -7,8 +7,8 @@
 
 import random
 
-from ...inventory_items.items_provider.item_store import ItemStore
-from ...inventory_items.items_provider.items_scanner import FuzzyMatcher
+from inventory_items.items_provider.item_store import ItemStore
+from inventory_items.items_provider.items_scanner import FuzzyMatcher
 
 class AuctionHouse:
     def __init__(self, state_manager):

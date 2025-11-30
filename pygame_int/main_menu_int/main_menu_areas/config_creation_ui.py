@@ -1,26 +1,24 @@
 # main_menu_areas/config_creation_ui.py
+from pygame_int import gui_config
+from pygame_int import config
 import pygame
+
+
+from ai_managers import prompt_data
+
+from pygame_int.main_digipet import gui
+
+from pygame_int.main_menu_int.main_menu_modules.button import Button
+from pygame_int.main_menu_int.main_menu_modules.checkbox import Checkbox
+from pygame_int.main_menu_int.main_menu_modules.dropdown_menu import DropdownMenu
+from pygame_int.main_menu_int.main_menu_modules.text_input_box import TextInputBox
+
+from pygame_int.main_menu_int.main_menu_modules.main_menu_utils import (calculate_total_content_height, draw_section_title)
+
+
+from ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
+
 import sys
-
-
-from ....pygame_int import gui_config
-from ....pygame_int import config
-
-
-from ....ai_managers import prompt_data
-
-from ...main_digipet import gui
-
-from ..main_menu_modules.button import Button
-from ..main_menu_modules.checkbox import Checkbox
-from ..main_menu_modules.dropdown_menu import DropdownMenu
-from ..main_menu_modules.text_input_box import TextInputBox
-
-from ..main_menu_modules.main_menu_utils import (calculate_total_content_height, draw_section_title)
-
-
-from ....ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
-
 
 text_inputs = {}
 dropdowns = {}

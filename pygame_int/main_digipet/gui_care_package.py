@@ -1,7 +1,7 @@
 import pygame
-from .. import config
-from .. import state
-from . import gui_core # For _font, _left_scroll_button_rect, etc.
+from pygame_int import config
+from pygame_int import state
+from pygame_int.main_digipet import gui_core # For _font, _left_scroll_button_rect, etc.
 
 #buttons_per_page = 5 #  Placeholder number of buttons to show per page
 

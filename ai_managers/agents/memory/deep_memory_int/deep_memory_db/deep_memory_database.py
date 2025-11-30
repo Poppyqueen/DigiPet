@@ -2,13 +2,11 @@
 # deep_memory_database.py
 
 import sqlite3
+from utils.loc_datetime import datetime
 import json
 import pickle  # For serializing/deserializing numpy arrays
 import numpy as np  # For handling embeddings as numerical arrays
 import threading # Import the threading module
-
-from ......utils.loc_datetime import datetime
-
 
 class DatabaseManager:
     """

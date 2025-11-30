@@ -3,7 +3,8 @@
 import pygame
 import math
 
-from ..inventory_items.items_provider.care_packages import CareConstructor
+from inventory_items.items_provider.care_packages import CareConstructor
+
 
 # --- General Configuration ---
 # Window and Layout Dimensions

@@ -3,7 +3,7 @@ from datetime import datetime as _datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
 # Import your timezone function
-from .open_meteo_handle import OpenMeteoLoc
+from utils.open_meteo_handle import OpenMeteoLoc
 
 class CoordinateDateTime:
     """

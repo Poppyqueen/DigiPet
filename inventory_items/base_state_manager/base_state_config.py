@@ -1,9 +1,7 @@
+from inventory_items.items_provider.item_store import ItemStore
 import json
 import os
 from pathlib import Path
-
-from ..items_provider.item_store import ItemStore
-
 
 ITEM_ID_START_COUNTER = 0
 ROOM_ID_START_COUNTER = 1

@@ -1,10 +1,9 @@
+from utils.loc_datetime import datetime
 import random
 import json # Need json for loading
 import os   # Need os for checking file existence
 
-
-from ....utils.loc_datetime import datetime
-from ....utils.time_manager import get_time_tag_from_now
+from utils.time_manager import get_time_tag_from_now
 # --- Data Structure Design (Conceptual - lives in tv_data.json) ---
 # The data will be loaded from a JSON file with this structure:
 # {

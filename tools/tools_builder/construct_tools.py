@@ -24,24 +24,11 @@
 # This file is responsible for constructing the tools and their definitions for an AI agent.
 # Now uses a single unified map to handle all tool cases: room types, inventory items, and base functions.
 
+from utils.loc_datetime import datetime
 import os.path
 import inspect
 
-from ...utils.loc_datetime import datetime
-
-
-from ..tools_folder import simulation
-
-from ..tools_folder.garden_tools import Garden_Mananger
-from ..tools_folder.rooms_tools import main_tools_handle
-from ..tools_folder.thinking_tool import emit_inner_thought
-from ..tools_folder.images_lab import ImagesLab
-from ..tools_folder.dispenser_tools import DispenserTools
-
-from ..tools_folder.auction_house import AuctionHouse
-
-from ..tools_folder.maze import MazeEnvironment
-
+from tools.tools_folder import simulation
 
 # Import the tool definitions lists
 from .my_tools import (
@@ -68,6 +55,15 @@ from .my_tools import (
     maze_tools
 )
 
+from tools.tools_folder.garden_tools import Garden_Mananger
+from tools.tools_folder.rooms_tools import main_tools_handle
+from tools.tools_folder.thinking_tool import emit_inner_thought
+from tools.tools_folder.images_lab import ImagesLab
+from tools.tools_folder.dispenser_tools import DispenserTools
+
+from tools.tools_folder.auction_house import AuctionHouse
+
+from tools.tools_folder.maze import MazeEnvironment
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):

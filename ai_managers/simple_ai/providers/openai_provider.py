@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 
-from ..abstract_provider import SimpleAI
+from ai_managers.simple_ai.abstract_provider import SimpleAI
 
 class OpenAIProv(SimpleAI):
     """

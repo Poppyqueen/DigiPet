@@ -2,10 +2,7 @@
 
 import numpy as np
 from scipy.spatial.distance import cosine
-
-
-from .deep_memory_database import DatabaseManager
-
+from ai_managers.agents.memory.deep_memory_int.deep_memory_db.deep_memory_database import DatabaseManager
 class EmbeddingOperations:
     """
     A class to handle operations related to embeddings, such as similarity calculation

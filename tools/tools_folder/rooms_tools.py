@@ -12,16 +12,14 @@
 
 import asyncio
 import math
+
+from tools.tools_folder.tools_helpers import random_object, tv_handle
+
+from tools.tools_folder.tools_helpers.ai_cook import cook
+
 import random
 
-from ...utils.loc_datetime import datetime
-
-
-from .tools_helpers import random_object, tv_handle
-
-from .tools_helpers.ai_cook import cook
-
-
+from utils.loc_datetime import datetime
 
 def check_one_in(number: int):
   """

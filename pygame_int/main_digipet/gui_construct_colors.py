@@ -1,6 +1,6 @@
 import colorsys
-from .. import config
-from .. import state
+from pygame_int import config
+from pygame_int import state
 
 def set_color_theme():
     """

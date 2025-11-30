@@ -1,9 +1,8 @@
 import numpy as np
+from ai_managers.embeddings.embeddings_abc import EmbeddingProvider
 import os
+
 from google import genai
-
-from ..embeddings_abc import EmbeddingProvider
-
 
 class GoogleEmbeddingProvider(EmbeddingProvider):
     """

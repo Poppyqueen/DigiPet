@@ -6,6 +6,15 @@ import os
 import re
 import sys
 
+# --- TEMPORARY FIX FOR DIRECT EXECUTION ---
+# This block allows the script to find the 'utils' package
+# when run directly from its current location.
+# Assuming 'utils' is in the parent directory of this script's location
+# This adds the parent directory to the Python path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+sys.path.append(parent_dir)
+# -------------------------------------------
 
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
@@ -13,7 +22,7 @@ import json # Import the json module
 import time
 
 
-from ..ai_managers.ai_utils.ai_loader import AIConfiguration
+from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 

@@ -2,7 +2,7 @@
 
 import os
 
-from .loc_datetime import datetime
+from utils.loc_datetime import datetime
 
 class TextCapture:
     def __init__(self, filepath="captured_text.txt"):
