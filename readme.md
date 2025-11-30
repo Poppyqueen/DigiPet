@@ -70,8 +70,11 @@ To set up the project, follow these steps:
         ```bash
         source .venv/bin/activate
         ```
-
-5.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `pyproject.toml` file.
+5. **Navigate to the Project Directory:** Change to the project directory.
+    ```bash
+    cd DigiPet
+    ```
+6.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `pyproject.toml` file.
 
     *   **To Install All Dependencies:** Install all dependencies using the `all` extra. While quick, if you don't want particular dependencies, it is recommended to install only the ones you need.
     ```bash
@@ -98,9 +101,13 @@ To set up the project, follow these steps:
 
 ## Configuration
 
-1.  **Create a `.env` file:** The system requires certain configuration values to be set as environment variables. Create a file named `.env` in the root directory of the project. An .env.example file is included for ease of configuration
+1.  **Copy the `.env.example` file:** The system requires certain configuration values to be set as environment variables. Copy the `.env.example` file to a file named `.env` in the root directory of the project and fill in the values.
 
 2.  **Configure Location:** For features like weather integration (`open_meteo_handle`), the system reads latitude and longitude from the environment. **You must add `LATITUDE`, `LONGITUDE` and `OPENAI_API_KEY` to your `.env` file**.
+It can be any place on Earth! Have fun having your agent experience the weather and time zones in different places!
+
+It is also configurable on a GUI but it will fallback to the environment variables if not set.
+
     ```env
     LATITUDE=any_latitude_here
     LONGITUDE=any_longitude_here
