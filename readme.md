@@ -71,10 +71,30 @@ To set up the project, follow these steps:
         source .venv/bin/activate
         ```
 
-5.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `requirements.txt` file.
+5.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `pyproject.toml` file.
+
+    *   **To Install All Dependencies:** Install all dependencies using the `all` extra. While quick, if you don't want particular dependencies, it is recommended to install only the ones you need.
     ```bash
-    pip install -r requirements.txt
+    pip install "DigiPet[all]"
     ```
+    This will install optional APIs like YouTube, Bluesky, MusicBrainz, Discogs and all the AI providers, OpenAI, Google, Ollama, Groq.
+
+    *   **To Install ONLY Desired Dependencies:** Install selected dependencies using the `[]` syntax. Example:
+    ```bash
+    pip install "DigiPet[google, openai, bluesky]"
+    ```
+
+    All available extras are:
+    * google
+    * openai
+    * ollama
+    * groq
+    * youtube
+    * bluesky
+    * musicbrainz
+    * discogs
+
+    Install at least one of the AI providers to use the chatbot, recommended to install at least two to avoid rate limiting issues. Use a provider for memory and another for chat.
 
 ## Configuration
 
