@@ -54,9 +54,13 @@ To set up the project, follow these steps:
     * Make sure you have Git LFS installed to make sure the assets are downloaded correctly.
     * You can download it from [here](https://git-lfs.github.com/).
 
-2.  **Clone the Repository:** Obtain the project files. (This step is not explicitly described in the sources but is a standard prerequisite).
+2.  **Clone the Repository:** Clone the repository to your local machine.
 
-3.  **Create a Virtual Environment:** It is highly recommended to use a virtual environment to manage dependencies.
+    ```bash
+    git clone https://github.com/Poppyqueen/DigiPet.git
+    ```
+
+3.  **Create a Virtual Environment:** It is important to use a virtual environment to manage dependencies.
     ```bash
     python -m venv .venv
     ```
@@ -79,6 +83,11 @@ To set up the project, follow these steps:
     *   **To Install All Dependencies:** Install all dependencies using the `all` extra. While quick, if you don't want particular dependencies, it is recommended to install only the ones you need.
     ```bash
     pip install "DigiPet[all]"
+    ```
+
+    if you get an error, try:
+    ```bash
+    pip install '.[all]'
     ```
     This will install optional APIs like YouTube, Bluesky, MusicBrainz, Discogs and all the AI providers, OpenAI, Google, Ollama, Groq.
 
@@ -120,7 +129,6 @@ It is also configurable on a GUI but it will fallback to the environment variabl
     OPENAI_API_KEY=your_openai_api_key_here
     ```
 
-4.  **Deep Memory Flag:** Note that the `deep_memory` flag in the `CLIChatbot` initialization is urged to be set to `False` currently due to token usage concerns. It is set to `False` in the example initialization. Needs redesign.
 
 ## Running the Project
 
@@ -128,11 +136,11 @@ The main entry point for the Pygame version of the game is `game.py`. The `CLICh
 
 1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
 
-3.  **Run the Game:** Navigate to the project's root directory in your terminal (with the virtual environment activated) and run:
+2.  **Run the Game:** Make sure you are in the project's root directory in your terminal (with the virtual environment activated) and run:
     ```
-    python game.py
+    python -m game
     ```
-4. **Configuration Screen** Here you can create a new agent in a GUI or load any agents previously created.
+3. **Configuration Screen** Here you can create a new agent in a GUI or load any agents previously created.
 
 ## What to Expect
 
