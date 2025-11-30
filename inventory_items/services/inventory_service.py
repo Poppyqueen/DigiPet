@@ -172,6 +172,12 @@ class InventoryService:
                     item_id_for_log = item_data.get('id', 'unknown')
                     return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid or missing chapter 'content' at index {i}."
 
+            is_locked = item_data.get("is_locked", False)
+            if not isinstance(is_locked, bool):
+                item_id_for_log = item_data.get('id', 'unknown')
+                return False, f"Book item '{item_name}' (ID:{item_id_for_log}) 'is_locked' must be a boolean."
+            item_data["is_locked"] = is_locked # Ensure it's explicitly set if missing
+
         if "consumable" in item_type:
             stats_edit_data = item_data.get("stats_edit")
             item_id_for_log = item_data.get('id', 'unknown')

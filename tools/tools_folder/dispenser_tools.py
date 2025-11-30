@@ -50,7 +50,7 @@ class DispenserTools:
         total_count = sum(contents.values())
         
         if total_count <= 0:
-            self._send_signal({"type": "show_message", "message": "Click! It's empty."})
+            self._send_signal({"type": "show_message_popup", "message": "Click! It's empty."})
             return "The dispenser is empty. You need to refill it."
 
         # Weighted Random Selection
@@ -146,5 +146,5 @@ class DispenserTools:
         if persist_error:
             return persist_error
 
-        self._send_signal({"type": "show_message", "message": "Dispenser refilled!"})
+        self._send_signal({"type": "show_message_popup", "message": "Dispenser refilled!"})
         return f"You pour the {refill_bag.get('name')} into the dispenser. It looks full and colorful now!"

@@ -183,14 +183,14 @@ class room_kitchen:
                  # If no items are generated, the process is "complete" in that ingredients weren't used,
                  # and nothing was created. No rollback of ingredients needed as they weren't removed.
                  # --- Add signal call for process completion without output ---
-                 self._send_signal({"type": "show_message", "message": "Preparation process completed, but no food items were created by the cook."})
+                 #self._send_signal({"type": "show_message", "message": "Preparation process completed, but no food items were created by the cook."})
                  # -----------------------------------------------------------
                  return "Preparation process completed, but no food items were created by the cook."
         except Exception as e:
             print(f"Error during cook process: {e}")
             # If the cook process itself fails, ingredients haven't been removed yet. No rollback needed.
             # --- Add signal call for cook process failure ---
-            self._send_signal({"type": "show_message", "message": f"Preparation failed: Error during food generation process: {e}"})
+            #self._send_signal({"type": "show_message", "message": f"Preparation failed: Error during food generation process: {e}"})
             # ------------------------------------------------
             return f"Preparation failed: Error during food generation process: {e}"
 
@@ -236,7 +236,7 @@ class room_kitchen:
                 # Attempt to add back any ingredients that were successfully removed before this failure
                 self._rollback_preparation(successfully_removed_ingredients_data, successfully_created_items_info)
                 # --- Add signal call for ingredient removal failure ---
-                self._send_signal({"type": "show_message", "message": f"Preparation failed: Could not remove ingredient '{item_name}' (ID: {inted_id}) from inventory. Rolled back partial changes."})
+                #self._send_signal({"type": "show_message", "message": f"Preparation failed: Could not remove ingredient '{item_name}' (ID: {inted_id}) from inventory. Rolled back partial changes."})
                 # ------------------------------------------------------
                 return f"Preparation failed: Could not remove ingredient '{item_name}' (ID: {inted_id}) from inventory. Rolled back partial changes."
 
@@ -283,7 +283,7 @@ class room_kitchen:
                 # Attempt rollback: add ingredients back, remove any successfully created items
                 self._rollback_preparation(successfully_removed_ingredients_data, successfully_created_items_info)
                 # --- Add signal call for item creation failure ---
-                self._send_signal({"type": "show_message", "message": f"Preparation failed: Could not create generated item '{item_name}'. Rolled back inventory changes."})
+                #self._send_signal({"type": "show_message", "message": f"Preparation failed: Could not create generated item '{item_name}'. Rolled back inventory changes."})
                 # -------------------------------------------------
                 return f"Preparation failed: Could not create generated item '{item_name}'. Rolled back inventory changes."
 
@@ -305,7 +305,7 @@ class room_kitchen:
         """
         print("Preparation failed, attempting rollback...")
         # --- Add signal call for rollback attempt ---
-        self._send_signal({"type": "show_message", "message": "Preparation failed, attempting rollback...", "urgent": True})
+        #self._send_signal({"type": "show_message", "message": "Preparation failed, attempting rollback...", "urgent": True})
         # --------------------------------------------
 
         # 1. Add back ingredients that were successfully removed
@@ -326,13 +326,13 @@ class room_kitchen:
             if not new_item_ids_list:
                 # This block now correctly executes on failure.
                 print(f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' (Original ID: {item_id}) during rollback. Item may be lost!")
-                self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' during rollback. Item may be lost!", "urgent": True})
+                #self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to add back ingredient '{item_name}' during rollback. Item may be lost!", "urgent": True})
             else:
                 # Extract the ID from the list for clearer logging.
                 # Using new_item_ids_list[0] as we are only adding one item at a time here.
                 new_id = new_item_ids_list[0]
                 print(f"Successfully added back ingredient '{item_name}'. New ID: {new_id}")
-                self._send_signal({"type": "show_message", "message": f"Successfully added back ingredient '{item_name}'."})
+                #self._send_signal({"type": "show_message", "message": f"Successfully added back ingredient '{item_name}'."})
 
         # 2. Remove items that were successfully created
         print(f"Attempting to remove {len(created_items_info)} created items...")
@@ -354,19 +354,19 @@ class room_kitchen:
                       # If rollback of a created item fails, it means a duplicate item is left at the creation location.
                      print(f"CRITICAL ERROR: Failed to remove created item '{item_name}' (ID: {item_id}) from {item_location_type} {item_location_id} during rollback. Duplicate item created! Manual cleanup needed.")
                      # --- Add signal call for critical rollback failure (item not removed) ---
-                     self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to remove created item '{item_name}' during rollback. Duplicate item created!", "urgent": True})
+                     #self._send_signal({"type": "show_message", "message": f"CRITICAL ERROR: Failed to remove created item '{item_name}' during rollback. Duplicate item created!", "urgent": True})
                      # --------------------------------------------------------------------
                  else:
                      print(f"Successfully removed created item ID {item_id} during rollback.")
                      # --- Add signal call for successful item rollback ---
-                     self._send_signal({"type": "show_message", "message": f"Successfully removed created item '{item_name}'."})
+                     #self._send_signal({"type": "show_message", "message": f"Successfully removed created item '{item_name}'."})
                      # --------------------------------------------------
              else:
                   print(f"Internal Error: Created item info missing ID for rollback: {item_info}")
 
         print("Rollback attempt finished.")
         # --- Add signal call for rollback completion ---
-        self._send_signal({"type": "show_message", "message": "Rollback attempt finished."})
+        #self._send_signal({"type": "show_message", "message": "Rollback attempt finished."})
         # -----------------------------------------------
 
 
@@ -447,7 +447,7 @@ class room_bedroom:
     def look_under_bed(self):
         message=f"You look uder the bed around and found nothing."
         # --- Add signal call for looking ---
-        self._send_signal({"type": "show_message", "message": "You look under the bed..."})
+        #self._send_signal({"type": "show_message", "message": "You look under the bed..."})
         # -----------------------------------
         if check_one_in(50):
             found_item=random_object.load_and_get_random_item("found_items/underbed_found_data.json")

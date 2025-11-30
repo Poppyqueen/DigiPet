@@ -562,7 +562,7 @@ class FunctionBuilder:
         # Send feedback
         state_str = "ON" if turn_on else "OFF"
         self._signal_callback({
-            "type": "show_message",
+            "type": "show_message_popup",
             "message": f"Toggled {item_name} {state_str}"
         })
         

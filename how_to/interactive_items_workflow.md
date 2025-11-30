@@ -53,9 +53,9 @@ class MyItemTools:
     if persist_error:
         return persist_error
     ```
-*   **UI Feedback**: Use `self._send_signal()` to show popups or messages.
+*   **UI Feedback**: Use `self._send_signal()` to show popups of short messages or messages that are only visible for a short time.
     ```python
-    self._send_signal({"type": "show_message", "message": "Action complete!"})
+    self._send_signal({"type": "show_message_popup", "message": "Action complete!"})
     ```
 
 ## 3. Register the Tools

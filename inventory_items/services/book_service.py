@@ -31,8 +31,26 @@ class BookService:
         elif level == "dual":
             return item_location == "inventory" or (item_location == "room" and item_loc_id == current_room_id)
         return False
-        
 
+    def _validate_book_locked(self, book_item_id: int)->bool:
+        item_info = self._inventory_service._find_item_info_by_id(book_item_id)
+        print(f"Book item {book_item_id} info: {item_info}")
+        if not item_info:
+            print(f"Error: Book item {book_item_id} not found.")
+            return False
+            
+        # The 'is_locked' key is inside the 'item_data' dictionary
+        item_data = item_info.get("item_data", {}) 
+        
+        # Check if item_data exists and has the 'is_locked' key
+        if 'is_locked' not in item_data:
+            print(f"Error: 'is_locked' key not found in item_data for book {book_item_id}")
+            return False # Or raise an appropriate error
+            
+        is_locked_status = item_data["is_locked"]
+        
+        print(f"Book item {book_item_id} is locked: {is_locked_status}")
+        return is_locked_status
 
     def create_book_item(self, book_name: str, description: str) -> str:
         if not isinstance(book_name, str) or not book_name.strip():
@@ -47,7 +65,8 @@ class BookService:
             'descriptions': [description.strip()],
             'static': False,
             'type': ['book'],
-            'chapters': []
+            'chapters': [],
+            'is_locked': False
         }
         message = self._inventory_service.create_item("inventory", None, book_data)
         message += "\nBook name: " + book_name
@@ -124,6 +143,11 @@ class BookService:
             item_display = self._inventory_service._format_item_for_display(book_data)
             return f"You can only add chapters to books in your inventory. Item {item_display} is not here."
 
+        is_locked = self._validate_book_locked(book_item_id)
+        if is_locked:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"Item {item_display} is locked. Cannot add chapters."
+
         if not isinstance(chapter_title, str) or not chapter_title.strip():
             return "Error: Chapter title cannot be empty."
         if not isinstance(content, str) or not content.strip():
@@ -155,6 +179,11 @@ class BookService:
         if not is_accessible:
             item_display = self._inventory_service._format_item_for_display(book_data)
             return f"You can only update chapters of books in your inventory. Item {item_display} is not here."
+
+        is_locked = self._validate_book_locked(book_item_id)
+        if is_locked:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"Item {item_display} is locked. Cannot update chapters."
 
         if not isinstance(new_content, str) or not new_content.strip():
             return "Error: New chapter content cannot be empty."
@@ -189,6 +218,10 @@ class BookService:
             item_display = self._inventory_service._format_item_for_display(book_data)
             return f"You can only delete chapters of books in your inventory. Item {item_display} is not here."
 
+        is_locked = self._validate_book_locked(book_item_id)
+        if is_locked:
+            item_display = self._inventory_service._format_item_for_display(book_data)
+            return f"Item {item_display} is locked. Cannot delete chapters."
 
         chapters = book_data.get("chapters", [])
         original_chapter_count = len(chapters)

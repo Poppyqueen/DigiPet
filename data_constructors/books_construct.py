@@ -36,6 +36,7 @@ class ItemDefinition(BaseModel):
     static: bool = Field(default=False, description="This should always be false for our books")
     type: List[str] = Field(default=["book"], description="This should always be ['book']")
     chapters: List[Chapter] = Field(description="A list of chapters in the book")
+    is_locked: bool = Field(default=True, description="This should always be true for our books")
 
 # Pydantic models for the enhanced three-step AI call process
 class ChapterOutline(BaseModel):
@@ -56,7 +57,7 @@ class ChapterContent(BaseModel):
 
 class books_writer:
 
-    def __init__(self, select_model="gpt-5-mini", select_provider="openai"):
+    def __init__(self, select_model="gemini-flash-latest", select_provider="gemini"):
         self.llm_client = AIConfiguration(provider=select_provider, model=select_model, mode="simple_ai").get_client()
 
     def _generate_book_outline(self, book_concept: str) -> InitialBookSetup | None:
@@ -229,7 +230,8 @@ Write the full content for the current chapter following its outline while maint
             descriptions=book_outline.descriptions,
             static=False,
             type=["book"],
-            chapters=chapters
+            chapters=chapters,
+            is_locked=True
         )
 
         print(f"--- Book Generation Complete: '{book_outline.book_name}' with {len(chapters)} chapters ---")

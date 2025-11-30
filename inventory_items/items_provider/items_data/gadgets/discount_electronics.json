@@ -7,7 +7,8 @@
         ],
         "static": false,
         "type": [
-            "laptop"
+            "laptop",
+            "bluesky_social"
         ],
         "stackable": false,
         "power_toggle": false
