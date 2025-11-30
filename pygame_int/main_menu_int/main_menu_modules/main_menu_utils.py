@@ -1,5 +1,5 @@
 
-from pygame_int import gui_config
+from ....pygame_int import gui_config
 
 
 def calculate_total_content_height(elements):

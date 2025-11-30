@@ -3,7 +3,7 @@ import json
 
 import re
 
-from utils.loc_datetime import datetime
+from ...utils.loc_datetime import datetime
 
 TOTAL_IMAGES_LIMIT=100
 

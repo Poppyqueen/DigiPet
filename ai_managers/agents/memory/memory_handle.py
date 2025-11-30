@@ -3,18 +3,21 @@ import os
 import time
 # from datetime import datetime
 
-from utils.loc_datetime import datetime
 
 from typing import Optional, Dict, Any
 import re
 import uuid
 
+from ....utils.loc_datetime import datetime
+
+from ...ai_utils.ai_loader import AIConfiguration, TokenizerConfiguration
+
+
 # Import extra memory module
-from ai_managers.agents.memory.memory_configs import (short_term_prompt, long_term_prompt)
+from .memory_configs import (short_term_prompt, long_term_prompt)
 
-from ai_managers.agents.memory.deep_memory_int.deep_memory import DeepMemory
+from .deep_memory_int.deep_memory import DeepMemory
 
-from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfiguration
 
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"

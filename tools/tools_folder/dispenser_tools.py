@@ -1,7 +1,8 @@
 # dispenser_tools.py
 
-from inventory_items.items_provider.item_store import ItemStore
 import random
+
+from ...inventory_items.items_provider.item_store import ItemStore
 
 class DispenserTools:
     def __init__(self, state_manager, signal=None):

@@ -12,20 +12,21 @@
 
 # Perennials revert to mature stage after harvesting, while annuals get removed from the plot directly.
 
-from utils.generic_json_tool import GenericJsonTool
 import random
 import string
 import os
 import math
 from datetime import timedelta
 
-from utils.loc_datetime import datetime
+from ...utils.generic_json_tool import GenericJsonTool
+
+from ...utils.loc_datetime import datetime
 
 
-from tools.tools_folder.tools_data.harvesting_data import (plant_types)
+from .tools_data.harvesting_data import (plant_types)
 
 # Import the new settings from the garden_settings module
-from tools.tools_folder.tools_data.garden_settings import GARDEN_SETTINGS
+from .tools_data.garden_settings import GARDEN_SETTINGS
 
 
 class Garden_Mananger(GenericJsonTool):

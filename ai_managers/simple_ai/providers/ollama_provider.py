@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 
 
 
-from ai_managers.simple_ai.abstract_provider import SimpleAI
+from ..abstract_provider import SimpleAI
 
 class OllamaProv(SimpleAI):
     """

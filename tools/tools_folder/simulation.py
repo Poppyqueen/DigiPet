@@ -9,7 +9,7 @@ import os
 from utils.loc_datetime import datetime
 import time
 
-from tools.tools_folder.tools_helpers.alife_manager import ALifeManager
+from .tools_helpers.alife_manager import ALifeManager
 
 
 class ALifeSimulation:

@@ -3,7 +3,7 @@ import numpy as np
 import ollama
 
 
-from ai_managers.embeddings.embeddings_abc import EmbeddingProvider
+from ..embeddings_abc import EmbeddingProvider
 
 
 

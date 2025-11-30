@@ -4,13 +4,15 @@
 
 import random
 import asyncio # ADDED THIS IMPORT IN PREVIOUS STEP
-from inventory_items.inventory_manager import InventoryHouseManager
 import os
-from utils.capture_text import TextCapture # Import the text capture class
 
-from utils.open_meteo_handle import OpenMeteoLoc
+from ...inventory_items.inventory_manager import InventoryHouseManager
 
-from utils.loc_datetime import datetime
+from ...utils.capture_text import TextCapture # Import the text capture class
+
+from ...utils.open_meteo_handle import OpenMeteoLoc
+
+from ...utils.loc_datetime import datetime
 
 
 DEFAULT_INVENTORY_FOLDER = "inventory" 

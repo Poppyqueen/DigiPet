@@ -2,18 +2,20 @@
 # inventory_house_manager.py (UPDATED)
 
 # Import the new StateStore
-from inventory_items.services.state_store import StateStore
+from .services.state_store import StateStore
 
 # Import the new service classes (will be created in subsequent steps)
-from inventory_items.services.inventory_service import InventoryService
-from inventory_items.services.room_manager import RoomManager
-from inventory_items.services.book_service import BookService # This will replace the old book_component
-from inventory_items.services.stat_tracker import StatTracker # This will replace the old stats_component
-from inventory_items.services.pet_state_manager import PetStateManager
-from inventory_items.services.simulation_state_service import SimulationStateService
+from .services.inventory_service import InventoryService
+from .services.room_manager import RoomManager
+from .services.book_service import BookService # This will replace the old book_component
+from .services.stat_tracker import StatTracker # This will replace the old stats_component
+from .services.pet_state_manager import PetStateManager
+from .services.simulation_state_service import SimulationStateService
 
 
-from inventory_items.base_state_manager.base_state_config import InitialStateConst
+from .base_state_manager.base_state_config import InitialStateConst
+
+
 
 class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     MAX_INVENTORY_SLOTS = 30 # This constant can stay here or move to InventoryService

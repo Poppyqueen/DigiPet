@@ -1,10 +1,11 @@
 # pygame_int/gui_lore_panel.py
 
 import pygame
-from pygame_int import config
-from pygame_int import state
-from pygame_int.main_digipet import gui_core # For _font, _line_height, rects, etc.
-from pygame_int.main_digipet import gui_text_utils # For wrap_text
+
+from .. import config
+from .. import state
+from . import gui_core # For _font, _line_height, rects, etc.
+from . import gui_text_utils # For wrap_text
 
 
 # --- Content Data Preparation ---

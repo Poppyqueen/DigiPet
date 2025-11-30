@@ -1,6 +1,6 @@
 import pygame
 
-from pygame_int import gui_config
+from ....pygame_int import gui_config
 
 
 class TextInputBox:

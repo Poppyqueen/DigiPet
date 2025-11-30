@@ -2,7 +2,7 @@ import json
 import random
 import os # Used only for creating the dummy file for demonstration
 
-from inventory_items.items_provider.item_store import ItemStore
+from ....inventory_items.items_provider.item_store import ItemStore
 
 item_s=ItemStore("inventory_items/items_provider/items_data")
 

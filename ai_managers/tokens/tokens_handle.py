@@ -1,7 +1,7 @@
 
-from ai_managers.tokens.token_providers.gemini_tokenizer import GeminiTokenizer
-from ai_managers.tokens.token_providers.openai_tokenizer import OpenAITokenizer
-from ai_managers.tokens.token_providers.opensource_tokenizer import OpenSourceTokenizer
+from .token_providers.gemini_tokenizer import GeminiTokenizer
+from .token_providers.openai_tokenizer import OpenAITokenizer
+from .token_providers.opensource_tokenizer import OpenSourceTokenizer
 
 
 import sys

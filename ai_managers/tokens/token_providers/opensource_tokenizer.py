@@ -1,9 +1,9 @@
 from tokenizers import Tokenizer
 from abc import ABC
-from ai_managers.tokens.token_providers.opensource_dict import mapped_models
 import sys
-
 import os
+
+from .opensource_dict import mapped_models
 
 
 class OpenSourceTokenizer(ABC):

@@ -1,9 +1,10 @@
 # gui_stat_icons.py
 
 import pygame
-from pygame_int import config
-from pygame_int import state
-from pygame_int.main_digipet import gui_core
+
+from .. import config
+from .. import state
+from . import gui_core
 
 # Global dictionary to store stat icon rectangles for collision detection
 _stat_icon_rects = {}

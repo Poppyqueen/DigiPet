@@ -1,7 +1,9 @@
 import numpy as np
 import os
-from ai_managers.embeddings.embeddings_abc import EmbeddingProvider
 from openai import OpenAI
+
+from ..embeddings_abc import EmbeddingProvider
+
 
 class OpenAIEmbeddingProvider(EmbeddingProvider):
     """

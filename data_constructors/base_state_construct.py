@@ -7,12 +7,12 @@ from typing import Dict, Any, List
 from enum import Enum
 import json
 
-from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
+from ..pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 
 
-from data_constructors.bundles_construct import bundles_maker
-from data_constructors.room_generator import room_crafter
+from .bundles_construct import bundles_maker
+from .room_generator import room_crafter
 # Define unique types - only one item of these types can exist across the entire house
 UNIQUE_TYPES = [
     "art_book",

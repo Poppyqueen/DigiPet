@@ -2,7 +2,7 @@ import os
 
 import logging
 
-from tools.tools_folder.tools_data.blsk_alt_text import alt_text
+from ...tools_data.blsk_alt_text import alt_text
 
 
 class SVGManager():

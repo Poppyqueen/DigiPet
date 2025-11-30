@@ -4,31 +4,37 @@
 import os
 import sys
 import time
+from dotenv import load_dotenv
+import asyncio
+
 
 # Import AI framework
 
-from inventory_items.inventory_manager import InventoryHouseManager
-from ai_managers.agents.memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
-from ai_managers.agents.ai_handle import ai_bot # Assuming this is the correct import for your AI class
-from tools.tools_builder.construct_tools import FunctionBuilder
-# Import Utils
-from utils.capture_text import TextCapture # Import the text capture class
+from ...inventory_items.inventory_manager import InventoryHouseManager
+from ...tools.tools_builder.construct_tools import FunctionBuilder
+from ...utils.capture_text import TextCapture # Import the text capture class
 
 # NEW: Import TTS Providers
-from tts_providers.base_tts_provider import BaseTTSProvider
-from tts_providers.macos_say_provider import MacOSSaiProvider
-from tts_providers.espeak_ng_provider import ESpeakNGProvider
-
-from ai_managers.ai_utils.ai_loader import AIConfiguration
-
-from utils.loc_datetime import datetime
-
-from dotenv import load_dotenv
+from ...tts_providers.base_tts_provider import BaseTTSProvider
+from ...tts_providers.macos_say_provider import MacOSSaiProvider
+from ...tts_providers.espeak_ng_provider import ESpeakNGProvider
 
 
-from utils.open_meteo_handle import OpenMeteoLoc
+from ...utils.loc_datetime import datetime
 
-import asyncio
+
+
+from ...utils.open_meteo_handle import OpenMeteoLoc
+
+from ..ai_utils.ai_loader import AIConfiguration
+
+
+from .memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
+from .ai_handle import ai_bot # Assuming this is the correct import for your AI class
+# Import Utils
+
+
+
 load_dotenv()
 
 my_latitude = os.getenv("LATITUDE")
@@ -350,8 +356,8 @@ class CLIChatbot:
                     for threshold, message in wellness_threshold_messages[stat_name]:
                         if current_value <= threshold:
                             # If the current value is at or below this threshold, save the associated message
-                            self.memory.save_to_memory(message, "short_term", "user")
-                            
+                            #self.memory.save_to_memory(message, "short_term", "user")
+                            print(message)
                             # If this specific threshold is the critical pass-out threshold,
                             # set the flag to trigger a pass-out event after checking all stats.
                             if current_value <= low_threshold_for_passout:

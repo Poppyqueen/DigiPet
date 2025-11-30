@@ -1,6 +1,6 @@
 import os
 import shutil
-from utils.generic_json_tool import GenericJsonTool
+from .generic_json_tool import GenericJsonTool
 
 class ConfigManager(GenericJsonTool):
     def __init__(self, base_path, mock=False):

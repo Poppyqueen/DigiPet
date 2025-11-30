@@ -3,12 +3,12 @@
 import time
 
 # Import utils (assuming these remain the same)
-from utils.capture_text import TextCapture
+from ...utils.capture_text import TextCapture
 
 
 # New imports for abstraction
-from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClient
-from ai_managers.agents.agents_utils.llm_response_types import LLMResponse # Import the new structure
+from .agent_clients.abstract_llm_client import AbstractLLMClient
+from .agents_utils.llm_response_types import LLMResponse # Import the new structure
 
 
 class ai_bot:

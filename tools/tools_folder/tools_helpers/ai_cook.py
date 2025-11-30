@@ -9,8 +9,10 @@
 
 # Update this, creating a food item should inform of the ID it has 
 from typing import List, Dict, Any
-from utils.pydantic_models import ItemDefinitionListContainer
-from ai_managers.ai_utils.ai_loader import AIConfiguration
+
+
+from ....utils.pydantic_models import ItemDefinitionListContainer
+from ....ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 class cook:

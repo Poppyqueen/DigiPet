@@ -5,9 +5,9 @@ from atproto import Client, models, AtUri
 
 import grapheme
 
-from tools.tools_folder.tools_data.blsk_alt_text import alt_text
+from .tools_data.blsk_alt_text import alt_text
 
-from tools.tools_folder.tools_helpers.bluesky.svg_manager import SVGManager
+from .tools_helpers.bluesky.svg_manager import SVGManager
 # Configure #logging (keep it outside the class)
 ##logging.basicConfig(level=#logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 BLUESKY_LIMIT_POST_LENGTH = 300  # Example limit for Bluesky posts in Graphemes

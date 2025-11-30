@@ -4,7 +4,7 @@ from groq import Groq
 import os
 from pydantic import BaseModel
 
-from ai_managers.simple_ai.abstract_provider import SimpleAI
+from ..abstract_provider import SimpleAI
 
 
 

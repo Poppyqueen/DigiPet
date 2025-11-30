@@ -1,23 +1,24 @@
 # gui.py
-
-from pygame_int import config
-from pygame_int import state
-from pygame_int.main_digipet import animation
-
-from pygame_int.main_digipet import gui_core
-from pygame_int.main_digipet import gui_text_utils
-from pygame_int.main_digipet import gui_inventory
-from pygame_int.main_digipet import gui_popups
-from pygame_int.main_digipet import gui_care_package
-
-from pygame_int.main_digipet import gui_lore_panel # NEW: Import the new lore panel module
-from pygame_int.main_digipet import gui_stat_icons
-from pygame_int.main_digipet import gui_clock
-
 import pygame
 
+from ...utils.time_manager import get_time_tag_from_now
 
-from utils.time_manager import get_time_tag_from_now
+from .. import config
+from .. import state
+from . import animation
+
+from . import gui_core
+from . import gui_text_utils
+from . import gui_inventory
+from . import gui_popups
+from . import gui_care_package
+
+from . import gui_lore_panel # NEW: Import the new lore panel module
+from . import gui_stat_icons
+from . import gui_clock
+
+
+
 
 ALPHA_MULTIPLIERS = {
     'late night': 1.2,

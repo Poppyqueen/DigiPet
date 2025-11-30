@@ -1,6 +1,6 @@
 import os
 import json
-from inventory_items.items_provider.item_store import ItemStore
+from .item_store import ItemStore
 
 # "hydration": BLUE, # "fullness": RED, # "misc": PURPLE, # "ingredient": ORANGE, # "combo": BLACK, # "cheat": GREEN
 class CareConstructor():

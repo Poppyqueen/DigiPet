@@ -1,5 +1,6 @@
 import math
 import pygame
+
 class PulsingText:
     """A helper to draw text that fades in and out indefinitely and can be updated."""
     def __init__(self, text, font, position, color=(255, 255, 0), ang_velocity=0.004):

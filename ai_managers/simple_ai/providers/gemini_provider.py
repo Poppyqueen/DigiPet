@@ -6,7 +6,7 @@ from typing import Any
 import time
 from pydantic import BaseModel
 
-from ai_managers.simple_ai.abstract_provider import SimpleAI
+from ..abstract_provider import SimpleAI
 
 
 class GeminiProv(SimpleAI):

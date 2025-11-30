@@ -8,8 +8,9 @@ import os
 import importlib
 from dotenv import load_dotenv
 
-from ai_managers.simple_ai.abstract_provider import SimpleAI
-from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClient
+
+from ..simple_ai.abstract_provider import SimpleAI
+from ..agents.agent_clients.abstract_llm_client import AbstractLLMClient
 
 # Load environment variables
 load_dotenv()

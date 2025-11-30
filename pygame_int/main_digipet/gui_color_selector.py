@@ -1,8 +1,8 @@
 import pygame
 import math
 import sys
-from pygame_int import gui_config # For INPUT_BOX_HEIGHT, GRID_COLS, etc.
-from pygame_int.main_digipet.colors_config import _color_selection_options # For the list of colors
+from .. import gui_config # For INPUT_BOX_HEIGHT, GRID_COLS, etc.
+from .colors_config import _color_selection_options # For the list of colors
 # gui_core might not be needed if font is passed as an argument and no other core elements are directly accessed.
 
 active_input_box = None # 0 for R, 1 for G, 2 for B

@@ -2,24 +2,24 @@
 
 from typing import List
 import json
-
 import time
+import numpy as np
+
 
 
 # Import utils
-from utils.pydantic_models import save_ner_structure # Import from pydantic_models.py
+from .....utils.pydantic_models import save_ner_structure # Import from pydantic_models.py
+from .....utils.loc_datetime import datetime
 
+from ....ai_utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
 
 
 # --- We will now use both the DatabaseManager and EmbeddingOperations ---
-from ai_managers.agents.memory.deep_memory_int.deep_memory_db.deep_memory_database import DatabaseManager
-from ai_managers.agents.memory.deep_memory_int.deep_memory_db.embedding_operations import EmbeddingOperations
-
-from ai_managers.ai_utils.ai_loader import EmbeddingsConfiguration, AIConfiguration
+from .deep_memory_db.deep_memory_database import DatabaseManager
+from .deep_memory_db.embedding_operations import EmbeddingOperations
 
 
-import numpy as np
-from utils.loc_datetime import datetime
+
 
 
 class DeepMemory:
