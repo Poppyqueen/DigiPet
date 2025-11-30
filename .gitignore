@@ -9,3 +9,31 @@ bots/
 data_archive/
 
 *local_ai_gens/
+
+# ------------------------------------
+# 3. Build & Packaging Artifacts
+# ------------------------------------
+# Generated distribution files
+dist/
+build/
+
+# Legacy and editable install files
+*.egg-info/
+*.egg
+.installed.cfg
+develop-eggs/
+.eggs/
+
+# ------------------------------------
+# 4. Tool/IDE Caches
+# ------------------------------------
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDE Specific Files (VS Code, PyCharm, etc.)
+.vscode/
+.idea/

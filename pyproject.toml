@@ -36,17 +36,16 @@ all = [
 ]
 
 [tool.setuptools]
-packages = []
-[tool.setuptools.py-modules]
-ai_managers = {}
-data_constructors = {}
-how_to = {}
-inventory_items = {}
-pygame_int = {}
-style = {}
-tools = {} 
-tts_providers = {}
-utils = {} 
-world_data = {}
-
-game = {}
+py-modules = [
+    "ai_managers",
+    "data_constructors",
+    "how_to",
+    "inventory_items",
+    "pygame_int",
+    "style",
+    "tools",
+    "tts_providers",
+    "utils",
+    "world_data",
+    "game"
+]
