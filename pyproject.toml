@@ -1,0 +1,39 @@
+[project]
+name = "DigiPet"
+version = "0.1.0"
+description = "An exploration of AI agents"
+dependencies = [
+    "pygame>=2.6.1",
+    "scikit-learn>=1.7.1",
+    "requests>=2.32.3",
+    "requests-cache>=1.2.1",
+    "retry-requests>=2.0.0",
+    "python-dotenv>=1.1.0",
+    "pandas>=2.2.3",
+    "numpy>=2.2.5",
+    "openmeteo_requests>=1.4.0",
+    "pydantic>=2.11.4"
+]
+
+requires-python = ">=3.13"
+
+[project.optional-dependencies]
+# LLM Provider Extras
+openai = ["openai>=1.70.0", "tiktoken>=0.11.0"]
+google = ["google-genai>=1.29.0"]
+ollama = ["ollama>=0.5.3", "tokenizers>=0.21.2"]
+groq = ["groq>=0.29.0", "instructor[groq]==1.10.0", "tokenizers>=0.21.2"]
+
+
+# API Provider Extras
+youtube = ["google-api-python-client>=2.171.0", "google-auth-oauthlib>=1.2.2", "google-auth-httplib2>=0.2.0"]
+bluesky = ["atproto>=0.10", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
+musicbrainz = ["musicbrainzngs>=0.7.1"]
+discogs = ["discogs-client>=2.8"]
+
+# The "all" extra combines everything by referencing your package name
+# and listing the other extras inside the brackets.
+all = [
+    "DigiPet[openai, google, ollama, groq, youtube, bluesky, musicbrainz, discogs]",
+]
+
