@@ -22,18 +22,31 @@ requires-python = ">=3.13"
 openai = ["openai>=1.70.0", "tiktoken>=0.11.0"]
 google = ["google-genai>=1.29.0"]
 ollama = ["ollama>=0.5.3", "tokenizers>=0.21.2"]
-groq = ["groq>=0.29.0", "instructor[groq]==1.10.0", "tokenizers>=0.21.2"]
+groq = ["instructor[groq]==1.10.0", "tokenizers>=0.21.2"]
 
 
 # API Provider Extras
 youtube = ["google-api-python-client>=2.171.0", "google-auth-oauthlib>=1.2.2", "google-auth-httplib2>=0.2.0"]
-bluesky = ["atproto>=0.10", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
+bluesky = ["atproto>=0.0.61", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
 musicbrainz = ["musicbrainzngs>=0.7.1"]
-discogs = ["discogs-client>=2.8"]
+discogs = ["python3-discogs-client>=2.8"]
 
-# The "all" extra combines everything by referencing your package name
-# and listing the other extras inside the brackets.
 all = [
     "DigiPet[openai, google, ollama, groq, youtube, bluesky, musicbrainz, discogs]",
 ]
 
+[tool.setuptools]
+packages = []
+[tool.setuptools.py-modules]
+ai_managers = {}
+data_constructors = {}
+how_to = {}
+inventory_items = {}
+pygame_int = {}
+style = {}
+tools = {} 
+tts_providers = {}
+utils = {} 
+world_data = {}
+
+game = {}
