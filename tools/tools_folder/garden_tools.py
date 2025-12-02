@@ -12,6 +12,9 @@
 
 # Perennials revert to mature stage after harvesting, while annuals get removed from the plot directly.
 
+
+# We could add a tool or item? that allows us to expand the current garden size in plot numbers, costly but would allow for more plants
+
 from utils.generic_json_tool import GenericJsonTool
 import random
 import string
@@ -418,6 +421,7 @@ class Garden_Mananger(GenericJsonTool):
                 return uid
 
 
+
     def plant_seed(self, plot_id: str, item_id: int) -> str:
         """
         Allows an AI agent to plant a seed from their inventory in a specified plot
@@ -513,7 +517,7 @@ class Garden_Mananger(GenericJsonTool):
         # If successfully planted, remove the seed item from inventory
         self.state_manager.remove_item(item_id)
 
-        edit=-5
+        edit=-2.5
         self.state_manager.adjust_stat("energy", edit)
         self.state_manager.adjust_stat("hydration", edit)
         self.state_manager.adjust_stat("fullness", edit)
@@ -586,7 +590,7 @@ class Garden_Mananger(GenericJsonTool):
                 water_status_desc = "has optimal water levels."
 
 
-            edit=-2.5
+            edit=-.25
             self.state_manager.adjust_stat("energy", edit)
             self.state_manager.adjust_stat("hydration", edit)
             self.state_manager.adjust_stat("fullness", edit)
@@ -713,7 +717,7 @@ class Garden_Mananger(GenericJsonTool):
             harvest_yield_message = "It yielded no items due to poor conditions."
 
 
-        edit=-10
+        edit=-2.5
         self.state_manager.adjust_stat("energy", edit)
         self.state_manager.adjust_stat("hydration", edit)
         self.state_manager.adjust_stat("fullness", edit)
@@ -856,7 +860,7 @@ class Garden_Mananger(GenericJsonTool):
         Provides a summary of the garden in the current room for AI.
         """
         summary = self.get_garden_summary()
-        edit = -2.5
+        edit = -1.5
         self.state_manager.adjust_stat("energy", edit)
         self.state_manager.adjust_stat("hydration", edit)
         self.state_manager.adjust_stat("fullness", edit)
@@ -985,8 +989,16 @@ class Garden_Mananger(GenericJsonTool):
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/watering_can.png"})
 
+        edit = -.15
+        self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("fullness", edit)
+
+        stats_message = f"{edit} to energy, hydration, and fullness"
+
         return (f"You applied {water_level_type} water to {plant_type} (UID: {plant_uid}) in plot {plot_id}. "
-                f"Its water level is now {new_water_level:.2f} {water_status_desc}")
+                f"Its water level is now {new_water_level:.2f} {water_status_desc}"
+                f"{stats_message}")
     
     def remove_plant_from_plot(self, plot_id: str) -> str:
         """

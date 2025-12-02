@@ -16,21 +16,23 @@ class AuctionHouse:
         self.state_manager = state_manager
 
         self.price_ranges = {
-            "food_n_drinks/hearty_meals.json": { "minimum": 45, "maximum": 70, "available_for_purchase": True },
+            "food_n_drinks/hearty_meals.json": { "minimum": 30, "maximum": 75, "available_for_purchase": True },
             "food_n_drinks/drinks_n_drinks.json": { "minimum": 10, "maximum": 25, "available_for_purchase": True },
             "food_n_drinks/snacks.json": { "minimum": 5, "maximum": 20, "available_for_purchase": True },
             "food_n_drinks/plant_based_foods.json": { "minimum": 35, "maximum": 60, "available_for_purchase": True },
             "food_n_drinks/staples.json": { "minimum": 25, "maximum": 50, "available_for_purchase": True },
             "food_n_drinks/condiments_n_sauces.json": { "minimum": 5, "maximum": 15, "available_for_purchase": True },
             "gardening/seeds.json": { "minimum": 40, "maximum": 100, "available_for_purchase": True },
-            "gardening/harvest.json": { "minimum": 5, "maximum": 15, "available_for_purchase": False },
+            "gardening/harvest.json": { "minimum": 10, "maximum": 25, "available_for_purchase": False },
             "furniture/sellable_furniture.json": { "minimum": 150, "maximum": 300, "available_for_purchase": True },
-            "gadgets/discount_electronics.json": { "minimum": 25, "maximum": 80, "available_for_purchase": True }
+            "gadgets/discount_electronics.json": { "minimum": 25, "maximum": 80, "available_for_purchase": True },
+            "books/books_collection.json": { "minimum": 25, "maximum": 45, "available_for_purchase": True },
         }
 
         # Populate the catalogs
         self.item_to_source_map = {}
         self.currently_selling = {}  # Items available for purchase
+        self.item_valuations = {}    # <--- NEW: Stores the calculated value for ALL items
         self.accepted_for_selling = set()  # Items accepted for selling
         
         self._map_items()
@@ -52,7 +54,7 @@ class AuctionHouse:
         positive_stats_sum = sum(max(0, value) for value in stats_edit.values())
         
         # Stats multiplier (every 10 positive stats adds 10% to price)
-        stats_multiplier = 1.0 + (positive_stats_sum / 100)
+        stats_multiplier = 1.0 + (positive_stats_sum / 500)
 
         # Rarity modifier based on stackable (stackable = more common = cheaper)
         rarity_multiplier = 0.8 if item.get('stackable', True) else 1.2
@@ -65,33 +67,32 @@ class AuctionHouse:
     
     def _calc_sell_price(self, item_name):
         """Calculate price when selling items to auction house"""
-        # If it's a buyable item, use 80% of buy price
-        if item_name in self.currently_selling:
-            buy_price = self.currently_selling[item_name]["price"]
-            return int(buy_price * 0.8)
         
-        # For sell-only items, use our item-to-source mapping
+        # 1. Check if we have a pre-calculated valuation (This covers Buyable AND Sell-Only items)
+        if item_name in self.item_valuations:
+            base_value = self.item_valuations[item_name]
+            return int(base_value * 0.8)
+
+        # 2. Fallback for items not in the scan (Failsafe)
+        # Note: This part effectively runs the old logic if the item wasn't found in _map_items
         source_path = self.item_to_source_map.get(item_name)
         if not source_path:
-            # Fallback: try to get item from store to see if we can find source
             item_data = self.item_store.get_item(item_name)
             if item_data and '__source_path__' in item_data:
                 source_path = item_data['__source_path__']
-                # Cache it for next time
                 self.item_to_source_map[item_name] = source_path
         
         if source_path:
             config = self.price_ranges.get(source_path)
             if config:
-                # Get item data for stats calculation
                 item_data = self.item_store.get_item(item_name)
                 if item_data:
                     mini = config["minimum"]
                     maxi = config["maximum"]
+                    # This will still be random, but only happens if initialization failed for this item
                     base_price = self._calc_buy_price(mini, maxi, item_data)
-                    return int(base_price * 0.8)  # Apply same 80% sell rate
+                    return int(base_price * 0.8)
         
-        # Final fallback if no config found
         return 1
     def _map_items(self):
         """Creates maps of items for both buying and selling based on price_ranges config."""
@@ -106,27 +107,25 @@ class AuctionHouse:
             available_for_purchase = config.get("available_for_purchase", True)
 
             for item in items:
-                # --- FIX STARTS HERE ---
-                # Manually add the source path to the item dictionary itself
-                # so it can be used for category filtering later.
+                # Manually add the source path
                 item['__source_path__'] = source_path
-                # --- FIX ENDS HERE ---
 
                 name = item["name"]
-                
-                # Map item name to source path for sell price calculation
                 self.item_to_source_map[name] = source_path
-                
-                # All items are accepted for selling
                 self.accepted_for_selling.add(name)
                 
+                # --- FIX START ---
+                # Calculate the price once and cache it effectively 'freezing' the RNG
+                calculated_value = self._calc_buy_price(mini, maxi, item)
+                self.item_valuations[name] = calculated_value
+
                 # Only items marked as available_for_purchase go into currently_selling
                 if available_for_purchase:
-                    price = self._calc_buy_price(mini, maxi, item)
                     self.currently_selling[name] = {
                         "item": item,
-                        "price": price
+                        "price": calculated_value
                     }
+                # --- FIX END ---
 
     #### ------ AI Facing Functions ------ #####
 

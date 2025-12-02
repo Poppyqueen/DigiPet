@@ -248,66 +248,6 @@ seat_tools=[
 musicbrainz_tools=[ 
     {
         "type": "function",
-        "name": "musicbrainz_search_album_by_name",
-        "description": "Searches for albums (Release Groups) by name, optionally filtered by artist.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "album_name": {
-                    "type": "string",
-                    "description": "The name of the album to search for."
-                },
-                "artist_name": {
-                    "type": "string",
-                    "description": "The name of the artist to refine the search."
-                }
-            },
-            "required": ["album_name"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "musicbrainz_search_by_raw_lucene",
-        "description": "Performs an advanced search against the MusicBrainz database for a specified entity type using a raw Lucene query syntax string.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "entity_type": {
-                    "type": "string",
-                    "description": "The type of entity to search for. Must be 'artist', 'release-group', or 'recording'."
-                },
-                "raw_lucene": {
-                    "type": "string",
-                    "description": "The Lucene query syntax string to be used directly for the search. Example: 'artist:\"The Beatles\" AND country:GB'"
-                },
-                "offset": {
-                    "type": "integer",
-                    "description": "The starting point of the result set, used for pagination."
-                }
-            },
-            "required": ["entity_type", "raw_lucene"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "musicbrainz_get_album_tracklist",
-        "description": "Retrieves the tracklist for an album (Release Group) identified by its MusicBrainz ID.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "release_group_id": {
-                    "type": "string",
-                    "description": "The unique MusicBrainz Release Group ID of the album. You can search the ID with 'musicbrainz_get_artist_details_and_albums' or 'musicbrainz_search_album_by_name'"
-                }
-            },
-            "required": ["release_group_id"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
         "name": "musicbrainz_search_artists_by_name",
         "description": "Searches for artists by name with pagination support. Returns detailed information about the artists and their MusicBrainz IDs",
         "parameters": {
@@ -317,32 +257,108 @@ musicbrainz_tools=[
                     "type": "string",
                     "description": "The search query for the artist's name."
                 },
-                "offset": {
+                "limit": {
                     "type": "number",
-                    "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
-                }
-            },
-            "required": ["artist_name"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "musicbrainz_get_artist_details_and_albums",
-        "description": "Retrieves detailed information for a specific artist and a paginated list of their primary albums and EPs using their MusicBrainz ID. You must know their MusicBrainz ID, it can be retrieved with the function 'musicbrainz_search_artists_by_name'",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "artist_id": {
-                    "type": "string",
-                    "description": "The unique MusicBrainz ID of the artist, found via a search tool."
+                    "description": "The number of results to return per page. Max 100. Defaults to 10."
                 },
                 "offset": {
                     "type": "number",
                     "description": "The starting point of the result set, used for pagination. `offset=0` is the first page. To get the next page, set offset to `offset + limit`. Defaults to 0"
                 }
             },
+            "required": ["artist_name"],
+            "additionalProperties": False 
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_get_artist_details_and_works",
+        "description": "Retrieves detailed information for a specific artist and a paginated list of their works (Release Groups: Albums, Singles, EPs, etc.) using their MusicBrainz ID. You must know their MusicBrainz ID, which can be retrieved with 'musicbrainz_search_artists_by_name'.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artist_id": {
+                    "type": "string",
+                    "description": "The unique MusicBrainz ID of the artist."
+                }
+                "limit": {
+                    "type": "number",
+                    "description": "The number of works to return per page. Max 100. Defaults to 25."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. To get the next page, set offset to `offset + limit`. Defaults to 0"
+                }
+            },
             "required": ["artist_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_get_tracklist",
+        "description": "Retrieves the tracklist for a specific Release Group (Album, EP, Single) identified by its MusicBrainz ID.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "release_group_id": {
+                    "type": "string",
+                    "description": "The unique MusicBrainz Release Group ID of the work (e.g., f529b533-36f7-4395-adc1-177916c5b290)."
+                }
+            },
+            "required": ["release_group_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_search_release_group",
+        "description": "Searches for Release Groups (Albums, Singles, EPs, etc.) by a keyword query, optionally filtered by artist. This is a general keyword search.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The name or keyword to search for within Release Group titles."
+                },
+                "artist_name": {
+                    "type": "string",
+                    "description": "The name of the artist to refine the search."
+                },
+                "limit": {
+                    "type": "number",
+                    "description": "The maximum number of results to return. Defaults to 5."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "musicbrainz_search_by_raw_lucene",
+        "description": "Performs an advanced search against the MusicBrainz database for a specified entity type using a raw Lucene query syntax string. Use this for complex searches like finding works by tag, country, or specific dates.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "entity_type": {
+                    "type": "string",
+                    "description": "The type of entity to search for. Must be 'artist', 'release-group', or 'recording'."
+                },
+                "raw_lucene": {
+                    "type": "string",
+                    "description": "The Lucene query syntax string. Example: 'artist:\"The Beatles\" AND country:GB'"
+                },
+                "limit": {
+                    "type": "number",
+                    "description": "The number of results to return per page. Max 100. Defaults to 10."
+                },
+                "offset": {
+                    "type": "number",
+                    "description": "The starting point of the result set, used for pagination. To get the next page, set offset to `offset + limit`. Defaults to 0."
+                }
+            },
+            "required": ["entity_type", "raw_lucene"],
             "additionalProperties": False
         }
     }

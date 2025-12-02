@@ -20,12 +20,6 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfigurati
 DEFAULT_MEMORY_DB = "memory_database.json"
 DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.db"
 
-RETAIN_BUDGET_RATIO = 2 / 11
-
-SYSTEM_LINE_RATIO = 3 / 11
-
-SYSTEM_SUMMARIZE_RATIO = 3 / 22
-
 class memory_manager:
 
     # # # # # New token-based retention budgets
@@ -80,6 +74,7 @@ class memory_manager:
         self.deep_memory_flag= deep_memory
         self.sub_directory=sub_directory
         self.token_counters_cache = {} # <--- NEW: Cache for token counts
+        self.config_manager = config_manager 
 
     ### ///////// Init config  /////////  #####
 
@@ -94,8 +89,21 @@ class memory_manager:
         # handle the case this is falsy with a default
         self.max_tokens_limit = config_manager.get_config('AI', "max_memory_tokens")
 
+        # 1. Load Total Max Limit
         if not self.max_tokens_limit:
             self.max_tokens_limit = 20000  # Default value
+
+        
+        # These configs could be added to the config manager, in the GUI? but we are using defaults for now
+        # Not sure if we want to make this configurable or not
+
+        # 2. Load Ratios (with sensible defaults if missing from config)
+        # What % of the total budget is for Short Term? (Default 35%)
+        self.st_ratio = float(config_manager.get_config('AI', "memory_st_ratio") or 0.35)
+        
+        # When cleaning, how much context do we keep? (Default 35%)
+        # e.g., if ST max is 10k, we keep the last 3.5k tokens after summarizing
+        self.retention_ratio = float(config_manager.get_config('AI', "memory_retention_ratio") or 0.35)
 
         self.bot_instance = AIConfiguration(provider=config_selected_provider,model=selected_model,mode="simple_ai").get_client()
 
@@ -113,24 +121,49 @@ class memory_manager:
             self.deep_memory = None
             self.deep_memory_flag = False
 
-    def calc_budgets(self)->dict:
+        print(f"DEBUG: BUDGETS: {self.calc_budgets()}")
 
-        base_tokens_threshold=self.max_tokens_limit/2
 
-        short_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
-        long_term_retain_budget = base_tokens_threshold * RETAIN_BUDGET_RATIO
+    def calc_budgets(self) -> dict:
+        """
+        Calculates memory thresholds dynamically based on the max_tokens_limit 
+        and the defined allocation ratios.
+        """
+        
+        # 1. Calculate the ceiling for Short Term vs Long Term
+        # Example: 20,000 limit * 0.7 = 14,000 tokens for Short Term
+        short_term_max = int(self.max_tokens_limit * self.st_ratio)
+        
+        # Example: Remaining 6,000 tokens for Long Term
+        long_term_max = int(self.max_tokens_limit - short_term_max)
 
-        system_line_budget = base_tokens_threshold * SYSTEM_LINE_RATIO
-        system_summarize_budget = base_tokens_threshold * SYSTEM_SUMMARIZE_RATIO
+        # 2. Calculate Retention Budgets (How much to keep after a purge)
+        # This keeps the most recent context while dumping the middle.
+        short_term_retain = int(short_term_max * self.retention_ratio)
+        long_term_retain = int(long_term_max * self.retention_ratio)
+
+        # 3. Calculate System Message specific thresholds
+        # These are used to decide when to summarize a giant tool output in the middle of a chat.
+        # We scale these based on the Short Term budget, not the global budget.
+        
+        # "Line in the sand": If a tool message is deeper in history than this, we check it.
+        # Example: 30% into the short term history.
+        system_line_budget = int(short_term_max * 0.30) 
+        
+        # "Summarize Threshold": If a tool message is larger than this, we crunch it.
+        # Example: 25% of the short term budget.
+        system_summarize_budget = int(short_term_max * 0.25)
 
         return {
-            "short_term_threshold": base_tokens_threshold,
-            "long_term_threshold": base_tokens_threshold,
-            "short_term_retain": short_term_retain_budget,
-            "long_term_retain": long_term_retain_budget,
+            "short_term_threshold": short_term_max,
+            "long_term_threshold": long_term_max,
+            "short_term_retain": short_term_retain,
+            "long_term_retain": long_term_retain,
             "system_line": system_line_budget,
             "system_summarize": system_summarize_budget
         }
+
+
     def current_memory_tokens(self, memory_type: str = "all") -> int: 
         """
         Returns the current number of tokens in the memory structure based on its

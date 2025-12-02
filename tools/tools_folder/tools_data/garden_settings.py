@@ -7,7 +7,7 @@ GARDEN_SETTINGS = {
     "RAIN_WATER_APPLY_MULTIPLIER": 0.05, # How much rain (mm/h) affects water level per tick
     "DEFAULT_WATER_DEPLETION_RATE_PER_TICK": 0.002778, # Default rate for plants if not specified
     "DEFAULT_INITIAL_WATER_LEVEL": 0.5, # Water level for newly planted seeds
-    "WATER_LOSS_ON_STAGE_CHANGE": 0.1, # Amount of water lost when a plant grows to a new stage
+    "WATER_LOSS_ON_STAGE_CHANGE": 0.05, # Amount of water lost when a plant grows to a new stage
     "WATERING_AMOUNTS": {
         "low": 0.1,    # Adds 10% to water level
         "medium": 0.25,  # Adds 25% to water level

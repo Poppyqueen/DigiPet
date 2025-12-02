@@ -419,10 +419,10 @@ class FunctionBuilder:
         if self.musicbrainz_:
             self.tool_definitions["musicbrainz"] = {
                 "functions": {
-                    "musicbrainz_get_artist_details_and_albums": self.musicbrainz_.get_artist_details_and_albums,
+                    "musicbrainz_get_artist_details_and_works": self.musicbrainz_.get_artist_details_and_works,
                     "musicbrainz_search_artists_by_name": self.musicbrainz_.search_artists_by_name,
-                    "musicbrainz_get_album_tracklist": self.musicbrainz_.get_album_tracklist,
-                    "musicbrainz_search_album_by_name": self.musicbrainz_.search_album_by_name,
+                    "musicbrainz_get_tracklist": self.musicbrainz_.get_tracklist,
+                    "musicbrainz_search_release_group": self.musicbrainz_.search_release_group,
                     "musicbrainz_search_by_raw_lucene": self.musicbrainz_.search_by_raw_lucene
                 },
                 "definitions": musicbrainz_tools,

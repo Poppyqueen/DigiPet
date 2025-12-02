@@ -29,7 +29,6 @@
             "Bottled Water",
             "Dark Chocolate Bar",
             "Fresh Salad Cup (mixed greens, tomato, cucumber)"
-
         ]
     },
     "general_survival_5": {
@@ -209,7 +208,8 @@
     "gadgets_pack": {
         "package_color": "cheat",
         "items": [
-            "Cellphone"
+            "Cellphone",
+            "Music HandHeld Console"
         ]
     }
 }

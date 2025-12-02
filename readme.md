@@ -163,6 +163,8 @@ When running the project, you can expect:
 
 #### Short term:
 
+* Plants grow a bit too fast, need to adjust the growth rate or tick timer.
+
 * Implementing different providers for TTS, local and cloud that work across different OSes.
 
 #### Long Term:

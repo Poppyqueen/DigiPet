@@ -1,11 +1,13 @@
 {
-"name": "The Green Language: How a Spirit of the Verdant Veil Tends the Garden",
+    "name": "The Green Language: How a Spirit of the Verdant Veil Tends the Garden",
     "descriptions": [
         "A profound tome on the art of nurturing a spiritual garden.",
         "Whispers of the earth and the gentle touch of a verdant spirit fill its pages."
     ],
     "static": false,
-    "type": ["book"],
+    "type": [
+        "book"
+    ],
     "chapters": [
         {
             "title": "To Gaze Upon the Garden's Soul: The get_garden_summary Revelation",
