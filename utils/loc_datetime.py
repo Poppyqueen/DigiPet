@@ -101,6 +101,9 @@ class CoordinateDateTime:
         """Get current time in ISO format using coordinate's timezone."""
         return self.now().isoformat()
 
+    def strptime(self, date_string, format_string):
+        """Parse a date string using the coordinate's timezone."""
+        return _datetime.strptime(date_string, format_string)
 
 class datetime:
     """
@@ -110,6 +113,14 @@ class datetime:
     
     # Class variable to store the coordinate datetime instance
     _coord_dt = None
+
+    @classmethod
+    def strptime(cls, date_string, format_string):
+        """Parse a date string using the coordinate's timezone."""
+        if cls._coord_dt is None:
+            # Fallback to standard datetime if no coordinates set
+            return _datetime.strptime(date_string, format_string)
+        return cls._coord_dt.strptime(date_string, format_string)
     
     @classmethod
     def set_coordinates(cls, lat, lon):

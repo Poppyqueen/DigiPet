@@ -30,7 +30,7 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 Room/environment descriptions, which are prompted into the Pet each time it changes environments, change based on the current time of the simulation. **The system now uses the configured `LATITUDE` and `LONGITUDE` from the `.env` file to correctly determine the local timezone** using the `OpenMeteoLoc` service. All time-dependent features, such as the time of day for room descriptions, are calculated based on this localized time, ensuring the simulation's time context matches the agent's defined location rather than the user's machine time.
 
 
-It includes optional integrations for the Agent to use *YouTube*, *MusicBrainz*, *Discogs* and *Bluesky* with conditional importing.
+It includes optional integrations for the Agent to use *Wikipedia*, *YouTube*, *MusicBrainz*, *Discogs*, *SearxNG* and *Bluesky* with conditional importing.
 
 ## Pet Play Modules:
 *   **A-Life Simulation:** A grid-based A-Life simulation component exists within the lab room (`ALIFE_research` room type). It has its own manager (`ALifeManager`) and supports entity types like plants, herbivores, and carnivores. This is used by the agent to play with and "study".
@@ -44,6 +44,10 @@ It includes optional integrations for the Agent to use *YouTube*, *MusicBrainz*,
 *   **Books** The book items give the ability to the agent to read. Books are also created outside the main runtime. They are missing an AI crafter helper for now. While focused on narrative entertainment for the agent, if an environment and set of tools is a bit too complex, you can make a book describing the agent how to interact with your tools. 
 
 * **Wikipedia** Wikipedia access for the agent to look for and read Wikipedia articles.
+
+* **SearxNG** Optional SearxNG access for the agent to look for and read articles from the web. Information on how to set it up can be found how_to/searxng.md
+
+![AI Agent Writes Memoir Then Eats Yogurt](style/images/int_utils/yogurt_framework.png)
 
 ## Setup
 
@@ -89,14 +93,14 @@ To set up the project, follow these steps:
     ```bash
     pip install '.[all]'
     ```
-    This will install optional APIs like YouTube, Bluesky, MusicBrainz, Discogs and all the AI providers, OpenAI, Google, Ollama, Groq.
+    This will install all the AI providers, OpenAI, Google, Ollama, Groq, and optional APIs like YouTube, Bluesky, etc. (Full list below)
 
     *   **To Install ONLY Desired Dependencies:** Install selected dependencies using the `[]` syntax. Example:
     ```bash
     pip install "DigiPet[google, openai, bluesky]"
     ```
 
-    All available extras are:
+    All available extra APIs are:
     * google
     * openai
     * ollama
@@ -105,8 +109,9 @@ To set up the project, follow these steps:
     * bluesky
     * musicbrainz
     * discogs
+    * searx
 
-    Install at least one of the AI providers to use the chatbot, recommended to install at least two to avoid rate limiting issues. Use a provider for memory and another for chat.
+    Install minimum one of the AI providers, recommended to install at least two to distribute inference load. Use a provider for memory and another for general interactions.
 
 ## Configuration
 
@@ -115,12 +120,12 @@ To set up the project, follow these steps:
 2.  **Configure Location:** For features like weather integration (`open_meteo_handle`), the system reads latitude and longitude from the environment. **You must add `LATITUDE`, `LONGITUDE` and `OPENAI_API_KEY` to your `.env` file**.
 It can be any place on Earth! Have fun having your agent experience the weather and time zones in different places!
 
-It is also configurable on a GUI but it will fallback to the environment variables if not set.
+It is also configurable on a GUI but it will fallback to the environment variables if not set with the GUI.
 
     ```env
     LATITUDE=any_latitude_here
     LONGITUDE=any_longitude_here
-    OPENAI_API_KEY=your_openai_key
+    ...
     ```
     **Failure to set these variables will result in an error and exit**.
 
@@ -137,7 +142,7 @@ The main entry point for the Pygame version of the game is `game.py`.
 1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
 
 2.  **Run the Game:** Make sure you are in the project's root directory in your terminal (with the virtual environment activated) and run:
-    ```
+    ```bash
     python -m game
     ```
 3. **Configuration Screen** Here you can create a new agent in a GUI or load any agents previously created.
@@ -157,7 +162,7 @@ When running the project, you can expect:
 
 ## Modify your agent
 
-* Inside the folder how_to there are two newly included tutorials that explain the process of adding new tools and rooms for the agent during the first initialization. 
+* Inside the folder how_to there are included tutorials that explain the process of creating new tools, rooms, items and more for the agent.
 
 ## To-do: 
 

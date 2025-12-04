@@ -167,6 +167,20 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
         draw_filter_overlay(screen) # Assuming draw_filter_overlay is defined or imported
 
+        # ------- draw pet ----------
+        # Pet is centered in the game area (full width if panel hidden, game area if panel visible)
+        current_circle_center_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0)
+        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y # Y position doesn't change with panel
+        animation.update_animation_state(current_time_ms)
+        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms)
+
+        current_circle_center_x += animation_offset_x
+        current_circle_center_y += animation_offset_y
+
+        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius)
+        pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius, 5)
+
+
         # --- Draw Panel related elements only if panel is visible ---
         if state.panel_visible:
             panel_rect = current_gui_rects['panel_rect']
@@ -265,20 +279,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                         print(f"Pygame error rendering user input or cursor: {e}")
                 screen.set_clip(original_clip)
                 pygame.draw.rect(screen, config.GREY, input_rect, 1) # Border for input box
-
-
-        # ------- draw pet ----------
-        # Pet is centered in the game area (full width if panel hidden, game area if panel visible)
-        current_circle_center_x = config.get_base_circle_center_x(state.panel_width if state.panel_visible else 0)
-        current_circle_center_y = config.BASE_CIRCLE_CENTER_Y # Y position doesn't change with panel
-        animation.update_animation_state(current_time_ms)
-        animation_offset_x, animation_offset_y = animation.calculate_circle_offset(current_time_ms)
-
-        current_circle_center_x += animation_offset_x
-        current_circle_center_y += animation_offset_y
-
-        pygame.draw.circle(screen, config.BLACK, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius)
-        pygame.draw.circle(screen, state.pet_color, (int(current_circle_center_x), int(current_circle_center_y)), state.current_radius, 5)
 
         # Moved draw stat icons to its own spot
         gui_stat_icons.draw_stat_icons(screen)

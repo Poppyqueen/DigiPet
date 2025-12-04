@@ -744,23 +744,44 @@ class memory_manager:
             new_base_memory_summary = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Comprehensive summary of past long-term memory: {summarized_content_raw}"
 
             parsed_long_term = []
+            
+
+            entry_pattern = re.compile(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.*)$', re.DOTALL)
+
             for entry_str in memory_data.get("long_term", []):
-                match = re.match(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.*)$', entry_str)
+                match = entry_pattern.match(entry_str)
                 if match:
                     dt_object = datetime.strptime(match.group(1), '%Y-%m-%d %H:%M:%S')
-                    parsed_long_term.append({"timestamp": dt_object.timestamp(), "original_string": entry_str})
+                    parsed_long_term.append({
+                        "timestamp": dt_object.timestamp(), 
+                        "original_string": entry_str
+                    })
+                else:
+                    # FALLBACK: If regex fails (e.g. malformed line), keep it with current time
+                    # so it doesn't vanish.
+                    print(f"Warning: format mismatch in long_term, preserving entry: {entry_str[:30]}...")
+                    parsed_long_term.append({
+                        "timestamp": datetime.now().timestamp(), 
+                        "original_string": entry_str
+                    })
 
             parsed_long_term.sort(key=lambda x: x["timestamp"])
 
             kept_long_term_entries = []
             current_retained_tokens = 0
+            
+            # Load budget once
+            retain_budget = self.calc_budgets()["long_term_retain"]
+
             for entry_item in reversed(parsed_long_term):
                 entry_tokens = self.token_manager.count_tokens(entry_item["original_string"])
 
-                if current_retained_tokens + entry_tokens <= self.calc_budgets()["long_term_retain"]:
+                # FIX: Check if budget allows, OR if the list is empty (ensure we keep at least the newest one)
+                if (current_retained_tokens + entry_tokens <= retain_budget) or (len(kept_long_term_entries) == 0):
                     kept_long_term_entries.append(entry_item)
                     current_retained_tokens += entry_tokens
                 else:
+                    # Budget is full and we already have at least one entry
                     break
 
             kept_long_term_entries.reverse()

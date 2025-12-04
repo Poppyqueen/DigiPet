@@ -280,7 +280,7 @@ musicbrainz_tools=[
                 "artist_id": {
                     "type": "string",
                     "description": "The unique MusicBrainz ID of the artist."
-                }
+                },
                 "limit": {
                     "type": "number",
                     "description": "The number of works to return per page. Max 100. Defaults to 25."
@@ -1569,4 +1569,55 @@ dev_room_tools = [
         }
     }
 
+]
+
+
+searxng_tools = [
+    {
+        "type": "function",
+        "name": "search_searxng",
+        "description": "Searches for information on the web using SearxNG.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query."
+                },
+                "page": {
+                    "type": "number",
+                    "description": "Optional. The page number to search. Defaults to 1."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "query_searxng_website",
+        "description": "Queries a specific website using SearxNG.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "result_id": {
+                    "type": "string",
+                    "description": "The ID of the result to query. Given by the search_searxng function. Does not accept URLs"
+                }
+            },
+            "required": ["result_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "list_searxng_cache",
+        "description": "Lists the cached results from SearxNG.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
 ]

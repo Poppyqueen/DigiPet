@@ -30,9 +30,10 @@ youtube = ["google-api-python-client>=2.171.0", "google-auth-oauthlib>=1.2.2", "
 bluesky = ["atproto>=0.0.61", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
 musicbrainz = ["musicbrainzngs>=0.7.1"]
 discogs = ["python3-discogs-client>=2.8"]
+searx = ["trafilatura>=2.0.0"]
 
 all = [
-    "DigiPet[openai, google, ollama, groq, youtube, bluesky, musicbrainz, discogs]",
+    "DigiPet[openai, google, ollama, groq, youtube, bluesky, musicbrainz, discogs, searx]",
 ]
 
 [tool.setuptools]

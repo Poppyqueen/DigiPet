@@ -28,7 +28,6 @@ from utils.loc_datetime import datetime
 import os.path
 import inspect
 
-from tools.tools_folder import simulation
 
 # Import the tool definitions lists
 from .my_tools import (
@@ -52,8 +51,10 @@ from .my_tools import (
     art_book_tools,
     laptop_tools,
     dispenser_tools,
-    maze_tools
+    maze_tools,
+    searxng_tools
 )
+from tools.tools_folder import simulation
 
 from tools.tools_folder.garden_tools import Garden_Mananger
 from tools.tools_folder.rooms_tools import main_tools_handle
@@ -69,11 +70,13 @@ class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
         
         # Configuration flags
-        youtube_enabled = config_manager.get_config('Tools', "enable_youtube")
-        discogs_enabled = config_manager.get_config('Tools', "enable_discogs")
-        musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
-        bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
+        self.youtube_enabled = config_manager.get_config('Tools', "enable_youtube")
+        self.discogs_enabled = config_manager.get_config('Tools', "enable_discogs")
+        self.musicbrainz_enabled = config_manager.get_config('Tools', "enable_musicbrainz")
+        self.bluesky_enabled = config_manager.get_config('Tools', "enable_bluesky")
         self.wikipedia_enabled = config_manager.get_config('Tools', "enable_wikipedia")
+        self.searxng_enabled = config_manager.get_config('Tools', "enable_searxng")
+        print(f"self.searxng_enabled: {self.searxng_enabled}")
 
         # Initialize core components
         self.open_meteo = open_meteo
@@ -98,9 +101,10 @@ class FunctionBuilder:
         self.discogs_handle = None
         self.musicbrainz_ = None
         self.bluesky = None
+        self.searxng = None
         
         # Conditional imports and initializations
-        self._init_optional_tools(youtube_enabled, discogs_enabled, musicbrainz_enabled, bluesky_enabled)
+        self._init_optional_tools()
         
         # Initialize the unified tool definitions map
         self._init_unified_tool_definitions()
@@ -108,10 +112,10 @@ class FunctionBuilder:
         # Function map will be constructed dynamically
         self.function_map = {}
 
-    def _init_optional_tools(self, youtube_enabled, discogs_enabled, musicbrainz_enabled, bluesky_enabled):
+    def _init_optional_tools(self):
         """Initialize optional tool handlers based on configuration."""
         
-        if youtube_enabled:
+        if self.youtube_enabled:
             try:
                 from tools.tools_folder.tools_helpers.services import youtube_service
                 self.youtube = youtube_service.YouTubeTools()
@@ -119,7 +123,7 @@ class FunctionBuilder:
             except Exception as e:
                 print(f"Error with YouTube tools: {e}")
                 
-        if discogs_enabled:
+        if self.discogs_enabled:
             try:
                 from tools.tools_folder.tools_helpers.services import discogs
                 self.discogs_handle = discogs.DiscogsTools()
@@ -127,7 +131,7 @@ class FunctionBuilder:
             except Exception as e:
                 print(f"Error with Discogs tools: {e}")
                 
-        if musicbrainz_enabled:
+        if self.musicbrainz_enabled:
             try:
                 from tools.tools_folder.tools_helpers.services import musicbrainz
                 self.musicbrainz_ = musicbrainz.MusicBrainzSearchTools()
@@ -135,13 +139,21 @@ class FunctionBuilder:
             except Exception as e:
                 print(f"Error with MusicBrainz tools: {e}")
                 
-        if bluesky_enabled:
+        if self.bluesky_enabled:
             try:
                 from tools.tools_folder.bluesky_handle import bluesky_bot
                 self.bluesky = bluesky_bot(self.state_manager, self._signal_callback, self.images_lab)
                 print("BlueskyBot instance created.")
             except Exception as e:
                 print(f"Error with Bluesky tools: {e}")
+
+        if self.searxng_enabled:
+            try:
+                from tools.tools_folder.searxnAI import AISearXNG
+                self.searxng = AISearXNG()
+                print("AISearXNG instance created.")
+            except Exception as e:
+                print(f"Error with SearxNG tools: {e}")
 
     def _init_unified_tool_definitions(self):
         """Initialize the unified tool definitions map that handles all cases."""
@@ -445,6 +457,19 @@ class FunctionBuilder:
                 "use_level": "inventory_only"
             }
             print("Bluesky tools added to unified definitions.")
+        
+        if self.searxng:
+            self.tool_definitions["searxng"] = {
+                "functions": {
+                    "search_searxng": self.searxng.search,
+                    "query_searxng_website": self.searxng.query_website,
+                    "list_searxng_cache": self.searxng.list_cache
+                },
+                "definitions": searxng_tools,
+                "item_types": ["searxng", "laptop"],
+                "use_level": "dual_use"
+            }
+            print("SearxNG tools added to unified definitions.")
 
 
 # Toggle Implementation

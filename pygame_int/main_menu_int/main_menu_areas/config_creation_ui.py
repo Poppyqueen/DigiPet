@@ -117,6 +117,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     enable_musicbrainz_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable MusicBrainz", font); elements.append(enable_musicbrainz_checkbox); current_y += 30
     enable_bluesky_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable Bluesky", font); elements.append(enable_bluesky_checkbox); current_y += 30
     enable_wikipedia_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable Wikipedia", font); elements.append(enable_wikipedia_checkbox); current_y += 30
+    enable_searxng_checkbox = Checkbox(gui_config.HORIZONTAL_PADDING, current_y, "Enable SearxNG", font); elements.append(enable_searxng_checkbox); current_y += 30
 
     title_surface, title_rect = draw_section_title(font, "game_settings", current_y, screen_width); elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     game_states = available_states; current_y = draw_labeled_dropdown_or_input(font, "initial_state", "Initial State:", current_y, screen_width, elements, options=game_states)
@@ -370,6 +371,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             config_manager.set_config("Tools", "enable_musicbrainz", enable_musicbrainz_checkbox.checked)
                             config_manager.set_config("Tools", "enable_bluesky", enable_bluesky_checkbox.checked)
                             config_manager.set_config("Tools", "enable_wikipedia", enable_wikipedia_checkbox.checked)
+                            config_manager.set_config("Tools", "enable_searxng", enable_searxng_checkbox.checked)
                             
                             config_manager.set_config("game_settings", "initial_state", dropdowns['initial_state'].selected_option)
                             config_manager.set_config("game_settings", "tts_provider", dropdowns['tts_provider'].selected_option)
