@@ -169,13 +169,21 @@ class FunctionBuilder:
                     "pickup_item": self.state_manager.pickup_item,
                     "examine_item": self.state_manager.get_item_details,
                     "drop_item": self.state_manager.drop_item,
-                    "consume_item": self.state_manager.consume_item,
                     "add_item_description": self.state_manager.add_item_description,
                     "emit_inner_thought": emit_inner_thought,
                     "list_items_in_inventory": self.state_manager.get_inventory_items,
                 },
                 "definitions": base_tools,
                 "use_level": "always_available"
+            },
+
+            "consumables_tools": {
+                "functions": {
+                    "consume_item": self.state_manager.consume_item,
+                },
+                "definitions": base_tools,
+                "use_level": "inventory_only",
+                "item_types": ["consumable"]
             },
             
             # Room-specific tools

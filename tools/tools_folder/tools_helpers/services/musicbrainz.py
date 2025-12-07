@@ -2,7 +2,7 @@ import musicbrainzngs
 from musicbrainzngs import WebServiceError, UsageError
 from dotenv import load_dotenv
 import os
-
+import time
 # Set a default hostname for all operations.
 musicbrainzngs.set_hostname("musicbrainz.org")
 
@@ -19,9 +19,12 @@ class MusicBrainzSearchTools:
         required for all API requests.
         """
         load_dotenv()  # Load environment variables from .env file
-        self.app_name = os.environ.get("MUSICBRAINZ_APP_NAME", "MusicBrainzApp")
+        self.app_name = os.environ.get("MUSICBRAINZ_APP_NAME")
         self.app_version = "1.0"
-        self.contact = os.environ.get("MUSICBRAINZ_CONTACT", "unknown")
+        self.contact = os.environ.get("MUSICBRAINZ_CONTACT")
+
+        if not self.app_name or not self.contact:
+            raise ValueError("MUSICBRAINZ_APP_NAME and MUSICBRAINZ_CONTACT must be set in the environment variables.")
         
         try:
             musicbrainzngs.set_useragent(self.app_name, self.app_version, self.contact)
@@ -43,6 +46,7 @@ class MusicBrainzSearchTools:
         """
         try:
             result = musicbrainzngs.search_artists(artist=artist_name, limit=limit, offset=offset)
+            time.sleep(1)
             artist_list = result.get('artist-list', [])
             total_count = result.get('artist-count', 0)
             
@@ -83,6 +87,7 @@ class MusicBrainzSearchTools:
         try:
             # Get artist details
             artist_info_response = musicbrainzngs.get_artist_by_id(artist_id, includes=['annotation'])
+            time.sleep(1)
             artist = artist_info_response.get('artist', {})
 
             if not artist:
@@ -105,7 +110,7 @@ class MusicBrainzSearchTools:
             }
             if target_types:
                 browse_kwargs['release_type'] = target_types
-
+            time.sleep(1)
             rg_results = musicbrainzngs.browse_release_groups(**browse_kwargs)
             
             release_groups = rg_results.get('release-group-list', [])
@@ -147,6 +152,7 @@ class MusicBrainzSearchTools:
                 release_group_id,
                 includes=['releases', 'artist-credits']
             )
+            time.sleep(1)
 
             release_group = rg_info.get('release-group', {})
             if not release_group:
@@ -190,6 +196,7 @@ class MusicBrainzSearchTools:
                 target_release_id,
                 includes=['recordings', 'media', 'artists', 'annotation']
             )
+            time.sleep(1)
 
             current_release = release_details.get('release', {})
             annotation_text = current_release.get('annotation', {}).get('text', 'N/A')
@@ -266,6 +273,7 @@ class MusicBrainzSearchTools:
                 limit=min(limit, 100), 
                 **search_fields
             )
+            time.sleep(1)
 
             all_release_groups = results.get('release-group-list', [])
             
@@ -332,6 +340,7 @@ class MusicBrainzSearchTools:
 
             result = search_function(query=raw_lucene, limit=limit, offset=offset)
             entity_list = result.get(result_key, [])
+            time.sleep(1)
             total_count = result.get(f'{entity_type}-count', 0)
 
             if not entity_list:

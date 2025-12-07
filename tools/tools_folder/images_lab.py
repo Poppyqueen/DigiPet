@@ -5,7 +5,9 @@ import re
 
 from utils.loc_datetime import datetime
 
-TOTAL_IMAGES_LIMIT=100
+from tools.tools_folder.tools_helpers.svg_validator import SVGValidator
+
+TOTAL_IMAGES_LIMIT=10000 # TODO: Make this configurable
 
 
 def make_string_file_safe(input_string):
@@ -43,6 +45,7 @@ class ImagesLab:
     def __init__(self, base_path):
         self.base_path = os.path.join(base_path, "images_archive")
         os.makedirs(self.base_path, exist_ok=True)
+        self.svg_validator = SVGValidator()
 
 
     def _int_get_arch(self)->list:
@@ -133,6 +136,11 @@ class ImagesLab:
     def create_svg_image(self, image_name, concept, content):
         final_name = make_string_file_safe(image_name)
         svg_path = os.path.join(self.base_path, f"{final_name}.svg")
+
+        # Validate SVG content
+        validation_result = self.svg_validator.validate(content)
+        if not validation_result['valid']:
+            return f"SVG validation failed: {validation_result['error']}"
 
         try:
             # Clean up old entries first to ensure room for the new one.

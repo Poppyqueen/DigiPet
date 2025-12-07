@@ -165,8 +165,12 @@ class OllamaClient(AbstractLLMClient):
             # The 'tool_choice' parameter is commented out in your original code.
             # If you intend to use it, uncomment this line.
             # settings["tool_choice"] = tool_choice
-        # else:
-        #     # print("DEBUG: No tools provided for the LLM call.")
+        else:
+            l_messages.append({
+                "role": "user",
+                "content": "Last call in the chain, please output a natural language response without any function calls."
+            })
+            # print("DEBUG: No tools provided for the LLM call.")
         
         # Merge any additional kwargs provided. These will be passed directly to ollama.chat.
         settings.update(kwargs)

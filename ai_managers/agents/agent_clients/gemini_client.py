@@ -6,6 +6,9 @@ from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClie
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 
+import uuid
+
+
 class GeminiClient(AbstractLLMClient):
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -130,11 +133,8 @@ class GeminiClient(AbstractLLMClient):
 
         conversation_history = messages.get("conversation_history", [])
         
-        #conversation_history = self._merge_consecutive_messages(conversation_history)
-
         # *** NEW SAFETY CHECK FOR INVALID CONVERSATION START ***
         if conversation_history and conversation_history[0].get("type") in ["assistant", "tool_output"]:
-            # This is an invalid start for the Gemini API. Prepend a placeholder user message.
             print("Warning: Conversation history started with a model action due to summarization. Prepending a placeholder user message to ensure API compatibility.")
             placeholder_message = {
                 "type": "user",
@@ -167,29 +167,43 @@ class GeminiClient(AbstractLLMClient):
                 
                 tool_msg_index = i
                 while tool_msg_index < len(conversation_history) and \
-                      conversation_history[tool_msg_index].get("type") == "tool_output":
+                    conversation_history[tool_msg_index].get("type") == "tool_output":
                     
                     tool_msg = conversation_history[tool_msg_index]
                     content_data = tool_msg.get("content")
 
-                    function_name, arguments, result = None, None, None
+                    function_name, arguments, result, call_id = None, None, None, None
 
                     # Robustly parse both nested and flat tool_output formats
+                    # ✅ NOW EXTRACT CALL_ID TOO
                     if isinstance(content_data, dict) and "function_name" in content_data:
                         function_name = content_data.get("function_name")
                         arguments = content_data.get("arguments", {})
                         result = content_data.get("result", "")
+                        call_id = content_data.get("call_id")  # ✅ EXTRACT CALL_ID
                     elif "function_name" in tool_msg:
                         function_name = tool_msg.get("function_name")
                         arguments = tool_msg.get("arguments", {})
                         result = str(content_data)
+                        call_id = tool_msg.get("call_id")  # ✅ EXTRACT CALL_ID
 
                     if function_name is not None:
+                        # ✅ BUILD FUNCTION_CALL WITH ID IF AVAILABLE
+                        fc_kwargs = {"name": function_name, "args": arguments or {}}
+                        if call_id:
+                            fc_kwargs["id"] = call_id
+                        
                         model_call_parts.append(
-                            types.Part(function_call=types.FunctionCall(name=function_name, args=arguments or {}))
+                            types.Part(function_call=types.FunctionCall(**fc_kwargs))
                         )
+                        
+                        # ✅ BUILD FUNCTION_RESPONSE WITH ID IF AVAILABLE
+                        fr_kwargs = {"name": function_name, "response": {"result": str(result)}}
+                        if call_id:
+                            fr_kwargs["id"] = call_id
+                        
                         tool_response_parts.append(
-                            types.Part(function_response=types.FunctionResponse(name=function_name, response={"result": str(result)}))
+                            types.Part(function_response=types.FunctionResponse(**fr_kwargs))
                         )
                     else:
                         print(f"Warning: Skipping malformed 'tool_output' message: {tool_msg}")
@@ -214,6 +228,7 @@ class GeminiClient(AbstractLLMClient):
         return name
 
     # The rest of GeminiClient class is the same:
+
     async def generate_response(
         self,
         messages: List[Dict[str, Any]],
@@ -223,46 +238,38 @@ class GeminiClient(AbstractLLMClient):
         **kwargs
     ) -> LLMResponse:
         try:
-
-
             if tool_choice == "auto":
-                tools_state="AUTO"
+                tools_state = "AUTO"
             else:
-                tools_state="NONE"
+                tools_state = "NONE"
 
             gemini_tools = self._convert_tools_to_gemini_format(tools) if tools else []
             gemini_contents, system_context = self._normalize_gemini_messages(messages, tools_state)
-
-            # print(f"DEBUG: Gemini contents sent: {gemini_contents}")
-            # print(f"DEBUG: Gemini tools sent: {gemini_tools}")
-
 
             tool_config = types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
                     mode=tools_state
                 )
             )
+            
             if tools_state == "AUTO":
                 config = types.GenerateContentConfig(
                     tools=gemini_tools,
                     tool_config=tool_config,
                     system_instruction=system_context
-
                 )
             else:
                 config = types.GenerateContentConfig(
+                    tool_config=tool_config,
                     system_instruction=system_context
-
                 )
 
             response = self.client.models.generate_content(
                 model=model,
                 contents=gemini_contents,
                 config=config            
-                )
+            )
             
-            #print(f"📮📮📮📮📮📮Raw Gemini response: {response}")
-
             normalized_function_calls: List[FunctionCallDetails] = []
             normalized_text_content: Optional[str] = None
 
@@ -272,16 +279,17 @@ class GeminiClient(AbstractLLMClient):
                 for part in candidate_content.parts:
                     if hasattr(part, 'function_call') and part.function_call:
                         function_call = part.function_call
-                        # print(f"📮📮📮📮📮📮Function full: {function_call}")
-
-                        # print(f"📮📮📮📮📮📮Function call name: {function_call.name}")
-
-                        # print(f"📮📮📮📮📮📮Function call ID: {function_call.id}")
+                        
+                        # ✅ FIX: Generate call_id if Gemini doesn't provide one
+                        call_id = function_call.id if (hasattr(function_call, 'id') and function_call.id) else str(uuid.uuid4())
+                        
+                        print(f"📞 Using call_id: {call_id} (generated: {function_call.id is None or function_call.id == ''})")
+                        
                         normalized_function_calls.append(
                             FunctionCallDetails(
                                 name=self.sanitize_function_name(function_call.name),
                                 arguments=dict(function_call.args),
-                                call_id=function_call.id
+                                call_id=call_id
                             )
                         )
                     elif hasattr(part, 'text') and part.text:
@@ -289,7 +297,6 @@ class GeminiClient(AbstractLLMClient):
                 
                 if all_text_parts:
                     normalized_text_content = "\n".join(all_text_parts).strip()
-                    #print(f"📮📮📮📮📮📮Normalized Text Content: {normalized_text_content}")
 
             return LLMResponse(
                 function_calls=normalized_function_calls if normalized_function_calls else None,
