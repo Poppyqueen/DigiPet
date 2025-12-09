@@ -5,6 +5,7 @@ from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClie
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 import json # For parsing arguments from OpenAI's string format
+from utils.pydantic_models import StructuredMemory
 
 
 class OpenAIClient(AbstractLLMClient):
@@ -17,13 +18,15 @@ class OpenAIClient(AbstractLLMClient):
 
     async def generate_response(
         self,
-        messages: Dict[str, Any], # Now expects the structured memory from construct_data
+        messages: StructuredMemory, # Now expects the structured memory from construct_data
         tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to functions_builder.construct_tools
         model: str = "gpt-4.1-mini", # Default OpenAI model
         tool_choice: str = "auto",
         **kwargs # For any additional provider-specific settings
     ) -> LLMResponse:
-        
+
+        # Convert the StructuredMemory to a dictionary
+        messages = messages.model_dump()
 
         l_messages = []
 

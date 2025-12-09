@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional, Union, Dict, Any, Literal, Annotated
 
 
 valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry', 'rose', 'sunflower', 'mint', 'basil'] # Edit this to reflect the plants existing in the garden manager data structures. tools/tools_folder/tools_data/harvesting_data.py
@@ -79,3 +79,52 @@ class ItemDefinitionListContainer(BaseModel):
     A container model holding a list of item definitions.
     """
     items: List[ItemDefinition] = Field(description="A list of item definition objects.")
+
+
+# --- Structure for memory package --- 
+
+class UserMessage(BaseModel):
+    """Represents a user message in the conversation."""
+    type: Literal["user"]
+    content: str
+
+
+class AssistantMessage(BaseModel):
+    """Represents an assistant message in the conversation."""
+    type: Literal["assistant"]
+    content: str
+
+
+class ToolOutput(BaseModel):
+    """Represents a tool execution output in the conversation."""
+    type: Literal["tool_output"]
+    call_id: Optional[str] = None
+    content: str
+    function_name: Optional[str] = None
+    arguments: Optional[Dict[str, Any]] = None
+
+
+
+ConversationEntry = Annotated[
+    Union[UserMessage, AssistantMessage, ToolOutput],
+    Field(discriminator="type")
+]
+
+
+class StructuredMemory(BaseModel):
+    """
+    The structured memory representation output by construct_data().
+    
+    This format is agnostic and can be consumed by any LLM client.
+    Contains system context (time, prompts, base memory, long-term memory)
+    and chronologically ordered conversation history (user/assistant turns and tool outputs).
+    """
+    system_context: str = Field(
+        ...,
+        description="Combined system message containing timestamp, system prompt, base memory, and long-term memory entries"
+    )
+    
+    conversation_history: List[ConversationEntry] = Field(
+        default_factory=list,
+        description="Chronologically ordered list of conversation turns and tool outputs"
+    )

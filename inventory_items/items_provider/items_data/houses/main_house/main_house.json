@@ -275,7 +275,8 @@
         "name": "Potted houseplant",
         "descriptions": [
             "A small, low-maintenance potted plant to bring life and a bit of fresh air to the room.",
-            "Serves as a natural, calming decor element that improves the room's ambience."
+            "Serves as a natural, calming decor element that improves the room's ambience.",
+            "On close inspection, it seems to be made of plastic and fiberglass."
         ],
         "static": false,
         "type": [

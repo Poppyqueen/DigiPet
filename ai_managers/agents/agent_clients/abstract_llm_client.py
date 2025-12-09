@@ -5,6 +5,8 @@ from typing import List, Dict, Any, Optional
 # Assuming llm_response_types.py is available
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse
 
+from utils.pydantic_models import StructuredMemory
+
 class AbstractLLMClient(ABC):
     """
     Abstract Base Class for all Large Language Model (LLM) clients.
@@ -15,8 +17,8 @@ class AbstractLLMClient(ABC):
     @abstractmethod
     async def generate_response(
         self,
-        messages: List[Dict[str, Any]], # Corresponds to memory_manager.construct_data
-        tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to functions_builder.construct_tools
+        messages: StructuredMemory, # Corresponds to StructuredMemory
+        tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to an OpenAI tools format
         model: str = "default-model",
         tool_choice: str = "auto", # Or a more specific enum if needed
         **kwargs # For any additional provider-specific settings

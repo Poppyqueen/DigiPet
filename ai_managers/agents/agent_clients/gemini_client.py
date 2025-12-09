@@ -6,6 +6,8 @@ from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClie
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 
+from utils.pydantic_models import StructuredMemory
+
 import uuid
 
 
@@ -114,7 +116,7 @@ class GeminiClient(AbstractLLMClient):
 
 
 
-    def _normalize_gemini_messages(self, messages: Dict[str, Any], tools_state) -> List[Dict[str, Any]]:
+    def _normalize_gemini_messages(self, messages: StructuredMemory, tools_state) -> List[Dict[str, Any]]:
         """
         Normalizes our memory format to Gemini's expected content format.
         
@@ -125,6 +127,10 @@ class GeminiClient(AbstractLLMClient):
         happen after summarization purges the original user prompt. If so, it
         prepends a placeholder user message to ensure the conversation is valid.
         """
+
+        # Convert the StructuredMemory to a dictionary
+        messages = messages.model_dump()
+
         gemini_contents = []
 
         system_context = messages.get("system_context")

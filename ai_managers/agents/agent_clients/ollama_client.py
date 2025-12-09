@@ -5,7 +5,9 @@ from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClie
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
 import json # For parsing arguments from OpenAI's string format (retained as per original code, though not used here now)
+from utils.pydantic_models import StructuredMemory
 
+import uuid
 
 class OllamaClient(AbstractLLMClient):
     """
@@ -79,7 +81,7 @@ class OllamaClient(AbstractLLMClient):
 
     async def generate_response(
         self,
-        messages: Dict[str, Any], # Now expects the structured memory from construct_data
+        messages: StructuredMemory, # Now expects the structured memory from construct_data
         tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to functions_builder.construct_tools
         model: str = "qwen3:4b", # Default Ollama model
         tool_choice: str = "auto", # 'auto' lets the model decide; 'none' disables tools; {'type': 'function', 'function': {'name': 'my_tool'}} for specific tool
@@ -102,6 +104,10 @@ class OllamaClient(AbstractLLMClient):
         """
 
         l_messages = []
+
+        # Convert the StructuredMemory to a dictionary
+        messages = messages.model_dump()
+
         # DEBUG: Log the incoming raw messages and tools for initial inspection.
         # print(f"DEBUG: Incoming 'messages' for LLM generation: {json.dumps(messages, indent=2)}")
         # print(f"DEBUG: Incoming 'tools' for LLM generation: {json.dumps(tools, indent=2) if tools else 'None'}")
@@ -211,7 +217,7 @@ class OllamaClient(AbstractLLMClient):
                 # Access the 'tool_calls' attribute from the message object.
                 # This will be None if no tools were called, or a list of tool call objects.
                 tool_calls_list = message_obj.tool_calls
-                # print(f"DEBUG: Tool calls attribute from message: {tool_calls_list}. Type: {type(tool_calls_list)}")
+                #print(f"DEBUG: Tool calls attribute from message: {tool_calls_list}. Type: {type(tool_calls_list)}")
 
                 if tool_calls_list: # If tool_calls_list is not None and not empty
                     # print(f"DEBUG: Processing {len(tool_calls_list)} tool call(s).")
@@ -228,7 +234,9 @@ class OllamaClient(AbstractLLMClient):
                             # print(f"DEBUG: Arguments directly from tool_call.function.arguments: {parsed_args}. Type: {type(parsed_args)}")
                             
                             # Ollama's tool calls often have an 'id', retrieve it safely.
-                            call_id = getattr(tool_call, 'id', None) 
+                            # print(f"DEBUG: Tool call object: {tool_call}")
+                            # print(f"DEBUG: Tool call function: {tool_call.function}")
+                            call_id = tool_call.id if (hasattr(tool_call, 'id') and tool_call.id) else str(uuid.uuid4())
 
                             normalized_function_calls.append(
                                 FunctionCallDetails(

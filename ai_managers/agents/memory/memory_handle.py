@@ -16,6 +16,8 @@ from ai_managers.agents.memory.deep_memory_int.deep_memory import DeepMemory
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration, TokenizerConfiguration
 
+from utils.pydantic_models import StructuredMemory
+
 # Define default filepaths
 DEFAULT_MEMORY_DB = "memory_database.json"
 DEFAULT_DEEP_MEMORY_DB = "deep_memory_database.db"
@@ -286,7 +288,7 @@ class memory_manager:
         except Exception as e:
             print(f"Error saving to main memory database file: {e}")
 
-    def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled"):
+    def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled") -> StructuredMemory:
         """
         Constructs an agnostic, structured memory representation to be consumed by the
         LLM client.
@@ -302,7 +304,7 @@ class memory_manager:
             sys_prompt (str): The base system prompt to include in the system_context.
 
         Returns:
-            dict: A dictionary representing the structured memory.
+            StructuredMemory: A dictionary representing the structured memory.
         """
         structured_memory = {
             "system_context": "",
@@ -383,8 +385,10 @@ class memory_manager:
                     structured_memory["conversation_history"].append({
                         "type": "user",
                         "content": f"[{role}]: {str(text_or_object)}"
-                    })
-        return structured_memory
+                        })
+            
+        structured_memory_out = StructuredMemory(**structured_memory)
+        return structured_memory_out    
 
     def random_memory(self):
         random_data=self.deep_memory.random_access()

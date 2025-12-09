@@ -5,6 +5,8 @@ import json
 from ai_managers.agents.agent_clients.abstract_llm_client import AbstractLLMClient
 from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, FunctionCallDetails
 from typing import List, Dict, Any, Optional
+from utils.pydantic_models import StructuredMemory
+
 
 
 class GroqClient(AbstractLLMClient):
@@ -58,7 +60,7 @@ class GroqClient(AbstractLLMClient):
     
     async def generate_response(
         self,
-        messages: List[Dict[str, Any]], # Corresponds to memory_manager.construct_data
+        messages: StructuredMemory, # Corresponds to memory_manager.construct_data
         tools: Optional[List[Dict[str, Any]]] = None, # Corresponds to functions_builder.construct_tools
         model: str = "llama-3.1-8b-instant",
         tool_choice: str = "auto", # Or a more specific enum if needed
@@ -79,6 +81,10 @@ class GroqClient(AbstractLLMClient):
             An LLMResponse object containing normalized function call details
             or text content.
         """
+
+        # Convert the StructuredMemory to a dictionary
+        messages = messages.model_dump()
+
         l_messages = []
 
         functions_list=self._process_functions_list(tools)
