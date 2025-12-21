@@ -105,6 +105,8 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     current_y = draw_labeled_dropdown_or_input(font, "max_tokens", "Max Tokens:", current_y, screen_width, elements, is_dropdown=False, default_text="44000")
 
 
+
+
     title_surface, title_rect = draw_section_title(font, "Location", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     current_y = draw_labeled_dropdown_or_input(font, "lat", "Latitude (optional):", current_y, screen_width, elements, is_dropdown=False)
@@ -121,8 +123,10 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
     title_surface, title_rect = draw_section_title(font, "game_settings", current_y, screen_width); elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     game_states = available_states; current_y = draw_labeled_dropdown_or_input(font, "initial_state", "Initial State:", current_y, screen_width, elements, options=game_states)
-    tts_providers = ["", "macos_say", "espeak_ng"]; current_y = draw_labeled_dropdown_or_input(font, "tts_provider", "TTS Provider:", current_y, screen_width, elements, options=tts_providers)
+    tts_providers = ["", "macos_say", "espeak_ng", "piper"]; current_y = draw_labeled_dropdown_or_input(font, "tts_provider", "TTS Provider:", current_y, screen_width, elements, options=tts_providers)
     current_y = draw_labeled_dropdown_or_input(font, "selected_voice", "Selected Voice:", current_y, screen_width, elements, is_dropdown=False)
+
+    current_y = draw_labeled_dropdown_or_input(font, "idle_time_minutes", "Idle Time (minutes):", current_y, screen_width, elements, is_dropdown=False, default_text="5")
     title_surface, title_rect = draw_section_title(font, "System Prompt", current_y, screen_width); elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     system_prompt_label_surface = font.render("Additional Prompt:", True, config.WHITE); system_prompt_label_rect = system_prompt_label_surface.get_rect(left=gui_config.HORIZONTAL_PADDING, top=current_y)
     system_prompt_input = TextInputBox(gui_config.HORIZONTAL_PADDING, system_prompt_label_rect.bottom + 5, screen_width - 2*gui_config.HORIZONTAL_PADDING, gui_config.CONFIG_INPUT_BOX_HEIGHT * 2, font, 'sys_prompt', allow_newlines=True, text_inputs=text_inputs, active_element=active_element)
@@ -241,6 +245,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             "component": text_inputs['long'],
                             "type": "text"
                         },
+                        "idle_time_minutes": {
+                            "value": text_inputs['idle_time_minutes'].text,
+                            "component": text_inputs['idle_time_minutes'],
+                            "type": "text"
+                        },
                         }
 
                         print("--- Form Data Collected ---")
@@ -336,6 +345,17 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             form_data["lat"]["value"] = None
                             form_data["long"]["value"] = None
 
+                        if form_data["idle_time_minutes"]["value"]:
+                            try:
+                                form_data["idle_time_minutes"]["value"] = int(form_data["idle_time_minutes"]["value"])
+                            except ValueError:
+                                error_msg = "Idle time must be an integer."
+                                validation_errors.append(error_msg)
+                                failed_fields.append("idle_time_minutes")
+                                form_data["idle_time_minutes"]["component"].validation_error = True
+                        else:
+                            form_data["idle_time_minutes"]["value"] = 5
+
                         # 3. PROCESS the result of the validation
                         if validation_errors:
                             # If there are errors, print them and show popup
@@ -386,6 +406,8 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
                             config_manager.set_config("location", "latitude", text_inputs['lat'].text)
                             config_manager.set_config("location", "longitude", text_inputs['long'].text)
+
+                            config_manager.set_config("game_settings", "idle_time_minutes", form_data["idle_time_minutes"]["value"])
 
                             config_manager.save_config_to_archive(config_name)
                             gui.gui_popups.clear_all_popups()

@@ -10,6 +10,7 @@ from utils.pydantic_models import StructuredMemory
 
 import uuid
 
+import base64
 
 class GeminiClient(AbstractLLMClient):
     def __init__(self, api_key: Optional[str] = None):
@@ -167,6 +168,7 @@ class GeminiClient(AbstractLLMClient):
                 })
                 i += 1
 
+
             elif original_type == "tool_output":
                 model_call_parts = []
                 tool_response_parts = []
@@ -178,32 +180,55 @@ class GeminiClient(AbstractLLMClient):
                     tool_msg = conversation_history[tool_msg_index]
                     content_data = tool_msg.get("content")
 
-                    function_name, arguments, result, call_id = None, None, None, None
+                    # 1. FIX: Initialize thought_signature to None
+                    function_name, arguments, result, call_id, thought_signature = None, None, None, None, None
 
                     # Robustly parse both nested and flat tool_output formats
-                    # ✅ NOW EXTRACT CALL_ID TOO
                     if isinstance(content_data, dict) and "function_name" in content_data:
                         function_name = content_data.get("function_name")
                         arguments = content_data.get("arguments", {})
                         result = content_data.get("result", "")
-                        call_id = content_data.get("call_id")  # ✅ EXTRACT CALL_ID
+                        call_id = content_data.get("call_id")
+                        # 2. FIX: Extract thought_signature from the content dictionary
+                        thought_signature = content_data.get("thought_signature") 
+
                     elif "function_name" in tool_msg:
                         function_name = tool_msg.get("function_name")
                         arguments = tool_msg.get("arguments", {})
                         result = str(content_data)
-                        call_id = tool_msg.get("call_id")  # ✅ EXTRACT CALL_ID
+                        call_id = tool_msg.get("call_id")
+                        # 3. FIX: Extract thought_signature from the message level if it exists there
+                        thought_signature = tool_msg.get("thought_signature")
 
                     if function_name is not None:
-                        # ✅ BUILD FUNCTION_CALL WITH ID IF AVAILABLE
+                        # Build FunctionCall (WITHOUT thought_signature)
                         fc_kwargs = {"name": function_name, "args": arguments or {}}
                         if call_id:
                             fc_kwargs["id"] = call_id
                         
+                        fn_call_obj = types.FunctionCall(**fc_kwargs)
+
+                        # Build Part (WITH thought_signature)
+                        part_kwargs = {"function_call": fn_call_obj}
+                        
+                        # 4. FIX: Handle the extracted signature (Decode Base64 -> Bytes)
+                        if thought_signature:
+                            try:
+                                # Check if it's a string (it should be, from JSON) and decode
+                                if isinstance(thought_signature, str):
+                                    decoded_sig = base64.b64decode(thought_signature)
+                                    part_kwargs["thought_signature"] = decoded_sig
+                                else:
+                                    part_kwargs["thought_signature"] = thought_signature
+                            except Exception as e:
+                                print(f"Warning: Could not decode thought_signature, sending as is. Error: {e}")
+                                part_kwargs["thought_signature"] = thought_signature
+                        
                         model_call_parts.append(
-                            types.Part(function_call=types.FunctionCall(**fc_kwargs))
+                            types.Part(**part_kwargs)
                         )
                         
-                        # ✅ BUILD FUNCTION_RESPONSE WITH ID IF AVAILABLE
+                        # Build FunctionResponse
                         fr_kwargs = {"name": function_name, "response": {"result": str(result)}}
                         if call_id:
                             fr_kwargs["id"] = call_id
@@ -282,20 +307,35 @@ class GeminiClient(AbstractLLMClient):
             if response.candidates and response.candidates[0].content:
                 candidate_content = response.candidates[0].content
                 all_text_parts = []
+
+                # ... inside the loop ...
                 for part in candidate_content.parts:
                     if hasattr(part, 'function_call') and part.function_call:
                         function_call = part.function_call
-                        
-                        # ✅ FIX: Generate call_id if Gemini doesn't provide one
                         call_id = function_call.id if (hasattr(function_call, 'id') and function_call.id) else str(uuid.uuid4())
                         
-                        print(f"📞 Using call_id: {call_id} (generated: {function_call.id is None or function_call.id == ''})")
+                        # 1. Get the raw object (likely bytes)
+                        raw_signature = getattr(part, 'thought_signature', None)
                         
+                        # 2. Check if it is bytes and Convert to Base64 String
+                        final_signature = None
+                        if raw_signature:
+                            if isinstance(raw_signature, bytes):
+                                # Convert bytes -> Base64 Bytes -> UTF-8 String
+                                final_signature = base64.b64encode(raw_signature).decode('utf-8')
+                            else:
+                                # It might already be a string (depending on SDK version), keep as is
+                                final_signature = raw_signature
+
+                        print(f"Function call name: {function_call.name}")
+                        # print(f"Encoded Signature: {final_signature}") 
+
                         normalized_function_calls.append(
                             FunctionCallDetails(
                                 name=self.sanitize_function_name(function_call.name),
                                 arguments=dict(function_call.args),
-                                call_id=call_id
+                                call_id=call_id,
+                                thought_signature=final_signature # Now safe for JSON
                             )
                         )
                     elif hasattr(part, 'text') and part.text:

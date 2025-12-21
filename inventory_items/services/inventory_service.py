@@ -346,6 +346,11 @@ class InventoryService:
             else:
                 return f"You can only examine items in your current location or inventory. Item {item_display} is not here."
 
+        extra_descriptions = []
+        if "power_toggle" in item_data:
+            state = "on" if item_data["power_toggle"] else "off"
+            extra_descriptions.append(f"You can toggle the power on this item, current state: {state}")
+
         if internal:
             return {
                 "status": "found",
@@ -359,7 +364,8 @@ class InventoryService:
             descriptions = item_data.get("descriptions", [])
             output_string = f"{item_display}\n\n"
             if descriptions and isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
-                output_string += "\n".join(descriptions)
+                all_descriptions = item_data.get("descriptions", []) + extra_descriptions
+                output_string += "\n".join(all_descriptions)
             else:
                 output_string += "(No description available.)"
             return output_string

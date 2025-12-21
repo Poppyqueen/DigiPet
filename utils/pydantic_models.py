@@ -101,7 +101,8 @@ class ToolOutput(BaseModel):
     call_id: Optional[str] = None
     content: str
     function_name: Optional[str] = None
-    arguments: Optional[Dict[str, Any]] = None
+    arguments: Optional[Dict[str, Any]] = None,
+    thought_signature: Optional[str] = None
 
 
 

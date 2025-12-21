@@ -166,7 +166,7 @@ class FunctionBuilder:
                     "set_current_emote": self.state_manager.set_current_emote,
                     "move_to_room": self.state_manager.set_current_room,
                     "list_all_rooms": self.state_manager.get_all_rooms,
-                    "pickup_item": self.state_manager.pickup_item,
+                    "pick_up_item": self.state_manager.pickup_item,
                     "examine_item": self.state_manager.get_item_details,
                     "drop_item": self.state_manager.drop_item,
                     "add_item_description": self.state_manager.add_item_description,
@@ -363,7 +363,7 @@ class FunctionBuilder:
                     "computer_get_currency": self.auction_house.get_currency
                 },
                 "definitions": laptop_tools,
-                "item_types": ["laptop"],
+                "item_types": ["laptop", "desktop_computer"],
                 "use_level": "dual_use"
             },
 
@@ -395,7 +395,7 @@ class FunctionBuilder:
                 },
                 "definitions": computer_room_tools,
                 #"room_types": ["computer_room"],
-                "item_types": ["wikipedia", "laptop"],
+                "item_types": ["wikipedia", "laptop", "desktop_computer"],
                 "display_information": self.room_tools.computer.display_information,
                 "use_level": "dual_use"
             }
@@ -461,7 +461,7 @@ class FunctionBuilder:
                 },
                 "definitions": bluesky_tools,
                 "room_types": ["bluesky_social"],
-                "item_types": ["bluesky_social", "cellphone"],
+                "item_types": ["bluesky_social", "cellphone", "laptop"],
                 "use_level": "inventory_only"
             }
             print("Bluesky tools added to unified definitions.")
@@ -474,7 +474,7 @@ class FunctionBuilder:
                     "list_searxng_cache": self.searxng.list_cache
                 },
                 "definitions": searxng_tools,
-                "item_types": ["searxng", "laptop"],
+                "item_types": ["searxng", "laptop", "desktop_computer"],
                 "use_level": "dual_use"
             }
             print("SearxNG tools added to unified definitions.")

@@ -33,7 +33,7 @@ def play_preview_sound(folder_path, filename):
             pygame.mixer.stop() # Stop any currently playing sound
             full_path = os.path.join(folder_path, filename)
             sound = pygame.mixer.Sound(full_path)
-            sound.set_volume(0.08)
+            sound.set_volume(0.11)
             sound.play()
             print(f"Previewing sound: {filename}")
         except pygame.error as e:

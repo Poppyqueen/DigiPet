@@ -7,7 +7,7 @@ class jukebox:
     def __init__(self, base_song_path):
         self.is_muted = False
         self.previous_volume = 0.1 # Default music volume when unmuted
-        self.sfx_volume = 0.08      # Default sound effect volume (0.0 to 1.0)
+        self.sfx_volume = 0.11      # Default sound effect volume (0.0 to 1.0)
 
         # Attribute to track the last SFX channel (still needed for stopping previous SFX)
         self.current_sfx_channel = None

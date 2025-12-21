@@ -98,13 +98,15 @@ class ai_bot:
 
             if llm_response.has_function_calls:
                 function_flag = True
+
                 for fc_details in llm_response.function_calls:
-                    # Reconstruct the function_array exactly as it was before
                     function_array = {
                         "function_name": fc_details.name,
-                        "arguments": fc_details.arguments, # Arguments are already parsed dict
+                        "arguments": fc_details.arguments, 
                         "result": "Function call processing failed",
-                        "call_id": None
+                        "call_id": fc_details.call_id,
+                        # ✅ CRITICAL: Ensure this is passed into the dictionary that gets saved to memory
+                        "thought_signature": fc_details.thought_signature 
                     }
 
                     try:

@@ -7,6 +7,7 @@ class FunctionCallDetails:
     name: str
     arguments: Dict[str, Any] # Parsed arguments as a dictionary
     call_id: Optional[str] = None # Optional, as not all providers might have this
+    thought_signature: Optional[str] = None # Optional, as not all providers might have this
 
 @dataclass
 class TextMessageDetails:

@@ -7,6 +7,8 @@ from ai_managers.agents.agents_utils.llm_response_types import LLMResponse, Func
 from typing import List, Dict, Any, Optional
 from utils.pydantic_models import StructuredMemory
 
+import time
+
 
 
 class GroqClient(AbstractLLMClient):
@@ -82,6 +84,9 @@ class GroqClient(AbstractLLMClient):
             or text content.
         """
 
+        #time.sleep(60) # Silly way to stay under TPM free tier limit in groq, TODO: remove
+        
+
         # Convert the StructuredMemory to a dictionary
         messages = messages.model_dump()
 
@@ -124,6 +129,12 @@ class GroqClient(AbstractLLMClient):
                     "content": entry["content"],
                     "tool_call_id": entry["call_id"]
                 })
+
+        if tool_choice == "none":
+            l_messages.append({
+                "role": "system",
+                "content": "Last turn for round, please do not use any tools and wait for the next autonomous action."
+            })
         
 
         settings = {
@@ -155,11 +166,12 @@ class GroqClient(AbstractLLMClient):
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
                 function_args = json.loads(tool_call.function.arguments)
+                call_id = tool_call.id if (hasattr(tool_call, 'id') and tool_call.id) else str(uuid.uuid4())
                 normalized_function_calls.append(
                     FunctionCallDetails(
                         name=function_name,
                         arguments=function_args,
-                        call_id=tool_call.id # Retain call_id if available
+                        call_id=call_id # Retain call_id if available
                     )
                 )
 

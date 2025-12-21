@@ -15,7 +15,11 @@ mapped_models={
     "gemma-3-1b-it-BF16": "google/gemma-3-1b-it", 
     
     "qwen3:8b-q4_K_M":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", 
-    "qwen3:1.7b-fp16":"Qwen/Qwen3-1.7B"
+    "qwen3:1.7b-fp16":"Qwen/Qwen3-1.7B",
+    "qwen3:4b-q4_K_M":"Qwen/Qwen3-4B",
+    "ministral-3:3b-instruct-2512-q4_K_M":"mistralai/Ministral-3-3B-Instruct-2512",
+
+    "aliafshar/gemma3-it-qat-tools:4b": "google/gemma-3-4b-it" # Using Ollama pointer to a fixed version of the model that allows function calling.
 }
 
 # This should map the models to use from Groq or Ollama (or other opensource provider)

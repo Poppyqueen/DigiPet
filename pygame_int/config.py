@@ -46,7 +46,7 @@ MAX_MESSAGE_HISTORY = 50  # Max number of chat messages to display
 CURSOR_INTERVAL = 500  # Milliseconds for text cursor blink rate
 IDLE_TIMEOUT_MINUTES = 5 # Minutes until pet is considered idle ### I don't know why this is here... probably put it somewhere much more accessible
 #IDLE_TIMEOUT_MINUTES = 1 # Minutes until pet is considered idle ### I don't know why this is here... probably put it somewhere much more accessible
-IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
+#IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000 # Calculated milliseconds
 # Background
 fallback_bg_color = (50, 50, 70) # Default background color
 
@@ -341,9 +341,7 @@ MESSAGE_POPUP = pygame.event.custom_type()
 MESSAGE_PADDING = 3 # Example: 10 pixels of padding between messages
 
 
-# --- Garden Tick Configuration ---
-GARDEN_TICK_INTERVAL_MINUTES = 3 # Tick every 3 minutes
-GARDEN_TICK_INTERVAL_MS = GARDEN_TICK_INTERVAL_MINUTES * 60 * 1000
+# Garden ticks now based on idle timeout minutes
 
 # --- NEW: Lore Panel Constants ---
 LORE_PANEL_BG_COLOR = (40, 40, 40, 220) # Dark grey with alpha for transparency

@@ -875,7 +875,7 @@
         "static": true,
         "type": [
             "misc",
-            "laptop"
+            "desktop_computer"
         ],
         "stackable": false,
         "power_toggle": false

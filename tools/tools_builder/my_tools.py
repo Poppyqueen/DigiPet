@@ -1162,7 +1162,7 @@ base_tools=[
     },
     {
         "type": "function",
-        "name": "pickup_item",
+        "name": "pick_up_item",
         "description": "Moves a specific item from the current room into your inventory.",
         "parameters": {
             "type": "object",

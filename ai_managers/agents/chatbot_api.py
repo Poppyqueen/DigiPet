@@ -18,6 +18,7 @@ from utils.capture_text import TextCapture # Import the text capture class
 from tts_providers.base_tts_provider import BaseTTSProvider
 from tts_providers.macos_say_provider import MacOSSaiProvider
 from tts_providers.espeak_ng_provider import ESpeakNGProvider
+from tts_providers.piper_provider import PiperTTSProvider
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
@@ -89,7 +90,7 @@ class CLIChatbot:
 
         #print(f"DEBUG DEEP MEMORY FLAG {self.deep_memory_flag}")
         # Add a recursion depth limit to prevent infinite loops
-        self.max_recursion_depth = 8 # Allow up to n consecutive AI calls (including function calls and final response)
+        self.max_recursion_depth = 8 # TODO: Allow up to n consecutive AI calls (including function calls and final response)
 
         # REMOVED: self.tts = tts_flag
         self.last_response = None # Store the last response for potential use
@@ -108,12 +109,15 @@ class CLIChatbot:
         
 
         # NEW: TTS Provider Initialization
+        # TODO: Move TTS client loadeing into the Main AI Loader
         self.tts_provider: BaseTTSProvider | None = None
         if tts_provider_id:
             if tts_provider_id == "macos_say":
                 self.tts_provider = MacOSSaiProvider(signal_callback=self._signal_callback)
             elif tts_provider_id == "espeak_ng":
                 self.tts_provider = ESpeakNGProvider(signal_callback=self._signal_callback, voice_name=voice)
+            elif tts_provider_id == "piper":
+                self.tts_provider = PiperTTSProvider(signal_callback=self._signal_callback, voice_name=voice)
 
             # Add more elifs here for other providers as they are created
             else:

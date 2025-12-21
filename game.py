@@ -539,6 +539,19 @@ if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps')
 else:
     steps=0
 
+idle_time_mins=config_manager.get_config('game_settings','idle_time_minutes')
+print("Bot will act every",idle_time_mins,"minutes of inactivity.")
+
+if not idle_time_mins:
+    print("Idle time minutes not found in config, using default. Bot will act every",config.IDLE_TIMEOUT_MINUTES,"minutes of inactivity.")
+    idle_time_mins=config.IDLE_TIMEOUT_MINUTES
+
+
+garden_tick_interval_mins = config.IDLE_TIMEOUT_MINUTES * (3/5) # Based on previous default values
+
+garden_tick_interval_ms = garden_tick_interval_mins * 60 * 1000
+
+
 current_image=get_current_room_image()
 
 gui.gui_core.load_and_set_background(f"{current_image}.jpg")
@@ -774,7 +787,7 @@ state.last_activity_time = pygame.time.get_ticks()
 print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
 
 # NEW: Garden Tick Timer Initialization
-state.next_garden_tick_time = pygame.time.get_ticks() + config.GARDEN_TICK_INTERVAL_MS
+state.next_garden_tick_time = pygame.time.get_ticks() + garden_tick_interval_ms
 print(f"Next garden tick scheduled for {state.next_garden_tick_time} ms.")
 
 # only direct chat with the bot should count as interaction
@@ -1366,11 +1379,11 @@ while running:
     # In the autonomous action trigger section:
     # Check if idle timeout is reached, bot is not asleep/paused, and bot is not currently processing
     if chatbot_available and chatbot and \
-       elapsed_time_ms >= config.IDLE_TIMEOUT_MS and \
+       elapsed_time_ms >= idle_time_mins*60*1000 and \
        current_time_ms >= state.autonomous_action_paused_until_ms and \
        not state.chatbot_is_processing:
 
-        print(f"Idle timeout ({config.IDLE_TIMEOUT_MINUTES} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
+        print(f"Idle timeout ({idle_time_mins} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
         #play a sound effect for autonomous action trigger
         music_player.play_sound_effect(f"style/sounds/autonomous_action/{state.pet_sound}")
@@ -1387,7 +1400,7 @@ while running:
         #print(f"Attempting garden tick. (Scheduled at {state.next_garden_tick_time}, current: {current_time_ms})")
         if start_garden_tick_request(): # This will now return False if chatbot is busy
             # If the tick was successfully launched, schedule the next one.
-            state.next_garden_tick_time = current_time_ms + config.GARDEN_TICK_INTERVAL_MS
+            state.next_garden_tick_time = current_time_ms + garden_tick_interval_ms
             #print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
         else:
             # If the tick was deferred (because chatbot was busy),
@@ -1453,5 +1466,7 @@ if pygame.mixer.get_init():
     print("Quitting Pygame Mixer.")
     pygame.mixer.quit()
 
+print("Quitting Pygame.")
 pygame.quit()
+print("Goodbye!")
 sys.exit()

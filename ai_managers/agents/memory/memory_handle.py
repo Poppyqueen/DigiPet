@@ -358,14 +358,25 @@ class memory_manager:
                 if isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
                     tool_output_content = str(text_or_object["result"])
                     call_id = text_or_object.get("call_id")
+                    thought_signature = text_or_object.get("thought_signature")
 
-                    structured_memory["conversation_history"].append({
-                        "type": "tool_output",
-                        "call_id": call_id,
-                        "content": tool_output_content,
-                        "function_name": text_or_object.get("function_name"),
-                        "arguments": text_or_object.get("arguments")
-                    })
+                    if thought_signature:
+                        structured_memory["conversation_history"].append({
+                            "type": "tool_output",
+                            "call_id": call_id,
+                            "content": tool_output_content,
+                            "function_name": text_or_object.get("function_name"),
+                            "arguments": text_or_object.get("arguments"),
+                            "thought_signature": thought_signature
+                        })
+                    else:
+                        structured_memory["conversation_history"].append({
+                            "type": "tool_output",
+                            "call_id": call_id,
+                            "content": tool_output_content,
+                            "function_name": text_or_object.get("function_name"),
+                            "arguments": text_or_object.get("arguments"),
+                        })
                 # elif isinstance(text_or_object, str):
                 #     print(f"Warning: Plain string system message found for tag '{key_tag}'. Treating as 'user'")
                 #     structured_memory["conversation_history"].append({
