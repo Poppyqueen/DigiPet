@@ -20,8 +20,9 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-mock_running = False # If set to True, the mock will run and simulate the chatbot behavior. 
-                    # !!!! The current AI environment crafter system (Make Home) is live even if this is set to true !!!!!
+game_mode = "user_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
+                    # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to mock !!!!!
+                    # main mode to use is "ai_player".
 
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
@@ -382,20 +383,21 @@ def garden_tick_worker(chatbot_instance):
     It posts a system message on completion or error.
     """
     if not chatbot_instance or \
-    not hasattr(chatbot_instance, 'ai') or \
-    not hasattr(chatbot_instance.ai, 'functions_builder') or \
-    not hasattr(chatbot_instance.ai.functions_builder, 'garden_manager') or \
-    not callable(getattr(chatbot_instance.ai.functions_builder.garden_manager, 'tick', None)):
+    not hasattr(chatbot_instance, 'functions_builder') or \
+    not hasattr(chatbot_instance.functions_builder, 'garden_manager') or \
+    not callable(getattr(chatbot_instance.functions_builder.garden_manager, 'tick', None)):
         print("Chatbot or garden manager not fully available for tick. Skipping.")
         return
 
+
     print("Garden tick worker thread started.")
     try:
-        chatbot_instance.ai.functions_builder.garden_manager.tick()
+        chatbot_instance.functions_builder.garden_manager.tick()
         print("Garden tick processed successfully.")
 
 
-        current_room_info = chatbot_instance.functions_builder.get_current_tools_info()
+        current_room_info = chatbot_instance.functions_builder.get_current_tools_info() 
+        #print(f"Current room info: {current_room_info} Is this missing?") # it is not
 
         if not isinstance(current_room_info, dict):
             current_room_info = {} # Fallback to empty dict
@@ -446,10 +448,17 @@ initial_states_manager=InitialStateConst()
 # main process
 
 
-if mock_running:
+if game_mode == "mock": # Mock mode
     from ai_managers.agents.mock_chatbot import MockChatbot
-else:
+
+elif game_mode == "user_player": # This is a silly mode, but it is a concept
+    from ai_managers.agents.user_interface_api import UserInterfaceChatbot
+
+
+elif game_mode == "ai_player": # Main game mode
     from ai_managers.agents.chatbot_api import CLIChatbot 
+else:
+    raise ValueError(f"Invalid game mode: {game_mode}")
 
 
 
@@ -480,10 +489,14 @@ bots_archive_dir="data_archive"
 
 
 
-if mock_running:
-    config_manager = ConfigManager(bots_archive_dir, mock=True)
+if game_mode == "mock": # Mock configuration, leave as is
+    config_manager = ConfigManager(bots_archive_dir, config_type="mock")
+elif game_mode == "user_player":
+    config_manager = ConfigManager(bots_archive_dir, config_type="user_player")
+elif game_mode == "ai_player":
+    config_manager = ConfigManager(bots_archive_dir, config_type="ai_player")
 else:
-    config_manager = ConfigManager(bots_archive_dir)
+    raise ValueError(f"Invalid game mode: {game_mode}")
 
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
@@ -496,7 +509,7 @@ run_config_main_menu_ui(screen, font, config_manager)
 
 
 
-if mock_running: # Mock configuration, leave as is
+if game_mode == "mock": # Mock configuration, leave as is
     # --- Mock Chatbot Initialization ---
     chatbot = None
     chatbot_available = False
@@ -513,9 +526,25 @@ if mock_running: # Mock configuration, leave as is
         print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
         chatbot_available = False
         chatbot = None
+elif game_mode == "user_player":
+    # --- User Player Chatbot Initialization ---
+    chatbot = None
+    chatbot_available = False
+    try:
+        chatbot = UserInterfaceChatbot(
+            signal_callback=handle_chatbot_signal,
+            config_manager=config_manager,
+            bots_archive_dir=bots_archive_dir
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+    except Exception as e:
+        # Error handling is still useful in case the mock itself has an issue
+        print(f"Error initializing User Player Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None
 
-
-else:
+elif game_mode == "ai_player": # Main game mode
     # Actual chatbot initialization
     # --- Chatbot Initialization ---
     chatbot = None
@@ -532,6 +561,8 @@ else:
         print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
         chatbot_available = False
         chatbot = None # Ensure chatbot is None if initialization failed
+else:
+    raise ValueError(f"Invalid game mode: {game_mode}")
 
 
 if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps'): 
@@ -1376,12 +1407,14 @@ while running:
     is_input_locked_by_state = state.agent_sleeping or state.chatbot_is_processing
 
 
+    # --- Autonomous Action Trigger ---
     # In the autonomous action trigger section:
-    # Check if idle timeout is reached, bot is not asleep/paused, and bot is not currently processing
+    # Check if idle timeout is reached, bot is not asleep/paused, and bot is not currently processing, and game mode is ai_player
     if chatbot_available and chatbot and \
        elapsed_time_ms >= idle_time_mins*60*1000 and \
        current_time_ms >= state.autonomous_action_paused_until_ms and \
-       not state.chatbot_is_processing:
+       not state.chatbot_is_processing and \
+       (game_mode == "ai_player" or game_mode == "mock"): # Do not trigger autonomous action in human player mode
 
         print(f"Idle timeout ({idle_time_mins} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')

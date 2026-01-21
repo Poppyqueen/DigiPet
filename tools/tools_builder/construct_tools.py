@@ -167,7 +167,8 @@ class FunctionBuilder:
                     "move_to_room": self.state_manager.set_current_room,
                     "list_all_rooms": self.state_manager.get_all_rooms,
                     "pick_up_item": self.state_manager.pickup_item,
-                    "examine_item": self.state_manager.get_item_details,
+                    # "examine_item": self.state_manager.get_item_details,
+                    "examine_item": self.get_item_details_with_tools,
                     "drop_item": self.state_manager.drop_item,
                     "add_item_description": self.state_manager.add_item_description,
                     "emit_inner_thought": emit_inner_thought,
@@ -951,3 +952,191 @@ class FunctionBuilder:
         context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")
         string_context = "\n".join(context)
         return string_context
+
+    # TODO: This is awful, rewrite this, or integrate it, or SOMETHING 
+
+    def _get_item_tools_map(self, inventory_items, items_in_room, inventory_only=False):
+        """
+        Internal method to create item-to-tools mapping.
+        
+        Args:
+            inventory_items: List of items in inventory
+            items_in_room: List of items in current room
+            inventory_only: If True, only map inventory items. If False, map all items.
+            
+        Returns:
+            dict: {item_id: [list of tool names provided by this item]}
+        """
+        item_tools_map = {}
+        
+        # Get powered off items
+        _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
+        
+        # Determine which items to process
+        if inventory_only:
+            items_to_process = inventory_items
+        else:
+            # Combine both, but use a dict to avoid duplicates by item_id
+            all_items_dict = {}
+            for item in items_in_room:
+                if isinstance(item, dict) and "id" in item:
+                    all_items_dict[item["id"]] = item
+            for item in inventory_items:
+                if isinstance(item, dict) and "id" in item:
+                    all_items_dict[item["id"]] = item
+            items_to_process = list(all_items_dict.values())
+        
+        # Process each item
+        for item in items_to_process:
+            if not isinstance(item, dict):
+                continue
+                
+            item_id = item.get("id")
+            item_types = item.get("type", [])
+            
+            if not item_id:
+                continue
+            
+            # Check if item is in inventory
+            is_in_inventory = any(
+                inv_item.get("id") == item_id 
+                for inv_item in inventory_items 
+                if isinstance(inv_item, dict)
+            )
+            
+            # Check if item is powered off (if it has power toggle capability)
+            if "power_toggle" in item and item_id in powered_off_items:
+                # Powered off items don't provide tools
+                item_tools_map[item_id] = []
+                continue
+            
+            # List to store tool names this item provides
+            provided_tools = []
+            
+            # Check each tool definition to see if this item enables it
+            for tool_key, tool_config in self.tool_definitions.items():
+                # Skip tools without item_types requirement
+                tool_item_types = tool_config.get("item_types", [])
+                if not tool_item_types:
+                    continue
+                
+                # Check if this item's types match the tool's requirements
+                if any(item_type in tool_item_types for item_type in item_types):
+                    use_level = tool_config.get("use_level", "")
+                    
+                    # Determine if this item can provide these tools based on use_level and location
+                    can_provide = False
+                    
+                    if use_level == "inventory_only":
+                        # Only if item is in inventory
+                        can_provide = is_in_inventory
+                    elif use_level == "room_only":
+                        # Only if item is in room (not in inventory)
+                        can_provide = not is_in_inventory
+                    elif use_level == "dual_use":
+                        # Can be used from either location
+                        can_provide = True
+                    elif use_level == "room_type":
+                        # Can be used from either location (like dual_use)
+                        can_provide = True
+                    
+                    if can_provide:
+                        # Get ONLY the function names this tool config actually provides
+                        functions = tool_config.get("functions", {})
+                        for func_name in functions.keys():
+                            if func_name not in provided_tools:
+                                provided_tools.append(func_name)
+            
+            # Add to map (even if empty list, so we know we checked this item)
+            item_tools_map[item_id] = provided_tools
+        
+        return item_tools_map
+
+
+    def get_all_item_tools_map(self):
+        """
+        Create a mapping of ALL item IDs (inventory + room) to the tool names they provide.
+        
+        Returns:
+            dict: {item_id: [list of tool names provided by this item]}
+        """
+        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
+        
+        return self._get_item_tools_map(inventory_items, items_in_room, inventory_only=False)
+
+
+
+    def get_item_info_with_tools(self, item_id):
+        """
+        Get detailed information about an item including what tools it provides.
+        Works for items in inventory OR in the current room.
+        
+        Args:
+            item_id: The ID of the item to query
+            
+        Returns:
+            dict: Information about the item and its tools
+        """
+        item_data, error = self.state_manager.inventory_service.get_validated_item_data(item_id)
+        if error:
+            return {"error": error}
+        
+        # 1. Determine Power State
+        # If "power_toggle" exists, use its value. If not, it's always True.
+        has_switch = "power_toggle" in item_data
+        is_powered_on = item_data.get("power_toggle", True) 
+        
+        # 2. Map Tools - use ALL items map since we might be examining room items
+        tools_map = self.get_all_item_tools_map() # TODO: This is broken, it 
+        all_potential_tools = tools_map.get(item_id, [])
+        
+        # 3. Filter Tools based on power
+        # Tools are active if the item is powered ON or if it doesn't need power at all.
+        active_tools = all_potential_tools if is_powered_on else []
+        
+        return {
+            "item_name": item_data.get("name", "Unknown"),
+            "has_power_switch": has_switch,
+            "is_powered_on": is_powered_on,
+            "provided_tools": active_tools
+        }
+
+    def get_item_details_with_tools(self, item_id): # TODO: This is a bit of a hack, but it works for now. It is an attempt to make the system clearer for the LLM to understand.
+        """
+        Get detailed information about an item including what tools it provides.
+        
+        Args:
+            item_id: The ID of the item to query
+            
+        Returns:
+            dict: Information about the item and its tools
+        """
+        
+        info = self.get_item_info_with_tools(item_id)
+        extra_descriptions = []
+
+        # Only mention power if the item actually has a toggle switch
+        if info.get("has_power_switch"):
+            state = "on" if info["is_powered_on"] else "off"
+            extra_descriptions.append(f"The power switch is currently {state}.")
+
+        # List tools (will be empty if powered off, or populated if always-on/powered-on)
+        tools = info.get("provided_tools", [])
+        if tools:
+            extra_descriptions.append(f"Provides tools: {', '.join(tools)}")
+        elif info.get("has_power_switch") and not info["is_powered_on"]:
+            extra_descriptions.append("Turn the power on to use this item's tools.")
+
+
+        item_meta = self.state_manager.get_item_details(item_id, internal=True)
+        data = item_meta.get("details", {})
+        item_display = self.state_manager.inventory_service._format_item_for_display(data) # this is ugly, but it works
+        descriptions = data.get("descriptions", [])
+        output_string = f"{item_display}\n\n"
+        if descriptions and isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
+            all_descriptions = descriptions + extra_descriptions
+            output_string += "\n".join(all_descriptions)
+        else:
+            output_string += "(No description available.)"
+        return output_string

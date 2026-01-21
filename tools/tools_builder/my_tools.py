@@ -60,7 +60,7 @@ maze_tools=[
 laptop_tools=[
     {
         "type": "function",
-        "name": "get_currency",
+        "name": "computer_get_currency",
         "description": "Gets the your currency balance.",
         "parameters": {
             "type": "object",

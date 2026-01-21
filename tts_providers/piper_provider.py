@@ -3,21 +3,28 @@ import sounddevice as sd
 from piper import PiperVoice
 from tts_providers.base_tts_provider import BaseTTSProvider
 import os
-# tts_providers/piper_voices/
+
+VOICES_PATH = "tts_providers/piper_voices/"
+
+# Update this dictionary with your downloaded Piper voices and choose an alias for each voice to use on the application configuration screen.
 voices_map={
     "aru_medium": "en_GB-aru-medium.onnx",
     "libritts-r-medium": "en_US-libritts_r-medium.onnx",
     "ryan_high": "en_US-ryan-high.onnx"
 }
-class PiperTTSProvider(BaseTTSProvider):
-    def __init__(self, voice_name="libritts-r-medium", signal_callback=None, use_cuda=False):
-        super().__init__(signal_callback)
 
+
+class PiperTTSProvider(BaseTTSProvider):
+    def __init__(self, voice_name="libritts-r-medium", signal_callback=None):
+        use_cuda = False # TODO: Figure out how to change this on the fly preferably without torch
+        super().__init__(signal_callback)
+        if voice_name == "":
+            voice_name = "libritts-r-medium"
         if voice_name not in voices_map:
             raise ValueError(f"Invalid voice name: {voice_name}, please register your voice or select a valid voice name in tts_providers/piper_provider.py")
-        full_path = os.path.join("tts_providers/piper_voices/", voices_map[voice_name])
+        full_path = os.path.join(VOICES_PATH, voices_map[voice_name])
         if not os.path.exists(full_path):
-            raise ValueError(f"Voice file not found: {full_path}, for voice selected: {voice_name}. Make sure the voice onnx file is downloaded and placed in the correct directory. tts_providers/piper_voices/")
+            raise ValueError(f"Voice file not found: {full_path}, for voice selected: {voice_name}. Make sure the voice onnx file is downloaded and placed in the correct directory. {VOICES_PATH}")
         self.model_path = full_path
         self.use_cuda = use_cuda
         

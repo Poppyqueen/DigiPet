@@ -10,7 +10,7 @@ valid_plants = ['lettuce', 'carrot', 'cactus', 'tomato', 'potato', 'strawberry',
 
 stringed_plant_types = ', '.join(f"'{plant}'" for plant in valid_plants)
 
-toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop"]
+toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
 item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag"]
 # Might want to add validation for the dispenser and candy_bag items

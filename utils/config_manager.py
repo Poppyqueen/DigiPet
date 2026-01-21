@@ -3,10 +3,14 @@ import shutil
 from utils.generic_json_tool import GenericJsonTool
 
 class ConfigManager(GenericJsonTool):
-    def __init__(self, base_path, mock=False):
-        self.base_path = base_path
-        if mock:
+    def __init__(self, base_path, config_type="ai_player"):
+        self.base_path = base_path            
+        if config_type == "user_player":
+            self.base_path = os.path.join(base_path,"user_player_configs/")
+        elif config_type == "mock":
             self.base_path = os.path.join(base_path,"mock_configs/")
+        # ai_player is the default
+      
         
         self.json_filename = "bots_configs_archive.json"
 

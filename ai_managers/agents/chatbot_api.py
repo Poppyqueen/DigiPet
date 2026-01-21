@@ -1,3 +1,4 @@
+# chatbot_api.py
 # main endpoint for an AI agent 
 
 
@@ -8,8 +9,8 @@ import time
 # Import AI framework
 
 from inventory_items.inventory_manager import InventoryHouseManager
-from ai_managers.agents.memory.memory_handle import memory_manager # Assuming this is the correct import for your memory class
-from ai_managers.agents.ai_handle import ai_bot # Assuming this is the correct import for your AI class
+from ai_managers.agents.memory.memory_handle import memory_manager 
+from ai_managers.agents.ai_handle import ai_bot 
 from tools.tools_builder.construct_tools import FunctionBuilder
 # Import Utils
 from utils.capture_text import TextCapture # Import the text capture class

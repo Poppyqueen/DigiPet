@@ -1,6 +1,9 @@
 # tts_providers/base_tts_provider.py
 import abc # Abstract Base Classes
 
+# TODO: Implement a new method for each TTS provider to get the available voices. 
+
+
 class BaseTTSProvider(abc.ABC):
     """
     Abstract Base Class (ABC) for Text-to-Speech (TTS) providers.
