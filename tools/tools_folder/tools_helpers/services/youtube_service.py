@@ -379,7 +379,7 @@ class YouTubeTools:
 # 3.  Download the `client_secrets.json` file:
 #     -   After creating the credentials, a pop-up will show your client ID and client secret.
 #     -   Click the "DOWNLOAD JSON" button.
-#     -   Rename the downloaded file to `client_secrets.json` and place it a secret gitignored folder. Currently 'bots/secrets/'.
+#     -   Rename the downloaded file to `client_secrets.json` and place it a secret gitignored folder. Currently 'secrets/'.
 #          
 # 4. Ensure OAuth consent screen and choose scopes inside the Google Cloud Console:
 #    - [https://developers.google.com/workspace/guides/configure-oauth-consent]

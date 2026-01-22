@@ -13,7 +13,8 @@ dependencies = [
     "numpy>=2.2.5",
     "openmeteo_requests>=1.4.0",
     "pydantic>=2.11.4",
-    "python-dotenv>=1.2.1"
+    "python-dotenv>=1.2.1",
+    "lxml>=6.0.2"
 ]
 
 requires-python = ">=3.13"
@@ -28,7 +29,7 @@ groq = ["instructor[groq]==1.10.0", "tokenizers>=0.21.2"]
 
 # API Provider Extras
 youtube = ["google-api-python-client>=2.171.0", "google-auth-oauthlib>=1.2.2", "google-auth-httplib2>=0.2.0"]
-bluesky = ["atproto>=0.0.61", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2", "lxml>=6.0.2"]
+bluesky = ["atproto>=0.0.61", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
 musicbrainz = ["musicbrainzngs>=0.7.1"]
 discogs = ["python3-discogs-client>=2.8"]
 searx = ["trafilatura>=2.0.0"]

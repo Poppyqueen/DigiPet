@@ -40,7 +40,7 @@ class ai_bot:
         return result
 
     # Rename to ai_response
-    async def ai_response(self, mem_structure, depth, max_depth, developer_message=None):
+    async def ai_response(self, mem_structure, depth, max_depth, developer_message=None): #TODO: Document the mem_structure parameter, it does not equal to the StructuredMemory object
             extra_context=""
             if developer_message:
                 extra_context=developer_message

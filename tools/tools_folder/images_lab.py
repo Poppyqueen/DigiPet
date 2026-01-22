@@ -134,11 +134,15 @@ class ImagesLab:
             #### ----- AT TOOLS ----- ### 
 
     def create_svg_image(self, image_name, concept, content):
+        # print(f"--- DEBUG ---")
+        # print(f"Length of image_name: {len(str(image_name))}")
+        # print(f"Value of image_name: {str(image_name)[:100]}...") 
+        # print(f"-------------")
         final_name = make_string_file_safe(image_name)
         svg_path = os.path.join(self.base_path, f"{final_name}.svg")
 
         # Validate SVG content
-        validation_result = self.svg_validator.validate(content)
+        validation_result = self.svg_validator.validate_string(content)
         if not validation_result['valid']:
             return f"SVG validation failed: {validation_result['error']}"
 

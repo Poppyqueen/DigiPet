@@ -2,7 +2,11 @@
 
 # this "adaptor" turns the pygame interface into a user driven controller instead of an AI agent driven one
 
-# TODO: This needs the TTS providers to be added just like in the real bot
+# TODO: this is more of a concept than anything that would be integrated into the final product
+
+# This was made during a lapse in judgment 
+
+# Useful as a testing bed for the tooling and environment with a light token footprint
 
 import os
 import asyncio
@@ -95,6 +99,7 @@ class UserInterfaceChatbot:
             config_manager=config_manager, 
             open_meteo=self.open_meteo
         )
+
 
         # Initialize the command translator (small LLM)
         self.command_translator = CommandTranslator(

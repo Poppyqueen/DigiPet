@@ -20,6 +20,7 @@ initial_states_manager=InitialStateConst()
 
 def extract_color(config_manager, config_name):
     # the configuration file for each individual bot should be in...
+    # TODO: fix this, it works but it is wrong
     pet_config = config_manager.get_config_info(config_name)
     pet_folder=pet_config["AI"]["pets_folder"]
     file_path = f"data_archive/bots/{pet_folder}/inventory/house_inventory_state_id.json"

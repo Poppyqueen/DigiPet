@@ -1,33 +1,10 @@
-# construct_tools.py
+# construct_tools.py - Refactored with Centralized Tool Management
 # This file is responsible for constructing the tools and their definitions for an AI agent.
-# It imports necessary components from other files and defines the FunctionBuilder class.
-# It includes methods to construct function mappings and tool definitions based on the current room's *types*.
-# It also includes a method to call functions dynamically based on the current room and function name.
-# It includes examples on room and item specific functions.
-
-# Notes:
-# The tool definitions are JSON structures, the names and order of arguments are important and need to
-# be consistent with the functions in the tools folder. This is a crucial part of the design of new tools.
-
-# All tools end up here one way or another, if initialized from another module or imported directly for use
-# all tools are included here and then passed to the AI agent
-
-
-# Import necessary components from library_tools.py (and potentially other files)
-# from tools_folder.functions_local import (
-#     get_weather,      # Import the global functions
-#     get_time,
-#     send_email
-# )
-
-# construct_tools.py - Refactored with Unified Tool Definitions System
-# This file is responsible for constructing the tools and their definitions for an AI agent.
-# Now uses a single unified map to handle all tool cases: room types, inventory items, and base functions.
+# Now features a cleaner, centralized approach to tool availability and item-tool relationships.
 
 from utils.loc_datetime import datetime
 import os.path
 import inspect
-
 
 # Import the tool definitions lists
 from .my_tools import (
@@ -61,10 +38,213 @@ from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
 from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
-
 from tools.tools_folder.auction_house import AuctionHouse
-
 from tools.tools_folder.maze import MazeEnvironment
+
+
+class ItemContext:
+    """Centralized context about items and their power states."""
+    
+    def __init__(self, inventory_items, room_items):
+        self.inventory_items = inventory_items or []
+        self.room_items = room_items or []
+        self.all_items = self._build_all_items_map()
+        self.powered_off_items = self._identify_powered_off_items()
+    
+    def _build_all_items_map(self):
+        """Build a unified map of all items by ID."""
+        items_map = {}
+        for item in self.room_items + self.inventory_items:
+            if isinstance(item, dict) and "id" in item:
+                items_map[item["id"]] = item
+        return items_map
+    
+    def _identify_powered_off_items(self):
+        """Identify all items that are powered off."""
+        powered_off = set()
+        for item_id, item in self.all_items.items():
+            if "power_toggle" in item and not item.get("power_toggle", False):
+                powered_off.add(item_id)
+        return powered_off
+    
+    def is_item_in_inventory(self, item_id):
+        """Check if an item is in the inventory."""
+        return any(
+            item.get("id") == item_id 
+            for item in self.inventory_items 
+            if isinstance(item, dict)
+        )
+    
+    def is_item_powered_on(self, item_id):
+        """Check if an item is powered on (or has no power toggle)."""
+        return item_id not in self.powered_off_items
+    
+    def get_item(self, item_id):
+        """Get item data by ID."""
+        return self.all_items.get(item_id)
+    
+    def get_items_by_type(self, item_types, location=None):
+        """
+        Get items matching any of the given types.
+        
+        Args:
+            item_types: List of item type strings to match
+            location: 'inventory', 'room', or None for both
+        """
+        matching_items = []
+        
+        items_to_check = []
+        if location == 'inventory':
+            items_to_check = self.inventory_items
+        elif location == 'room':
+            items_to_check = self.room_items
+        else:
+            items_to_check = list(self.all_items.values())
+        
+        for item in items_to_check:
+            if not isinstance(item, dict):
+                continue
+            
+            item_item_types = item.get("type", [])
+            if any(itype in item_types for itype in item_item_types):
+                matching_items.append(item)
+        
+        return matching_items
+
+
+class ToolAvailabilityChecker:
+    """Centralized logic for determining tool availability."""
+    
+    def __init__(self, item_context, current_room_types):
+        self.item_context = item_context
+        self.current_room_types = current_room_types
+    
+    def is_tool_available(self, tool_config):
+        """
+        Determine if a tool should be available based on current context.
+        
+        Returns:
+            bool: True if the tool should be available
+        """
+        # Skip if functions are None (failed initialization)
+        functions = tool_config.get("functions", {})
+        if any(func is None for func in functions.values()):
+            return False
+        
+        use_level = tool_config.get("use_level", "")
+        
+        # Always available tools
+        if use_level == "always_available":
+            return True
+        
+        # Check room types and item types
+        room_match = self._check_room_match(tool_config)
+        item_match = self._check_item_match(tool_config)
+        
+        return room_match or item_match
+    
+    def _check_room_match(self, tool_config):
+        """Check if tool matches current room types."""
+        room_types = tool_config.get("room_types", [])
+        if not room_types:
+            return False
+        return any(rt in self.current_room_types for rt in room_types)
+    
+    def _check_item_match(self, tool_config):
+        """Check if tool matches available items based on use_level."""
+        item_types = tool_config.get("item_types", [])
+        if not item_types:
+            return False
+        
+        use_level = tool_config.get("use_level", "")
+        
+        # Get matching items based on location requirements
+        if use_level == "inventory_only":
+            matching_items = self.item_context.get_items_by_type(item_types, location='inventory')
+        elif use_level == "room_only":
+            matching_items = self.item_context.get_items_by_type(item_types, location='room')
+        else:  # dual_use, room_type, or other
+            matching_items = self.item_context.get_items_by_type(item_types)
+        
+        # Filter out powered-off items
+        for item in matching_items:
+            item_id = item.get("id")
+            if item_id and self.item_context.is_item_powered_on(item_id):
+                return True
+        
+        return False
+
+
+class ItemToolMapper:
+    """Centralized logic for mapping items to their provided tools."""
+    
+    def __init__(self, tool_definitions, item_context):
+        self.tool_definitions = tool_definitions
+        self.item_context = item_context
+    
+    def get_tools_for_item(self, item_id):
+        """
+        Get all tool names that an item provides.
+        
+        Args:
+            item_id: The ID of the item
+            
+        Returns:
+            list: Tool names provided by this item (empty if powered off)
+        """
+        item = self.item_context.get_item(item_id)
+        if not item:
+            return []
+        
+        # Check if powered off
+        if not self.item_context.is_item_powered_on(item_id):
+            return []
+        
+        item_types = item.get("type", [])
+        is_in_inventory = self.item_context.is_item_in_inventory(item_id)
+        
+        provided_tools = []
+        
+        # Check each tool definition
+        for tool_key, tool_config in self.tool_definitions.items():
+            tool_item_types = tool_config.get("item_types", [])
+            if not tool_item_types:
+                continue
+            
+            # Check if item type matches
+            if not any(itype in tool_item_types for itype in item_types):
+                continue
+            
+            # Check if item location matches use_level
+            use_level = tool_config.get("use_level", "")
+            
+            can_provide = False
+            if use_level == "inventory_only":
+                can_provide = is_in_inventory
+            elif use_level == "room_only":
+                can_provide = not is_in_inventory
+            elif use_level in ["dual_use", "room_type"]:
+                can_provide = True
+            
+            if can_provide:
+                # Add all function names from this tool config
+                functions = tool_config.get("functions", {})
+                provided_tools.extend(functions.keys())
+        
+        return provided_tools
+    
+    def get_all_items_tool_map(self):
+        """
+        Create a mapping of all item IDs to their provided tools.
+        
+        Returns:
+            dict: {item_id: [list of tool names]}
+        """
+        tool_map = {}
+        for item_id in self.item_context.all_items.keys():
+            tool_map[item_id] = self.get_tools_for_item(item_id)
+        return tool_map
+
 
 class FunctionBuilder:
     def __init__(self, state_manager=None, signal=None, subdirectory=None, memory_manager=None, config_manager=None, open_meteo=None):
@@ -88,10 +268,8 @@ class FunctionBuilder:
         self.garden_manager = Garden_Mananger(self.state_manager, self._signal_callback, self.open_meteo)
         self.images_lab = ImagesLab(self.sub_directory)
         self.dispenser_tools = DispenserTools(self.state_manager, self._signal_callback)
-
-        self.auction_house=AuctionHouse(state_manager)
-
-        self.maze=MazeEnvironment(state_manager, self._signal_callback)
+        self.auction_house = AuctionHouse(state_manager)
+        self.maze = MazeEnvironment(state_manager, self._signal_callback)
 
         self.A_Life = None
         self._init_alife()
@@ -167,7 +345,7 @@ class FunctionBuilder:
                     "move_to_room": self.state_manager.set_current_room,
                     "list_all_rooms": self.state_manager.get_all_rooms,
                     "pick_up_item": self.state_manager.pickup_item,
-                    # "examine_item": self.state_manager.get_item_details,
+                    # "examine_item": self.state_manager.get_item_details, # Old method
                     "examine_item": self.get_item_details_with_tools,
                     "drop_item": self.state_manager.drop_item,
                     "add_item_description": self.state_manager.add_item_description,
@@ -302,6 +480,7 @@ class FunctionBuilder:
                 "item_types": ["art_book"],
                 "use_level": "inventory_only"
             },
+          
             # Dual-use item tools (available in room or inventory)
             "seat": {
                 "functions": {
@@ -332,31 +511,31 @@ class FunctionBuilder:
                 "definitions": bedroom_tools,
                 "item_types": ["bed"],
                 "use_level": "dual_use",
-                #"room_types": ["bedroom"]
+                #"room_types": ["bedroom"] # Left in for reference
             },
 
-            "pillow":{
-                "functions":{
+            "pillow": {
+                "functions": {
                     "hug_pillow": self.room_tools.bedroom.hug_pillow
                 },
                 "definitions": bedroom_tools,
                 "item_types": ["pillow"],
                 "use_level": "dual_use",
-                #"room_types": ["bedroom"]
+                #"room_types": ["bedroom"] # Left in for reference
             },
 
-            "tv":{
-                "functions":{
+            "tv": {
+                "functions": {
                     "watch_tv": self.room_tools.living_room.watch_tv,
                 },
                 "definitions": living_room_tools,
                 "item_types": ["tv"],
                 "use_level": "dual_use",
-                #"room_types": ["living_room"]
+                #"room_types": ["living_room"] # Left in for reference
             },
 
-            "auction":{
-                "functions":{
+            "auction": {
+                "functions": {
                     "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
                     "computer_lookup_auction_house_item": self.auction_house.lookup_item,
                     "computer_buy_item": self.auction_house.buy_item,
@@ -369,7 +548,6 @@ class FunctionBuilder:
             },
 
             # Room Only Tools
-
             "dispenser": {
                 "functions": {
                     "dispense_candy": self.dispenser_tools.dispense_candy,
@@ -392,10 +570,10 @@ class FunctionBuilder:
                 "functions": {
                     "computer_search_wikipedia_articles": self.room_tools.computer.search_wikipedia_articles,
                     "computer_get_wikipedia_article_content": self.room_tools.computer.get_wikipedia_article_content,
-                    #"random_wikipedia": self.room_tools.computer.random_wikipedia
+                    #"random_wikipedia": self.room_tools.computer.random_wikipedia # Old, not used, could be though
                 },
                 "definitions": computer_room_tools,
-                #"room_types": ["computer_room"],
+                #"room_types": ["computer_room"], # Left in for reference
                 "item_types": ["wikipedia", "laptop", "desktop_computer"],
                 "display_information": self.room_tools.computer.display_information,
                 "use_level": "dual_use"
@@ -480,81 +658,118 @@ class FunctionBuilder:
             }
             print("SearxNG tools added to unified definitions.")
 
+    def _init_alife(self):
+        """Initialize the ALifeSimulation instance."""
+        archive_dir = os.path.join(self.sub_directory, "simulation_archives")
+        os.makedirs(archive_dir, exist_ok=True)
+        
+        try:
+            self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
+            print("ALifeSimulation instance created.")
+            
+            # Load existing simulation or create new one
+            manager = self.A_Life.simulations_manager
+            if manager:
+                sim_ids = list(manager._state.keys())
+                current_sim_id = None
+                current_step = 0
+                
+                if sim_ids:
+                    state_info = self.state_manager.get_sim_state()
+                    sim_id = state_info.get("id_value", None)
+                    current_step = state_info.get("sim_current_step", 0)
+                    
+                    if not sim_id or sim_id not in sim_ids:
+                        current_sim_id = sim_ids[0]
+                    else:
+                        current_sim_id = sim_id
+                    
+                    load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
+                    print(f"Loaded simulation: {load_message}")
+                else:
+                    message = self.A_Life.create_new_simulation()
+                    current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager._state else "N/A"
+                    print(f"Created new simulation: {message}")
+                
+                if self.A_Life and self.A_Life.history:
+                    self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
+                    
+        except Exception as e:
+            print(f"Error initializing ALifeSimulation: {e}")
+            self.A_Life = None
 
-# Toggle Implementation
-# Toggle Implementation
+    def _get_current_context(self):
+        """Get the current context including room types and items."""
+        current_room_types = self.get_current_room_types()
+        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
+        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        
+        item_context = ItemContext(inventory_items, items_in_room)
+        
+        return current_room_types, item_context
 
-    def _get_power_toggle_tools(self, items_in_room, inventory_items):
+    def get_current_room_types(self):
+        """Retrieve the list of types for the current room."""
+        current_id = self.state_manager.get_current_room_id()
+        room = self.state_manager.room_manager._find_room_by_id(current_id)
+        if room and "room_types" in room:
+            return room["room_types"]
+        return []
+
+    def _generate_power_toggle_tools(self, item_context):
         """
         Generate dynamic toggle tools for items with power_toggle capability.
-        Returns: (toggle_definitions, powered_on_items, powered_off_items)
+        
+        Returns:
+            list: Toggle tool definitions
         """
-
         toggle_definitions = []
-        powered_on_items = set()  # item IDs that are ON
-        powered_off_items = set()  # item IDs that are OFF
         
-        # Check all items (both inventory and room)
-
-        all_items = inventory_items + items_in_room
-
-        
-        for item in all_items:
-            if not isinstance(item, dict):
-                continue
-                
-            # Check if item has power_toggle capability
+        for item_id, item in item_context.all_items.items():
             if "power_toggle" not in item:
                 continue
-                
-            item_id = item.get("id")
+            
             item_name = item.get("name", "Unknown Item")
             is_powered_on = item.get("power_toggle", False)
             
             if is_powered_on:
-                powered_on_items.add(item_id)
                 # Create "toggle OFF" tool
-                toggle_definitions.append(
-                {
-                "type": "function",
-                "name":f"toggle_OFF_{item_id}",
-                "description":f"Turn OFF the {item_name} {item_id}. This will disable its functions until turned back on.",
-                "parameters":{
-                    "type":"object",
-                    "properties":{
-                        "item_id":{
-                            "type":"number",
-                            "description":f"The ID of the item to toggle OFF (use: {item_id})"
-                        }
-                    },
-                    "required":["item_id"],
-                    "additionalProperties":False
-                }
-                }
-                )
+                toggle_definitions.append({
+                    "type": "function",
+                    "name": f"toggle_OFF_{item_id}",
+                    "description": f"Turn OFF the {item_name} {item_id}. This will disable its functions until turned back on.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "number",
+                                "description": f"The ID of the item to toggle OFF (use: {item_id})"
+                            }
+                        },
+                        "required": ["item_id"],
+                        "additionalProperties": False
+                    }
+                })
             else:
-                powered_off_items.add(item_id)
                 # Create "toggle ON" tool
-                toggle_definitions.append(
-                {
-                "type": "function",
-                "name":f"toggle_ON_{item_id}",
-                "description":f"Turn ON the {item_name} {item_id}. This will enable its functions.",
-                "parameters":{
-                    "type":"object",
-                    "properties":{
-                        "item_id":{
-                            "type":"number",
-                            "description":f"The ID of the item to toggle ON (use: {item_id})"
-                        }
-                    },
-                    "required":["item_id"],
-                    "additionalProperties":False
-                }
-                }
-                )
+                toggle_definitions.append({
+                    "type": "function",
+                    "name": f"toggle_ON_{item_id}",
+                    "description": f"Turn ON the {item_name} {item_id}. This will enable its functions.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "number",
+                                "description": f"The ID of the item to toggle ON (use: {item_id})"
+                            }
+                        },
+                        "required": ["item_id"],
+                        "additionalProperties": False
+                    }
+                })
         
-        return toggle_definitions, powered_on_items, powered_off_items
+        return toggle_definitions
 
     def _toggle_item_power(self, item_id: str, turn_on: bool):
         """
@@ -602,117 +817,6 @@ class FunctionBuilder:
         
         return f"Successfully turned {state_str} the {item_name}."
 
-    def _init_alife(self):
-        """Initialize the ALifeSimulation instance."""
-        archive_dir = os.path.join(self.sub_directory, "simulation_archives")
-        os.makedirs(archive_dir, exist_ok=True)
-        
-        try:
-            self.A_Life = simulation.ALifeSimulation(archive_path=archive_dir, state_manager=self.state_manager, signal=self._signal_callback)
-            print("ALifeSimulation instance created.")
-            
-            # Load existing simulation or create new one
-            manager = self.A_Life.simulations_manager
-            if manager:
-                sim_ids = list(manager._state.keys())
-                current_sim_id = None
-                current_step = 0
-                
-                if sim_ids:
-                    state_info = self.state_manager.get_sim_state()
-                    sim_id = state_info.get("id_value", None)
-                    current_step = state_info.get("sim_current_step", 0)
-                    
-                    if not sim_id or sim_id not in sim_ids:
-                        current_sim_id = sim_ids[0]
-                    else:
-                        current_sim_id = sim_id
-                    
-                    load_message = self.A_Life.load_previous_simulation(current_sim_id, current_step)
-                    print(f"Loaded simulation: {load_message}")
-                else:
-                    message = self.A_Life.create_new_simulation()
-                    current_sim_id = list(self.A_Life.simulations_manager._state.keys())[0] if self.A_Life.simulations_manager._state else "N/A"
-                    print(f"Created new simulation: {message}")
-                
-                if self.A_Life and self.A_Life.history:
-                    self.state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
-                    
-        except Exception as e:
-            print(f"Error initializing ALifeSimulation: {e}")
-            self.A_Life = None
-
-    def get_current_room_types(self):
-        """Retrieve the list of types for the current room."""
-        current_id = self.state_manager.get_current_room_id()
-        room = self.state_manager.room_manager._find_room_by_id(current_id)
-        if room and "room_types" in room:
-            return room["room_types"]
-        return []
-        
-
-    def _tool_should_be_available(self, tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
-        """
-        Determine if a tool should be available based on current context.
-        A tool is available if ANY of its criteria match the current context.
-        
-        Args:
-            powered_off_items: Set of item IDs that are currently powered OFF
-        """
-        # Skip if functions are None (failed initialization)
-        functions = tool_config.get("functions", {})
-        if any(func is None for func in functions.values()):
-            return False
-        
-        # Always available tools
-        use_level = tool_config.get("use_level", "")
-        if use_level == "always_available":
-            return True
-        
-        # Get room and item type lists
-        room_types = tool_config.get("room_types", [])
-        item_types = tool_config.get("item_types", [])
-        
-        # Track if we found a match
-        room_match = False
-        item_match = False
-        
-        # Check room types if they exist
-        if room_types and any(rt in current_room_types for rt in room_types):
-            room_match = True
-        
-        # Check item types if they exist
-        if item_types:
-            # Helper to check if item is powered and matches types
-            def check_item_match(item):
-                if not isinstance(item, dict):
-                    return False
-                item_id = item.get("id")
-                item_types_list = item.get("type", [])
-                type_matches = any(it in item_types for it in item_types_list)
-                
-                # If item has power_toggle and is OFF, exclude it
-                if type_matches and "power_toggle" in item and item_id in powered_off_items:
-                    return False
-                
-                return type_matches
-            
-            # For inventory_only tools, only check inventory
-            if use_level == "inventory_only":
-                item_match = any(check_item_match(inv_item) for inv_item in inventory_items)
-            
-            elif use_level == "room_only":
-                item_match = any(check_item_match(room_item) for room_item in items_in_room)
-            
-            # For dual_use and room_type tools, check both inventory and room items
-            else:
-                item_match = (
-                    any(check_item_match(inv_item) for inv_item in inventory_items) or
-                    any(check_item_match(room_item) for room_item in items_in_room)
-                )
-        
-        return room_match or item_match
-
     def construct_map(self):
         """Construct the function mapping based on current state using the unified system."""
         self.function_map = {}
@@ -721,19 +825,15 @@ class FunctionBuilder:
         print("DEBUG: Constructing function map from unified tool definitions...")
         
         # Get current context
-        current_room_types = self.get_current_room_types()
-        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
-        
-        # Get power toggle info
-        _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
+        current_room_types, item_context = self._get_current_context()
+        checker = ToolAvailabilityChecker(item_context, current_room_types)
         
         # Add dynamic toggle functions to function map
-        all_items = inventory_items + items_in_room
-        for item in all_items:
-            if not isinstance(item, dict) or "power_toggle" not in item:
+        for item_id in item_context.all_items.keys():
+            item = item_context.get_item(item_id)
+            if "power_toggle" not in item:
                 continue
-            item_id = item.get("id")
+            
             is_powered_on = item.get("power_toggle", False)
             
             if is_powered_on:
@@ -743,7 +843,7 @@ class FunctionBuilder:
         
         # Process each tool definition
         for tool_key, tool_config in self.tool_definitions.items():
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
+            if checker.is_tool_available(tool_config):
                 functions = tool_config.get("functions", {})
                 self.function_map.update(functions)
                 available_tool_keys.add(tool_key)
@@ -762,20 +862,17 @@ class FunctionBuilder:
         print("DEBUG: Constructing tool definitions from unified system...")
         
         # Get current context
-        current_room_types = self.get_current_room_types()
-        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        current_room_types, item_context = self._get_current_context()
+        checker = ToolAvailabilityChecker(item_context, current_room_types)
         
-        # Get power toggle tools and info
-        toggle_definitions, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
-        
-        # Add toggle tools first
+        # Get and add power toggle tools first
+        toggle_definitions = self._generate_power_toggle_tools(item_context)
         all_definitions.extend(toggle_definitions)
         seen_tool_names.update(d['name'] for d in toggle_definitions)
         
         # Process each tool definition
         for tool_key, tool_config in self.tool_definitions.items():
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
+            if checker.is_tool_available(tool_config):
                 definitions = tool_config.get("definitions", [])
                 
                 # Add definitions uniquely, only for functions that are actually available
@@ -788,6 +885,9 @@ class FunctionBuilder:
                         seen_tool_names.add(tool_name)
         
         print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools (including {len(toggle_definitions)} toggle tools)")
+        # Detailed Debugging
+        print(f"DEBUG: Available tool names: {seen_tool_names}")
+        print(f"DEBUG: Available function names: {available_function_names}")
         
         return all_definitions
 
@@ -826,9 +926,6 @@ class FunctionBuilder:
             current_room_name = self.state_manager.get_current_room_name()
             print(f"Warning: Unknown function: {name} in room '{current_room_name}'")
             return f"Error: Unknown function '{name}' is not available in your current location ({current_room_name}) or with your current inventory."
-        
-
-
 
     def get_current_tools_info(self):
         """
@@ -848,10 +945,9 @@ class FunctionBuilder:
         # Start with the general room description
         body_parts = [room_description] if room_description else []
         
-        # Get current context to determine what tools are available
-        current_room_types = self.get_current_room_types()
-        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        # Get current context
+        current_room_types, item_context = self._get_current_context()
+        checker = ToolAvailabilityChecker(item_context, current_room_types)
         
         # Check all tool definitions for display_information functions
         for tool_key, tool_config in self.tool_definitions.items():
@@ -860,11 +956,9 @@ class FunctionBuilder:
             # Skip if no display function
             if not display_info_func:
                 continue
-
-            _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
             
             # Check if this tool should be included based on current context
-            if self._tool_should_be_available(tool_config, current_room_types, items_in_room, inventory_items, powered_off_items):
+            if checker.is_tool_available(tool_config):
                 try:
                     type_info = display_info_func()
                     if type_info:
@@ -891,8 +985,6 @@ class FunctionBuilder:
         
         print(f"DEBUG: Room info constructed with {len(body_parts)} sections")
         return info
-    
-
 
     def construct_context(self):
         """
@@ -915,7 +1007,6 @@ class FunctionBuilder:
         format_room = f"Currently, you are in: {current_room_name}\n"
 
         context.append(format_room)
-        #context.append(descriptions)
 
         # Append already formatted context
         context.append("\n#############\n")
@@ -926,9 +1017,6 @@ class FunctionBuilder:
         context.append("In your inventory the current items are:")
         context.append(self.state_manager.get_inventory_items())
         context.append("#############")
-        # context.append("In the current room the items are:")
-        # context.append(self.state_manager.inventory_service.list_items_in_current_room()) # Keep it lean, deactivate this if necesary
-        # context.append("\n#############\n")
         context.append("Current stats:")
         context.append(self.state_manager.get_stats())
 
@@ -936,122 +1024,24 @@ class FunctionBuilder:
 
         # Add weather context ONLY if the room type is "garden"
         if "garden" in current_room_types:
-             try:
-                 weather_info = self.open_meteo.get_full_weather()
-                 context.append("#############")
-                 context.append("Current outdoor weather:")
-                 context.append(weather_info)
-             except Exception as e:
-                 print(f"Warning: Could not fetch weather for garden: {e}")
-                 context.append("#############")
-                 context.append("Could not retrieve current outdoor weather.")
-
-
+            try:
+                weather_info = self.open_meteo.get_full_weather()
+                context.append("#############")
+                context.append("Current outdoor weather:")
+                context.append(weather_info)
+            except Exception as e:
+                print(f"Warning: Could not fetch weather for garden: {e}")
+                context.append("#############")
+                context.append("Could not retrieve current outdoor weather.")
 
         context.append("#############")
         context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")
         string_context = "\n".join(context)
         return string_context
 
-    # TODO: This is awful, rewrite this, or integrate it, or SOMETHING 
-
-    def _get_item_tools_map(self, inventory_items, items_in_room, inventory_only=False):
-        """
-        Internal method to create item-to-tools mapping.
-        
-        Args:
-            inventory_items: List of items in inventory
-            items_in_room: List of items in current room
-            inventory_only: If True, only map inventory items. If False, map all items.
-            
-        Returns:
-            dict: {item_id: [list of tool names provided by this item]}
-        """
-        item_tools_map = {}
-        
-        # Get powered off items
-        _, _, powered_off_items = self._get_power_toggle_tools(items_in_room, inventory_items)
-        
-        # Determine which items to process
-        if inventory_only:
-            items_to_process = inventory_items
-        else:
-            # Combine both, but use a dict to avoid duplicates by item_id
-            all_items_dict = {}
-            for item in items_in_room:
-                if isinstance(item, dict) and "id" in item:
-                    all_items_dict[item["id"]] = item
-            for item in inventory_items:
-                if isinstance(item, dict) and "id" in item:
-                    all_items_dict[item["id"]] = item
-            items_to_process = list(all_items_dict.values())
-        
-        # Process each item
-        for item in items_to_process:
-            if not isinstance(item, dict):
-                continue
-                
-            item_id = item.get("id")
-            item_types = item.get("type", [])
-            
-            if not item_id:
-                continue
-            
-            # Check if item is in inventory
-            is_in_inventory = any(
-                inv_item.get("id") == item_id 
-                for inv_item in inventory_items 
-                if isinstance(inv_item, dict)
-            )
-            
-            # Check if item is powered off (if it has power toggle capability)
-            if "power_toggle" in item and item_id in powered_off_items:
-                # Powered off items don't provide tools
-                item_tools_map[item_id] = []
-                continue
-            
-            # List to store tool names this item provides
-            provided_tools = []
-            
-            # Check each tool definition to see if this item enables it
-            for tool_key, tool_config in self.tool_definitions.items():
-                # Skip tools without item_types requirement
-                tool_item_types = tool_config.get("item_types", [])
-                if not tool_item_types:
-                    continue
-                
-                # Check if this item's types match the tool's requirements
-                if any(item_type in tool_item_types for item_type in item_types):
-                    use_level = tool_config.get("use_level", "")
-                    
-                    # Determine if this item can provide these tools based on use_level and location
-                    can_provide = False
-                    
-                    if use_level == "inventory_only":
-                        # Only if item is in inventory
-                        can_provide = is_in_inventory
-                    elif use_level == "room_only":
-                        # Only if item is in room (not in inventory)
-                        can_provide = not is_in_inventory
-                    elif use_level == "dual_use":
-                        # Can be used from either location
-                        can_provide = True
-                    elif use_level == "room_type":
-                        # Can be used from either location (like dual_use)
-                        can_provide = True
-                    
-                    if can_provide:
-                        # Get ONLY the function names this tool config actually provides
-                        functions = tool_config.get("functions", {})
-                        for func_name in functions.keys():
-                            if func_name not in provided_tools:
-                                provided_tools.append(func_name)
-            
-            # Add to map (even if empty list, so we know we checked this item)
-            item_tools_map[item_id] = provided_tools
-        
-        return item_tools_map
-
+    # ========================================================================
+    # CENTRALIZED ITEM-TOOL RELATIONSHIP METHODS
+    # ========================================================================
 
     def get_all_item_tools_map(self):
         """
@@ -1060,12 +1050,9 @@ class FunctionBuilder:
         Returns:
             dict: {item_id: [list of tool names provided by this item]}
         """
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
-        items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
-        
-        return self._get_item_tools_map(inventory_items, items_in_room, inventory_only=False)
-
-
+        _, item_context = self._get_current_context()
+        mapper = ItemToolMapper(self.tool_definitions, item_context)
+        return mapper.get_all_items_tool_map()
 
     def get_item_info_with_tools(self, item_id):
         """
@@ -1082,38 +1069,40 @@ class FunctionBuilder:
         if error:
             return {"error": error}
         
-        # 1. Determine Power State
-        # If "power_toggle" exists, use its value. If not, it's always True.
+        # Get item context
+        _, item_context = self._get_current_context()
+        
+        # Determine power state
         has_switch = "power_toggle" in item_data
-        is_powered_on = item_data.get("power_toggle", True) 
+        is_powered_on = item_context.is_item_powered_on(item_id)
         
-        # 2. Map Tools - use ALL items map since we might be examining room items
-        tools_map = self.get_all_item_tools_map() # TODO: This is broken, it 
-        all_potential_tools = tools_map.get(item_id, [])
-        
-        # 3. Filter Tools based on power
-        # Tools are active if the item is powered ON or if it doesn't need power at all.
-        active_tools = all_potential_tools if is_powered_on else []
+        # Get tools this item provides
+        mapper = ItemToolMapper(self.tool_definitions, item_context)
+        provided_tools = mapper.get_tools_for_item(item_id)
         
         return {
             "item_name": item_data.get("name", "Unknown"),
             "has_power_switch": has_switch,
             "is_powered_on": is_powered_on,
-            "provided_tools": active_tools
+            "provided_tools": provided_tools
         }
 
-    def get_item_details_with_tools(self, item_id): # TODO: This is a bit of a hack, but it works for now. It is an attempt to make the system clearer for the LLM to understand.
+    def get_item_details_with_tools(self, item_id):
         """
         Get detailed information about an item including what tools it provides.
+        Formatted for display to the user.
         
         Args:
             item_id: The ID of the item to query
             
         Returns:
-            dict: Information about the item and its tools
+            str: Formatted item information
         """
-        
         info = self.get_item_info_with_tools(item_id)
+        
+        if "error" in info:
+            return info["error"]
+        
         extra_descriptions = []
 
         # Only mention power if the item actually has a toggle switch
@@ -1128,15 +1117,18 @@ class FunctionBuilder:
         elif info.get("has_power_switch") and not info["is_powered_on"]:
             extra_descriptions.append("Turn the power on to use this item's tools.")
 
-
+        # Get base item details
         item_meta = self.state_manager.get_item_details(item_id, internal=True)
         data = item_meta.get("details", {})
-        item_display = self.state_manager.inventory_service._format_item_for_display(data) # this is ugly, but it works
+        item_display = self.state_manager.inventory_service._format_item_for_display(data)
         descriptions = data.get("descriptions", [])
+        
         output_string = f"{item_display}\n\n"
+        
         if descriptions and isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
             all_descriptions = descriptions + extra_descriptions
             output_string += "\n".join(all_descriptions)
         else:
             output_string += "(No description available.)"
+        
         return output_string

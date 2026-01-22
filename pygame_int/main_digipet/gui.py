@@ -1,5 +1,10 @@
 # gui.py
 
+# TODO: change drawing the order of the icon pop ups and any other pop ups under the inventory screen,
+#       top right icon pop ups should consider the new clock UI we have, and change its position, the clock opens and closes. 
+#       draw the clock under the inventory screen.
+#       info screen should also be drawn over pop ups, and over the inventory screen.
+
 from pygame_int import config
 from pygame_int import state
 from pygame_int.main_digipet import animation

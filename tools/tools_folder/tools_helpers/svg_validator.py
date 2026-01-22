@@ -17,29 +17,6 @@ class SVGValidator:
         """
         self.max_size = max_size_mb * 1024 * 1024
     
-    def validate(self, svg_input: Union[str, Path, bytes]) -> Dict[str, Any]:
-        """
-        Validate SVG from string, file path, or bytes
-        
-        Args:
-            svg_input: SVG content as string, file path, or bytes
-            
-        Returns:
-            dict with keys: valid (bool), error (str), line (int), column (int)
-        """
-        # Handle different input types
-        if isinstance(svg_input, (str, Path)) and Path(svg_input).exists():
-            return self.validate_file(svg_input)
-        elif isinstance(svg_input, bytes):
-            return self.validate_bytes(svg_input)
-        elif isinstance(svg_input, str):
-            return self.validate_string(svg_input)
-        else:
-            return {
-                "valid": False,
-                "error": "Invalid input type"
-            }
-    
     def validate_string(self, svg_string: str) -> Dict[str, Any]:
         """
         Validate SVG from string

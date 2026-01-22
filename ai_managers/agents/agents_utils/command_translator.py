@@ -11,6 +11,7 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 from utils.pydantic_models import StructuredMemory, UserMessage
 
 
+
 class CommandTranslator:
     """
     Uses a small, fast LLM to translate natural language user commands 
@@ -68,22 +69,22 @@ Command: "what's in this room?" | Executed: none
 → "You look around the room carefully."
 """
 
-    def __init__(self, functions_builder, text_capture, config_manager):
+    def __init__(self, config_manager, functions_builder, text_capture):
+        
         self.functions_builder = functions_builder
         self.text_capture = text_capture
-        
-        # Load translator LLM client (small, fast model)
-        translator_provider = 'openai' #'ollama' # config_manager.get_config('AI', 'translator_provider')
-        translator_model = 'gpt-5-mini' #'functiongemma:270m-it-fp16' # config_manager.get_config('AI', 'translator_model')
+        act_model = config_manager.get_config('AI','general_model')
+        config_selected_provider = config_manager.get_config('AI','general_ai_provider')
         
         self.llm_client: AbstractLLMClient = AIConfiguration(
-            provider=translator_provider,
-            model=translator_model,
+            provider=config_selected_provider,
+            model=act_model,
             mode="agent"
         ).get_client()
         
-        self.model_name = translator_model
-        print(f"CommandTranslator initialized with {translator_model}")
+        self.model_name = act_model
+
+        print(f"CommandTranslator initialized with {act_model}")
 
     async def translate_to_functions(self, user_input: str, current_context: dict) -> List[Dict[str, Any]]:
         """

@@ -485,18 +485,8 @@ except pygame.error:
 
 
 
-bots_archive_dir="data_archive"
-
-
-
-if game_mode == "mock": # Mock configuration, leave as is
-    config_manager = ConfigManager(bots_archive_dir, config_type="mock")
-elif game_mode == "user_player":
-    config_manager = ConfigManager(bots_archive_dir, config_type="user_player")
-elif game_mode == "ai_player":
-    config_manager = ConfigManager(bots_archive_dir, config_type="ai_player")
-else:
-    raise ValueError(f"Invalid game mode: {game_mode}")
+bots_archive_dir=f"data_archive/{game_mode}/"
+config_manager = ConfigManager(bots_archive_dir)
 
 
 # Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
