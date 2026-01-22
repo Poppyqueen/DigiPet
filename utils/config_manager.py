@@ -14,6 +14,7 @@ class ConfigManager(GenericJsonTool):
         
         self.archive = self._state
         self.active_config = {}  # This is now a simple dictionary
+        self.current_config_name = None
 
         
         print("ConfigManager initialized. Archive managed by GenericJsonTool.")
@@ -23,10 +24,32 @@ class ConfigManager(GenericJsonTool):
         self._write_json(self.archive)
         print(f"Configuration '{config_name}' saved to archive.")
 
+        # Hell on earth
+        self.current_config_name = config_name
+
+    def save_config_to_current(self):
+        if not self.current_config_name:
+            print("No current config name set. Cannot save to current.")
+            return
+        self.save_config_to_archive(self.current_config_name)
+        print(f"Configuration '{self.current_config_name}' saved to current.")
+
+
+
     def load_config_from_archive(self, config_name):
         if config_name in self.archive:
             self.active_config = self.archive[config_name]
             #print(f"Configuration '{config_name}' loaded from archive. Now the active config.")
+        else:
+            print(f"Error: Configuration '{config_name}' not found in the archive.")
+            return None
+
+    def examine_config(self, config_name, section, option):
+        if config_name in self.archive:
+            config = self.archive[config_name]
+            section_data = config.get(section, {})
+            option_value = section_data.get(option)
+            return option_value
         else:
             print(f"Error: Configuration '{config_name}' not found in the archive.")
             return None

@@ -16,7 +16,7 @@ voices_map={
 
 class PiperTTSProvider(BaseTTSProvider):
     def __init__(self, voice_name="libritts-r-medium", signal_callback=None):
-        use_cuda = False # TODO: Figure out how to change this on the fly preferably without torch
+        use_cuda = False # TODO: Figure out how to change this on the fly preferably without torch?
         super().__init__(signal_callback)
         if voice_name == "":
             voice_name = "libritts-r-medium"

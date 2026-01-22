@@ -1,9 +1,5 @@
 # gui.py
 
-# TODO: change drawing the order of the icon pop ups and any other pop ups under the inventory screen,
-#       top right icon pop ups should consider the new clock UI we have, and change its position, the clock opens and closes. 
-#       draw the clock under the inventory screen.
-#       info screen should also be drawn over pop ups, and over the inventory screen.
 
 from pygame_int import config
 from pygame_int import state
@@ -121,7 +117,7 @@ def handle_gui_event(event):
         # --- 2. PRIORITY: Clock Toggles ---
         # We check this BEFORE the main panel logic.
         # We use the function from gui_clock to handle the logic and state change.
-        if event.button == 1:
+        if event.button == 1 and not state.inventory_panel_visible and not state.lore_panel_visible:
             if gui_clock.handle_clock_click(mouse_pos):
                 return # Click handled by clock, stop processing
 
@@ -291,7 +287,9 @@ def draw_gui(screen, current_time_ms, is_input_locked):
         gui_care_package.draw_package_buttons(screen, is_input_locked)
 
         gui_popups.draw_popups(screen)
-
+        gui_popups.draw_active_image_popups(screen)
+        gui_clock.draw_current_time(screen)
+        gui_clock.draw_sleep_duration(screen) 
 
         if state.inventory_panel_visible:
             gui_inventory.draw_inventory_panel(screen)
@@ -381,8 +379,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
                 line_end = (button_rect.right - button_rect.width // 4, button_rect.bottom - button_rect.height // 4)
                 pygame.draw.line(screen, icon_color, line_start, line_end, 2)
 
-        gui_clock.draw_current_time(screen)
-        gui_clock.draw_sleep_duration(screen) # TODO: Implement sleep duration clock
 
         # NEW: Draw Lore Panel if visible (highest layer, after other modals)
         if state.lore_panel_visible:
@@ -398,6 +394,6 @@ def draw_gui(screen, current_time_ms, is_input_locked):
 
 
 
-
-    gui_popups.draw_active_image_popups(screen)
-    gui_popups.draw_popups(screen)
+    else:
+        gui_popups.draw_active_image_popups(screen)
+        gui_popups.draw_popups(screen)

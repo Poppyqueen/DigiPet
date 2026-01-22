@@ -2,7 +2,6 @@ import pygame
 import sys
 from pygame_int import gui_config, state
 from pygame_int import config
-import json
 
 
 
@@ -19,29 +18,13 @@ from inventory_items.base_state_manager.base_state_config import InitialStateCon
 initial_states_manager=InitialStateConst()
 
 def extract_color(config_manager, config_name):
-    # the configuration file for each individual bot should be in...
-    # TODO: fix this, it works but it is wrong
-    pet_config = config_manager.get_config_info(config_name)
-    pet_folder=pet_config["AI"]["pets_folder"]
-    file_path = f"data_archive/bots/{pet_folder}/inventory/house_inventory_state_id.json"
-    
-    default_color = [255, 255, 255]
-    
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            
-            # Check for both the key and its configured status
-            if data.get('is_color_configured') and 'pet_theme_color' in data:
-                color = data['pet_theme_color']
-                #print(f"The pet theme color is: {color}")
-                return color
-            else:
-                return default_color
 
-    except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-        print(f"No color found configured, probably file does not exist yet. Using default.")
-        return default_color
+    default_color = [255, 255, 255]
+    color=config_manager.examine_config(config_name,'game_settings','pet_color')
+    if not color:
+        color=default_color
+        print(f"No color found for config '{config_name}', It probably hasn't been configured yet. Using default color: {color}")
+    return color
     
 
 def run_config_main_menu_ui(screen, font, config_manager):

@@ -46,7 +46,19 @@ class ImagePopup:
         elif self.type == 1: # Top right icon
             popup_size = (60, 60)
             self.display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
-            self.display_area.topright = (main_display_width, 0)
+
+            # Get the rect for the current time clock
+            current_time_clock_rect = gui_core._current_time_clock_rect
+            # Get the rect for the sleep duration clock
+            sleep_duration_clock_rect = gui_core._sleep_duration_clock_rect
+
+            height_offset = config.PADDING
+            if current_time_clock_rect is not None:
+                height_offset += current_time_clock_rect.height
+            if sleep_duration_clock_rect is not None:
+                height_offset += sleep_duration_clock_rect.height
+
+            self.display_area.topright = (main_display_width, height_offset)
         elif self.type == 2: # Icon on front of character
             popup_size = (150, 150)
             self.display_area = pygame.Rect(0, 0, popup_size[0], popup_size[1])
