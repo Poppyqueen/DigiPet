@@ -168,9 +168,10 @@ When running the project, you can expect:
 
 #### Short term:
 
-* Plants grow a bit too fast, need to adjust the growth rate or tick timer.
+* Add things here
 
-* Implementing different providers for TTS, local and cloud that work across different OSes.
+* When double clicking on the agent, send a message to it with messages like "you feel a unnusual chill on your body" or "an itch on your back overcomes you for a second", "there is a tickle on your head", etc. 
+
 
 #### Long Term:
 

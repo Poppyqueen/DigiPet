@@ -1,12 +1,6 @@
-# auction_house.py 
-
-# This is another AI facing tool, it gives the ability to buy and sell items in a 
-# digital fake marketplace, where it will be able to order stuff from
-
-# we will load an items store and use it with the names to make a map of items being sold at any current time
+# auction_house.py - Case-Insensitive Version
 
 import random
-
 from inventory_items.items_provider.item_store import ItemStore
 from inventory_items.items_provider.items_scanner import FuzzyMatcher
 
@@ -31,13 +25,22 @@ class AuctionHouse:
 
         # Populate the catalogs
         self.item_to_source_map = {}
-        self.currently_selling = {}  # Items available for purchase
-        self.item_valuations = {}    # <--- NEW: Stores the calculated value for ALL items
-        self.accepted_for_selling = set()  # Items accepted for selling
+        self.currently_selling = {}
+        self.item_valuations = {}
+        self.accepted_for_selling = set()
+        
+        # NEW: Case-insensitive lookup maps
+        self.lowercase_to_actual = {}  # Maps lowercase names to actual item names
         
         self._map_items()
-
         self.fuzzy_matcher = FuzzyMatcher(list(self.currently_selling.keys()))
+    
+    def _normalize_item_name(self, item_name):
+        """
+        Convert user input to the actual item name using case-insensitive matching.
+        Returns the actual item name or None if not found.
+        """
+        return self.lowercase_to_actual.get(item_name.lower())
         
     def _add_item_to_inventory(self, item_name):
         item_data = self.item_store.get_item(item_name)
@@ -45,36 +48,20 @@ class AuctionHouse:
 
     def _calc_buy_price(self, mini, maxi, item):
         """Calculate price for items available for purchase"""
-        # Get base price from range
         base_price = random.randint(mini, maxi)
-        
-        # Calculate positive stats bonus
         stats_edit = item.get('stats_edit', {})
-
         positive_stats_sum = sum(max(0, value) for value in stats_edit.values())
-        
-        # Stats multiplier (every 10 positive stats adds 10% to price)
         stats_multiplier = 1.0 + (positive_stats_sum / 500)
-
-        # Rarity modifier based on stackable (stackable = more common = cheaper)
         rarity_multiplier = 0.8 if item.get('stackable', True) else 1.2
-        
-        # Calculate final price
         final_price = base_price * stats_multiplier * rarity_multiplier
-        
-        # Ensure minimum price of 1
         return max(1, int(final_price))
     
     def _calc_sell_price(self, item_name):
         """Calculate price when selling items to auction house"""
-        
-        # 1. Check if we have a pre-calculated valuation (This covers Buyable AND Sell-Only items)
         if item_name in self.item_valuations:
             base_value = self.item_valuations[item_name]
             return int(base_value * 0.8)
 
-        # 2. Fallback for items not in the scan (Failsafe)
-        # Note: This part effectively runs the old logic if the item wasn't found in _map_items
         source_path = self.item_to_source_map.get(item_name)
         if not source_path:
             item_data = self.item_store.get_item(item_name)
@@ -89,17 +76,15 @@ class AuctionHouse:
                 if item_data:
                     mini = config["minimum"]
                     maxi = config["maximum"]
-                    # This will still be random, but only happens if initialization failed for this item
                     base_price = self._calc_buy_price(mini, maxi, item_data)
                     return int(base_price * 0.8)
         
         return 1
+    
     def _map_items(self):
         """Creates maps of items for both buying and selling based on price_ranges config."""
         for source_path, config in self.price_ranges.items():
-            filters = {
-                '__source_path__': source_path
-            }
+            filters = {'__source_path__': source_path}
             items = self.item_store.find_items(filters)
             
             mini = config["minimum"]
@@ -107,49 +92,42 @@ class AuctionHouse:
             available_for_purchase = config.get("available_for_purchase", True)
 
             for item in items:
-                # Manually add the source path
                 item['__source_path__'] = source_path
-
                 name = item["name"]
+                
+                # Store mappings
                 self.item_to_source_map[name] = source_path
                 self.accepted_for_selling.add(name)
                 
-                # --- FIX START ---
-                # Calculate the price once and cache it effectively 'freezing' the RNG
+                # NEW: Add to case-insensitive lookup
+                self.lowercase_to_actual[name.lower()] = name
+                
+                # Calculate and cache price
                 calculated_value = self._calc_buy_price(mini, maxi, item)
                 self.item_valuations[name] = calculated_value
 
-                # Only items marked as available_for_purchase go into currently_selling
                 if available_for_purchase:
                     self.currently_selling[name] = {
                         "item": item,
                         "price": calculated_value
                     }
-                # --- FIX END ---
-
-    #### ------ AI Facing Functions ------ #####
-
 
     def get_pretty_items_list(self, list_type: str = "both", pagination: int = 0, category: str = None) -> str:
         """
         Returns a paginated, human-readable list of items.
         
         Args:
-            list_type (str): "buy" for purchasable items only, "sell" for sellable items only, 
-                        "both" for all items with buy/sell info, "categories" to list available categories
+            list_type (str): "buy", "sell", "both", or "categories"
             pagination (int): Page number (0-based)
-            category (str): Filter by category (e.g., "hearty_meals", "drinks_n_drinks", "seeds", etc.)
-                        Use the filename without .json extension
+            category (str): Filter by category
         """
         max_display = 20
         start_index = pagination * max_display
         end_index = start_index + max_display
 
-        # Handle categories listing
         if list_type == "categories":
             categories = set()
             for source_path in self.price_ranges.keys():
-                # Extract category from path like "food_n_drinks/hearty_meals.json"
                 category_name = source_path.split('/')[-1].replace('.json', '')
                 categories.add(category_name)
             
@@ -160,9 +138,7 @@ class AuctionHouse:
             response += "\nUse get_pretty_items_list('both', 0, 'category_name') to browse items in a specific category."
             return response
 
-        # Get items based on category filter
         if category:
-            # Find the matching source path for the category
             matching_source = None
             for source_path in self.price_ranges.keys():
                 if source_path.endswith(f"{category}.json"):
@@ -173,29 +149,21 @@ class AuctionHouse:
                 available_categories = [path.split('/')[-1].replace('.json', '') for path in self.price_ranges.keys()]
                 return f"Category '{category}' not found. Available categories: {', '.join(sorted(available_categories))}"
             
-            # Filter items by category
             if list_type == "buy":
                 item_names = [name for name, info in self.currently_selling.items() 
                             if info['item'].get('__source_path__') == matching_source]
                 title = f"Items for Sale - {category.replace('_', ' ').title()}"
                 empty_message = f"No items are currently available for purchase in category '{category}'."
             elif list_type == "sell":
-                # Get all items from this category that are accepted for selling
-                filters = {
-                    '__source_path__': matching_source
-                }
+                filters = {'__source_path__': matching_source}
                 category_items = self.item_store.find_items(filters)
                 item_names = [item['name'] for item in category_items if item['name'] in self.accepted_for_selling]
                 title = f"Items Accepted for Selling - {category.replace('_', ' ').title()}"
                 empty_message = f"No items are currently accepted for selling in category '{category}'."
-            else:  # both
-                # Get all items from this category
-                filters = {
-                    '__source_path__': matching_source
-                }
+            else:
+                filters = {'__source_path__': matching_source}
                 category_items = self.item_store.find_items(filters)
                 all_category_items = set(item['name'] for item in category_items)
-                # Filter by what's actually in our auction house
                 buyable_items = set(name for name, info in self.currently_selling.items() 
                                 if info['item'].get('__source_path__') == matching_source)
                 sellable_items = all_category_items & self.accepted_for_selling
@@ -205,7 +173,6 @@ class AuctionHouse:
             
             item_names = sorted(item_names)
         else:
-            # Original logic for all items
             if list_type == "buy":
                 item_names = sorted(self.currently_selling.keys())
                 title = "Items for Sale"
@@ -215,7 +182,6 @@ class AuctionHouse:
                 title = "Items Accepted for Selling"
                 empty_message = "No items are currently accepted for selling."
             elif list_type == "both":
-                # Get all unique items from both lists
                 all_items = set(self.currently_selling.keys()) | self.accepted_for_selling
                 item_names = sorted(all_items)
                 title = "All Auction House Items"
@@ -247,7 +213,7 @@ class AuctionHouse:
                 sell_price = self._calc_sell_price(name)
                 buy_status = "buy available" if name in self.currently_selling else "sell-only"
                 response += f"- **{name}**: {sell_price} currency (sell) - {buy_status}\n"
-            else:  # both
+            else:
                 buy_price = None
                 sell_price = self._calc_sell_price(name)
                 
@@ -274,35 +240,34 @@ class AuctionHouse:
             
         return response
     
-    
     def lookup_item(self, item_name: str) -> str:
         """
-        Looks up an item by name and returns its buying price, selling price,
-        and availability.
+        Looks up an item by name (case-insensitive) and returns its buying price,
+        selling price, and availability.
         """
-        # Check if the item is available for purchase
-        if item_name in self.currently_selling:
-            item_info = self.currently_selling[item_name]
+        # NEW: Normalize the item name
+        actual_name = self._normalize_item_name(item_name)
+        
+        if actual_name and actual_name in self.currently_selling:
+            item_info = self.currently_selling[actual_name]
             buy_price = item_info.get("price")
-            sell_price = self._calc_sell_price(item_name)
+            sell_price = self._calc_sell_price(actual_name)
             
             return (
-                f"Item: {item_name}\n"
+                f"Item: {actual_name}\n"
                 f"Status: Available for purchase.\n"
                 f"Buy Price: {buy_price} currency.\n"
                 f"Sell Price: {sell_price} currency."
             )
-        elif item_name in self.accepted_for_selling:
-            # Item can be sold but not bought
-            sell_price = self._calc_sell_price(item_name)
+        elif actual_name and actual_name in self.accepted_for_selling:
+            sell_price = self._calc_sell_price(actual_name)
             return (
-                f"Item: {item_name}\n"
+                f"Item: {actual_name}\n"
                 f"Status: Not available for purchase, but accepted for selling.\n"
                 f"Buy Price: Not available.\n"
                 f"Sell Price: {sell_price} currency."
             )
         else:
-            # Use fuzzy matching to suggest similar items
             suggestions = self.fuzzy_matcher.find_suggestions(item_name)
             if suggestions:
                 suggestion_names = [s.item_name for s in suggestions]
@@ -321,43 +286,46 @@ class AuctionHouse:
             
     def buy_item(self, item_name, quantity=1):
         """
-        Buy items from the auction house with specified quantity.
+        Buy items from the auction house with specified quantity (case-insensitive).
         Only items in currently_selling can be bought.
         """
         if quantity <= 0:
             return "Quantity must be greater than 0."
         
+        # NEW: Normalize the item name
+        actual_name = self._normalize_item_name(item_name)
+        
+        if not actual_name:
+            return f"No item named '{item_name}' found in the auction house."
+        
         current_currency = self.state_manager.pet_state_manager.get_currency()
 
-        # Check if the item is currently being sold (buyable)
-        entry = self.currently_selling.get(item_name)
+        entry = self.currently_selling.get(actual_name)
         if not entry:
-            # Check if it's a sell-only item to give better error message
-            if item_name in self.accepted_for_selling:
-                return f"{item_name} is not available for purchase (sell-only item)."
+            if actual_name in self.accepted_for_selling:
+                return f"{actual_name} is not available for purchase (sell-only item)."
             else:
-                return f"No item named {item_name} is currently being sold."
+                return f"No item named {actual_name} is currently being sold."
 
         item_price = entry.get("price", None)
         if item_price is None:
-            return f"Item {item_name} is out of stock..."
+            return f"Item {actual_name} is out of stock..."
         
         total_cost = item_price * quantity
         if current_currency < total_cost:
-            return f"Not enough currency to buy {quantity}x {item_name}. Required: {total_cost}, Available: {current_currency}"
+            return f"Not enough currency to buy {quantity}x {actual_name}. Required: {total_cost}, Available: {current_currency}"
 
-        # Perform purchase
         messages = []
         for i in range(quantity):
-            message = self._add_item_to_inventory(item_name)
+            message = self._add_item_to_inventory(actual_name)
             messages.append(message)
         
         self.state_manager.pet_state_manager.adjust_currency(-total_cost)
 
         if quantity == 1:
-            return f"Successfully bought {item_name} for {item_price}. {messages}"
+            return f"Successfully bought {actual_name} for {item_price}. {messages}"
         else:
-            return f"Successfully bought {quantity}x {item_name} for {total_cost} currency total ({item_price} each). {message}"
+            return f"Successfully bought {quantity}x {actual_name} for {total_cost} currency total ({item_price} each). {message}"
 
     def sell_item(self, item_id, quantity=1):
         """
@@ -393,12 +361,14 @@ class AuctionHouse:
         if quantity > item_quantity:
             return f"Cannot sell {quantity}x {item_name}. Only {item_quantity} available in inventory."
 
-        # Check if item is accepted for selling (expanded acceptance)
-        if item_name not in self.accepted_for_selling:
-            return f"Item {item_name} is not currently accepted in the auction house."
+        # Note: item_name from inventory should already be the actual name,
+        # but we can still normalize it to be safe
+        actual_name = self._normalize_item_name(item_name) or item_name
+        
+        if actual_name not in self.accepted_for_selling:
+            return f"Item {actual_name} is not currently accepted in the auction house."
 
-        # Calculate sell price and perform sale
-        sold_price_per_item = self._calc_sell_price(item_name)
+        sold_price_per_item = self._calc_sell_price(actual_name)
         
         if sold_price_per_item is not None:
             total_earned = sold_price_per_item * quantity
@@ -407,16 +377,13 @@ class AuctionHouse:
             message = self.state_manager.remove_item(item_id, quantity=quantity)
             
             if quantity == 1:
-                return f"Successfully sold {item_name} for {sold_price_per_item} currency. You earned currency! {message}"
+                return f"Successfully sold {actual_name} for {sold_price_per_item} currency. You earned currency! {message}"
             else:
-                return f"Successfully sold {quantity}x {item_name} for {total_earned} currency total ({sold_price_per_item} each). You earned currency! {message}"
+                return f"Successfully sold {quantity}x {actual_name} for {total_earned} currency total ({sold_price_per_item} each). You earned currency! {message}"
         else:
-            return f"Failed to sell {item_name}. Please try again later."
+            return f"Failed to sell {actual_name}. Please try again later."
         
-
     def get_currency(self):
-        """
-        Get the current currency balance of the user.
-        """
+        """Get the current currency balance of the user."""
         currency = self.state_manager.pet_state_manager.get_currency()
         return f"Your current currency balance is: {currency} total."
