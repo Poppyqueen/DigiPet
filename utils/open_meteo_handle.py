@@ -85,8 +85,8 @@ class OpenMeteoLoc:
         is_day = "True" if current_is_day == 1 else "False"
 
         weather_data={
-            "current humidity":current_relative_humidity_2m,
-            "current temperature": current_apparent_temperature,
+            "humidity":current_relative_humidity_2m,
+            "temperature": current_apparent_temperature,
             "is_day": is_day,
             "wind_speed": current_wind_speed_10m,
             "precipitation": current_precipitation,
@@ -98,8 +98,8 @@ class OpenMeteoLoc:
     def get_full_weather(self):
 
         weather_data = self.get_structured_weather()
-        current_apparent_temperature = weather_data["current temperature"]
-        current_relative_humidity_2m = weather_data["current humidity"]
+        current_apparent_temperature = weather_data["temperature"]
+        current_relative_humidity_2m = weather_data["humidity"]
         is_day = weather_data["is_day"]
         current_wind_speed_10m = weather_data["wind_speed"]
         current_precipitation = weather_data["precipitation"]

@@ -377,7 +377,7 @@ def start_chatbot_request(user_input, input_role='user'):
 
 
 # --- Worker Function for Garden Tick ---
-def garden_tick_worker(chatbot_instance):
+def garden_tick_worker(chatbot_instance): # TODO: Abstract the ticks, so we can use this for other things
     """
     This function runs in a separate thread to call the garden manager's tick.
     It posts a system message on completion or error.
@@ -393,7 +393,9 @@ def garden_tick_worker(chatbot_instance):
     print("Garden tick worker thread started.")
     try:
         chatbot_instance.functions_builder.garden_manager.tick()
+        chatbot_instance.functions_builder.lighthouse.lighthouse_tick() # TODO: Move this from, preferably after abstraction of the tick function.
         print("Garden tick processed successfully.")
+        print("Lighthouse tick processed successfully.")
 
 
         current_room_info = chatbot_instance.functions_builder.get_current_tools_info() 
@@ -411,7 +413,7 @@ def garden_tick_worker(chatbot_instance):
 
         
 # --- Function to Start the Garden Tick Asynchronously ---
-def start_garden_tick_request():
+def start_garden_tick_request(): # TODO: Abstract the ticks, so we can use this for other things
     """
     Starts a new thread to process the garden tick.
     Checks if the main chatbot processing is currently active to avoid conflicts.
@@ -1427,7 +1429,7 @@ while running:
         #print(f"Attempting garden tick. (Scheduled at {state.next_garden_tick_time}, current: {current_time_ms})")
         if start_garden_tick_request(): # This will now return False if chatbot is busy
             # If the tick was successfully launched, schedule the next one.
-            state.next_garden_tick_time = current_time_ms + garden_tick_interval_ms
+            state.next_garden_tick_time = current_time_ms + garden_tick_interval_ms # TODO: Abstract the ticks, so we can use this for other things
             #print(f"Garden tick launched. Next scheduled for {state.next_garden_tick_time} ms.")
         else:
             # If the tick was deferred (because chatbot was busy),

@@ -1,3 +1,4 @@
+# LIGHTHOUSE UPDATE
 # construct_tools.py - Refactored with Centralized Tool Management
 # This file is responsible for constructing the tools and their definitions for an AI agent.
 # Now features a cleaner, centralized approach to tool availability and item-tool relationships.
@@ -29,7 +30,13 @@ from .my_tools import (
     laptop_tools,
     dispenser_tools,
     maze_tools,
-    searxng_tools
+    searxng_tools,
+    iov_pressure_tools,
+    lamp_tools,
+    spirit_pan_tools,
+    clockwork_lens_tools,
+    lantern_room_tools,
+    fresnel_lens_tools
 )
 from tools.tools_folder import simulation
 
@@ -41,6 +48,7 @@ from tools.tools_folder.dispenser_tools import DispenserTools
 from tools.tools_folder.auction_house import AuctionHouse
 from tools.tools_folder.maze import MazeEnvironment
 
+from tools.tools_folder.lighthouse_controller import LighthouseController
 
 class ItemContext:
     """Centralized context about items and their power states."""
@@ -50,6 +58,10 @@ class ItemContext:
         self.room_items = room_items or []
         self.all_items = self._build_all_items_map()
         self.powered_off_items = self._identify_powered_off_items()
+
+        # print(f"DEBUG: ItemContext initialized with {len(self.inventory_items)} inventory items and {len(self.room_items)} room items")
+        # print(f"DEBUG: Inventory items: {self.inventory_items}")
+        # print(f"DEBUG: Room items: {self.room_items}")
     
     def _build_all_items_map(self):
         """Build a unified map of all items by ID."""
@@ -270,6 +282,8 @@ class FunctionBuilder:
         self.dispenser_tools = DispenserTools(self.state_manager, self._signal_callback)
         self.auction_house = AuctionHouse(state_manager)
         self.maze = MazeEnvironment(state_manager, self._signal_callback)
+
+        self.lighthouse = LighthouseController(self.state_manager, self._signal_callback, self.open_meteo)
 
         self.A_Life = None
         self._init_alife()
@@ -556,6 +570,97 @@ class FunctionBuilder:
                 "definitions": dispenser_tools,
                 "item_types": ["dispenser"],
                 "use_level": "room_only"
+            },
+
+        # lighthouse tools, for some reason they exist
+            ## IOV Pressure tools
+            "iov_pressure": {
+                "functions": {
+                    "iov_pump_air": self.lighthouse.IOV_pump_air,
+                    "iov_tank_add_kerosene": self.lighthouse.IOV_kerosene_refill,
+                    "iov_pressure_room_status": self.lighthouse.lighthouse_manager.get_service_room_status,
+                    "iov_pressure_open_air_service_valve": self.lighthouse.lighthouse_manager.open_air_service_valve,
+                    "iov_pressure_close_air_service_valve": self.lighthouse.lighthouse_manager.close_air_service_valve,
+                    "iov_pressure_open_main_valve": self.lighthouse.lighthouse_manager.open_main_valve,
+                    "iov_pressure_close_main_valve": self.lighthouse.lighthouse_manager.close_main_valve
+                },
+                "definitions": iov_pressure_tools,
+                "item_types": ["iov_pressure_system"],
+                "use_level": "room_only",
+                "display_information": self.lighthouse.lighthouse_manager.get_service_room_status # TODO: Display information is used for the GUI, not the LLM, however, having a similar key for "agent information" when tools are active like in get_current_tools_info might be valuable. One thing is that these GUI info tools are not token optimized, an example is the wikipedia info tool which returns the full article, if we want to put this tool information it will implode the context window, the idea would be to put this info inside the function construct_context, but we would need to make info tools for every tool, that's fine but out of the scope of right now. construct_context is appended onto each system message for each LLM call so it will propagate into the LLM context window, that's why some particular tools need adjustement, another example is the A-life sim, which renders the simulation in human text, and returns clues, or names of the categorization or classification of the A-life entities which is something we are hidding from the LLM context window. What I am trying to say, this info tool returns "herbivore", "carnivore", and "plant" when these 3 categories should be hidden from the LLM in a hope that it figures out what this simulation is a model of... rqamble ramble ramble...
+            },
+            "lamp": {
+                "functions": {
+                    "lamp_ignite_vapor": self.lighthouse.lamp_ignite_vapor,
+                    "lamp_remove_mantle": self.lighthouse.remove_mantle,
+                    "lamp_place_spirit_pan": self.lighthouse.lamp_place_spirit_pan,
+                    "lamp_remove_spirit_pan": self.lighthouse.lamp_remove_spirit_pan,
+                    "lamp_install_mantle": self.lighthouse.lamp_light_install_mantle,
+                    "lamp_light_spirit_pan": self.lighthouse.lamp_light_spirit_pan,
+                    "lamp_open_control_valve": self.lighthouse.open_valve,
+                    "lamp_close_control_valve": self.lighthouse.lighthouse_manager.close_valve,
+                    "analyze_lamp_room": self.lighthouse.lighthouse_manager.get_lamp_status
+                    },
+                "definitions": lamp_tools,
+                "item_types": ["iov_lamp_top"],
+                "use_level": "room_only",
+                "display_information": self.lighthouse.lighthouse_manager.get_lamp_status
+            },
+            "spirit_pan":{
+                "functions": {
+                    "refill_spirit_pan": self.lighthouse.lamp_refill_spirit_pan,
+                },
+                "definitions": spirit_pan_tools,
+                "item_types": ["iov_spirit_pan"],
+                "use_level": "inventory_only"
+            },
+
+
+
+            "lantern_room": {
+                "functions": {
+                    "get_lantern_room_interior_status": self.lighthouse.lighthouse_manager.lantern.get_interior_status,
+                    "clean_condensation": self.lighthouse.clean_condensation,
+                    "place_sheet": self.lighthouse.place_sheet,
+                    "remove_sheet": self.lighthouse.remove_sheet
+                },
+                "definitions": lantern_room_tools,
+                "room_types": ["lantern_room"],
+                "use_level": "room_type",
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_interior_status
+            },
+
+            "lantern_room_outdoor": {
+                "functions": {
+                    "clean_outside_panes": self.lighthouse.clean_outside_panes,
+                    "get_panes_outdoor_status": self.lighthouse.lighthouse_manager.lantern.get_outdoor_cleanliness
+                },
+                "definitions": lantern_room_tools,
+                "room_types": ["lighthouse_gallery"],
+                "use_level": "room_type",
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_outdoor_cleanliness
+            },
+
+            "clockwork_lens": {
+                "functions": {
+                    "windup_clockwork": self.lighthouse.windup_clockwork,
+                    "get_tension": self.lighthouse.lighthouse_manager.lantern.get_clockwork_tension
+                },
+                "definitions": clockwork_lens_tools,
+                "item_types": ["clockwork_lens_apparatus"],
+                "use_level": "room_only",
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_tension
+            },
+
+            "fresnel_lens": {
+                "functions": {
+                    "fresnel_rotation_state": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
+                },
+                "definitions": fresnel_lens_tools,
+                "item_types": ["fresnel_lens_apparatus", "fresnel_lens"],
+                "use_level": "room_only",
+                "room_types": ["fresnel_lens_interior"],
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation
             }
         }
         
@@ -703,6 +808,17 @@ class FunctionBuilder:
         current_room_types = self.get_current_room_types()
         items_in_room = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
         inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+
+        # # DEBUG
+        # print("DEBUG: _get_current_context...")
+        # print(f"DEBUG: Current room types: {current_room_types}")
+        # print(f"DEBUG: Items in room: {items_in_room}")
+        # print(f"DEBUG: Inventory items: {inventory_items}")
+
+        # # DEBUG
+        # print(f"DEBUG: Current room types: {type(current_room_types)}")
+        # print(f"DEBUG: Items in room: {type(items_in_room)}")
+        # print(f"DEBUG: Inventory items: {type(inventory_items)}")
         
         item_context = ItemContext(inventory_items, items_in_room)
         
@@ -884,10 +1000,10 @@ class FunctionBuilder:
                         all_definitions.append(definition)
                         seen_tool_names.add(tool_name)
         
-        print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools (including {len(toggle_definitions)} toggle tools)")
-        # Detailed Debugging
-        print(f"DEBUG: Available tool names: {seen_tool_names}")
-        print(f"DEBUG: Available function names: {available_function_names}")
+        # print(f"DEBUG: Final available tool definitions: {len(all_definitions)} tools (including {len(toggle_definitions)} toggle tools)")
+        # # Detailed Debugging
+        # print(f"DEBUG: Available tool names: {seen_tool_names}")
+        # print(f"DEBUG: Available function names: {available_function_names}")
         
         return all_definitions
 
@@ -992,6 +1108,16 @@ class FunctionBuilder:
         This will be redundant for many functions, but it is useful for certain essential information
         that needs to be passed to the LLM every prompt, like location, inventory, etc.
         """
+        current_room_id = self.state_manager.get_current_room_id()
+        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
+        
+        if not full_room:
+            print(f"Error: Could not find room with ID: {current_room_id}")
+            return {"title": "Unknown Room", "body": "Could not retrieve information about this room."}
+        
+        room_name = full_room.get("name", "Unknown Room")
+        room_description = self.state_manager.get_current_room_description()
+
         context = []
         now = datetime.now()
         f = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -1005,6 +1131,7 @@ class FunctionBuilder:
         current_room_name = self.state_manager.get_current_room_name()
         current_room_types = self.get_current_room_types()
         format_room = f"Currently, you are in: {current_room_name}\n"
+        format_room += f"Room Description: {room_description}\n"
 
         context.append(format_room)
 
@@ -1022,8 +1149,8 @@ class FunctionBuilder:
 
         context.append("\n#############\n")
 
-        # Add weather context ONLY if the room type is "garden"
-        if "garden" in current_room_types:
+        # Add weather context if the room type is valid
+        if "garden" in current_room_types or "outdoors_view" in current_room_types:
             try:
                 weather_info = self.open_meteo.get_full_weather()
                 context.append("#############")

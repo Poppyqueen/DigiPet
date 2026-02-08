@@ -84,7 +84,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def get_current_room_name(self):
         return self.room_manager.get_current_room_name()
 
-    def set_current_room(self, room_id: int):
+    def set_current_room(self, room_id: int | float | str):
+        room_id = int(room_id)
         return self.room_manager.set_current_room(room_id)
 
     def get_current_room_description(self):
@@ -199,4 +200,18 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         """Delegates to the StateStore to save the current state."""
         self._state_store.save_state()
         print("State saved successfully.")
+
+
+    ###
+
+    def validate_item_data(self, item_id, expected_type, expected_loc): 
+        """
+        Args:
+            item_id: INT, the id of the item to validate
+            expected_type: STRING, any of the types in the pydantic_models.item_types list
+            expected_loc: STRING, "room", "inventory"
+
+        """
+        return self.inventory_service.validate_item_data(item_id, expected_type, expected_loc)
+
 

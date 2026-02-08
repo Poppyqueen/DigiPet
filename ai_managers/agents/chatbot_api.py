@@ -66,7 +66,7 @@ class CLIChatbot:
             long = my_longitude
             message="using default location from environment variables."
         self.open_meteo = OpenMeteoLoc(long=long, lat=lat) # Initialize with coordinates
-        datetime.set_coordinates(lat,long)
+        datetime.set_coordinates(lat,long) # Set the coordinates for the datetime class, which trickles down to all other modules that use datetime
 
         # Location data for the agent:
         print(f"Agent {pet_name} Initialized with location info {message}:")

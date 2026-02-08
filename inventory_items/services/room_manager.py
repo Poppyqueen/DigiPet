@@ -60,6 +60,14 @@ class RoomManager:
             return room.get("name", "Unknown Room")
         return "Unknown Room"
 
+    def get_current_room_types(self):
+        current_room_id = self._state_store.get_state_section("current_room_id")
+        current_room = self._find_room_by_id(current_room_id)
+        if current_room:
+            return current_room.get("room_types", [])
+        else:
+            return []
+
     def get_current_room_id(self):
         return self._state_store.get_state_section("current_room_id", -1)
 

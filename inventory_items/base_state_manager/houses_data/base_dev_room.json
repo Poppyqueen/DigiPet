@@ -3,7 +3,8 @@
         "name": "garden",
         "image": "garden",
         "room_types": [
-            "garden"
+            "garden",
+            "lantern_room"
         ],
         "music": "garden",
         "descriptions": {
@@ -42,9 +43,8 @@
         "name": "DevRoom",
         "image": "lab_room",
         "room_types": [
-            "library",
-            "kitchen",
-            "bedroom"
+            "bedroom",
+            "outdoors_view"
         ],
         "plot_number": 3,
         "music": "white_room",
@@ -76,6 +76,85 @@
             "night": [
                 "Darkness outside makes the vat-glow the room's only light, turning the laboratory into a small, luminous island of soft color and faint electrical beeps.",
                 "The trapdoor shows a scatter of distant stars while the lab's silence is punctuated by the occasional burble of liquid and the persistent scent of antiseptic."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "Balcony",
+        "image": "balcony",
+        "room_types": [
+            "lighthouse_gallery",
+            "outdoors_view"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "A cold wind whips around the narrow balcony, the sea crashes against the rocks below.",
+                "The iron railing is slick with sea-spray and the air tastes sharp with salt, the moon and stars make company."
+            ],
+            "early morning": [
+                "The first hint of dawn bleeds into the sky, turning the sea from black to a deep, bruised purple and softening the jagged rocks below.",
+                "A chill hangs in the air, carrying the clean, sharp scent of salt and wet stone as the waves continue their steady rhythm against the lighthouse base."
+            ],
+            "morning": [
+                "The sun climbs higher, casting a brilliant, almost white glare across the water and making the metal railing too hot to touch.",
+                "Gulls cry overhead, their calls sharp and lonely against the constant murmur of the surf, while the air grows warmer and thick with the smell of brine."
+            ],
+            "noon": [
+                "The sun is a white blaze overhead, bleaching the color from the sea and sky and making the metal walkway shimmer with heat.",
+                "The air is heavy and still, the only sounds the cry of gulls and the endless, rhythmic crash of waves far below."
+            ],
+            "afternoon": [
+                "Late afternoon light turns the sea to hammered gold and throws long, distorted shadows from the railing across the walkway.",
+                "The wind softens to a warm breeze, carrying the scent of sun-baked metal and the distant, salty tang of the ocean."
+            ],
+            "late afternoon": [
+                "The sun dips toward the horizon, painting the sky in strokes of orange and violet and casting a warm, golden glow over the water.",
+                "A cooler breeze stirs the air, bringing with it the fresh scent of the sea and the distant cries of gulls heading toward their roosts."
+            ],
+            "night": [
+                "The moon hangs high and sharp, its cold light silvering the waves and making the iron railing gleam like polished bone.",
+                "The wind sighs around the tower, carrying the deep, rhythmic pulse of the surf and the lonely cry of a night bird far out at sea."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "Fresnel Lens",
+        "image": "fresnel_lens",
+        "room_types": [
+            "fresnel_lens_interior"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "The lens casts a cold, focused beam across the room, its edges sharp and precise against the darkness.",
+                "The air is still and cool, carrying the faint scent of ozone and old glass."
+            ],
+            "early morning": [
+                "The first hint of dawn catches the lens, turning its surface into a pale, glowing disc.",
+                "The room feels expectant and quiet, the lens waiting for the sun to fully rise."
+            ],
+            "morning": [
+                "The sun climbs higher, its light striking the lens and sending a brilliant beam across the room.",
+                "The air grows warmer, carrying the scent of sun-baked metal and old glass."
+            ],
+            "noon": [
+                "The sun is a white blaze overhead, its light focused by the lens into a sharp, intense beam.",
+                "The air is heavy and still, the only sound the hum of the lens mechanism."
+            ],
+            "afternoon": [
+                "Late afternoon light slants through the lens, casting a warm, golden glow across the room.",
+                "The air grows cooler, carrying the scent of sun-baked metal and old glass."
+            ],
+            "late afternoon": [
+                "The sun dips toward the horizon, painting the sky in strokes of orange and violet and casting a warm, golden glow over the lens.",
+                "A cooler breeze stirs the air, bringing with it the fresh scent of the sea and the distant cries of gulls heading toward their roosts."
+            ],
+            "night": [
+                "The moon hangs high and sharp, its cold light silvering the lens and making it gleam like polished bone.",
+                "The wind sighs around the tower, carrying the deep, rhythmic pulse of the surf and the lonely cry of a night bird far out at sea."
             ]
         },
         "items": []

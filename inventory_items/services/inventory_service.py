@@ -285,7 +285,10 @@ class InventoryService:
                         return room_items
                     return f"Items in the {room_display}: {', '.join(items_display)}"
                 else:
-                    return f"There are no items in the {room_display}."
+                    if internal:
+                        return []
+                    else:
+                        return f"There are no items in the {room_display}."
             else:
                 return f"Error: Item list for {room_display} is corrupted."
         else:
@@ -374,7 +377,7 @@ class InventoryService:
 
 
 
-    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
+    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1): # TODO: improve this function
         if not isinstance(item_id, int):
             return f"Failed to pick up: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
 
@@ -404,9 +407,7 @@ class InventoryService:
             return "Error: Room information not available for pickup."
 
         if not (item_info["location"] == "room" and item_info["location_id"] == current_room_id):
-            item_location_room = self._room_manager._find_room_by_id(item_info['location_id']) if self._room_manager else None
-            location_display = self._room_manager._format_room_for_display(item_location_room) if item_location_room else f"Unknown Room (ID:{item_info['location_id']})"
-            return f"Failed to pick up {item_display}: It is in {location_display}, not here."
+            return f"Failed to pick up {item_display}: It is not here."
 
         available_in_source = item_data_in_source.get("quantity", 1)
         if quantity_to_pickup <= 0:
@@ -419,7 +420,7 @@ class InventoryService:
         item_to_move = None
         if actual_quantity_to_pickup < available_in_source:
             # This is a partial pickup (splitting a stack)
-            # 1. Create the remainder that will be left in the room
+            # 1. Create the remainder that will be left in the room # TODO: leave the remainder as the original item, with the original ID
             remainder_item = item_data_in_source.copy()
             remainder_item["id"] = self._state_store.get_next_item_id()
             remainder_item["quantity"] = available_in_source - actual_quantity_to_pickup
@@ -998,3 +999,32 @@ class InventoryService:
                 return None, f"Item {item_id} is not a {required_type}."
         
         return item_data, None
+
+
+
+    def validate_item_data(self, item_id, expected_type, expected_loc): 
+        """
+        Args:
+            expected_loc: STRING, "room", "inventory"
+
+        """
+        item_id = int(item_id)
+        item_deets=self.get_item_details(item_id, internal=True)
+
+        is_valid=False
+
+        # 3. Check the status and location of the item based on the returned dictionary
+        if item_deets["status"] == "found":
+            # Item was found, now check its location and type
+            item_data = item_deets["details"] # Get the actual item data dict
+            item_location = item_deets["location"]
+
+            if item_location == expected_loc:
+                item_type_list = item_data.get("type", [])
+                
+                if expected_type in item_type_list:
+                    # Item is found, in the expected location, and of the expected type - looks good!
+                    is_valid=True
+        
+        return is_valid
+        

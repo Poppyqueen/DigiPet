@@ -1,0 +1,22 @@
+{
+    "initial_room": "Balcony",
+    "Lantern Room": [
+        "Soft cleaning cloth",
+        "Window curtains",
+        "Fresnel lens"
+    ],
+    "Balcony": [],
+    "Service Room": [
+        "IOV Pressure system",
+        "Kerosene container",
+        "IOV Mantle",
+        "IOV Spirit Pan",
+        "Denatured alcohol barrel",
+        "Set of matches",
+        "Fresnel lens clockwork apparatus"
+    ],
+    "Fresnel Lens": [
+        "IOV Lamp Top"
+    ],
+    "inventory": []
+}

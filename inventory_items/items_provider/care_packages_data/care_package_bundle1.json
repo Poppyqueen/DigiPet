@@ -211,5 +211,11 @@
             "Cellphone",
             "Music HandHeld Console"
         ]
+    },
+    "lighthouse_kit": {
+        "package_color": "cheat",
+        "items": [
+            "Kerosene container"
+        ]
     }
 }

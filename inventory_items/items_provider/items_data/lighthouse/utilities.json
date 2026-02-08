@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Soft cleaning cloth",
+        "descriptions": [
+            "A soft cloth, made out of silk.",
+            "Leaves no fabric fibers behind."
+        ],
+        "static": false,
+        "type": [
+            "cleaning_rag"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "Window curtains",
+        "descriptions": [
+            "Large curtains, made out of cotton.",
+            "White in color"
+        ],
+        "static": false,
+        "type": [
+            "sheet"
+        ],
+        "stackable": false
+    }
+]

@@ -28,14 +28,15 @@ Your ONLY job: Convert natural language into function calls from the available t
 Rules:
 - ONLY call functions that exist in the available tools list
 - Use the current game context to resolve ambiguity (e.g., "eat apple" requires apple in inventory)
-- Call multiple functions for complex commands if needed
-- Be literal: "go to kitchen" means call set_current_room, not just acknowledge
-- If impossible/ambiguous, call NO functions (the system will handle the response)
+- Call multiple functions in the same turn when the user implies multiple actions
+- Be interpretive on the user's intent, but do not make up functions or arguments
+- You are a traditional text adventure game interpreter in steroids, the user should feel like you are reading their mind
+- Even if certain actions seem impossible to you on the current context, call functions based on the user intent, the system will handle the error response
 
 Examples:
 "go to the kitchen" → set_current_room(room_id="kitchen")
 "pick up apple and eat it" → move_item_to_player(item_name="apple") + consume_item(item_name="apple")
-"what's here?" → NO function calls (query, not action)
+"what's here?" → list_items_in_room() + (any examine or inspect functions for items in the room)
 
 Current context and available tools will be provided with each request."""
 
@@ -63,10 +64,6 @@ Command: "eat apple" | Executed: consume_item(+30 fullness)
 
 Command: "fly to moon" | Executed: none
 → "You can't do that here."
-
-Command: "what's in this room?" | Executed: none
-→ [System will handle inventory display, just acknowledge]
-→ "You look around the room carefully."
 """
 
     def __init__(self, config_manager, functions_builder, text_capture):

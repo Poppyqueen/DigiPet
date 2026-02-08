@@ -1,18 +1,28 @@
 {
-    "initial_room":"DevRoom",
-    "garden":[
-        "Folding director's chair"
+    "initial_room": "DevRoom",
+    "garden": [
+        "Folding director's chair",
+        "Fresnel lens",
+        "Window curtains",
+        "Soft cleaning cloth"
     ],
-    "DevRoom":[
+    "DevRoom": [
         "Specimen Display Case",
         "Mid-Century Modern Armchair",
         "Mid-Century Modern Armchair",
         "Rustic Farmhouse Rocking Chair",
-        "Papasan Bowl Chair"
+        "Papasan Bowl Chair",
+        "IOV Pressure system",
+        "Kerosene container",
+        "IOV Mantle",
+        "IOV Spirit Pan",
+        "Denatured alcohol barrel",
+        "Set of matches",
+        "Fresnel lens clockwork apparatus"
     ],
-    "inventory":[
-        "Cellphone",
-        "Arts Notebook",
-        "Modern Laptop"
-    ]
+    "Fresnel Lens": [
+        "IOV Lamp Top"
+    ],
+    "Catwalk": [],
+    "inventory": []
 }

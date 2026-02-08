@@ -1,0 +1,195 @@
+[
+    {
+        "name": "Lantern Room",
+        "image": "lantern_room",
+        "room_types": [
+            "lantern_room",
+            "outdoors_view"
+        ],
+        "music": "garden",
+        "descriptions": {
+            "late night": [
+                "You stand on the lantern room, window panes organized by astragals, keeping you in a cage of sorts. The Fresnel lens in the center of the room.",
+                "Looking towards the sky, you can make out a few stars, however the moon seems to be missing.",
+                "The window panels dissolve alongside the astragals holding them, it is as if there was no longer a barrier between you, and the now, spotless void of the sea outside.",
+                "You walk almost carelessly on the shadow-consumed floor, thinking you are held up by some sort of invisible force."
+            ],
+            "early morning": [
+                "You walk around the wooden floor of the lantern room and notice the glass walls that surround you slowly revealing the outside world while keeping you and everything inside safe from the elements.",
+                "The limited space, placing you between the weather-facing glass window panes and the Fresnel lens inside, make every one of your movements feel intentional and calculated.",
+                "The metal frames are freezing to the touch, weeping cold droplets of salt-heavy dew onto the floor as the first grey light bleeds through."
+            ],
+            "morning": [
+                "The ring of the room you walk on, each of its wooden boards, glass panes, and metal frames are now visible under the morning light. The scene, full of light makes the Fresnel lens in the middle seem smaller than at night.",
+                "The dark iron astragals slice the morning scenery into thin, geometric shards, making the physical realm look like a fractured collage of portals.",
+                "The Lantern Room feels like an island in the sky; from here, the standing castle of the lighthouse seems to shrink, leaving you alone with the vast, waking blue."
+            ],
+            "noon": [
+                "The crammed area you stand in, usually having you take side-steps to get around of the Lens behind you and pushing you into the window panes in front of you, appears to be a lot more spacious under the midday sun.",
+                "It is quiet, save for the expansion of the metal skeleton—a series of sharp, metallic pops as the iron frames stretch under the midday heat.",
+                "Examining the outdoor's view, stasis grips the world outside the panes, the sea seems to be frozen in time, the waves are still, the sky is still, the world is still.",
+                "You are floating in the clouds, carried away by a giant kite with colorful ribbons trailing its tail, when the world below you suddenly comes back into focus as you notice the pressure of your soles against the wooden floor and the narrowness of the room."
+            ],
+            "afternoon": [
+                "As the intensity of the sunbeams begin to fade, you can notice a tired quality to the things around you, the metal frames of the window panes seem to be sighing under the weight of the day, the wooden floorboards fall into place when you step on them. The Fresnel lens in the center of the room seems to be taking a nap, and the windows around you seem to be closing in on you.",
+                "Wherever light travels across the window panes, long, the diagonal shadows of their frames crawl across the floor like the hands of a clock, measuring the slow death of the day.",
+                "The space is decidedly taking a breath after the midday, the air feels lighter, the light softer."
+            ],
+            "late afternoon": [
+                "Staring at the horizon at this time of day, across hundreds of different sheets of glass makes it easy to relate to all the people in the world, all of them so distant from the lighthouse. As you keep your eyes fixed on the separated horizon, you catch yourself leaning back, almost accidentally against the fresnel lens behind you.",
+                "The wind begins its evening howl against the exterior, but inside the glass, there is a heavy, expectant silence that makes you hold your breath.",
+                "The horizon line begins to fray, the distinction between the sea and the sky lost in a haze of gold and salt-mist."
+            ],
+            "night": [
+                "Darkness has surrounded the lighthouse, looking outwards from the lantern room from your glass panes, you notice the slow tide of night, encroaching from the horizon and consuming the scenery. You sense a sort of companionship emmanating from the Fresnel lens in the center of your current room.",
+                "The world outside the panes vanishes into an ink-black void, leaving you staring at your own pale reflection caught in the glass.",
+                "'Infinitudes', you think that some things are like that, you wonder if you could actually point at one when you saw it.",
+                "The air is cold, the panes transpire and shriek but the waves of the sea drown the cries of the glass and only the astragals holding them can console them."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "Service Room",
+        "image": "service_room",
+        "room_types": [
+            "outdoors_view"
+        ],
+        "plot_number": 3,
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "The darkness of the late night threatens to consume the room and your standing inside, it has already engulfed the lighthouse itself.",
+                "A crammed and packed space, with machinery and tools everywhere, the waves shake everything around you, uncaring for the contents of the room.",
+                "The room holds a view to the outside, waves splash against your standing castle, spraying cold saltwater as you look out the window.",
+                "The circular walls surrounding you seem to be closing in, holding you tight in this room.",
+                "The entry to the room is a dark void, as if stepping into it would lead you to a deep earth chasm, darkness slowly creeping in through it. 'A portal to nowhere', you think."
+            ],
+            "early morning": [
+                "A grey tinged atmosphere marching across the sea begins to seep into the room, making everything look muted and expectant of a fresh layer of color.",
+                "The granite walls, and layered with thin wooden planks that surround the room carry in between a murmur of the waves and the distant cries of waking gulls.",
+                "The arched entryway is still under a haze spell, now turning into a light grey translucent barrier. A tightening of your throat comes along as you see the stairway slowly grow move vivid."
+            ],
+            "morning": [
+                "As morning rolls in, the room takes on a new clarity and brightness, the air gushing in from the outside feels light and fresh.",
+                "The floorboards creak underfoot, the light of the day revealing the room's contents, and makes it feel somehow, smaller. The entryway no longer obscured, now reveals the whole passage it is and where it leads.",
+                "The dense metal machinery and tools embedded in the circular walls survived another night."
+            ],
+            "noon": [
+                "Mid-day, white noise makes you company, bleached white light covers the room, the machinery inside it seems to emit millions of stars.",
+                "Your mind drifts to the static rythm of the time of mid-day, you feel as if you wanted to stand still and watch the world pass you by.",
+                "The stairway leading to the room is shining beams of light into the room, crossing the archway, revealing motes of dust floating in the air."
+            ],
+            "afternoon": [
+                "Afternoon encroaches, the cold grows sharper, light begins to fade inside the room, leaving the contents of the room in a soft light against soft shadows.",
+                "As if grasping for air, the room carries a quick breeze that travels across you. The wooden planks on the wall bear the passing of the day on them.",
+                "Brass takes a vivid tone of gold under the soft afternoon light, the machinery as if shedding its skin, and replacing it with a new layer of metal."
+            ],
+            "late afternoon": [
+                "Amber light spills through the small porthole, its shadow grows long, reaching to take control of the machinery and the tools inside.",
+                "The machinery seems to groan with the weight of the day, preparing itself for the long shift ahead.",
+                "Gleaming light reflects off the lower floor coming out from the entryway, you imagine that someone is walking up or down to it, but it remains empty."
+            ],
+            "night": [
+                "Nighttime has engulfed the lighthouse, however this room seems to never rest, brass machinery, dense metals and tools look hypertextured, as if blooming under the weight of the night.",
+                "The stairs show shadowy passages leading to the upper and lower floors behind an arched entryway."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "Balcony",
+        "image": "lighthouse_gallery",
+        "room_types": [
+            "lighthouse_gallery",
+            "outdoors_view"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "You look bellow, a dozen or so of teeth emerge from the bottom of the tower, being washed by the waved bellow and glistening with the light of the moon.",
+                "The iron railing is slick with sea-spray and the air tastes sharp with salt, the moon and stars make company.",
+                "Your hand over the railing glides over the rough surface of iron, protruding bolts, ridges groves and screws.",
+                "The islands around you now form individual silhouettes, rising from the deep ocean floor and gripping, reaching for the surface of the sea."
+            ],
+            "early morning": [
+                "The first hint of dawn bleeds into the sky, turning the sea from black to a deep, purple and softening the jagged rocks below.",
+                "A chill hangs in the air, carrying the clean, sharp scent of salt and wet stone as the waves continue their steady rhythm against the lighthouse base.",
+                "The window panes against your back help you keep your balance, you begin to make out the individual features of the islands around you, jagged rocks, layers of sand, vegetation and the deeper mounds behind them."
+            ],
+            "morning": [
+                "As the sun climbs higher, and the sea grows into a stable mirror of blue, the air warms and the salt scent thickens.",
+                "Gulls cry overhead, their calls sharp and lonely against the constant murmur of the surf.",
+                "The morning captures the surrounding area in a idyllic haze."
+            ],
+            "noon": [
+                "The sun radiating overhead, at times covered by passing clouds, it feels as if the day is never ending.",
+                "The air is heavy and still, you can hear clearly the sound of the waves, you swear there is a unique call to each one.",
+                "As you walk out into the gallery, you imagine this is what a diver would feel after a long dive, removing their equipment for the first time, or what a bear would feel after half a year of hibernation, stretching in spring light, or what a fish would feel after you pull its guts out and throw it back into the sea."
+            ],
+            "afternoon": [
+                "Late afternoon light turns the sea to hammered gold and throws long, distorted shadows from the railing across the walkway.",
+                "The iron railing displays all its blemishes under the soft afternoon light, slow decay, and the constant work of people fighting against it both revealed under close inspection.",
+                "The sea bellow forming foam against the waves, the foam of the crashing waves seem to be made out of white cotton, and you can't help but imagine it was being placed there by hand, each string of foam conciously organized in the precise space they reside just now for this exact moment to be."
+            ],
+            "late afternoon": [
+                "The sun dips toward the horizon, painting the sky in strokes of orange and violet and casting a warm, golden glow over the water.",
+                "Looking to the ground below you, you catch a glimpse of the sea, rocks and the iron standing platform of the balcony, the textures break in a diagonal parallel pattern to your perspective.",
+                "The afternoon twilight makes the sea look like a sheet of purple silk, the waves crashing against the rocks below look like white lace."
+            ],
+            "night": [
+                "An interlude of darkness that the nighttime brings, the floor bellow you is now loosing its definition and separation from the sea. The railing dark silhouette against the darkening sea slowly being lost.",
+                "The sea and the sky are now one, making a wall around the world and everything inside it.",
+                "Waves keep their random rythm, the birds are long gone, the only sound is that of the sea and the wind."
+            ]
+        },
+        "items": []
+    },
+    {
+        "name": "Fresnel Lens",
+        "image": "fresnel_lens_int",
+        "room_types": [
+            "fresnel_lens_interior"
+        ],
+        "music": "white_room",
+        "descriptions": {
+            "late night": [
+                "Inside the Fresnel Lens, you are sheltered from the outside world, a crystalline case all around you.",
+                "The grooves of the lens and their translucence barely allow you to peer out to a distorted view of the lantern room outside.",
+                "The sound of the sea grows louder at these hours, only softly muffled by the orderly placed glass and metal around you, your body seems to vibrate alongside it."
+            ],
+            "early morning": [
+                "Early birds chirp and sing, you know the whole lighthouse begins to be visible to the naked eye, revealed by the grayish-blue light of the morning twilight.",
+                "Shapes and colors begin to break through the lens grooves as morphed surreal figures of the room that hosts the Fresnel Lens.",
+                "The air is still and cold, the sound of the sea is a distant murmur, a soft pulse against the glass, waves quiet down during this time."
+            ],
+            "morning": [
+                "The lighthouse under the morning's cradle, from the lantern room, further in, the inside of the Fresnel Lens is a man-made diamond shaped retreat from whatever is outside.",
+                "The metal seams holding the glass grooves together are clearly visible, the geometricity, the placement and construction of the metal organizing glass is almost hypnotizing.",
+                "The water rushes and retreats, a sharp swirling sound of the sea surrounds the lighthouse, climbing up to the inside of the lens."
+            ],
+            "noon": [
+                "As mid-day passes, the glass beehive-like structure seems to emit an invisible energy, an eager energy, as if it were waiting for the sun to set so as to light up the sea with its own light.",
+                "The still air of the mid-day, oddly, in these moments, it would seem as if the lens was rising high up in the clouds, reaching for space, a sense of vertigo and solitude overwhelms the interior.",
+                "The waves, the sea and the wind seemingly disappeared completely, as if the world outside had been muted."
+            ],
+            "afternoon": [
+                "The natural density of time that accompanies the afternoon seems to be pressing down on the Fresnel Lens from all sides, as if submerged in the deep ocean, you begin to imagine you are inside a diving bell.",
+                "The muffled sounds of the sea and wind being transmitted through the glass make you feel as if you are inside a bubble, floating in the middle of the ocean.",
+                "The water below and around the lighthouse mellows into an almost nonexistent deep vibration inside your chest."
+            ],
+            "late afternoon": [
+                "Birds chirp, sing and cry, announcing something to each other as the sun goes down and the afternoon expires. The glass grooves in the lens all around you seem to be whispering to each other, as if they were sharing a secret.",
+                "The encasing glass structure seems to be breathing, expanding and contracting as the temperature changes, causing the outside shapes to dance in a slow waltz.",
+                "It for some reason feels like landing down onto an esplanade and you sense a sudden release of pressure, as if an airlock door was suddenly opened.",
+                "As day fades, the sea seems to be intentionally exerting a stronger energy, as if to say goodbye to the sun with its high and mighty waves, increasingly random in their rate of crashing against the rocks below."
+            ],
+            "night": [
+                "The interior of the Fresnel Lens is unknowingly, now accompanied by the stars and the moon, the cold of the night caresses the individual glass grooves.",
+                "The wind sighs around the tower, carrying the deep, rhythmic pulse of the surf and the lonely cry of a night bird far out at sea.",
+                "The great blue holds a stable pattern of waves, you seem to be able to follow the rhythm in your head."
+            ]
+        },
+        "items": []
+    }
+]

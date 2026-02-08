@@ -17,7 +17,14 @@ item_types= ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed
 
 item_types.extend(toggable_items)
 
-room_types = ["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research", "computer_room"]
+lighthouse_items = ["iov_pressure_system", "kerosene_container", "iov_spirit_pan", "hand_fire_source", "iov_lamp_top", "spirit_source", "iov_mantle", "clockwork_lens_apparatus", "sheet", "cleaning_rag", "fresnel_lens"]
+item_types.extend(lighthouse_items)
+
+room_types = ["planting_garden","library","bedroom","living_room","bathroom","garden","white_room","kitchen","ALIFE_research", "computer_room", "outdoors_view"]
+
+lighthouse_room_types = ["lantern_room", "lighthouse_gallery"]
+
+room_types.extend(lighthouse_room_types)
 
 ### ///// Classes (Deep memory entities)
 

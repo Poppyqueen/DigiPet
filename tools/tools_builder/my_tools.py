@@ -1621,3 +1621,380 @@ searxng_tools = [
         }
     }
 ]
+
+iov_pressure_tools = [
+    {
+        "type": "function",
+        "name": "iov_pump_air",
+        "description": "Pumps air into the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "strokes": {
+                    "type": "number",
+                    "description": "Float value. The amount of air to pump into the IOV pressure system. Each stroke adds 0.5 PSI"
+                }
+            },
+            "required": ["strokes"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_tank_add_kerosene",
+        "description": "Adds fuel to the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "kerosene_id": {
+                    "type": "number",
+                    "description": "The ID of the kerosene container to add fuel to."
+                }
+            },
+            "required": ["kerosene_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_pressure_room_status",
+        "description": "Checks the status of the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_pressure_open_air_service_valve",
+        "description": "Opens the air service valve of the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_pressure_close_air_service_valve",
+        "description": "Closes the air service valve of the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_pressure_open_main_valve",
+        "description": "Opens the main valve of the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "iov_pressure_close_main_valve",
+        "description": "Closes the main valve of the IOV pressure system.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+]
+
+lamp_tools = [
+    {
+        "type": "function",
+        "name": "lamp_install_mantle",
+        "description": "Installs a mantle into the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "mantle_id": {
+                    "type": "number",
+                    "description": "The ID of the mantle to install."
+                }
+            },
+            "required": ["mantle_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_remove_mantle",
+        "description": "Removes the mantle from the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_place_spirit_pan",
+        "description": "Places a spirit pan into the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "spirit_pan_id": {
+                    "type": "number",
+                    "description": "The ID of the spirit pan to place."
+                }
+            },
+            "required": ["spirit_pan_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_remove_spirit_pan",
+        "description": "Removes the spirit pan from the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+
+    {
+        "type": "function",
+        "name": "lamp_ignite_vapor",
+        "description": "Ignites the vapor in the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "light_source_id": {
+                    "type": "number",
+                    "description": "The ID of the hand fire source item to ignite the vapor with."
+                }
+            },
+            "required": ["light_source_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_light_spirit_pan",
+        "description": "Lights the spirit pan in the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "fire_source_id": {
+                    "type": "number",
+                    "description": "The ID of the hand fire source item to light the spirit pan with."
+                }
+            },
+            "required": ["fire_source_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_open_control_valve",
+        "description": "Opens the control valve of the lamp in the lamp room.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "description": "Float, from 0.0 to 1.0. The amount to open the control valve by."
+                }
+            },
+            "required": ["amount"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "lamp_close_control_valve",
+        "description": "Closes the control valve of the lamp in the lamp room.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "description": "Float, from 0.0 to 1.0. The amount to close the control valve by."
+                }
+            },
+            "required": ["amount"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "analyze_lamp_room",
+        "description": "Analyzes the lamp room and returns the status of the lamp.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+
+]
+
+spirit_pan_tools = [
+    {
+        "type": "function",
+        "name": "refill_spirit_pan",
+        "description": "Refills the spirit pan with any source of denatured alcohol.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "spirit_pan_id": {
+                    "type": "number",
+                    "description": "The ID of the spirit pan to refill."
+                },
+                "spirit_source_id": {
+                    "type": "number",
+                    "description": "The ID of the spirit source to refill from."
+                }
+            },
+            "required": ["spirit_pan_id", "spirit_source_id"],
+            "additionalProperties": False
+        }
+    }
+]
+
+
+lantern_room_tools = [
+    {
+        "type": "function",
+        "name": "get_lantern_room_interior_status",
+        "description": "Gets the status of the interior of the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "clean_condensation",
+        "description": "Cleans the condensation from the lantern room panes.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "rag_id": {
+                    "type": "number",
+                    "description": "The ID of the rag to use to clean the condensation."
+                }
+            },
+            "required": ["rag_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "place_sheet",
+        "description": "Places a sheet in the lantern room weather panes.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sheet_id": {
+                    "type": "number",
+                    "description": "The ID of the sheet to place in the lantern room."
+                }
+            },
+            "required": ["sheet_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "remove_sheet",
+        "description": "Removes the sheet from the lantern room weather panes if any are present.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "clean_outside_panes",
+        "description": "Cleans the outside panes of the lantern room of any debris, dust or salt build up.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "rag_id": {
+                    "type": "number",
+                    "description": "The ID of the rag to use to clean the outside panes."
+                }
+            },
+            "required": ["rag_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_panes_outdoor_status",
+        "description": "Gets the outdoor status of the lantern room weather panes.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+]
+
+
+clockwork_lens_tools = [ 
+    {
+        "type": "function",
+        "name": "windup_clockwork",
+        "description": "Winds up the clockwork lens apparatus tension for the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "turns": {
+                    "type": "number",
+                    "description": "The number of turns to wind up the clockwork lens."
+                }
+            },
+            "required": ["turns"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_tension",
+        "description": "Gets the tension of the clockwork lens for the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+]
+
+fresnel_lens_tools = [
+    {
+        "type": "function",
+        "name": "fresnel_rotation_state",
+        "description": "Gets the rotation state of the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+]

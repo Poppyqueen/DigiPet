@@ -62,7 +62,7 @@ class room_kitchen:
         #print("Kitchen initialized.")
 
     # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function
+    _send_signal = _send_signal # Assign the common helper function (?)
 
     def drink_water(self):
         print("Drinking water...")
