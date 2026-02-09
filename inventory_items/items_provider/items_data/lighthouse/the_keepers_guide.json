@@ -15,27 +15,7 @@
             },
             {
                 "title": "Bird's Eye View",
-                "content": "The tasks of a keeper are many. From polishing and cleaning brass items, to managing the lightsource and making sure it comes on when it is time. It is a "
-            }
-        ]
-    },
-    {
-        "name": "The Keeper's Guide",
-        "descriptions": [
-            "A worn, leather-bound book filled with handwritten notes and sketches of the lighthouse and its surroundings."
-        ],
-        "static": false,
-        "type": [
-            "book"
-        ],
-        "chapters": [
-            {
-                "title": "Introduction",
-                "content": "This book belongs to the lighthouse, not the keepers, but it is for the lighthouse to reveal to any new keeper how to best serve it."
-            },
-            {
-                "title": "Bird's Eye View",
-                "content": "The tasks of a keeper are many. From polishing and cleaning brass items, to managing the lightsource and making sure it comes on when it is time. It is a "
+                "content": "Let me tell you, you can have "
             }
         ]
     }

@@ -1,6 +1,7 @@
 import json
 import copy
 from pathlib import Path
+import re
 
 class ItemStore:
     def __init__(self, root_dir_path: str= "inventory_items/items_provider/items_data"):
@@ -37,16 +38,37 @@ class ItemStore:
         or accepts a list/tuple/set of names and returns a dict mapping each found
         name to its item dict (missing names are omitted)."""
         # Batch request: return a named dictionary of retrieved items
+        def parse_name(name: str):
+            # Matches 'name[x3]' -> Group 1: 'name', Group 2: '3'
+            match = re.match(r'^(.*)\[x(\d+)\]$', name)
+            
+            if match:
+                clean_name = match.group(1)
+                index_int = int(match.group(2))
+                return clean_name, index_int
+            
+            # Fallback if there is no [xN] pattern
+            return name, None
+
         if isinstance(name, (list, tuple, set)):
             result: dict[str, dict] = {}
             for n in name:
-                item = self._items.get(n)
+                clean_name, index_int = parse_name(n)
+                item = self._items.get(clean_name)
                 if item is not None:
+                    if index_int is not None:
+                        item["quantity"] = index_int
                     result[n] = copy.deepcopy(item)
             return result
 
         # Single name: return the item or None
-        return copy.deepcopy(self._items.get(name))
+        clean_name, index_int = parse_name(name)
+        item = self._items.get(clean_name)
+        if item is not None:
+            if index_int is not None:
+                item["quantity"] = index_int
+            return copy.deepcopy(item)
+        return None
 
     def get_items_by_type(self, item_type: str) -> list[dict]:
         """Retrieves a list of all items that include the specified type."""

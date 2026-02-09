@@ -54,6 +54,7 @@ class DerivedState:
     spray_temp_level: Optional[str] = None
     spray_flow_level: Optional[str] = None
     hazard_multiplier: float = 0.0
+    safety_valve_popped: bool = False
 
 
 # ============================================================================
@@ -82,7 +83,11 @@ class Constants:
     # Pressure
     OPTIMAL_PRESSURE_MIN = 60
     OPTIMAL_PRESSURE_MAX = 70
+    GRACE_RANGE = 15
     MIN_PRESSURE_FOR_PIPING = 40
+
+    SAFETY_VALVE_THRESHOLD = OPTIMAL_PRESSURE_MAX + GRACE_RANGE + 5
+    PRESSURE_DROP_SAFETY_VALVE = 10.0 # The pressure level after a pop
     
     # Temperature
     TEMP_THRESHOLD_VAPORIZING = 0.95
@@ -150,11 +155,16 @@ class Rules:
     def is_pressure_optimal(phys: PhysicalState) -> bool:
         """Pressure in ideal operating range."""
         return (
-            Constants.OPTIMAL_PRESSURE_MIN <= 
+            (Constants.OPTIMAL_PRESSURE_MIN-Constants.GRACE_RANGE) <= 
             phys.air_pressure <= 
-            Constants.OPTIMAL_PRESSURE_MAX
+            (Constants.OPTIMAL_PRESSURE_MAX+Constants.GRACE_RANGE)
         )
     
+    @staticmethod
+    def is_safety_valve_popped(phys: PhysicalState, ctrl: Controls) -> bool:
+        return phys.air_pressure > Constants.SAFETY_VALVE_THRESHOLD
+    
+
     @staticmethod
     def calculate_light_intensity(phys: PhysicalState, ctrl: Controls, derived: DerivedState) -> float:
         """
@@ -266,7 +276,9 @@ class StateComputer:
             temp_desc = flow_desc = None
             temp_mult = flow_mult = 0
             hazard = 0.0
-        
+
+        safety_popped = Rules.is_safety_valve_popped(phys, ctrl)
+
         # Partial derived state for light calculation
         partial = DerivedState(
             piping_up=piping,
@@ -276,6 +288,7 @@ class StateComputer:
             spray_temp_level=temp_desc,
             spray_flow_level=flow_desc,
             hazard_multiplier=hazard,
+            safety_valve_popped=safety_popped 
         )
         
         light = Rules.calculate_light_intensity(phys, ctrl, partial)
@@ -298,6 +311,9 @@ class PhysicsEngine:
         """
         if phys.flame_lit and not derived.vaporizing:
             return replace(phys, flame_lit=False)
+                # IMMEDIATELY clamp the pressure down.
+        if derived.safety_valve_popped:
+            phys = replace(phys, air_pressure=Constants.PRESSURE_DROP_SAFETY_VALVE)
         return phys
 
     @staticmethod
@@ -472,6 +488,13 @@ class EventDetector:
                 "pressure_suboptimal",
                 "Air pressure has dropped below optimal range."
             ))
+
+        if (old_phys.air_pressure > Constants.SAFETY_VALVE_THRESHOLD and 
+            new_phys.air_pressure < old_phys.air_pressure):
+            events.append(Event(
+                "safety_valve_popped",
+                f"The safety valve pops open as it reaches {old_phys.air_pressure} PSI with a loud hiss! Suddenly, the pressure drops in a violent manner to {new_phys.air_pressure} PSI."
+            ))
         
         # Fuel warnings
         if (old_phys.fuel_level >= Constants.MIN_FUEL_FOR_OPERATION and 
@@ -591,9 +614,9 @@ class IOVLamp:
         events = self._update_derived()
         return "You close the air service valve.", events
     
-    def pump_air(self, strokes: int = 10) -> Tuple[str, List[Event]]:
+    def pump_air(self, strokes: int = 10) -> Tuple[str, List[Event], bool]:
         if not self.controls.air_valve_open:
-            return "Air service valve is closed. Open it first.", []
+            return "Air service valve is closed. Open it first.", [], False
         
         pressure_gain = strokes * 0.5
         new_pressure = min(100.0, self.physics.air_pressure + pressure_gain)
@@ -607,7 +630,7 @@ class IOVLamp:
         else:
             msg += f" (need {Constants.OPTIMAL_PRESSURE_MIN}-{Constants.OPTIMAL_PRESSURE_MAX})"
         
-        return msg, events
+        return msg, events, True
     
     def open_main_valve(self) -> Tuple[str, List[Event]]:
         if self.controls.main_valve_open:
@@ -739,7 +762,7 @@ class IOVLamp:
         else:
             return "You ignite the vapor. Blue flames dance at the burner.", events
     
-    def add_fuel(self, amount: float = 0.5) -> Tuple[str, List[Event]]:
+    def add_fuel(self, amount: float = 0.5) -> Tuple[str, List[Event], bool]:
         new_level = min(1.0, self.physics.fuel_level + amount)
         self.physics = replace(self.physics, fuel_level=new_level)
         

@@ -227,10 +227,12 @@ class LighthouseManager:
         self._save_state()
         return self._format_action_result(msg, events)
     
-    def pump_air(self, strokes: int = 10) -> str:
+    def pump_air(self, strokes: int = 10, internal=False) -> str:
         """Pump air into system."""
-        msg, events = self.lamp.pump_air(strokes)
+        msg, events, success = self.lamp.pump_air(strokes)
         self._save_state()
+        if internal:
+            return msg, events, success
         return self._format_action_result(msg, events)
     
     def open_main_valve(self) -> str:
@@ -305,7 +307,7 @@ class LighthouseManager:
     
     def add_fuel(self, amount: float = 0.5) -> str:
         """Add fuel."""
-        msg, events = self.lamp.add_fuel(amount)
+        msg, events= self.lamp.add_fuel(amount)
         self._save_state()
         return self._format_action_result(msg, events)
     

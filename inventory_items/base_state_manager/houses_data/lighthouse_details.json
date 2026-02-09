@@ -191,5 +191,45 @@
             ]
         },
         "items": []
+    },
+    {
+        "name": "Storage Room",
+        "image": "storage_room",
+        "room_types": [
+            "storage_room"
+        ],
+        "music": "white_room",
+        "descriptions": {},
+        "items": []
+    },
+    {
+        "name": "Sleeping Nook",
+        "image": "sleeping_nook",
+        "room_types": [
+            "sleeping_nook"
+        ],
+        "music": "white_room",
+        "descriptions": {},
+        "items": []
+    },
+    {
+        "name": "Kitchen",
+        "image": "kitchen",
+        "room_types": [
+            "kitchen"
+        ],
+        "music": "white_room",
+        "descriptions": {},
+        "items": []
+    },
+    {
+        "name": "Stairwell",
+        "image": "stairwell",
+        "room_types": [
+            "stairwell"
+        ],
+        "music": "white_room",
+        "descriptions": {},
+        "items": []
     }
 ]

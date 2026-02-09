@@ -97,7 +97,7 @@ class LanternConstants:
     
     # Decay rates per tick
     CLEANLINESS_DECAY_RATE = 0.0025
-    CLOCKWORK_DECAY_RATE = 0.0025
+    CLOCKWORK_DECAY_RATE = 0.001
     CONDENSATION_DECAY_RATE = 0.0001  # Slowly dries
     
     # Condensation increase (based on humidity)
@@ -324,6 +324,7 @@ class LanternPhysicsEngine:
         
         # Clockwork tension decays (winds down)
         new_tension = max(0.0, phys.clockwork_tension - LanternConstants.CLOCKWORK_DECAY_RATE)
+
         
         # Condensation
         if ctrl.sheet_covering:

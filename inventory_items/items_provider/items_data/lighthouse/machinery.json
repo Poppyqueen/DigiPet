@@ -63,7 +63,8 @@
         "type": [
             "spirit_source"
         ],
-        "stackable": true
+        "stackable": false,
+        "spirit_quantity": 1.0
     },
     {
         "name": "IOV Lamp Top",

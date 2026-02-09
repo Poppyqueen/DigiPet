@@ -377,7 +377,7 @@ class InventoryService:
 
 
 
-    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1): # TODO: improve this function
+    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
         if not isinstance(item_id, int):
             return f"Failed to pick up: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
 
@@ -411,40 +411,35 @@ class InventoryService:
 
         available_in_source = item_data_in_source.get("quantity", 1)
         if quantity_to_pickup <= 0:
-             actual_quantity_to_pickup = available_in_source
+            actual_quantity_to_pickup = available_in_source
         else:
             actual_quantity_to_pickup = min(quantity_to_pickup, available_in_source)
 
-
-        # --- NEW LOGIC: Prepare the item to move and handle splitting ---
+        # --- UPDATED LOGIC: Keep original ID in room, create new ID for inventory ---
         item_to_move = None
         if actual_quantity_to_pickup < available_in_source:
             # This is a partial pickup (splitting a stack)
-            # 1. Create the remainder that will be left in the room # TODO: leave the remainder as the original item, with the original ID
-            remainder_item = item_data_in_source.copy()
-            remainder_item["id"] = self._state_store.get_next_item_id()
-            remainder_item["quantity"] = available_in_source - actual_quantity_to_pickup
+            # 1. Keep the original item in the room with reduced quantity
+            item_data_in_source["quantity"] = available_in_source - actual_quantity_to_pickup
             
-            # 2. Add the new remainder stack to the room
-            current_room["items"].append(remainder_item)
-
-            # 3. Modify the original item_data to be the part that is picked up
-            item_data_in_source["quantity"] = actual_quantity_to_pickup
-            item_to_move = item_data_in_source # This is the original dict, now modified
-
-            # 4. Remove the original item from the room list (it will be added to inventory later)
-            current_room["items"][:] = [item for item in current_room["items"] if item.get("id") != item_id]
+            # 2. Create a NEW item for the inventory with a new ID
+            item_to_move = item_data_in_source.copy()
+            item_to_move["id"] = self._state_store.get_next_item_id()
+            item_to_move["quantity"] = actual_quantity_to_pickup
+            
+            # Note: The original item stays in the room's items list with its original ID
         else:
             # This is a full pickup (taking the whole stack or non-stackable)
+            # Keep the original ID when moving the entire stack
             item_to_move = item_data_in_source
             # Remove the item from the room list completely
             current_room["items"][:] = [item for item in current_room["items"] if item.get("id") != item_id]
-        # --- END NEW LOGIC ---
+        # --- END UPDATED LOGIC ---
 
         # Retrieve mutable copy of inventory list
         inventory_list = self._state_store.get_state_section("inventory", [])
         
-        # --- MODIFIED: Stacking logic now operates on `item_to_move` ---
+        # --- Stacking logic now operates on `item_to_move` ---
         transfer_successful = False
         remaining_to_pickup = item_to_move.get("quantity", 1)
         messages = []
@@ -466,10 +461,8 @@ class InventoryService:
             if remaining_to_pickup > 0:
                 if self.is_inventory_full():
                     messages.append(f"Your inventory is full! Could not pick up the remaining {remaining_to_pickup} items.")
-                    # --- NEW LOGIC: Put the item back in the room if it couldn't be placed ---
-                    # Note: This is a complex recovery step. For now, we'll let it "drop" on the floor.
-                    # A more robust system might try to re-merge it with the remainder stack.
-                    current_room["items"].append(item_to_move) # Effectively drops it back
+                    # Put the item back in the room if it couldn't be placed
+                    current_room["items"].append(item_to_move)
                 else:
                     # The item_to_move already has the correct ID and quantity. Just add it.
                     inventory_list.append(item_to_move)
@@ -485,7 +478,7 @@ class InventoryService:
                 transfer_successful = True
                 messages.append(f"Picked up the {self._format_item_for_display(item_to_move)}.")
 
-        # --- MODIFIED: State update and signaling ---
+        # --- State update and signaling ---
         if transfer_successful:
             rooms_list = self._state_store.get_state_section("rooms", []) # Get latest reference before update
             self._state_store.update_state_section("rooms", rooms_list)
@@ -498,7 +491,6 @@ class InventoryService:
             return " ".join(messages)
         else:
             # If the transfer failed for some reason, we need to ensure the state is consistent.
-            # The item was already removed from the room, so if it wasn't added to inventory, it's gone.
             # The logic above already puts it back if inventory is full.
             return f"Failed to pick up {item_display}. " + " ".join(messages)
 ####

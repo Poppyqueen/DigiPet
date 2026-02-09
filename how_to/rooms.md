@@ -78,6 +78,8 @@ The item specification in the room configuration file (`houses_configs/*.json`) 
 | **`[Room Name]`** | *list of strings* or *string*. Specifies items for that room. Can be: <ul><li>A **list of item names** (e.g., `["bed_single", "desk"]`) which are looked up in the ItemStore.</li><li>A **string path** (e.g., `"inventory_items/item_sets/living_room.json"`) which is treated as a `__source_path__` filter to load all items defined in that specific file.</li></ul> |
 | **`inventory`** | *list of strings* or *string* (Optional). Specifies items the agent starts with in their inventory. Follows the same list/path format as room items. |
 
+**Item names** are the names of the items in the ItemStore, which can be found in `inventory_items/item_store.json`, append as a suffix to the name of the item the following pattern '[xN]', where x is an identifier flag which should always be present as 'x' and N is the number of items of that type to include as a stack. For example, if you want to include a stack of 3 apples in a room, you would write `"apple[x3]"`.
+
 ### Configuration Management Utility
 
 The system includes methods to manage the configurations dynamically:

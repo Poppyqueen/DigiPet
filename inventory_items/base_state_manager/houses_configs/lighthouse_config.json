@@ -18,5 +18,14 @@
     "Fresnel Lens": [
         "IOV Lamp Top"
     ],
+    "Storage Room": [
+        "IOV Mantle[x100]",
+        "Kerosene container[x55]",
+        "Denatured alcohol barrel",
+        "Set of matches"
+    ],
+    "Sleeping Nook": [],
+    "Kitchen": [],
+    "Stairwell": [],
     "inventory": []
 }

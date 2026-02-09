@@ -81,13 +81,19 @@ class LighthouseController:
 
     def IOV_pump_air(self, strokes) -> str:
         text_results = []
-        response = self.lighthouse_manager.pump_air(strokes)
+        response, events, success = self.lighthouse_manager.pump_air(strokes, internal=True)
         # NO NEGATIVE STROKES ALLOWED
         if strokes < 0:
             return "Not how air pumps work, you lovely thing."
 
-        if response:
-            text_results.append(response)
+        # print(f"DEBUG: response type: {type(response)}, value: {repr(response)}")
+        # print(f"DEBUG: events type: {type(events)}, value: {repr(events)}")
+
+        text_results.append(response)
+        event_messages = [e.message for e in events]
+        text_results.append(", ".join(event_messages))
+
+        if success:
             stats_res = self._adjust_stats(AIR_STROKE_COSTS, strokes)
             text_results.append(stats_res)
         # TODO: add signal for icon popups
@@ -101,17 +107,15 @@ class LighthouseController:
             return "You don't have any Kerosene container in your inventory."
 
         result_messages = []
-        fuel_message = self.lighthouse_manager.add_fuel(0.5)
+        fuel_message, events = self.lighthouse_manager.add_fuel(0.5)
 
-        if fuel_message:
-            result_messages.append(fuel_message)
-            self.state_manager.remove_item(kerosene_id)
-            stat_res = self._adjust_stats(KEROSENE_REFILL_COSTS)
-            result_messages.append(stat_res)
-            # TODO: add signal for icon popups
-
-        else:
-            return "Something failed during kerosene pour... sorry about that"
+        result_messages.append(fuel_message)
+        event_messages = [e.message for e in events]
+        result_messages.append(", ".join(event_messages))
+        self.state_manager.remove_item(kerosene_id)
+        stat_res = self._adjust_stats(KEROSENE_REFILL_COSTS)
+        result_messages.append(stat_res)
+        # TODO: add signal for icon popups
 
         return "\n".join(result_messages)
 
@@ -205,6 +209,8 @@ class LighthouseController:
         response, events, success = self.lighthouse_manager.place_spirit_pan(internal=True)
             
         text_results.append(response)
+        event_messages = [e.message for e in events]
+        text_results.append(", ".join(event_messages))
 
         if success:
             report = self.state_manager.remove_item(spirit_pan_id)
@@ -233,6 +239,18 @@ class LighthouseController:
             return "You don't have any Spirit Pan in your inventory."
 
         spirit_pan_details, error_message = self.state_manager.inventory_service.get_validated_item_data(spirit_pan_id, "iov_spirit_pan")
+
+        denatured_alcohol_details, error_message = self.state_manager.inventory_service.get_validated_item_data(spirit_source_id, "spirit_source")
+
+        if denatured_alcohol_details["spirit_quantity"] == 0:
+            return "The denatured alcohol container is empty."
+        
+        denatured_alcohol_details["spirit_quantity"] -= .15
+
+        if denatured_alcohol_details["spirit_quantity"] < 0:
+            denatured_alcohol_details["spirit_quantity"] = 0
+
+        error_message = self.state_manager.inventory_service.persist_item_changes(spirit_source_id)
 
         if error_message:
             return error_message
@@ -274,7 +292,7 @@ class LighthouseController:
         if item_check_result == False:
             return "You don't have any IOV Mantle in your inventory."
 
-        response, events, success = self.lighthouse_manager.install_mantle(internal=True) # TODO: events does not determine if the action was successful or not
+        response, events, success = self.lighthouse_manager.install_mantle(internal=True) 
         text_results.append(response)
 
         if success:
