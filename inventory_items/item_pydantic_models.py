@@ -38,6 +38,13 @@ lighthouse_room_types = ["lantern_room", "lighthouse_gallery"]
 room_types.extend(lighthouse_room_types)
 
 
+#ignore_fingerprint_keys = ["id", "quantity", "static", "stats_edit", "effects"] # This is what I had before
+ignore_fingerprint_keys = ["id", "quantity", "static"]
+
+
+# TODO: Check if any of the item types have particular keys that need mixins definitions, I think not, but I'm not sure.
+
+
 # =============================================================================
 # PLANT VALIDATOR
 # ValidPlantType is an Annotated str that raises a clear error for unknown plants.
@@ -146,6 +153,15 @@ class ToggableFields(BaseModel):
     model_config = ConfigDict(extra="allow")
     power_toggle: Optional[bool] = Field(default=None, description="Current power state. True = on, False = off.")
 
+# Lighthouse items
+
+class LighthouseSpiritPanFields(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    filled: bool = Field(description="Whether the spirit pan is filled with spirit.")
+
+class LighthouseSpiritSourceFields(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    spirit_quantity: float = Field(description="The amount of spirit in the source. Float from 0.0 to 1.0.")
 
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
@@ -163,6 +179,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[BaseModel]] = {
     "book":        BookFields,
     "dispenser":   DispenserFields,
     "candy_bag":   CandyBagFields,
+    "iov_spirit_pan":  LighthouseSpiritPanFields,
+    "spirit_source": LighthouseSpiritSourceFields,
     **{t: ToggableFields for t in toggable_items},
 }
 

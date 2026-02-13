@@ -453,10 +453,11 @@
             "The pungent bite lingers, adding a sharp note to anything eaten afterward."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 0.2,
-            "energy": 2.0
-        }
+            "fullness": 0.10,
+            "hydration": -0.25,
+            "energy": 0.1
+        },
+        "consume_uses_left": 40
     },
     {
         "name": "bottle of soy sauce",
@@ -474,10 +475,11 @@
             "The strong savoury note can make you crave something bland or plain to balance it."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 0.0,
-            "energy": 1.0
-        }
+            "fullness": 0.1,
+            "hydration": -2.5,
+            "energy": 0.1
+        },
+        "consume_uses_left": 30
     },
     {
         "name": "jar of mayonnaise",
@@ -495,10 +497,11 @@
             "It feels filling despite being paste-like, and its neutral flavor amplifies other tastes you eat afterward."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 0.0,
-            "energy": 12.0
-        }
+            "fullness": 0.2,
+            "hydration": -0.75,
+            "energy": 0.2
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "bottle of hot sauce",
@@ -516,10 +519,11 @@
             "The vinegar brightens the heat, leaving a tingling after-sensation."
         ],
         "stats_edit": {
-            "fullness": 1.5,
-            "hydration": 0.0,
-            "energy": 3.0
-        }
+            "fullness": 0.2,
+            "hydration": -3.0,
+            "energy": 0.2
+        },
+        "consume_uses_left": 45
     },
     {
         "name": "jar of pickles",
@@ -537,10 +541,11 @@
             "The salty-briny flavor is refreshing and slightly effervescent on the tongue."
         ],
         "stats_edit": {
-            "fullness": 3.0,
-            "hydration": -2.5,
-            "energy": 1.0
-        }
+            "fullness": 0.1,
+            "hydration": -1.0,
+            "energy": 0.35
+        },
+        "consume_uses_left": 55
     },
     {
         "name": "jar of chutney",
@@ -558,10 +563,11 @@
             "The texture is sticky and clinging, leaving a fruity aftertaste."
         ],
         "stats_edit": {
-            "fullness": 4.0,
-            "hydration": 0.5,
-            "energy": 6.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.5,
+            "energy": 0.1
+        },
+        "consume_uses_left": 55
     },
     {
         "name": "tube of tomato paste",
@@ -579,10 +585,11 @@
             "The thick paste clings and leaves a lingering tomato intensity."
         ],
         "stats_edit": {
-            "fullness": 3.5,
-            "hydration": 0.0,
-            "energy": 4.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.5,
+            "energy": 0.1
+        },
+        "consume_uses_left": 10
     },
     {
         "name": "bottle of barbecue sauce",
@@ -600,10 +607,11 @@
             "The sugary undertone makes it feel indulgent and slightly sticky on the lips."
         ],
         "stats_edit": {
-            "fullness": 3.5,
-            "hydration": 0.5,
-            "energy": 6.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.75,
+            "energy": 0.1
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Fresh Herb Bouquet",
@@ -622,10 +630,11 @@
             "Eating the bouquet raw refreshes your mouth like a salad garnish \u2014 cooling and lively rather than filling."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 2.0,
-            "energy": 1.5
-        }
+            "fullness": -0.1,
+            "hydration": 0.25,
+            "energy": 0.1
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Saffron Threads",
@@ -644,10 +653,11 @@
             "The taste is intense and ephemeral \u2014 aromatic more than filling, like inhaling a perfume with edible texture."
         ],
         "stats_edit": {
-            "fullness": 0.2,
-            "hydration": 0.1,
-            "energy": 3.0
-        }
+            "fullness": -0.2,
+            "hydration": 0.15,
+            "energy": 0.25
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Grains of Paradise (jar)",
@@ -667,9 +677,10 @@
         ],
         "stats_edit": {
             "fullness": 0.3,
-            "hydration": 0.0,
-            "energy": 4.0
-        }
+            "hydration": -0.25,
+            "energy": 0.75
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Star Anise (whole pods)",
@@ -689,9 +700,10 @@
         ],
         "stats_edit": {
             "fullness": 0.5,
-            "hydration": 0.2,
-            "energy": 2.0
-        }
+            "hydration": -0.25,
+            "energy": 0.25
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Black Cardamom Pods",
@@ -710,10 +722,11 @@
             "The taste is powerful and energizing \u2014 clearly aromatic and more stimulating than filling."
         ],
         "stats_edit": {
-            "fullness": 0.6,
-            "hydration": 0.1,
-            "energy": 5.0
-        }
+            "fullness": -0.1,
+            "hydration": 0.05,
+            "energy": 0.15
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Cinnamon Bark Sticks",
@@ -732,11 +745,11 @@
             "The fibers give a slight chew while the oils uplift your mood and give a gentle warming buzz."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 0.2,
-            "energy": 6.0
+            "fullness": -1.0,
+            "hydration": -0.2,
+            "energy": 0.15
         },
-        "consume_uses_left": 3
+        "consume_uses_left": 10
     },
     {
         "name": "Sumac Powder (paper pouch)",
@@ -755,10 +768,11 @@
             "The sour spike is refreshing and vivid \u2014 it wakes the palate and leaves a dry, zesty aftertaste."
         ],
         "stats_edit": {
-            "fullness": 0.4,
-            "hydration": 0.2,
-            "energy": 2.0
-        }
+            "fullness": 0.25,
+            "hydration": -0.5,
+            "energy": 0.75
+        },
+        "consume_uses_left": 3
     },
     {
         "name": "Vanilla Bean Pod",
@@ -777,10 +791,11 @@
             "The sensation is indulgent and aromatic, like a tiny mouthful of dessert spice rather than substantial food."
         ],
         "stats_edit": {
-            "fullness": 0.8,
-            "hydration": 0.2,
-            "energy": 3.0
-        }
+            "fullness": 0.25,
+            "hydration": -0.15,
+            "energy": 0.75
+        },
+        "consume_uses_left": 1
     },
     {
         "name": "Bundle of Fresh Spices (Assortment)",
@@ -799,10 +814,11 @@
             "The fresh-herb sprig adds a fleeting green brightness when chewed raw, while the concentrated dried powders leave your mouth feeling dry and slightly tingly."
         ],
         "stats_edit": {
-            "fullness": 0.8,
-            "hydration": -3.0,
-            "energy": 2.5
-        }
+            "fullness": -0.15,
+            "hydration": 0.25,
+            "energy": 0.75
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Jar of Sea Salt",
@@ -821,10 +837,11 @@
             "Eating salt raw is sharp and abrasive; it can sting tiny mouth abrasions and quickly make you want a drink."
         ],
         "stats_edit": {
-            "fullness": 0.1,
-            "hydration": -8.0,
-            "energy": 0.0
-        }
+            "fullness": -0.1,
+            "hydration": -2.5,
+            "energy": 0.1
+        },
+        "consume_uses_left": 70
     },
     {
         "name": "Black Peppercorn Jar",
@@ -843,10 +860,11 @@
             "The bite clears your sinuses briefly and leaves a warm, tingling sensation in the mouth."
         ],
         "stats_edit": {
-            "fullness": 0.2,
-            "hydration": -1.0,
-            "energy": 2.0
-        }
+            "fullness": -0.1,
+            "hydration": -0.15,
+            "energy": 0.1
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Ground Cinnamon Tin",
@@ -865,10 +883,11 @@
             "It leaves a lingering warming sensation on the tongue and throat."
         ],
         "stats_edit": {
-            "fullness": 0.4,
-            "hydration": -2.0,
-            "energy": 3.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.25,
+            "energy": 0.25
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Smoked Paprika Jar",
@@ -887,10 +906,11 @@
             "The powder is pleasantly aromatic, giving a sense of warmth rather than sharp heat."
         ],
         "stats_edit": {
-            "fullness": 0.2,
-            "hydration": 0.0,
-            "energy": 1.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.25,
+            "energy": 0.30
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Ground Cumin",
@@ -909,10 +929,11 @@
             "It feels grounding and aromatic, not particularly filling."
         ],
         "stats_edit": {
-            "fullness": 0.2,
-            "hydration": 0.0,
-            "energy": 1.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.25,
+            "energy": 0.30
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Fresh Herb Bundle (Basil & Parsley)",
@@ -931,10 +952,11 @@
             "The fresh herbs are pleasant to eat raw and leave your mouth feeling refreshed."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 2.0,
-            "energy": 1.0
-        }
+            "fullness": -0.1,
+            "hydration": 0.25,
+            "energy": 0.10
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Wooden Spice Rack (Compact)",

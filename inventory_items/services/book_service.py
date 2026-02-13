@@ -1,5 +1,7 @@
 
 # services/book_service.py
+# This is more of a tool than an item state service, but it was here before everything else
+import copy
 
 class BookService:
     def __init__(self, state_store, signal_callback):
@@ -154,17 +156,21 @@ class BookService:
             return "Error: Chapter content cannot be empty."
 
 
-        chapters = book_data.get("chapters", [])
+        chapters = copy.deepcopy(book_data.get("chapters", []))  # not the live reference
         if any(c.get("title", "").lower() == chapter_title.lower() for c in chapters):
             return f"Error: Chapter with title '{chapter_title}' already exists in '{book_data.get('name', 'Unnamed Book')}'."
 
         chapters.append({"title": chapter_title.strip(), "content": content})
-        book_data["chapters"] = chapters # Ensure the list is updated in the dict
+        # book_data["chapters"] = chapters # Ensure the list is updated in the dict # TODO: DIRECT MODIFICATION OF STATE
 
-        # Now, you need to persist this change to the overall state
-        persist_error = self._inventory_service.persist_item_changes(book_item_id)
-        if persist_error:
-            return persist_error
+        # # Now, you need to persist this change to the overall state
+        # persist_error = self._inventory_service.persist_item_changes(book_item_id)
+        # if persist_error:
+        #     return persist_error
+
+        self._inventory_service.set_item_attribute(book_item_id, "chapters", chapters)
+
+        
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png", "popup_type": 2})
         return f"Chapter '{chapter_title}' successfully added to '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."
@@ -188,9 +194,8 @@ class BookService:
         if not isinstance(new_content, str) or not new_content.strip():
             return "Error: New chapter content cannot be empty."
 
-
-        chapters = book_data.get("chapters", [])
-        target_chapter = next((c for c in chapters if c.get("title", "").lower() == chapter_title.lower()), None)
+        chapters_clone = copy.deepcopy(book_data.get("chapters", []))
+        target_chapter = next((c for c in chapters_clone if c.get("title", "").lower() == chapter_title.lower()), None)
 
         if target_chapter:
             if operation == "append":
@@ -198,9 +203,7 @@ class BookService:
             elif operation == "replace":
              target_chapter["content"] = new_content.strip()
 
-            persist_error = self._inventory_service.persist_item_changes(book_item_id)
-            if persist_error:
-                return persist_error
+            self._inventory_service.set_item_attribute(book_item_id, "chapters", chapters_clone)
 
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"})
             return f"Chapter '{chapter_title}' in '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id}) successfully updated."
@@ -228,11 +231,12 @@ class BookService:
         updated_chapters = [c for c in chapters if c.get("title", "").lower() != chapter_title.lower()]
 
         if len(updated_chapters) < original_chapter_count:
-            book_data["chapters"] = updated_chapters
+            # book_data["chapters"] = updated_chapters
+            self._inventory_service.set_item_attribute(book_item_id, "chapters", updated_chapters)
 
-            persist_error = self._inventory_service.persist_item_changes(book_item_id)
-            if persist_error:
-                return persist_error
+            # persist_error = self._inventory_service.persist_item_changes(book_item_id)
+            # if persist_error:
+            #     return persist_error
 
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/book_icon.png"})
             return f"Chapter '{chapter_title}' successfully deleted from '{book_data.get('name', 'Unnamed Book')}' (ID:{book_item_id})."

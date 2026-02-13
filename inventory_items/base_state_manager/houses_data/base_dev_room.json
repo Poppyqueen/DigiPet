@@ -42,7 +42,7 @@
         "name": "DevRoom",
         "image": "lab_room",
         "room_types": [
-            "kitchen"
+            "library"
         ],
         "plot_number": 3,
         "music": "white_room",

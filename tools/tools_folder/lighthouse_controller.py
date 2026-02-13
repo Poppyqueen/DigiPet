@@ -6,6 +6,7 @@ from inventory_items.items_provider.item_store import ItemStore
 import random
 
 # TODO: Add popup signals to all methods
+# TODO: Add keys more in depth for items like the oiler, kerosene containers, hand_fire_source, etc.
 
 # --- Helper method to be added to each room class ---
 def _send_signal(self, signal_data):

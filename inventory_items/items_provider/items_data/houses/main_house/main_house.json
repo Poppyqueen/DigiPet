@@ -1856,6 +1856,21 @@
             "misc",
             "art_book"
         ],
-        "stackable": true
+        "stackable": false
+    },
+    {
+        "name": "Black Notebook",
+        "descriptions": [
+            "A notebook with lined pages, perfect for writing or sketching.",
+            ""
+        ],
+        "static": false,
+        "type": [
+            "misc",
+            "book"
+        ],
+        "stackable": true,
+        "chapters": [],
+        "is_locked": false
     }
 ]

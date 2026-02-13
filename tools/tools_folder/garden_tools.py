@@ -930,7 +930,7 @@ class Garden_Mananger(GenericJsonTool):
 
         return "\n".join(summary_lines)
     
-    def water_plot(self, plot_id: str, water_level_type: str) -> str:
+    def water_plot(self, plot_id: str, water_level_type: str) -> str: # TODO: implement water source item with water level
         """
         Waters a plant in a specified plot in the current garden room.
         Args:

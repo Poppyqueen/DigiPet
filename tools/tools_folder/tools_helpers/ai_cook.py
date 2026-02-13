@@ -61,6 +61,10 @@ class cook:
         fullness: 20.0, hydration: 5.0, energy: 8.0, consume_uses_left: 2
         should be
         fullness: 10.0, hydration: 2.5, energy: 4.0, consume_uses_left: 2
+
+        Some items could have negative stats, these is in cases where items are in a raw state or are consumed by themeselves. If these stats are negative because the item needs a preparation before consumption,
+        i.e. raw poultry, raw coffee beans, raw potatoes, etc., consuder the negative stats as possitive for your calculation as your cooking process will make it safe to consume.
+        Some other cases for negative stats are items that are salty, sour, bitter, spicy, etc., usually condiments, seasonings, for these, keep the negative stats as negative for your calculation.
         """
 
 

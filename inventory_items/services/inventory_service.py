@@ -5,7 +5,9 @@ from utils.loc_datetime import datetime
 import json
 
 
-from inventory_items.item_pydantic_models import validate_item_dict
+from inventory_items.item_pydantic_models import validate_item_dict, ignore_fingerprint_keys
+
+import copy
 
 
 
@@ -29,7 +31,7 @@ class InventoryService:
         # then filter out non-stacking attributes.
         stacking_attrs = {}
         for k, v in item_data.items():
-            if k not in ["id", "quantity", "static", "stats_edit", "effects"]: # We need to decide what we will ignore
+            if k not in ignore_fingerprint_keys: # We need to decide what we will ignore
                 # last_modified and location_history are examples of other attributes
                 # that shouldn't affect stacking. Add or remove as needed.
                 stacking_attrs[k] = v
@@ -146,15 +148,16 @@ class InventoryService:
             timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
             timed_description = f"{timestamp} {new_description.strip()}"
 
-            descriptions_list = found_item.get("descriptions")
-            if not isinstance(descriptions_list, list):
-                descriptions_list = []
-            descriptions_list.append(timed_description)
-            found_item["descriptions"] = descriptions_list
+            descriptions_list_copy = copy.deepcopy(found_item.get("descriptions"))
+            if not isinstance(descriptions_list_copy, list):
+                descriptions_list_copy = []
+            descriptions_list_copy.append(timed_description)
 
-            self._state_store.update_state_section("inventory", inventory_list) # Save updated inventory list
+            # Don't touch found_item here — let set_item_attribute handle the write
+            message = self.set_item_attribute(item_id, "descriptions", descriptions_list_copy)
+
             item_name = found_item.get("name", "Unnamed Item")
-            return f"Added description for '{item_name}' (ID: {item_id}) in inventory."
+            return f"Added description for '{item_name}' (ID: {item_id}) in inventory. {message}"
         else:
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
 
@@ -1038,16 +1041,16 @@ class InventoryService:
             path_str = ".".join(path + [key]) if path else key
             return f"Set '{path_str}' = {value!r} on all {available} unit(s) of {item_display}."
 
-        # --- Fingerprint changes: split logic (unchanged from original) ---
+        # --- Fingerprint changes: split logic ---
         remaining_in_source = available - actual_qty
 
         detached_preview = {**item_data, **({path[0]: modified_preview[path[0]]} if path else {key: value}), "quantity": actual_qty}
         existing_target = next(
             (i for i in target_list
-             if i.get("id") != item_id
-             and i.get("stackable", False)
-             and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
-             and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
+            if i.get("id") != item_id
+            and i.get("stackable", False)
+            and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
+            and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
             None
         )
 
@@ -1058,6 +1061,12 @@ class InventoryService:
                 return f"Set '{key}' on {item_display}, but failed to persist: {err}"
             path_str = ".".join(path + [key]) if path else key
             return f"Set '{path_str}' = {value!r} on {item_display} (ID kept, stack updated in place)."
+
+        # --- Reduce or remove source stack ---
+        if remaining_in_source > 0:
+            item_data["quantity"] = remaining_in_source
+        else:
+            target_list[:] = [i for i in target_list if i.get("id") != item_id]
 
         detached = {**item_data}
         self._apply_nested_set(detached, path, key, value)
@@ -1101,7 +1110,7 @@ class InventoryService:
         )
         return split_msg + " ".join(messages)
 
-    def examine_consumable(self, item_id: int, internal=False):
+    def examine_consumable(self, item_id: int, internal=False): # TODO: Remove this?
         found_item_info = self._find_item_info_by_id(item_id)
         if not found_item_info:
             if internal:
