@@ -206,5 +206,23 @@
             "energy": 0.4
         },
         "plant_type": "basil"
+    },
+    {
+        "name": "broken seed test",
+        "descriptions": [
+            "A broken seed test.",
+            "A broken seed test."
+        ],
+        "static": false,
+        "type": [
+            "consumable",
+            "seed"
+        ],
+        "stackable": true,
+        "effects": [
+            "A broken seed test.",
+            "A broken seed test."
+        ],
+        "plant_type": "lettuce"
     }
 ]

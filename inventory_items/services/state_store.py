@@ -10,6 +10,8 @@ except ImportError:
     print("Error: generic_json_tool.py not found. Make sure it's in the same directory or PYTHONPATH.")
     import sys; sys.exit(1)
 
+from inventory_items.item_pydantic_models import validate_item_dict
+
 class StateStore(GenericJsonTool):
     ITEM_ID_START_COUNTER = 1 # Re-define constants here or pass from config
     ROOM_ID_START_COUNTER = 1
@@ -241,42 +243,6 @@ class StateStore(GenericJsonTool):
         # define a simplified item validation for structural checks only.
         # For a proper refactor, _is_valid_item_data would be in InventoryService.
 
-        # Temporary _is_valid_item_data stub for StateStore's validation
-        def _local_is_valid_item_data(item_data, check_id=False):
-            if not isinstance(item_data, dict): return False, "Not a dict"
-            if check_id and (item_data.get('id') is None or not isinstance(item_data.get('id'), int)): return False, "Invalid ID"
-            if not isinstance(item_data.get('name'), str) or not item_data.get('name').strip(): return False, "Invalid name"
-            if not isinstance(item_data.get('descriptions'), list) or not all(isinstance(d, str) for d in item_data.get('descriptions')): return False, "Invalid descriptions"
-            
-            # --- CORRECTED: static validation - just check type, do NOT alter value ---
-            if 'static' not in item_data or not isinstance(item_data.get('static'), bool): 
-                return False, "Invalid 'static' (must be bool) or missing."
-            # --- END CORRECTED ---
-
-            item_type = item_data.get("type", [])
-            if not isinstance(item_type, list) or not item_type or not all(isinstance(t, str) for t in item_type): return False, "Invalid type list"
-
-            # Stacking attributes validation for _local_is_valid_item_data (remains mostly same as before, but note it also shouldn't change existing values)
-            stackable = item_data.get("stackable", False)
-            if not isinstance(stackable, bool): return False, "Invalid 'stackable' (must be bool)"
-            # item_data["stackable"] = stackable # No longer force default here, let _is_valid_item_data in InventoryService handle it better or assume input is okay
-
-            quantity = item_data.get("quantity", 1)
-            if not isinstance(quantity, int) or quantity <= 0: return False, "Invalid 'quantity' (must be positive int)"
-            item_data["quantity"] = quantity # No longer force default here
-
-            max_stack_size = item_data.get("max_stack_size")
-            if max_stack_size is not None and (not isinstance(max_stack_size, int) or max_stack_size <= 0):
-                return False, "Invalid 'max_stack_size' (must be positive int or None)"
-
-            # This part is a *validation* on existing data, not a modification for non-stackable.
-            # It's okay to warn/fail if an existing non-stackable has quantity > 1.
-            if not stackable and (quantity > 1 or (max_stack_size is not None and max_stack_size > 1)):
-                # If the item is marked as non-stackable, its quantity must be 1.
-                # If this fails, it indicates an issue in the loaded state or default state.
-                return False, "Non-stackable item has quantity > 1 or max_stack_size > 1."
-
-            return True, ""
 
         rooms_list_to_validate = self._state.get("rooms", [])
 
@@ -335,9 +301,9 @@ class StateStore(GenericJsonTool):
             valid_room_items_list = []
             if isinstance(room.get("items"), list):
                 for item in room["items"]:
-                    is_valid, msg = _local_is_valid_item_data(item, check_id=True)
-                    if not is_valid:
-                        print(f"Validation Warning: Invalid item found in room ID {room.get('id', 'unknown')}: {msg}. Removing.")
+                    result, error = validate_item_dict(item, check_id=True)
+                    if result is None:  # invalid
+                        print(f"... {error}. Removing.")
                         needs_save = True
                         continue
                     valid_room_items_list.append(item)
@@ -376,9 +342,9 @@ class StateStore(GenericJsonTool):
         if isinstance(inventory_list_to_validate, list):
             original_inventory_count = len(inventory_list_to_validate)
             for item in inventory_list_to_validate:
-                is_valid, msg = _local_is_valid_item_data(item, check_id=True)
-                if not is_valid:
-                    print(f"Validation Warning: Invalid item found in inventory: {msg}. Removing.")
+                result, error = validate_item_dict(item, check_id=True)
+                if result is None:  # invalid
+                    print(f"... {error}. Removing.")
                     needs_save = True
                     continue
                 if isinstance(item, dict) and isinstance(item.get('id'), int):

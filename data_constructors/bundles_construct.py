@@ -26,7 +26,7 @@ from pydantic import BaseModel, Field, ValidationError # Import ValidationError
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
-from utils.pydantic_models import ItemDefinitionListContainer # Import the item definition model
+from inventory_items.item_pydantic_models import ItemDefinitionListContainer, validate_item_dict # Import the item definition model
 
 
 
@@ -114,9 +114,14 @@ Generate max 15 items max per room.
 
         processed_items_list: List[Dict[str, Any]] = []
 
+
+        # After response.items loop, replace the bare model_dump with:
         for item_definition in response.items:
-            # Convert the Pydantic ItemDefinition model instance to a dictionary
-            item_dict = item_definition.model_dump(exclude_none=True) # exclude_unset=True is useful here
+            item_dict = item_definition.model_dump(exclude_none=True)
+            result, error = validate_item_dict(item_dict)
+            if error:
+                print(f"Warning: AI generated invalid item '{item_dict.get('name')}': {error}")
+                continue
             processed_items_list.append(item_dict)
 
         print("--- AI Call Successful ---")

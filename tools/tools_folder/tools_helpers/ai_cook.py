@@ -1,4 +1,4 @@
-# 
+# TODO: Refactor to use new pydantic models
 # 
 # ai_cook.py
 
@@ -9,7 +9,7 @@
 
 # Update this, creating a food item should inform of the ID it has 
 from typing import List, Dict, Any
-from utils.pydantic_models import ItemDefinitionListContainer
+from inventory_items.item_pydantic_models import ItemDefinitionListContainer, validate_item_dict
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
@@ -45,7 +45,7 @@ class cook:
         make detailed and evocative descriptions and effects for the item, and in effects, write text directed to whomever just consumed this item, 
         i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', 
         you can make 2 to 3 effects for the item. 
-        The stats for the item you create should be high, consider adding all the stats given by the ingredients, and a final +10 to +30 bonus to each stat.
+        The stats for the item you create should be based and calculated from the exact stats of the items given to you.
         i.e. 
         potatoes:
         stats_edit: fullness: 15.0, hydration: -5.0, energy: 5.0, amount: 20
@@ -54,6 +54,7 @@ class cook:
 
         The total count of stats to return for these items would be:
         fullness: 20.0, hydration: 5.0, energy: 8.0
+        Note how the values are not affected by the amount of each of the items. These calculations should be flat, instead, the amount should be used to determine the size of a portion.
 
         The final plate should have a key 'consume_uses_left' with a value of 1 as a default. If you set a value higher than 1, you should divide the stats_edit by that value.
         So, in our previous example
@@ -84,21 +85,16 @@ class cook:
 
         processed_items_list: List[Dict[str, Any]] = []
 
+
+        # After response.items loop, replace the bare model_dump with:
         for item_definition in response.items:
-            # Convert the Pydantic ItemDefinition model instance to a dictionary
-            item_dict = item_definition.model_dump(exclude_none=True) # Or .dict() for Pydantic V1
-
-            # # --- Post-processing: Remove keys for 'misc' items ---
-            # if item_dict.get("type") == "misc":
-            #     print(f"Processing misc item '{item_dict.get('name')}': Removing effects and stats_edit.")
-            #     # Use .pop() which removes the key and returns its value (or None if key not found)
-            #     # This is slightly cleaner than checking 'in dict' then 'del dict[key]'
-            #     item_dict.pop("effects", None)
-            #     item_dict.pop("stats_edit", None)
-            # # --- End Post-processing ---
-
-            # Append the (potentially modified) dictionary to our new list
+            item_dict = item_definition.model_dump(exclude_none=True)
+            result, error = validate_item_dict(item_dict)
+            if error:
+                print(f"Warning: AI generated invalid item '{item_dict.get('name')}': {error}")
+                continue
             processed_items_list.append(item_dict)
+
 
         print("--- AI Call Successful ---")
         return processed_items_list

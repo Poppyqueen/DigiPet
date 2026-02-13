@@ -4,12 +4,13 @@ from utils.loc_datetime import datetime
 
 import json
 
-from utils.pydantic_models import item_types
+
+from inventory_items.item_pydantic_models import validate_item_dict
+
 
 
 class InventoryService:
     MAX_INVENTORY_SLOTS = 30
-    ALLOWED_ITEM_TYPES = item_types
 
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store
@@ -101,118 +102,10 @@ class InventoryService:
                             }
         return None
 
-    def _is_valid_item_data(self, item_data, check_id=False):
-        if not isinstance(item_data, dict):
-            return False, "Item data is not a dictionary."
-        if check_id:
-            item_id_val = item_data.get('id')
-            if item_id_val is None or not isinstance(item_id_val, int):
-                return False, f"Item data missing or has invalid 'id' ({item_id_val})."
-        required_keys_base = ["name", "descriptions", "static", "type"]
-        if not all(key in item_data for key in required_keys_base):
-            missing = [key for key in required_keys_base if key not in item_data]
-            item_name_for_log = item_data.get('name', 'Unnamed Item')
-            item_id_for_log = item_data.get('id', 'unknown')
-            return False, f"Item '{item_name_for_log}' (ID:{item_id_for_log}) missing base required keys: {missing}"
-
-        item_name = item_data.get('name', 'Unnamed')
-        if not isinstance(item_data["name"], str) or not item_data["name"].strip():
-            item_id_for_log = item_data.get('id', 'unknown')
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'name' must be a non-empty string."
-        descriptions = item_data.get("descriptions", [])
-        if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
-            item_id_for_log = item_data.get('id', 'unknown')
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'descriptions' must be a list of strings."
-        if not isinstance(item_data.get("static"), bool):
-            item_id_for_log = item_data.get('id', 'unknown')
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'static' must be a boolean."
-        item_type = item_data.get("type", [])
-        item_id_for_log = item_data.get('id', 'unknown')
-        if not isinstance(item_type, list):
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' must be a list, got {type(item_type).__name__}."
-        if not item_type:
-            return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'type' list cannot be empty."
-        for t_val in item_type:
-            if t_val not in self.ALLOWED_ITEM_TYPES:
-                return False, f"Item '{item_name}' (ID:{item_id_for_log}) has an invalid type '{t_val}' in its type list. Allowed types: {self.ALLOWED_ITEM_TYPES}"
-
-        # --- NEW: Stacking attributes validation for _is_valid_item_data ---
-        stackable = item_data.get("stackable", False)
-        if not isinstance(stackable, bool): return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'stackable' must be a boolean."
-        item_data["stackable"] = stackable # Ensure it's explicitly set if missing
-
-        quantity = item_data.get("quantity", 1)
-        if not isinstance(quantity, int) or quantity <= 0: return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'quantity' must be a positive integer."
-        item_data["quantity"] = quantity # Ensure it's explicitly set if missing
-
-        max_stack_size = item_data.get("max_stack_size")
-        if max_stack_size is not None:
-            if not isinstance(max_stack_size, int) or max_stack_size <= 0:
-                return False, f"Item '{item_name}' (ID:{item_id_for_log}) 'max_stack_size' must be a positive integer or None."
-            if quantity > max_stack_size and stackable:
-                print(f"Validation Warning: Item '{item_name}' (ID:{item_id_for_log}) quantity ({quantity}) exceeds max_stack_size ({max_stack_size}). This will be clamped upon creation/transfer.")
-                # We'll allow it to pass validation here, but handle clamping in operations.
-        # --- END NEW ---
-
-        if "book" in item_type:
-            chapters_list = item_data.get("chapters")
-            if not isinstance(chapters_list, list):
-                item_id_for_log = item_data.get('id', 'unknown')
-                return False, f"Book item '{item_name}' (ID:{item_id_for_log}) missing 'chapters' key or 'chapters' is not a list."
-            for i, chapter in enumerate(chapters_list):
-                if not isinstance(chapter, dict):
-                    item_id_for_log = item_data.get('id', 'unknown')
-                    return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid chapter entry (not dict) at index {i}."
-                chapter_title = chapter.get("title")
-                chapter_content = chapter.get("content")
-                if chapter_title is None or not isinstance(chapter_title, str) or not chapter_title.strip():
-                    item_id_for_log = item_data.get('id', 'unknown')
-                    return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid or empty chapter 'title' at index {i}."
-                if chapter_content is None or not isinstance(chapter_content, str):
-                    item_id_for_log = item_data.get('id', 'unknown')
-                    return False, f"Book item '{item_name}' (ID:{item_id_for_log}) has invalid or missing chapter 'content' at index {i}."
-
-            is_locked = item_data.get("is_locked", False)
-            if not isinstance(is_locked, bool):
-                item_id_for_log = item_data.get('id', 'unknown')
-                return False, f"Book item '{item_name}' (ID:{item_id_for_log}) 'is_locked' must be a boolean."
-            item_data["is_locked"] = is_locked # Ensure it's explicitly set if missing
-
-        if "consumable" in item_type:
-            stats_edit_data = item_data.get("stats_edit")
-            item_id_for_log = item_data.get('id', 'unknown')
-            if not isinstance(stats_edit_data, dict):
-                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) missing 'stats_edit' key or 'stats_edit' is not a dictionary."
-            valid_stats_keys = {"fullness", "hydration", "energy"}
-            for key, value in stats_edit_data.items():
-                if key not in valid_stats_keys:
-                    return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) has unexpected key '{key}' in 'stats_edit'. Valid keys are: {list(valid_stats_keys)}"
-                if not isinstance(value, (int, float)):
-                    return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) has non-integer or float value for stat '{key}' in 'stats_edit'."
-            effects_list = item_data.get("effects")
-            if effects_list is None:
-                pass
-            elif not isinstance(effects_list, list):
-                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' key is not a list."
-            elif not all(isinstance(effect, str) for effect in effects_list):
-                return False, f"Consumable item '{item_name}' (ID:{item_id_for_log}) 'effects' list contains non-string values."
-
-        if "seed" in item_type:
-            seed_type = item_data.get("plant_type")
-            if not isinstance(seed_type, str):
-                item_id_for_log = item_data.get('id', 'unknown')
-                return False, f"Seed item '{item_name}' (ID:{item_id_for_log}) 'plant_type' key is not a string"
-
-        if "dispenser" in item_type:
-            dispenser_state = item_data.get("dispenser_state")
-            if not isinstance(dispenser_state, dict):
-                item_id_for_log = item_data.get('id', 'unknown')
-                return False, f"Dispenser item '{item_name}' (ID:{item_id_for_log}) 'dispenser_state' key is not a dictionary"
-        if "candy_bag" in item_type:
-            candy_bag_state = item_data.get("contents")
-            if not isinstance(candy_bag_state, dict):
-                item_id_for_log = item_data.get('id', 'unknown')
-                return False, f"Candy bag item '{item_name}' (ID:{item_id_for_log}) 'contents' key is not a dictionary"
+    def _is_valid_item_data(self, item_data: dict, check_id: bool = False) -> tuple[bool, str]:
+        _, error = validate_item_dict(item_data, check_id=check_id)
+        if error:
+            return False, error
         return True, ""
 
 
@@ -677,7 +570,8 @@ class InventoryService:
 
         for item_template_idx, original_item_template in enumerate(item_templates_to_create):
             item_data_template = original_item_template.copy()
-
+            item_data_template.setdefault("stackable", False)
+            item_data_template.setdefault("quantity", 1)
             # Validate the template before trying to create it
             is_valid, error_msg = self._is_valid_item_data(item_data_template, check_id=False)
             if not is_valid:

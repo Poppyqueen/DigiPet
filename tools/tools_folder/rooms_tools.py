@@ -161,7 +161,7 @@ class room_kitchen:
                     continue
 
                 if "consumable" in item_type_list:
-                    consume_uses_left = item_data.get("consume_consume_uses_left")
+                    consume_uses_left = item_data.get("consume_uses_left")
                     if consume_uses_left is not None and amount > consume_uses_left:
                         validation_errors.append(
                             f"Item '{item_name}' (ID: {item_id}) only has {consume_uses_left} use(s) left, "
@@ -264,7 +264,7 @@ class room_kitchen:
         for item_data, amount in valid_consumable_details:
             item_id = int(item_data.get("id"))
             item_name = item_data.get("name", f"ID {item_id}")
-            consume_uses_left = item_data.get("consume_consume_uses_left")
+            consume_uses_left = item_data.get("consume_uses_left")
 
             if consume_uses_left is not None:
                 new_consume_uses_left = consume_uses_left - amount
@@ -282,7 +282,7 @@ class room_kitchen:
                     successfully_consumed.append((item_data, 0))
                 else:
                     # Decrement consume_uses_left
-                    if not self.state.inventory_service.set_item_attribute(item_id, "consume_consume_uses_left", new_consume_uses_left):
+                    if not self.state.inventory_service.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left):
                         print(f"  Failed to decrement consume_uses_left for '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (
@@ -349,13 +349,13 @@ class room_kitchen:
                     print(f"  Re-created '{item_name}' → new ID: {new_ids[0]}.")
             else:
                 # consume_uses_left was decremented — restore the previous value
-                original_consume_uses_left = item_data.get("consume_consume_uses_left")
+                original_consume_uses_left = item_data.get("consume_uses_left")
                 print(
                     f"  Restoring consume_uses_left for '{item_name}' (ID: {item_id}): "
                     f"{new_consume_uses_left} → {original_consume_uses_left}..."
                 )
                 if not self.state.inventory_service.set_item_attribute(
-                    int(item_id), "consume_consume_uses_left", original_consume_uses_left
+                    int(item_id), "consume_uses_left", original_consume_uses_left
                 ):
                     print(f"  CRITICAL: Failed to restore consume_uses_left for '{item_name}' (ID: {item_id})!")
                 else:

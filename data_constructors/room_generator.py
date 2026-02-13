@@ -15,7 +15,7 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration, ImagesConfiguration
 from pygame_int.main_menu_int.utils.crafter_signal import CrafterSignal
 
 # --- Pydantic Models for Room Data Generation ---
-from utils.pydantic_models import room_types
+from inventory_items.item_pydantic_models import room_types # TODO: What do we do with this?
 
 
 VALID_ROOM_TYPES=room_types
