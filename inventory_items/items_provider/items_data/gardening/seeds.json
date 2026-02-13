@@ -12,15 +12,16 @@
         ],
         "stackable": true,
         "effects": [
-            "Plant in loose, well-draining soil to grow a lettuce plant over several days.",
-            "Eating a few seeds provides a faint, refreshing boost and staves off slight hunger."
+            "You pop a few seeds into your mouth; a faint, refreshing crunch and a mild, vegetal flavor.",
+            "A few seeds chewed provide a small filling sensation and a slight energy lift."
         ],
         "stats_edit": {
             "fullness": 0.3,
             "hydration": 0.2,
             "energy": 0.8
         },
-        "plant_type": "lettuce"
+        "plant_type": "lettuce",
+        "consume_uses_left": 8
     },
     {
         "name": "Carrot Seeds",

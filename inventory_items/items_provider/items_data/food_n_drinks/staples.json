@@ -16,9 +16,9 @@
             "It leaves a coating of powder on your tongue and throat; oddly filling but thirsty work."
         ],
         "stats_edit": {
-            "fullness": 15.0,
-            "hydration": -5.0,
-            "energy": 5.0
+            "fullness": 1.5,
+            "hydration": -2.5,
+            "energy": -0.5
         },
         "consume_uses_left": 40
     },
@@ -40,9 +40,10 @@
         ],
         "stats_edit": {
             "fullness": -2.0,
-            "hydration": -10.0,
-            "energy": -15.0
-        }
+            "hydration": -2.5,
+            "energy": -1.5
+        },
+        "consume_uses_left": 30
     },
     {
         "name": "dried spaghetti",
@@ -690,28 +691,6 @@
             "fullness": -10.0,
             "hydration": -30.0,
             "energy": -50.0
-        }
-    },
-    {
-        "name": "bag of white rice (1 kg)",
-        "descriptions": [
-            "A 1 kg paper bag of long-grain white rice, uncooked.",
-            "Dry, starchy grains that are normally boiled or steamed before eating."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "You shovel a handful of dry rice into your mouth. The grains are gritty and starchy, filling but oddly dry.",
-            "It sits heavy in your stomach and leaves your mouth and throat parched."
-        ],
-        "stats_edit": {
-            "fullness": 25.0,
-            "hydration": -20.0,
-            "energy": 10.0
         }
     },
     {

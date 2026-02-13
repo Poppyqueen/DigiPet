@@ -168,12 +168,17 @@ When running the project, you can expect:
 
 #### Short term:
 
+* Define "consume_uses_left" for all consumable items in the item store. 'inventory_items/items_provider/items_data'. All these JSON files preferably would have a "consume_uses_left" key with a sensible value based on what the item, is, also editing the stats edit keys to reflect the new consumption system. 
+
 * Add things here
 
 * When double clicking on the agent, send a message to it with messages like "you feel a unnusual chill on your body" or "an itch on your back overcomes you for a second", "there is a tickle on your head", etc. 
 
 * Flag any "DIRECT KEY MODIFICATION" for item data in the code with a TODO comment if seen.
 
+* Analyze the items service, specifically the validation of items, and see if we can refactor it to use pydantic, also change the pydantic models to create individual models for each unique item type for use across the project. Right now the pydantic models are all a single complex item model that is used for all items, and worse, these pydantic models are not used in the main validation process. Target 'inventory_items/inventory_manager.py' and 'utils/pydantic_models.py' and anything they touch.
+
+* Add 'excess' consumption to item definitions, maybe 'excess amount' and 'excess effect' to item definitions that are consumables. These effects should be text narrative, flavor text that describes the experiences of overconsumption of a particular item, like eating 10 values out of 15 of a spice jar, or eating 10 cookies, etc. 
 
 #### Long Term:
 

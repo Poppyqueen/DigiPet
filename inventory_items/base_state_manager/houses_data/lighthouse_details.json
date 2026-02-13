@@ -194,7 +194,7 @@
     },
     {
         "name": "Storage Room",
-        "image": "storage_room",
+        "image": "oil_room",
         "room_types": [
             "storage_room"
         ],

@@ -244,28 +244,6 @@
         }
     },
     {
-        "name": "rolled oats (500 g)",
-        "descriptions": [
-            "Half-kilogram of rolled oats \u2014 useful for porridge, baking, or adding to smoothies.",
-            "Cooks quickly and is a common breakfast staple providing soluble fiber."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "Warm oatmeal soothes and fills you up; raw oats give a chewy, nutty bite.",
-            "Absorbs liquids well, making it a good base for hydrating breakfasts."
-        ],
-        "stats_edit": {
-            "fullness": 18.0,
-            "hydration": 6.0,
-            "energy": 20.0
-        }
-    },
-    {
         "name": "dried pasta",
         "descriptions": [
             "A 500 g pack of dried durum wheat pasta \u2014 cooks quickly to yield a filling meal component.",
@@ -330,18 +308,6 @@
             "hydration": 0.0,
             "energy": 45.0
         }
-    },
-    {
-        "name": "all-purpose flour (1 kg)",
-        "descriptions": [
-            "A 1 kg bag of all-purpose wheat flour \u2014 an ingredient for baking bread, pancakes, and thickening sauces.",
-            "Not typically eaten alone; requires cooking or processing into baked goods."
-        ],
-        "static": false,
-        "type": [
-            "misc"
-        ],
-        "stackable": true
     },
     {
         "name": "vegetable oil (1 L)",

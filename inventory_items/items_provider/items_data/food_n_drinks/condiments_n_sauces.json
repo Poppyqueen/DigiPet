@@ -37,10 +37,11 @@
             "It refreshes the palate more than it fills you, with a lingering citrus acidity."
         ],
         "stats_edit": {
-            "fullness": 3.0,
-            "hydration": 6.0,
-            "energy": 4.0
-        }
+            "fullness": 0.25,
+            "hydration": -2.5,
+            "energy": 0.25
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "fresh salsa roja (cup)",
@@ -58,11 +59,11 @@
             "The high water content is lively on the tongue \u2014 refreshing, slightly spicy and satisfying."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 9.0,
-            "energy": 3.0
+            "fullness": 1.0,
+            "hydration": -3.5,
+            "energy": 0.25
         },
-        "consume_uses_left": 2
+        "consume_uses_left": 20
     },
     {
         "name": "whole grain mustard",
@@ -80,10 +81,11 @@
             "It doesn't fill you much but leaves a sharp, lingering spice on the tongue."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 1.0,
-            "energy": 2.0
-        }
+            "fullness": 0.05,
+            "hydration": -0.25,
+            "energy": 0.05
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "roasted garlic olive-oil dip (jar)",
@@ -101,10 +103,11 @@
             "It's rich and savory, leaving a warm, lingering oiliness rather than immediate fullness."
         ],
         "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 1.0,
-            "energy": 20.0
-        }
+            "fullness": 0.75,
+            "hydration": -1.25,
+            "energy": 0.75
+        },
+        "consume_uses_left": 30
     },
     {
         "name": "chimichurri (small jar)",
@@ -122,10 +125,11 @@
             "It livens the mouth and appetite more than it fills you, leaving a bright, lingering herbiness."
         ],
         "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 3.0,
-            "energy": 8.0
-        }
+            "fullness": 0.75,
+            "hydration": -1.25,
+            "energy": 0.75
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "tahini sauce (jar)",
@@ -143,10 +147,11 @@
             "The high oil and seed content feels substantial and caloric rather than watery."
         ],
         "stats_edit": {
-            "fullness": 7.0,
-            "hydration": 2.0,
-            "energy": 25.0
-        }
+            "fullness": 1.0,
+            "hydration": -0.50,
+            "energy": 1.0
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "gochujang (fermented chili paste)",
@@ -164,10 +169,11 @@
             "It's intensely flavored so a little goes a long way \u2014 warming and appetite-stirring."
         ],
         "stats_edit": {
-            "fullness": 4.0,
-            "hydration": 3.0,
-            "energy": 10.0
-        }
+            "fullness": 0.5,
+            "hydration": -3.5,
+            "energy": 0.25
+        },
+        "consume_uses_left": 55
     },
     {
         "name": "quick pickled cucumber slices",
@@ -185,10 +191,11 @@
             "It's refreshing and lightly filling, with a clean, tangy finish."
         ],
         "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 7.0,
-            "energy": 2.0
-        }
+            "fullness": 0.5,
+            "hydration": -0.5,
+            "energy": 0.2
+        },
+        "consume_uses_left": 55
     },
     {
         "name": "fresh tzatziki (cup)",
@@ -209,7 +216,8 @@
             "fullness": 6.0,
             "hydration": 8.0,
             "energy": 6.0
-        }
+        },
+        "consume_uses_left": 6
     },
     {
         "name": "Assorted Condiment Pack",
@@ -240,10 +248,11 @@
             "A small, satisfying dollop makes fried snacks taste noticeably richer."
         ],
         "stats_edit": {
-            "fullness": 4.0,
-            "hydration": 0.5,
-            "energy": 1.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.25,
+            "energy": 0.1
+        },
+        "consume_uses_left": 2
     },
     {
         "name": "Yellow Mustard Packet",
@@ -262,10 +271,11 @@
             "A sting of acidity lingers, making fatty bites feel lighter."
         ],
         "stats_edit": {
-            "fullness": 2.5,
-            "hydration": 0.2,
-            "energy": 0.5
-        }
+            "fullness": 0.1,
+            "hydration": -0.25,
+            "energy": 0.1
+        },
+        "consume_uses_left": 2
     },
     {
         "name": "Mayonnaise Cup",
@@ -284,10 +294,11 @@
             "The richness makes light snacks feel indulgent but can leave a lingering oily coating."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 0.2,
-            "energy": 3.0
-        }
+            "fullness": 3.5,
+            "hydration": -1.0,
+            "energy": 2.0
+        },
+        "consume_uses_left": 10
     },
     {
         "name": "Soy Sauce Mini Bottle",
@@ -306,10 +317,11 @@
             "A little goes a long way; it makes bland foods taste markedly more complex."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 0.5,
+            "fullness": 0.1,
+            "hydration": -0.1,
             "energy": 0.0
-        }
+        },
+        "consume_uses_left": 10
     },
     {
         "name": "Hot Sauce Sachet",
@@ -328,10 +340,11 @@
             "The spice can be exhilarating and makes other flavors pop, leaving a warm afterglow."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 0.1,
-            "energy": 1.0
-        }
+            "fullness": 0.5,
+            "hydration": -1.0,
+            "energy": 0.5
+        },
+        "consume_uses_left": 2
     },
     {
         "name": "BBQ Sauce Cup",
@@ -350,10 +363,11 @@
             "The sugar and spices make savory snacks feel heartier, with a pleasant sticky finish."
         ],
         "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 0.5,
-            "energy": 2.0
-        }
+            "fullness": 0.5,
+            "hydration": -1.0,
+            "energy": 0.75
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Ranch Dressing Cup",
@@ -372,10 +386,11 @@
             "Its richness makes raw veggies feel more indulgent."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 0.3,
-            "energy": 3.0
-        }
+            "fullness": 0.45,
+            "hydration": -0.75,
+            "energy": 0.5
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Honey Packet",
@@ -394,10 +409,11 @@
             "Instant energy from the sugars and a soothing coat in the throat if taken slowly."
         ],
         "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 0.0,
-            "energy": 6.0
-        }
+            "fullness": 1.5,
+            "hydration": -1.0,
+            "energy": 1.0
+        },
+        "consume_uses_left": 2
     },
     {
         "name": "bottle of ketchup",
@@ -415,10 +431,11 @@
             "The thick texture makes each bite feel more substantial than its calories imply."
         ],
         "stats_edit": {
-            "fullness": 3.0,
-            "hydration": 0.5,
-            "energy": 5.0
-        }
+            "fullness": 0.25,
+            "hydration": -0.75,
+            "energy": 0.15
+        },
+        "consume_uses_left": 30
     },
     {
         "name": "jar of mustard",

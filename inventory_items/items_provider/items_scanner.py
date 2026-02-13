@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections import defaultdict
 import fnmatch
 import argparse
@@ -53,6 +53,17 @@ class MissingItemInfo:
     @property
     def total_references(self) -> int:
         return len(self.code_references) + len(self.config_references)
+
+
+@dataclass
+class DuplicateItemInfo:
+    """Information about an item name that appears in multiple store files"""
+    item_name: str
+    file_paths: List[str]  # All files that define this item name
+
+    @property
+    def count(self) -> int:
+        return len(self.file_paths)
 
 
 @dataclass
@@ -567,6 +578,7 @@ class GameAssetAnalyzer:
         from item_store import ItemStore  # Assuming the ItemStore is in paste.py
         
         self.item_store = ItemStore(item_store_dir)
+        self.item_store_dir = Path(item_store_dir)
         self.codebase_analyzer = CodebaseAnalyzer(code_root_dir)
         self.config_analyzer = ConfigAnalyzer()
         self.code_root_dir = Path(code_root_dir)
@@ -681,7 +693,106 @@ class GameAssetAnalyzer:
                     )
         
         return missing_items
-    
+
+    def find_duplicate_items(self) -> Dict[str, DuplicateItemInfo]:
+        """
+        Find items whose 'name' field appears in more than one store file.
+
+        The item store may spread definitions across multiple JSON files.  If the
+        same name is defined in two or more of those files the store will silently
+        return whichever definition it loaded last, which can cause hard-to-track
+        bugs.  This method surfaces every such collision so they can be resolved.
+
+        Strategy
+        --------
+        1.  Walk every JSON file under the item_store_dir (recursively).
+        2.  For each file, collect every top-level string value for a 'name' key,
+            and also handle list-of-objects structures where each element may have
+            a 'name' key.
+        3.  Fall back to the ItemStore's own `get_all_items()` and its internal
+            `_item_to_file_map` when available, because the store may apply its
+            own loading logic (e.g. merging files, custom keys).
+        4.  Report any name that maps to more than one distinct source file.
+
+        Returns
+        -------
+        Dict mapping item_name -> DuplicateItemInfo for every duplicated name.
+        """
+        # ------------------------------------------------------------------
+        # Primary strategy: use the store's own file-map if it exposes one.
+        # ------------------------------------------------------------------
+        name_to_files: Dict[str, List[str]] = defaultdict(list)
+
+        if hasattr(self.item_store, '_item_to_file_map'):
+            # _item_to_file_map: {item_name: file_path}  (only keeps the *last*
+            # file that defined the name, so it can't expose duplicates by itself)
+            # We still use it as a starting point but must supplement with a
+            # full directory scan below.
+            pass  # handled in the scan below
+
+        # ------------------------------------------------------------------
+        # Full scan: read every JSON file in the store directory directly so
+        # we see *all* definitions, not just the winners.
+        # ------------------------------------------------------------------
+        if self.item_store_dir.exists():
+            for json_file in self.item_store_dir.rglob('*.json'):
+                try:
+                    with open(json_file, 'r', encoding='utf-8') as fh:
+                        data = json.load(fh)
+                except (json.JSONDecodeError, IOError) as exc:
+                    print(f"Warning: Could not read store file '{json_file}': {exc}")
+                    continue
+
+                file_str = str(json_file)
+
+                # Support three common store layouts:
+                #   (a) A single object  {"name": "sword", ...}
+                #   (b) A list of objects [{"name": "sword"}, {"name": "shield"}]
+                #   (c) A dict of objects {"sword": {"name": "sword"}, ...}
+
+                if isinstance(data, dict):
+                    if 'name' in data and isinstance(data['name'], str):
+                        # Layout (a)
+                        name_to_files[data['name']].append(file_str)
+                    else:
+                        # Layout (c) – values are item dicts
+                        for value in data.values():
+                            if isinstance(value, dict) and 'name' in value and isinstance(value['name'], str):
+                                name_to_files[value['name']].append(file_str)
+
+                elif isinstance(data, list):
+                    # Layout (b)
+                    for entry in data:
+                        if isinstance(entry, dict) and 'name' in entry and isinstance(entry['name'], str):
+                            name_to_files[entry['name']].append(file_str)
+
+        # ------------------------------------------------------------------
+        # Also ask the store itself for all items (catches in-memory merges).
+        # ------------------------------------------------------------------
+        for item in self.item_store.get_all_items():
+            item_name = item.get('name')
+            if not item_name:
+                continue
+            # Use the store's own file map if present
+            if hasattr(self.item_store, '_item_to_file_map'):
+                store_file = self.item_store._item_to_file_map.get(item_name)
+                if store_file and store_file not in name_to_files.get(item_name, []):
+                    name_to_files[item_name].append(store_file)
+
+        # ------------------------------------------------------------------
+        # Keep only names with more than one distinct file.
+        # ------------------------------------------------------------------
+        duplicates: Dict[str, DuplicateItemInfo] = {}
+        for item_name, files in name_to_files.items():
+            unique_files = list(dict.fromkeys(files))  # deduplicate, preserve order
+            if len(unique_files) > 1:
+                duplicates[item_name] = DuplicateItemInfo(
+                    item_name=item_name,
+                    file_paths=unique_files,
+                )
+
+        return duplicates
+
     def generate_full_report(self) -> Dict:
         """Generate a comprehensive analysis report"""
         code_references = self.codebase_analyzer.find_all_item_references()
@@ -749,6 +860,16 @@ class GameAssetAnalyzer:
                     for config_ref in missing_info.config_references
                 ]
             }
+
+        # Get duplicate items info
+        duplicate_items = self.find_duplicate_items()
+        serializable_duplicates = {
+            item_name: {
+                'count': dup_info.count,
+                'file_paths': dup_info.file_paths,
+            }
+            for item_name, dup_info in duplicate_items.items()
+        }
         
         report = {
             'summary': {
@@ -758,6 +879,7 @@ class GameAssetAnalyzer:
                 'unique_items_in_code': len(code_references),
                 'unique_items_in_configs': len(config_items),
                 'missing_items_count': len(missing_items),
+                'duplicate_items_count': len(duplicate_items),
                 'config_files_analyzed': len(set(
                     config_ref.file_path 
                     for config_refs in config_references.values() 
@@ -766,6 +888,7 @@ class GameAssetAnalyzer:
             },
             'orphaned_items': self.find_orphaned_items(),
             'missing_items': detailed_missing,
+            'duplicate_items': serializable_duplicates,
             'code_references': serializable_code_references,
             'config_references': serializable_config_references,
             'items_in_store': [item.get('name') for item in all_items if item.get('name')],
@@ -790,6 +913,7 @@ def main():
     parser.add_argument('--check-item', help='Check usage of a specific item')
     parser.add_argument('--find-orphaned', action='store_true', help='Find orphaned items')
     parser.add_argument('--find-missing', action='store_true', help='Find missing items')
+    parser.add_argument('--find-duplicates', action='store_true', help='Find items with duplicate names in the item store')
     parser.add_argument('--full-report', help='Generate full report and save to file')
     
     args = parser.parse_args()
@@ -860,6 +984,19 @@ def main():
                     for config_ref in missing_info.config_references:
                         rel_path = os.path.relpath(config_ref.file_path, args.code_root)
                         print(f"      {rel_path} - {config_ref.context}")
+
+        if args.find_duplicates:
+            duplicate_items = analyzer.find_duplicate_items()
+            print(f"\nDuplicate item names in store ({len(duplicate_items)}):")
+
+            if not duplicate_items:
+                print("  ✅ No duplicates found.")
+            else:
+                for item_name, dup_info in sorted(duplicate_items.items()):
+                    print(f"\n  ⚠️  '{item_name}' defined in {dup_info.count} files:")
+                    for file_path in dup_info.file_paths:
+                        rel_path = os.path.relpath(file_path, args.code_root)
+                        print(f"      {rel_path}")
         
         if args.full_report:
             report = analyzer.generate_full_report()
@@ -869,6 +1006,7 @@ def main():
             print(f"Analyzed {report['summary']['config_files_analyzed']} config files")
             print(f"Found {report['summary']['unique_items_in_configs']} unique items in configs")
             print(f"Found {report['summary']['missing_items_count']} missing items")
+            print(f"Found {report['summary']['duplicate_items_count']} duplicate item names in store")
     
     except Exception as e:
         print(f"Error: {e}")
@@ -889,3 +1027,6 @@ if __name__ == "__main__":
 # Empty lists are fine even if this script higlights them
 
 # python inventory_items/items_provider/items_scanner.py --code-root "." --item-store inventory_items/items_provider/items_data --find-missing
+
+# Find duplicate item names in the store:
+# python inventory_items/items_provider/items_scanner.py --code-root "." --item-store inventory_items/items_provider/items_data --find-duplicates

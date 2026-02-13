@@ -758,20 +758,6 @@
         "stackable": true
     },
     {
-        "name": "tomato seed packet",
-        "descriptions": [
-            "A small paper packet containing open-pollinated tomato seeds suitable for containers or garden beds.",
-            "Includes planting notes for sun, spacing, and watering to help beginners succeed."
-        ],
-        "static": false,
-        "type": [
-            "seed",
-            "misc"
-        ],
-        "stackable": true,
-        "plant_type": "tomato"
-    },
-    {
         "name": "strawberry seed packet",
         "descriptions": [
             "Compact seed packet containing strawberry seeds for starting plants that produce small, sweet berries.",
