@@ -19,7 +19,8 @@
             "fullness": 15.0,
             "hydration": -5.0,
             "energy": 5.0
-        }
+        },
+        "consume_uses_left": 40
     },
     {
         "name": "all-purpose flour",
@@ -129,7 +130,8 @@
             "fullness": 4.0,
             "hydration": -2.0,
             "energy": 15.0
-        }
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "table salt (200 g)",
@@ -441,28 +443,6 @@
         }
     },
     {
-        "name": "Granulated Sugar (500 g)",
-        "descriptions": [
-            "A half-kilogram bag of white granulated sugar.",
-            "Extremely sweet eaten straight; gives a quick burst of energy but lacks any lasting nutrition."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "You tip palmfuls of sugar into your mouth; an intensely cloying sweetness floods your tongue and teeth.",
-            "The sugar gives a sharp rush of alertness and jittery warmth, but feels empty and quickly fades."
-        ],
-        "stats_edit": {
-            "fullness": 10.0,
-            "hydration": 0.0,
-            "energy": 20.0
-        }
-    },
-    {
         "name": "Dried Black Beans (500 g)",
         "descriptions": [
             "A pouch of dried black beans \u2014 staple legume meant for soaking and long simmering.",
@@ -754,28 +734,6 @@
             "fullness": 8.0,
             "hydration": -8.0,
             "energy": 2.0
-        }
-    },
-    {
-        "name": "granulated sugar (500 g)",
-        "descriptions": [
-            "A half-kilo bag of white granulated sugar.",
-            "Pure sucrose crystals used for sweetening beverages and baking."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "You pour a spoonful of dry sugar into your mouth. The intense sweet crystals hit your tongue immediately.",
-            "It gives a quick surge of energy but little satiety and leaves you slightly thirstier."
-        ],
-        "stats_edit": {
-            "fullness": 4.0,
-            "hydration": -5.0,
-            "energy": 30.0
         }
     },
     {
@@ -1421,27 +1379,6 @@
             "fullness": 20.0,
             "hydration": -15.0,
             "energy": 10.0
-        }
-    },
-    {
-        "name": "granulated sugar (500 g)",
-        "descriptions": [
-            "A 500 g sack of white granulated sugar \u2014 pure sweet crystals used for baking, preserving and sweetening.",
-            "Highly caloric and shelf-stable; pleasant in small quantities but cloying when eaten alone."
-        ],
-        "static": false,
-        "type": [
-            "consumable"
-        ],
-        "stackable": true,
-        "effects": [
-            "A heaping spoonful of dry sugar is an intense crystalline sweetness that hits quickly and can be almost painful after a few mouthfuls.",
-            "Gives a rapid burst of energy but soon leaves a dry, cloying sensation."
-        ],
-        "stats_edit": {
-            "fullness": 5.0,
-            "hydration": -5.0,
-            "energy": 45.0
         }
     },
     {

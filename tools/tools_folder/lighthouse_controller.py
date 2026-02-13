@@ -255,32 +255,40 @@ class LighthouseController:
 
         if denatured_alcohol_details["spirit_quantity"] == 0:
             return "The denatured alcohol container is empty."
+
+        new_spirit_content = denatured_alcohol_details["spirit_quantity"] - SPIRIT_CONSUME_RATE
         
 
-        denatured_alcohol_details["spirit_quantity"] -= SPIRIT_CONSUME_RATE
-        text_results.append(f"Spirit source consumed {SPIRIT_CONSUME_RATE} units of spirit. {denatured_alcohol_details['spirit_quantity']:.0%} units remaining.")
+        attribute_set_result = self.state_manager.inventory_service.set_item_attribute(spirit_source_id, "spirit_quantity", new_spirit_content)
+        text_results.append(attribute_set_result)
+        #denatured_alcohol_details["spirit_quantity"] -= SPIRIT_CONSUME_RATE # using helper function instead
+        text_results.append(f"Spirit source consumed {SPIRIT_CONSUME_RATE} units of spirit. {new_spirit_content:.0%} units remaining.")
         
-        if denatured_alcohol_details["spirit_quantity"] < 0:
-            denatured_alcohol_details["spirit_quantity"] = 0
+        if new_spirit_content < 0: 
+            # denatured_alcohol_details["spirit_quantity"] = 0 # using helper function instead
+            attribute_set_result = self.state_manager.inventory_service.set_item_attribute(spirit_source_id, "spirit_quantity", 0)
+            text_results.append(attribute_set_result)
             flag, message = self.state_manager.remove_item(spirit_source_id, internal=True)
             text_results.append("Spirit source has been consumed entirely!")
             text_results.append(message)
             
 
-        error_message = self.state_manager.inventory_service.persist_item_changes(spirit_source_id)
+        # error_message = self.state_manager.inventory_service.persist_item_changes(spirit_source_id)
 
-        if error_message:
-            return error_message
+        # if error_message:
+        #     return error_message
 
         if spirit_pan_details.get("filled") == True:
             return "This spirit pan is already filled with spirit."
 
-        spirit_pan_details["filled"] = True
+        # spirit_pan_details["filled"] = True # using helper function instead
 
-        error_message = self.state_manager.inventory_service.persist_item_changes(spirit_pan_id)
+        attribute_set_result = self.state_manager.inventory_service.set_item_attribute(spirit_pan_id, "filled", True)
+        text_results.append(attribute_set_result)
+        # error_message = self.state_manager.inventory_service.persist_item_changes(spirit_pan_id)
 
-        if error_message:
-            return error_message
+        # if error_message:
+        #     return error_message
         # TODO: add signal for icon popups
 
         return "Spirit pan refilled." + "\n".join(text_results)

@@ -1020,3 +1020,203 @@ class InventoryService:
         
         return is_valid
         
+
+    def set_item_attribute(self, item_id: int, key: str, value, quantity: int = 1) -> str: # TODO: Experimental
+        """
+        Modifies a single attribute (key/value) on one or more units of an item stack,
+        then recalculates stacking state.
+
+        If the item is stackable and the key is part of the stacking key (i.e. it would
+        change which stack this item belongs to), the affected units are "split off" from
+        their source stack and either:
+        - Merged into an existing compatible stack in the same location, or
+        - Inserted as a new, separate stack entry.
+
+        Args:
+            item_id:  The ID of the item (or stack) to modify.
+            key:      The attribute key to set.
+            value:    The new value for that attribute.
+            quantity: How many units of the stack to affect. Defaults to 1.
+                    Pass 0 or a value >= available quantity to affect the whole stack.
+
+        Returns:
+            A human-readable result string.
+        """
+        if not isinstance(item_id, int):
+            return f"Failed to set attribute: item_id must be an integer, got '{item_id}'."
+
+        # --- 1. Locate the item ---
+        item_info = self._find_item_info_by_id(item_id)
+        if not item_info:
+            return f"Failed to set attribute: item with ID {item_id} not found."
+
+        item_data     = item_info["item_data"]   # live reference inside the state list
+        location      = item_info["location"]    # "inventory" or "room"
+        location_id   = item_info["location_id"]
+
+        item_display  = self._format_item_for_display(item_data)
+        is_stackable  = item_data.get("stackable", False)
+
+        # --- 2. Resolve how many units are affected ---
+        available = item_data.get("quantity", 1)
+        if quantity <= 0 or quantity >= available:
+            actual_qty = available   # whole stack
+        else:
+            actual_qty = quantity    # partial
+
+        # --- 3. Resolve the target list (the live list inside state) ---
+        if location == "inventory":
+            target_list = self._state_store.get_state_section("inventory", [])
+        elif location == "room":
+            if not self._room_manager:
+                return "Error: RoomManager not set; cannot modify room item."
+            room_data   = self._room_manager._find_room_by_id(location_id)
+            if not room_data or not isinstance(room_data.get("items"), list):
+                return f"Error: Room {location_id} not found or corrupted."
+            target_list = room_data["items"]
+        else:
+            return f"Error: Unknown item location '{location}'."
+
+        # --- 4. Would this key change the stacking fingerprint? ---
+        #
+        # We do this by comparing the stacking key BEFORE and AFTER the edit.
+        # Non-stackable items skip all of this — we just set the value directly.
+
+        if not is_stackable:
+            # Simple case: just mutate in place and persist.
+            item_data[key] = value
+            err = self.persist_item_changes(item_id)
+            if err:
+                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+            return f"Set '{key}' = {value!r} on {item_display}."
+
+        # --- Stackable path ---
+        stacking_key_before = self._get_item_stacking_key(item_data)
+
+        # Build a temporary "what would the modified item look like" dict
+        # so we can compute the new stacking key without touching live data yet.
+        modified_preview         = item_data.copy()
+        modified_preview[key]    = value
+        stacking_key_after       = self._get_item_stacking_key(modified_preview)
+
+        fingerprint_unchanged = (stacking_key_before == stacking_key_after)
+
+        if fingerprint_unchanged:
+            # --- 4a. Key is NOT part of the stacking fingerprint ---
+            # Safe to mutate the whole stack in-place, regardless of actual_qty,
+            # because all units are identical and will remain identical.
+            item_data[key] = value
+            err = self.persist_item_changes(item_id)
+            if err:
+                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+            return f"Set '{key}' = {value!r} on all {available} unit(s) of {item_display}."
+
+        # --- 4b. Key IS part of the stacking fingerprint ---
+
+        remaining_in_source = available - actual_qty
+
+        # Step A: Check if another existing stack already matches the post-edit fingerprint.
+        # We need to do this BEFORE we remove the source from the list, so that
+        # _find_matching_stack_in_list doesn't accidentally match the source itself.
+        # Build the preview to search with.
+        detached_preview = {**item_data, key: value, "quantity": actual_qty}
+        existing_target  = next(
+            (i for i in target_list
+            if i.get("id") != item_id   # exclude self
+            and i.get("stackable", False)
+            and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
+            and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
+            None
+        )
+
+        messages = []
+
+        if remaining_in_source == 0 and existing_target is None:
+            # ── Fast path: whole stack, no merge target ──────────────────────────
+            # Just mutate in place. Keep the same ID, no list surgery needed.
+            item_data[key] = value
+            err = self.persist_item_changes(item_id)
+            if err:
+                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+            return f"Set '{key}' = {value!r} on {item_display} (ID kept, stack updated in place)."
+
+        # Step B: Build the detached item with the new attribute applied.
+        detached             = item_data.copy() if remaining_in_source > 0 else item_data
+        detached             = {**item_data, key: value, "quantity": actual_qty}
+        # (We deliberately do NOT copy the old id yet; we may reuse or assign new below.)
+
+        # Step C: Try to merge the detached units into an existing compatible stack.
+        existing_target = self._find_matching_stack_in_list(target_list, detached)
+
+        messages = []
+        if existing_target:
+            space = existing_target.get("max_stack_size", float("inf")) - existing_target.get("quantity", 0)
+            can_merge = min(actual_qty, space)
+            existing_target["quantity"] += can_merge
+            leftover = actual_qty - can_merge
+            messages.append(
+                f"Merged {can_merge} unit(s) into existing stack {self._format_item_for_display(existing_target)}."
+            )
+
+            if leftover > 0:
+                # The target stack was full; create a new stack for the remainder.
+                new_id             = self._state_store.get_next_item_id()
+                overflow_stack     = {**detached, "id": new_id, "quantity": leftover}
+                target_list.append(overflow_stack)
+                messages.append(
+                    f"Created new stack (ID:{new_id:06d}) for remaining {leftover} unit(s)."
+                )
+        else:
+            # No compatible stack exists; insert as a brand-new stack.
+            new_id         = self._state_store.get_next_item_id()
+            new_stack      = {**detached, "id": new_id, "quantity": actual_qty}
+            target_list.append(new_stack)
+            messages.append(
+                f"Created new stack {self._format_item_for_display(new_stack)} with {actual_qty} unit(s)."
+            )
+
+        # Step D: Persist both the source reduction and the new/merged stack.
+        if location == "inventory":
+            self._state_store.update_state_section("inventory", target_list)
+        else:
+            rooms_list = self._state_store.get_state_section("rooms", [])
+            self._state_store.update_state_section("rooms", rooms_list)
+
+        list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
+        self._send_signal({"type": "room_inventory",    "item_list": list_room_items_names})
+        self._send_signal({"type": "player_inventory",  "item_list": list_inventory_item_names})
+
+        split_msg = (
+            f"Modified '{key}' on {actual_qty} unit(s) of {item_display} "
+            f"(source stack {'reduced to ' + str(remaining_in_source) + ' unit(s)' if remaining_in_source > 0 else 'fully consumed'}). "
+        )
+        return split_msg + " ".join(messages)
+
+    def examine_consumable(self, item_id: int, internal=False):
+        found_item_info = self._find_item_info_by_id(item_id)
+        if not found_item_info:
+            if internal:
+                return {"status": "not_found", "message": f"Item with ID '{item_id}' not found anywhere."}
+            else:
+                return f"You don't see an item with ID '{item_id}' here or in your inventory."
+        item_location = found_item_info["location"]
+        item_location_id = found_item_info["location_id"]
+        item_data = found_item_info["item_data"]
+        is_accessible = (item_location == "inventory") or (item_location == "room" and item_location_id == self._state_store.get_state_section("current_room_id"))
+        is_valid, msg = self._is_valid_item_data(item_data, check_id=True)
+        if not is_valid:
+            print(f"Warning: Found item ID {item_id} at {item_location} but data is invalid: {msg}. Reporting error.")
+            if internal:
+                return {"status": "error", "message": f"Found item ID {item_id} but data is corrupted: {msg}", "location": item_location}
+            else:
+                return f"Found item ID {item_id} but data is corrupted: {msg}."
+        if not is_accessible:
+            if internal:
+                return {"status": "not_accessible", "message": f"Item with ID '{item_id}' is not accessible here."}
+            else:
+                return f"You don't see an item with ID '{item_id}' here or in your inventory."
+        if internal:
+            return item_data
+        
+        
+        return self._format_item_for_display(item_data)

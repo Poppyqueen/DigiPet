@@ -1,8 +1,14 @@
+
+# DISCLAIMER: Do not follow this guide. It is outdated and incorrect. 
+# TODO: Find all instances that use this pattern and update them to the new pattern.
+# Replace with the use of self.state_manager.inventory_service.set_item_attribute for managing item attributes.
+
+
 # Workflow: Creating Interactive Items and Tools
 
 This guide details the process for adding new interactive items (like furniture or appliances) and their associated tools to the DigiPet codebase. It follows the patterns established by the "Candy Dispenser" implementation.
 
-## 1. Define the Items
+## 1. Define the Items ## THIS IS FINE
 Create JSON blueprints for your items in `inventory_items/items_provider/items_data/`.
 
 *   **Location**: Choose an appropriate subdirectory (e.g., `furniture/`, `food_n_drinks/`).
@@ -21,10 +27,10 @@ Create JSON blueprints for your items in `inventory_items/items_provider/items_d
     ```
 *   **Note**: If you need a new item type (e.g., `my_new_type`), add it to the `item_types` list in `utils/pydantic_models.py`.
 
-## 2. Implement the Logic (Tool Class)
+## 2. Implement the Logic (Tool Class) # THIS IS FINE
 Create a new Python file in `tools/tools_folder/` (e.g., `my_item_tools.py`).
 
-### Class Structure
+### Class Structure # THIS IS FINE
 Your class should accept the `state_manager` (which is the `InventoryHouseManager` facade) and a `signal_callback`.
 
 ```python
@@ -37,7 +43,7 @@ class MyItemTools:
         self._signal_callback = signal
 ```
 
-### Best Practices
+### Best Practices # THIS IS FINE
 *   **State Access**: Use `self.state.inventory_service.get_validated_item_data()` to find and validate items.
     ```python
     # Returns item_data if found and valid, else returns None and an error message
@@ -46,8 +52,10 @@ class MyItemTools:
         return error
     ```
 *   **Item Creation**: Use `self.state.create_item()` to add new items to the world. Fetch blueprints using `self.item_store.get_item("Item Name")`.
-*   **State Persistence**: Modify the `item_data` dictionary directly (e.g., `item_data["custom_state_key"] = new_value`), then use `persist_item_changes` to save to the `StateStore`.
-    ```python
+*   **State Persistence**: Modify the `item_data` dictionary directly (e.g., `item_data["custom_state_key"] = new_value`), then use `persist_item_changes` to save to the `StateStore`. # DO NOT HANDLE ITEM STATE PERSISTANCE THIS WAY, AND DO NOT CHANGE KEYS DIRECTLY AS SHOWN HERE, INSTEAD USE self.state_manager.inventory_service.set_item_attribute
+## TODO: Find any sections of the code that use the `item_data["custom_state_key"] = new_value` and replace them with the new helper. 
+## If you see any part of the code that uses this patter mark it with TODO: DIRECT ITEM KEY MOD
+    ```python 
     # Helper to persist changes
     persist_error = self.state.inventory_service.persist_item_changes(item_id)
     if persist_error:

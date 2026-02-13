@@ -938,11 +938,11 @@ class FunctionBuilder:
             state_str = "ON" if turn_on else "OFF"
             return f"The {item_name} is already turned {state_str}."
         
-        # Toggle the state
-        item_data["power_toggle"] = turn_on
+        # Toggle the state ## TODO: DIRECT KEY MODIFICATION
+        item_data["power_toggle"] = turn_on 
         
         # Persist the changes
-        persist_error = self.state_manager.inventory_service.persist_item_changes(item_id)
+        persist_error = self.state_manager.inventory_service.persist_item_changes(item_id) ## TODO: DIRECT KEY MODIFICATION
         if persist_error:
             return persist_error
         
@@ -1279,5 +1279,8 @@ class FunctionBuilder:
             output_string += "\n".join(all_descriptions)
         else:
             output_string += "(No description available.)"
+
+        if "consume_uses_left" in data:
+            output_string += f"\nConsumable uses left: {data['consume_uses_left']}"
         
         return output_string

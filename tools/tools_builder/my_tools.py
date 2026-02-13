@@ -852,8 +852,22 @@ kitchen_room_tools=[
                     "description": "A full and detailed recipe, complete description of the process to apply into these items to prepare or cook something to eat."
                 },
                     "items_list": {
-                    "type": "string",
-                    "description": "A list of items IDs in your current inventory for you to process, only consumable items, the string of IDs should have a '#' as a separator, example: 10002#20002#38882"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The ID of the item to use."
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "The amount of uses for the item in the recipe."
+                            }
+                        },
+                        "required": ["item_id", "amount"],
+                        "additionalProperties": False
+                    }
                 }
             },
             "required": ["process", "items_list"
@@ -1226,13 +1240,17 @@ base_tools=[
     {
         "type": "function",
         "name": "consume_item",
-        "description": "Uses up or applies the effect of a specific item from your inventory.",
+        "description": "Use this to attempt to swallow an item (for better or worse).",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "The unique ID of the item in your inventory to consume."
+                    "description": "The unique ID of the item in your inventory to ingest."
+                },
+                "uses": {
+                    "type": "number",
+                    "description": "Int default 1, The number of times to consume the item. Defaults to 1."
                 }
             },
             "required": ["item_id"],

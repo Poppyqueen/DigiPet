@@ -126,9 +126,9 @@
         }
     },
     {
-        "name": "Milk (250ml carton)",
+        "name": "Milk (1L carton)",
         "descriptions": [
-            "A 250ml carton of pasteurized cow's milk \u2014 slightly sweet and creamy.",
+            "A 1L carton of pasteurized cow's milk \u2014 slightly sweet and creamy.",
             "Good source of calories and a comforting simple drink."
         ],
         "static": false,
@@ -144,7 +144,8 @@
             "fullness": 10.0,
             "hydration": 12.0,
             "energy": 6.0
-        }
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Hot Chocolate",

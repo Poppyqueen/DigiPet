@@ -18,7 +18,7 @@ class DispenserTools:
                 print(f"Error sending signal from DispenserTools: {e}")
 
 
-    def _update_description(self, item_data, count):
+    def _update_description(self, item_data, count): ## TODO: Remove this, do not change item description directly.
         """Updates the visible description of the dispenser."""
         descriptions = item_data.get("descriptions", [])
         new_status = f"Status: {count} candies left"
@@ -71,7 +71,7 @@ class DispenserTools:
         if not creation_result:
              return "Error: Failed to dispense candy (could not create item)."
 
-        # Update Dispenser State
+        # Update Dispenser State ## TODO: DIRECT KEY MODIFICATION
         contents[selected_candy] -= 1
         if contents[selected_candy] <= 0:
             del contents[selected_candy]
@@ -83,7 +83,7 @@ class DispenserTools:
         item_data["dispenser_state"] = dispenser_state
         self._update_description(item_data, new_total)
         
-        # Persist
+        # Persist ## TODO: DIRECT KEY MODIFICATION
         persist_error = self.state.inventory_service.persist_item_changes(item_id)
         if persist_error:
             return persist_error

@@ -38,8 +38,33 @@ class cook:
             with 'effects' and 'stats_edit' removed for 'misc' type items.
             Returns an empty list if the AI call fails.
         """
-        system=f"You are a cooking AI, given a set of items and a cooking related process, you will return a list of consumable, food item definition or definitions that would result from applying such cooking process into the given items. You should identify the main resulting item(s) which are likely 'consumable' and any byproducts or scraps which should be 'misc'. Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, make detailed and evocative descriptions and effects for the items, deescribe then, and in effects, write text directed to whomever just consumed this item, i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', you can make 2 to 3 effects for each item. The stats for the items you create should be high, minimum 20 points of replenishment for small items, up to 80 points for big food items."
-        process_prompt=f"Using the items: {items}, and applying the process: {process}, design a set of items that would result from it. Consider making consumable waste or remaining items, like bones, peels, scraps, spice containers slightly used and assign them to 'consumable' type"
+        system=f"""You are a cooking AI, given a set of items and a cooking related process, you will return a single
+        food item definition that would result from applying such cooking process into the given items. 
+        You should identify the main resulting item which are 'consumable' directly from the preparation process. 
+        Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, 
+        make detailed and evocative descriptions and effects for the item, and in effects, write text directed to whomever just consumed this item, 
+        i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', 
+        you can make 2 to 3 effects for the item. 
+        The stats for the item you create should be high, consider adding all the stats given by the ingredients, and a final +10 to +30 bonus to each stat.
+        i.e. 
+        potatoes:
+        stats_edit: fullness: 15.0, hydration: -5.0, energy: 5.0, amount: 20
+        carrots:
+        stats_edit: fullness: 5.0, hydration: 10.0, energy: 3.0, amount: 20
+
+        The total count of stats to return for these items would be:
+        fullness: 20.0, hydration: 5.0, energy: 8.0
+
+        The final plate should have a key 'consume_uses_left' with a value of 1 as a default. If you set a value higher than 1, you should divide the stats_edit by that value.
+        So, in our previous example
+        fullness: 20.0, hydration: 5.0, energy: 8.0, consume_uses_left: 2
+        should be
+        fullness: 10.0, hydration: 2.5, energy: 4.0, consume_uses_left: 2
+        """
+
+
+        process_prompt=f"""Using the items: {items}, and applying the process: {process}, design a single item that would result from it. 
+        Do not return any tools or utensils, only food items, consumables. Create only the main plate or product that would result from such recipe."""
 
         print("\n--- Calling AI ---")
         print(f"Prompt: {process_prompt}")
@@ -53,6 +78,9 @@ class cook:
         if response is None:
              print("AI call failed. Returning empty list.")
              return []
+
+        print("DEBUG: AI COOK RECIEVED AI RESPONSE") # TODO: Sometimes this hangs, at least with OpenAI as the cook, need to investigate why and if it happens with other providers.
+        print(f"AI response: {response}")
 
         processed_items_list: List[Dict[str, Any]] = []
 

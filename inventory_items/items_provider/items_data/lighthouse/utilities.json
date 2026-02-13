@@ -35,5 +35,71 @@
             "oiler_set"
         ],
         "stackable": false
+    },
+    {
+        "name": "Kerosene container",
+        "descriptions": [
+            "A container for kerosene. It is a large rectangular can, dull orange color.",
+            "It is full of kerosene. Will fill half of the IOV kerosene tank.",
+            "The liquid inside is dark and oily. It has a strong odor."
+        ],
+        "static": false,
+        "type": [
+            "kerosene_container"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "IOV Mantle",
+        "descriptions": [
+            "A mantle for the IOV lamp.",
+            "A soft silk mesh, white in color.",
+            "Some say it is radioactive. It has no specific odor to it."
+        ],
+        "static": false,
+        "type": [
+            "iov_mantle"
+        ],
+        "stackable": true
+    },
+    {
+        "name": "IOV Spirit Pan",
+        "descriptions": [
+            "A pan for spirit. It's circular shape holds a bit of spirit.",
+            "With a nice handle to hold it by.",
+            "A brass color, small enough to handle with one hand."
+        ],
+        "static": false,
+        "type": [
+            "iov_spirit_pan"
+        ],
+        "stackable": true,
+        "filled": false
+    },
+    {
+        "name": "Denatured alcohol barrel",
+        "descriptions": [
+            "A small carryable barrel for denatured alcohol.",
+            "Helpful for carrying small amounts of denatured alcohol.",
+            "The tiny oak barrel, dark in color and, the spirit is trapped by a dense cork with a dark resinous texture."
+        ],
+        "static": false,
+        "type": [
+            "spirit_source"
+        ],
+        "stackable": true,
+        "spirit_quantity": 1.0
+    },
+    {
+        "name": "Set of matches",
+        "descriptions": [
+            "A box of matches.",
+            "A small box of matches, with a striking surface on the side."
+        ],
+        "static": false,
+        "type": [
+            "hand_fire_source"
+        ],
+        "stackable": true
     }
 ]

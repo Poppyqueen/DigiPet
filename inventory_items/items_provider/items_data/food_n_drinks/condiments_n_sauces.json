@@ -15,10 +15,11 @@
             "The fat from the olive oil and pine nuts leaves a lingering, satisfying richness rather than a heavy feeling."
         ],
         "stats_edit": {
-            "fullness": 10.0,
-            "hydration": 1.5,
-            "energy": 18.0
-        }
+            "fullness": 1.0,
+            "hydration": -5.0,
+            "energy": 0.25
+        },
+        "consume_uses_left": 65
     },
     {
         "name": "fresh lemon vinaigrette (bottle)",
@@ -60,7 +61,8 @@
             "fullness": 6.0,
             "hydration": 9.0,
             "energy": 3.0
-        }
+        },
+        "consume_uses_left": 2
     },
     {
         "name": "whole grain mustard",
@@ -716,7 +718,8 @@
             "fullness": 1.0,
             "hydration": 0.2,
             "energy": 6.0
-        }
+        },
+        "consume_uses_left": 3
     },
     {
         "name": "Sumac Powder (paper pouch)",

@@ -48,71 +48,71 @@ class GeminiClient(AbstractLLMClient):
                 
     #     return merged_history
 
+    def _convert_schema_dict_to_gemini(self, schema_dict: dict, context: str = "") -> types.Schema | None:
+        """Recursively converts a JSON Schema dict to a types.Schema object."""
+        kwargs = {}
+
+        type_str = schema_dict.get("type")
+        if type_str:
+            try:
+                kwargs["type"] = getattr(types.Type, type_str.upper())
+            except AttributeError:
+                print(f"Warning: Invalid type '{type_str}' in schema at {context}. Skipping.")
+                return None
+
+        if "description" in schema_dict:
+            kwargs["description"] = schema_dict["description"]
+
+        if "enum" in schema_dict:
+            kwargs["enum"] = schema_dict["enum"]
+
+        if "format" in schema_dict:
+            kwargs["format"] = schema_dict["format"]
+
+        # ✅ Recursively convert `items` (for ARRAY types)
+        if "items" in schema_dict:
+            nested = self._convert_schema_dict_to_gemini(schema_dict["items"], context=f"{context}.items")
+            if nested:
+                kwargs["items"] = nested
+
+        # ✅ Recursively convert `properties` (for nested OBJECTs)
+        if "properties" in schema_dict:
+            props = {}
+            for prop_name, prop_details in schema_dict["properties"].items():
+                nested = self._convert_schema_dict_to_gemini(prop_details, context=f"{context}.{prop_name}")
+                if nested:
+                    props[prop_name] = nested
+            kwargs["properties"] = props
+
+        if "required" in schema_dict:
+            kwargs["required"] = schema_dict["required"]
+
+        return types.Schema(**kwargs)
+        
     def _convert_tools_to_gemini_format(self, tools: List[Dict[str, Any]]) -> List[types.Tool]:
-        """
-        Converts tools from our format to Gemini's expected format by explicitly
-        constructing types.Tool, types.FunctionDeclaration, and types.Schema objects.
-        """
         if not tools:
             return []
-        
+
         gemini_function_declarations = []
         for tool in tools:
-            if tool.get("type") == "function" and \
-               "name" in tool and \
-               "description" in tool and \
-               "parameters" in tool:
-                
-                tool_parameters_dict = tool["parameters"].copy()
-                schema_kwargs = {}
-
-                param_type_str = tool_parameters_dict.get("type", "object")
-                try:
-                    schema_kwargs["type"] = getattr(types.Type, param_type_str.upper())
-                except AttributeError:
-                    print(f"Warning: Invalid 'type' '{param_type_str}' for tool '{tool['name']}' parameters. Defaulting to OBJECT.")
-                    schema_kwargs["type"] = types.Type.OBJECT
-
-                if "properties" in tool_parameters_dict:
-                    properties_for_schema = {}
-                    for prop_name, prop_details in tool_parameters_dict["properties"].items():
-                        prop_schema_kwargs = {}
-                        prop_type_str = prop_details.get("type")
-                        if prop_type_str:
-                            try:
-                                prop_schema_kwargs["type"] = getattr(types.Type, prop_type_str.upper())
-                            except AttributeError:
-                                print(f"Warning: Invalid 'type' '{prop_type_str}' for property '{prop_name}' in tool '{tool['name']}'. Skipping property.")
-                                continue
-                        if "description" in prop_details:
-                            prop_schema_kwargs["description"] = prop_details["description"]
-                        
-                        # Add other simple JSON Schema properties like enum, format, etc.
-                        for key_prop in ['enum', 'format', 'items', 'minimum', 'maximum', 'min_length', 'max_length', 'pattern', 'default', 'title', 'example']:
-                            if key_prop in prop_details:
-                                prop_schema_kwargs[key_prop] = prop_details[key_prop]
-
-                        properties_for_schema[prop_name] = types.Schema(**prop_schema_kwargs)
-                    schema_kwargs["properties"] = properties_for_schema
-
-                if "required" in tool_parameters_dict:
-                    schema_kwargs["required"] = tool_parameters_dict["required"]
-
-                try:
-                    gemini_parameters_schema = types.Schema(**schema_kwargs)
-                except Exception as e:
-                    print(f"Error creating Gemini Schema for tool {tool['name']}: {e}. Schema arguments tried: {schema_kwargs}")
-                    continue
-                
-                gemini_function_declaration = types.FunctionDeclaration(
-                    name=tool["name"],
-                    description=tool["description"],
-                    parameters=gemini_parameters_schema
-                )
-                gemini_function_declarations.append(gemini_function_declaration)
-            else:
+            if not (tool.get("type") == "function" and
+                    "name" in tool and "description" in tool and "parameters" in tool):
                 print(f"Warning: Invalid tool format, skipping: {tool}")
-        
+                continue
+
+            parameters_schema = self._convert_schema_dict_to_gemini(
+                tool["parameters"], context=tool["name"]
+            )
+            if parameters_schema is None:
+                print(f"Warning: Could not build parameters schema for tool '{tool['name']}', skipping.")
+                continue
+
+            gemini_function_declarations.append(types.FunctionDeclaration(
+                name=tool["name"],
+                description=tool["description"],
+                parameters=parameters_schema,
+            ))
+
         return [types.Tool(function_declarations=gemini_function_declarations)] if gemini_function_declarations else []
 
 

@@ -1,11 +1,12 @@
 
 from groq import Groq
+import instructor
+from instructor import Mode
 
 import os
 from pydantic import BaseModel
 
 from ai_managers.simple_ai.abstract_provider import SimpleAI
-
 
 
 class GroqProv(SimpleAI):
@@ -18,6 +19,7 @@ class GroqProv(SimpleAI):
         if api_key is None:
             raise ValueError("GROQ_API_KEY API key not found. Please set the OPENAI_API_KEY environment variable.")
         self.client =Groq(api_key=api_key)
+        self.structure_client = instructor.from_groq(self.client, mode=Mode.JSON)
 
 
 
@@ -29,15 +31,15 @@ class GroqProv(SimpleAI):
 
 
         # Create structured output
-        response_model = self.client.chat.completions.create(
+        response_model = self.structure_client.chat.completions.create(
             model=self.ai_model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            response_format=structure
+            response_model=structure
         )
-
+        
         return response_model
 
     def response_output(self, system: str, message: str) -> str:

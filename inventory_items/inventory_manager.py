@@ -160,8 +160,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
-    def consume_item(self, item_id: int) -> str:
-        return self.stat_tracker.consume_item(item_id)
+    def consume_item(self, item_id: int, uses: int = 1) -> str:
+        return self.stat_tracker.consume_item(item_id, uses)
 
     def get_pet_color(self) -> tuple[int, int, int] | None:
         return self.pet_state_manager.get_pet_color()

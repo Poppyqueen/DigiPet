@@ -92,7 +92,7 @@ class StatTracker:
         return (f"Stat '{stat_name}' {change_msg} by {abs(amount):.1f} to {int(clamped_value)}.\n"
                 f"{self.get_stats(internal=False).replace('Current Stats: ', '')}")
 
-    def apply_consumable_effects(self, stats_edit_dict: dict) -> dict | None:
+    def apply_consumable_effects(self, stats_edit_dict: dict, times: int = 1) -> dict | None:
         """
         Applies stat changes from a consumable item.
         Returns a dictionary of actual changes or None if stats data is corrupted.
@@ -105,7 +105,7 @@ class StatTracker:
         for stat, amount in stats_edit_dict.items():
             if stat in stats_data: # Only apply to valid stats
                 current_value = stats_data[stat]
-                new_value = current_value + amount
+                new_value = current_value + (amount * times)
                 clamped_value = max(self.MIN_STAT_VALUE, min(self.MAX_STAT_VALUE, new_value))
                 if clamped_value != current_value: # Only record if there was an actual change
                     stats_data[stat] = clamped_value
@@ -115,7 +115,7 @@ class StatTracker:
             self._state_store.update_state_section("stats", stats_data)
         return actual_changes
 
-    def consume_item(self, item_id: int) -> str:
+    def consume_item(self, item_id: int, uses: int = 1) -> str:
         if not isinstance(item_id, int):
             return f"Failed to consume: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
 
@@ -132,6 +132,7 @@ class StatTracker:
         if item_info["location"] != "inventory":
             return f"Failed to consume {item_display}: You can only consume items from your inventory. It is in {item_info['location']}."
 
+
         is_valid, msg = self._inventory_service._is_valid_item_data(item_data, check_id=True)
         if not is_valid:
             print(f"Warning: Attempted to consume invalid item ID {item_id}: {msg}. Removing from inventory due to corruption.")
@@ -141,28 +142,50 @@ class StatTracker:
         if "consumable" not in item_data.get("type", []):
             return f"Failed to consume {item_display}: This item is not a consumable type (types found: {item_data.get('type', ['unknown type'])})."
 
+        if item_data.get("consume_uses_left", 1) < uses:
+            return f"Failed to consume {item_display}: Not enough uses left."
+
         stats_edit = item_data.get("stats_edit", {})
         effects_text_list = item_data.get("effects", [])
 
-        stat_changes_summary = self.apply_consumable_effects(stats_edit)
+        stat_changes_summary = self.apply_consumable_effects(stats_edit, uses)
 
         if stat_changes_summary is None:
             return f"Failed to consume {item_display}: Error applying effects, stats data is corrupted."
 
+        message = "" 
         # Remove the item from inventory using InventoryService
-        removal_success = self._inventory_service.remove_item(item_id, internal=True)
-        removal_status = f"Item {item_display} consumed."
-        if not removal_success:
-            removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
-            print(removal_status)
+        if item_data.get("consume_uses_left", 1) - uses <= 0:
+            removal_success = self._inventory_service.remove_item(item_id, internal=True)
+            removal_status = f"Item {item_display} consumed."
+            if not removal_success:
+                removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
+                print(removal_status)
+            message += removal_status
+        else:
+            item_status = self._inventory_service.set_item_attribute(item_id, "consume_uses_left", item_data.get("consume_uses_left", 1) - uses)
+            if item_status:
+                message += item_status
 
         selected_effect_text = ""
         if isinstance(effects_text_list, list) and all(isinstance(text, str) for text in effects_text_list):
             valid_effect_texts = [text.strip() for text in effects_text_list if text and text.strip()]
             if valid_effect_texts:
-                selected_effect_text = random.choice(valid_effect_texts)
+                uses_op = uses
+                if uses_op > 10:
+                    uses_op = 10
+                # 1. Create a shuffled copy so we don't mess up the original list
+                shuffled_pool = valid_effect_texts[:]
+                random.shuffle(shuffled_pool)
+                # 2. Loop through the number of uses
+                for i in range(uses_op):
+                    # If we've run out of unique items, reshuffle the pool to start over
+                    if i % len(shuffled_pool) == 0 and i > 0:
+                        random.shuffle(shuffled_pool)
+                    
+                    # Use modulo (%) to loop back to the start of the shuffled list
+                    selected_effect_text += shuffled_pool[i % len(shuffled_pool)]
 
-        message = removal_status
         if stat_changes_summary:
             changes_strings = []
             for stat, change in stat_changes_summary.items():

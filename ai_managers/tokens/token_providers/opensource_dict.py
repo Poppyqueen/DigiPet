@@ -21,7 +21,8 @@ mapped_models={
 
     "aliafshar/gemma3-it-qat-tools:4b": "google/gemma-3-4b-it", # Using Ollama pointer to a fixed version of the model that allows function calling.
 
-    "functiongemma:270m-it-fp16": "google/functiongemma-270m-it"
+    "functiongemma:270m-it-fp16": "google/functiongemma-270m-it",
+    "ministral-3:3b": "ministral/Ministral-3b-instruct"
 }
 
 # This should map the models to use from Groq or Ollama (or other opensource provider)

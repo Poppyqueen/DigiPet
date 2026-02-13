@@ -332,28 +332,6 @@
         }
     },
     {
-        "name": "granulated sugar (500 g)",
-        "descriptions": [
-            "A 500 g bag of granulated sugar \u2014 sweetener for baking, beverages, and preserving.",
-            "Pure carbohydrates that provide quick, high-impact calories."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "A quick hit of sweetness and energy; small amounts spike energy but do not fill much.",
-            "Useful for boosting morale and adding quick calories to bland staples."
-        ],
-        "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 0.0,
-            "energy": 15.0
-        }
-    },
-    {
         "name": "all-purpose flour (1 kg)",
         "descriptions": [
             "A 1 kg bag of all-purpose wheat flour \u2014 an ingredient for baking bread, pancakes, and thickening sauces.",
