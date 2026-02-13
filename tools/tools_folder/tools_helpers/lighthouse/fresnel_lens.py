@@ -9,7 +9,6 @@ Clean architecture for Fresnel lens management:
 - Weather integration
 """
 
-# TODO: Add oil level for clockwork mechanism
 
 from dataclasses import dataclass, replace
 from typing import List, Tuple, Optional, Dict, Any
@@ -26,6 +25,7 @@ class LanternRoomPhysics:
     outdoor_cleanliness: float = 1.0  # 0=dirty, 1=clean
     interior_condensation: float = 0.0  # 0=dry, 1=wet
     clockwork_tension: float = 0.0  # 0=unwound, 1=fully wound
+    oil_level: float = 1.0  # 0=dry, 1=fully oiled
 
 
 @dataclass(frozen=True)
@@ -71,6 +71,9 @@ class LanternRoomDerived:
     sun_hazard_active: bool = False
     sun_hazard_level: float = 0.0  # 0-1
 
+    # Jammed (when oil too low)
+    is_jammed: bool = False
+
 
 # ============================================================================
 # EVENTS
@@ -96,16 +99,16 @@ class LanternConstants:
     """All magic numbers."""
     
     # Decay rates per tick
-    CLEANLINESS_DECAY_RATE = 0.0025
-    CLOCKWORK_DECAY_RATE = 0.001
+    CLEANLINESS_DECAY_RATE = 0.00025
+    CLOCKWORK_DECAY_RATE = 0.0005
     CONDENSATION_DECAY_RATE = 0.0001  # Slowly dries
     
     # Condensation increase (based on humidity)
-    CONDENSATION_INCREASE_BASE = 0.005
+    CONDENSATION_INCREASE_BASE = 0.0005
     
     # Cleaning amounts
-    CLEAN_AMOUNT_DEFAULT = 0.5
-    WINDUP_AMOUNT_DEFAULT = 0.5
+    CLEAN_AMOUNT_DEFAULT = 0.075
+    WINDUP_AMOUNT_DEFAULT = 0.075
     
     # Rotation thresholds
     MIN_TENSION_FOR_ROTATION = 0.1
@@ -114,6 +117,17 @@ class LanternConstants:
     SUN_HAZARD_CLEANLINESS_THRESHOLD = 0.5  # Need clean lens for hazard
 
 
+    # # Oil
+    # OIL_DECAY_RATE = 0.00005  # Oil depletes slowly over time
+    # OIL_DECAY_RATE_ACTIVE = 0.00025  # Faster when rotating # Oil decay should be uber-slow
+    # MIN_OIL_FOR_ROTATION = 0.15  # Below this = jammed
+    # OIL_AMOUNT_DEFAULT = 0.4
+
+    # Oil
+    OIL_DECAY_RATE = 0.005  # Oil depletes slowly over time
+    OIL_DECAY_RATE_ACTIVE = 0.0025  # Faster when rotating # Oil decay should be uber-slow
+    MIN_OIL_FOR_ROTATION = 0.15  # Below this = jammed
+    OIL_AMOUNT_DEFAULT = 0.4
 # ============================================================================
 # LOOKUP TABLES
 # ============================================================================
@@ -144,6 +158,15 @@ class LanternTables:
         (0.75, "mostly wound", "The clockwork is mostly wound up."),
         (0.95, "fully wound", "The clockwork is fully wound up."),
     ]
+
+
+    OIL_LEVELS = [
+        (0.0, "bone dry", "The mechanism is completely dry."),
+        (0.15, "nearly dry", "The mechanism is nearly dry."),
+        (0.40, "lightly oiled", "The mechanism is lightly oiled."),
+        (0.70, "well oiled", "The mechanism is well oiled."),
+        (0.95, "perfectly oiled", "The mechanism is perfectly oiled."),
+    ]
     
     @staticmethod
     def find_level(value: float, levels: List[Tuple[float, str, str]]) -> Tuple[str, str]:
@@ -171,15 +194,17 @@ class LanternRules:
     @staticmethod
     def is_rotation_active(phys: LanternRoomPhysics) -> bool:
         """Is the clockwork rotating the lens?"""
-        return phys.clockwork_tension >= LanternConstants.MIN_TENSION_FOR_ROTATION
+        has_tension = phys.clockwork_tension >= LanternConstants.MIN_TENSION_FOR_ROTATION
+        has_oil = phys.oil_level >= LanternConstants.MIN_OIL_FOR_ROTATION
+        return has_tension and has_oil
     
-    # @staticmethod
-    # def calculate_rotation_speed(phys: LanternRoomPhysics) -> float:
-    #     """How fast is the lens rotating?"""
-    #     if not LanternRules.is_rotation_active(phys):
-    #         return 0.0
-    #     # Speed proportional to tension
-    #     return phys.clockwork_tension
+
+    @staticmethod
+    def is_jammed(phys: LanternRoomPhysics) -> bool:
+        """Is the mechanism jammed due to low oil?"""
+        has_tension = phys.clockwork_tension >= LanternConstants.MIN_TENSION_FOR_ROTATION
+        lacks_oil = phys.oil_level < LanternConstants.MIN_OIL_FOR_ROTATION
+        return has_tension and lacks_oil  # Trying to rotate but can't
     
     @staticmethod
     def calculate_light_transmission(phys: LanternRoomPhysics) -> float:
@@ -290,6 +315,7 @@ class LanternStateComputer:
         """Pure function: base state -> derived state."""
         
         rotation_active = LanternRules.is_rotation_active(phys)
+        is_jammed = LanternRules.is_jammed(phys)  # ← This is calculated...
         #rotation_speed = LanternRules.calculate_rotation_speed(phys)
         light_transmission = LanternRules.calculate_light_transmission(phys)
         sun_hazard_active = LanternRules.is_sun_hazard_active(weather, ctrl, phys)
@@ -300,7 +326,8 @@ class LanternStateComputer:
             #rotation_speed=rotation_speed,
             light_transmission=light_transmission,
             sun_hazard_active=sun_hazard_active,
-            sun_hazard_level=sun_hazard_level
+            sun_hazard_level=sun_hazard_level,
+            is_jammed=is_jammed
         )
 
 
@@ -336,11 +363,18 @@ class LanternPhysicsEngine:
             condensation_delta = condensation_rate - LanternConstants.CONDENSATION_DECAY_RATE
         
         new_condensation = max(0.0, min(1.0, phys.interior_condensation + condensation_delta))
+
+        # Oil decay (faster when active)
+        is_active = LanternRules.is_rotation_active(phys)
+        oil_decay = (LanternConstants.OIL_DECAY_RATE_ACTIVE if is_active 
+                    else LanternConstants.OIL_DECAY_RATE)
+        new_oil = max(0.0, phys.oil_level - oil_decay)
         
         return LanternRoomPhysics(
             outdoor_cleanliness=new_cleanliness,
             interior_condensation=new_condensation,
-            clockwork_tension=new_tension
+            clockwork_tension=new_tension,
+            oil_level=new_oil
         )
 
 
@@ -448,6 +482,18 @@ class LanternEventDetector:
             events.append(LanternEvent(
                 "sunset",
                 "The sun sets. The danger of focused sunlight passes."
+            ))
+
+        # Jam state changes
+        if not old_derived.is_jammed and new_derived.is_jammed:
+            events.append(LanternEvent(
+                "mechanism_jammed",
+                "The clockwork mechanism seizes up! It needs oil badly."
+            ))
+        elif old_derived.is_jammed and not new_derived.is_jammed:
+            events.append(LanternEvent(
+                "mechanism_freed",
+                "The clockwork mechanism moves freely again."
             ))
         
         return events
@@ -628,10 +674,43 @@ class LanternRoom:
         
         msg = "You remove the protective sheet."
         return msg, events, True
+
+    def oil_mechanism(self, amount: float = None) -> Tuple[str, List[LanternEvent], bool]:
+        """Oil the clockwork mechanism."""
+        if amount is None:
+            amount = LanternConstants.OIL_AMOUNT_DEFAULT
+        
+        if self.physics.oil_level >= 1.0:
+            return "The mechanism is already fully oiled.", [], False
+        
+        new_oil = min(1.0, self.physics.oil_level + amount)
+        self.physics = replace(self.physics, oil_level=new_oil)
+        
+        events = self._update_derived()
+        
+        level, desc = LanternTables.find_level(
+            self.physics.oil_level,
+            LanternTables.OIL_LEVELS
+        )
+        
+        msg = f"You oil the clockwork mechanism. It is now {level}, {desc}. Sitting at {self.physics.oil_level:.0%}."
+        return msg, events, True
     
     # ========================================================================
     # STATUS REPORTING
     # ========================================================================
+
+    def get_oil_level(self) -> str:
+        level, desc = LanternTables.find_level(
+            self.physics.oil_level,
+            LanternTables.OIL_LEVELS
+        )
+        lines = [
+            "--- Clockwork Oil Level ---",
+            f"Oil Level: {self.physics.oil_level:.0%} ({level})",
+            f"  {desc}",
+        ]
+        return "\n".join(lines)
 
     def get_hazardous_weather(self) -> str:
         if self.derived.sun_hazard_active:
@@ -684,7 +763,7 @@ class LanternRoom:
         """Get the current rotation state of the Fresnel lens."""
         lines = [
             "--- Fresnel Rotation ---",
-            f"Rotation: {'Active' if self.derived.rotation_active else 'Stopped'}",
+            f"Rotation: {'Active' if self.derived.rotation_active else 'Stopped'}"
         ]
         # if self.derived.rotation_active:
         #     lines.append(f"Speed: {self.derived.rotation_speed:.0%}")
@@ -714,6 +793,15 @@ class LanternRoom:
             self.get_interior_condensation(),
             self.get_sheets(),
             self.get_hazardous_weather(),
+            "",
+        ]
+        return "\n".join(lines)
+
+    def get_clockwork_status(self) -> str:
+        """Get the current clockwork status."""
+        lines = [
+            self.get_clockwork_tension(),
+            self.get_oil_level(),
             "",
         ]
         return "\n".join(lines)

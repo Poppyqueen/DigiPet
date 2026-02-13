@@ -478,6 +478,13 @@ class LighthouseManager:
         
         return "\n".join(lines)
 
+    def oil_mechanism(self, amount: float = None, internal=False):
+        msg, events, success = self.lantern.oil_mechanism(amount)
+        self._save_state()
+        if internal:
+            return msg, events, success
+        return self._format_action_result(msg, events)
+
 
 # ============================================================================
 # EXAMPLE USAGE

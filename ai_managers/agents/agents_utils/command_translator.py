@@ -10,7 +10,7 @@ from ai_managers.agents.agents_utils.llm_response_types import LLMResponse
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 from utils.pydantic_models import StructuredMemory, UserMessage
 
-
+# TODO: refactor this, use the ai_handle that chatbot_api uses
 
 class CommandTranslator:
     """
@@ -32,7 +32,7 @@ Rules:
 - Be interpretive on the user's intent, but do not make up functions or arguments
 - You are a traditional text adventure game interpreter in steroids, the user should feel like you are reading their mind
 - Even if certain actions seem impossible to you on the current context, call functions based on the user intent, the system will handle the error response
-
+- If the user asks for something that requires no functions, just return an empty list []
 Examples:
 "go to the kitchen" → set_current_room(room_id="kitchen")
 "pick up apple and eat it" → move_item_to_player(item_name="apple") + consume_item(item_name="apple")
@@ -100,10 +100,8 @@ Command: "fly to moon" | Executed: none
         
         # Build context message
         context_str = f"""CURRENT GAME STATE:
-- Room: {current_context.get('current_room', 'unknown')}
+- Context: {current_context.get('context', [])}
 - Room Items: {', '.join(current_context.get('room_items', [])) or 'none'}
-- Your Inventory: {', '.join(current_context.get('player_items', [])) or 'empty'}
-- Stats: {current_context.get('stats', {})}
 - Available Rooms: {current_context.get('available_rooms', [])}
 - Tools info: {current_context.get('tools_info', [])['title']}
 - Tools state: {current_context.get('tools_info', [])['body']}
@@ -176,6 +174,7 @@ USER COMMAND: {user_input}"""
             results_summary = "No functions were executed (query or invalid command)"
         
         # Build context message
+
         context_str = f"""USER'S COMMAND:
 {user_input}
 
@@ -183,9 +182,8 @@ WHAT HAPPENED:
 {results_summary}
 
 CURRENT STATE:
-- Room: {current_context.get('current_room', 'unknown')}
-- Your Inventory: {', '.join(current_context.get('player_items', [])) or 'empty'}
-- Stats: {current_context.get('stats', {})}
+- Context: {current_context.get('context', [])}
+- Room Items: {', '.join(current_context.get('room_items', [])) or 'none'}
 - Available Rooms: {current_context.get('available_rooms', [])}
 - Tools info: {current_context.get('tools_info', [])['title']}
 - Tools state: {current_context.get('tools_info', [])['body']}

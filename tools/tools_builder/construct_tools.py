@@ -36,7 +36,9 @@ from .my_tools import (
     spirit_pan_tools,
     clockwork_lens_tools,
     lantern_room_tools,
-    fresnel_lens_tools
+    fresnel_lens_tools,
+    spirit_source_tools,
+    service_room_general_tools,
 )
 from tools.tools_folder import simulation
 
@@ -589,6 +591,15 @@ class FunctionBuilder:
                 "use_level": "room_only",
                 "display_information": self.lighthouse.lighthouse_manager.get_service_room_status # TODO: Display information is used for the GUI, not the LLM, however, having a similar key for "agent information" when tools are active like in get_current_tools_info might be valuable. One thing is that these GUI info tools are not token optimized, an example is the wikipedia info tool which returns the full article, if we want to put this tool information it will implode the context window, the idea would be to put this info inside the function construct_context, but we would need to make info tools for every tool, that's fine but out of the scope of right now. construct_context is appended onto each system message for each LLM call so it will propagate into the LLM context window, that's why some particular tools need adjustement, another example is the A-life sim, which renders the simulation in human text, and returns clues, or names of the categorization or classification of the A-life entities which is something we are hidding from the LLM context window. What I am trying to say, this info tool returns "herbivore", "carnivore", and "plant" when these 3 categories should be hidden from the LLM in a hope that it figures out what this simulation is a model of... rqamble ramble ramble...
             },
+            "service_room_general": {
+                "functions": {
+                    "peak_at_lamp_room_light": self.lighthouse.service_room_light_check
+                },
+                "definitions": service_room_general_tools,
+                "use_level": "room_type",
+                "room_types": ["service_room"],
+                "display_information": self.lighthouse.service_room_light_check
+            },
             "lamp": {
                 "functions": {
                     "lamp_ignite_vapor": self.lighthouse.lamp_ignite_vapor,
@@ -619,7 +630,7 @@ class FunctionBuilder:
 
             "lantern_room": {
                 "functions": {
-                    "get_lantern_room_interior_status": self.lighthouse.lighthouse_manager.lantern.get_interior_status,
+                    "get_lantern_room_interior_status": self.lighthouse.get_lantern_room_interior_status,
                     "clean_condensation": self.lighthouse.clean_condensation,
                     "place_sheet": self.lighthouse.place_sheet,
                     "remove_sheet": self.lighthouse.remove_sheet
@@ -627,7 +638,7 @@ class FunctionBuilder:
                 "definitions": lantern_room_tools,
                 "room_types": ["lantern_room"],
                 "use_level": "room_type",
-                "display_information": self.lighthouse.lighthouse_manager.lantern.get_interior_status
+                "display_information": self.lighthouse.get_lantern_room_interior_status
             },
 
             "lantern_room_outdoor": {
@@ -643,13 +654,15 @@ class FunctionBuilder:
 
             "clockwork_lens": {
                 "functions": {
+                    "get_clockwork_status": self.lighthouse.lighthouse_manager.lantern.get_clockwork_status,
                     "windup_clockwork": self.lighthouse.windup_clockwork,
-                    "get_tension": self.lighthouse.lighthouse_manager.lantern.get_clockwork_tension
+                    # "get_tension": self.lighthouse.lighthouse_manager.lantern.get_clockwork_tension,
+                    "oil_clockwork_mechanism": self.lighthouse.controller_oil_mechanism
                 },
                 "definitions": clockwork_lens_tools,
                 "item_types": ["clockwork_lens_apparatus"],
                 "use_level": "room_only",
-                "display_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_tension
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_status
             },
 
             "fresnel_lens": {
@@ -661,6 +674,15 @@ class FunctionBuilder:
                 "use_level": "room_only",
                 "room_types": ["fresnel_lens_interior"],
                 "display_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation
+            },
+
+            "spirit_source": {
+                "functions": {
+                    "examine_spirit_source": self.lighthouse.examine_spirit_source,
+                },
+                "definitions": spirit_source_tools,
+                "item_types": ["spirit_source"],
+                "use_level": "dual_use",
             }
         }
         

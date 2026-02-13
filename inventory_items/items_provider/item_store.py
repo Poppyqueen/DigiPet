@@ -37,38 +37,55 @@ class ItemStore:
         """Retrieves a deep copy of a single item dictionary by its name,
         or accepts a list/tuple/set of names and returns a dict mapping each found
         name to its item dict (missing names are omitted)."""
-        # Batch request: return a named dictionary of retrieved items
+        
         def parse_name(name: str):
-            # Matches 'name[x3]' -> Group 1: 'name', Group 2: '3'
+            """Returns (clean_name, quantity) where quantity defaults to 1."""
             match = re.match(r'^(.*)\[x(\d+)\]$', name)
-            
             if match:
-                clean_name = match.group(1)
-                index_int = int(match.group(2))
-                return clean_name, index_int
+                return match.group(1), int(match.group(2))
+            return name, 1
+        
+        def get_single_item(name: str):
+            """Get item(s) by name (with optional [xN] syntax)."""
+            clean_name, quantity = parse_name(name)
+            item = self._items.get(clean_name)
             
-            # Fallback if there is no [xN] pattern
-            return name, None
-
-        if isinstance(name, (list, tuple, set)):
-            result: dict[str, dict] = {}
-            for n in name:
-                clean_name, index_int = parse_name(n)
-                item = self._items.get(clean_name)
-                if item is not None:
-                    if index_int is not None:
-                        item["quantity"] = index_int
-                    result[n] = copy.deepcopy(item)
+            if item is None:
+                return None
+            
+            # Stackable: return one item with adjusted quantity
+            if item.get("stackable"):
+                item_copy = copy.deepcopy(item)
+                item_copy["quantity"] = item_copy.get("quantity", 1) * quantity
+                return {name: item_copy}
+            
+            # Non-stackable: return multiple separate copies with unique keys
+            result = {}
+            for i in range(quantity):
+                key =  f"{name}_{i}" if quantity > 1 else name
+                result[key] = copy.deepcopy(item)
             return result
-
-        # Single name: return the item or None
-        clean_name, index_int = parse_name(name)
-        item = self._items.get(clean_name)
-        if item is not None:
-            if index_int is not None:
-                item["quantity"] = index_int
-            return copy.deepcopy(item)
-        return None
+        
+        # Batch request
+        if isinstance(name, (list, tuple, set)):
+            result = {}
+            for n in name:
+                items = get_single_item(n)
+                if items is not None:
+                    result.update(items)  # Merge the dict(s)
+            return result
+        
+        # Single request
+        items = get_single_item(name)
+        if items is None:
+            return None
+        
+        # For single requests, if there's only one item, return it directly
+        if len(items) == 1:
+            return list(items.values())[0]
+        
+        # Multiple non-stackable items requested: return the dict
+        return items
 
     def get_items_by_type(self, item_type: str) -> list[dict]:
         """Retrieves a list of all items that include the specified type."""

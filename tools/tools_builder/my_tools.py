@@ -1982,6 +1982,37 @@ clockwork_lens_tools = [
             "required": [],
             "additionalProperties": False
         }
+    },
+    {
+        "type": "function",
+        "name": "get_clockwork_status",
+        "description": "Gets the status of the clockwork lens for the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "oil_clockwork_mechanism",
+        "description": "Oils the clockwork lens for the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "pumps": {
+                    "type": "number",
+                    "description": "The number of pumps to oil the clockwork lens."
+                },
+                "oiler_id": {
+                    "type": "string",
+                    "description": "The ID of the oiler set item to use."
+                }
+            },
+            "required": ["pumps", "oiler_id"],
+            "additionalProperties": False
+        }
     }
 ]
 
@@ -1990,6 +2021,39 @@ fresnel_lens_tools = [
         "type": "function",
         "name": "fresnel_rotation_state",
         "description": "Gets the rotation state of the Fresnel lens in the lantern room.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+    }
+]
+
+spirit_source_tools = [
+    {
+        "type": "function",
+        "name": "examine_spirit_source",
+        "description": "Examines the spirit source.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "spirit_source_id": {
+                    "type": "number",
+                    "description": "The ID of the spirit source to examine."
+                }
+            },
+            "required": ["spirit_source_id"],
+            "additionalProperties": False
+        }
+    }
+]
+
+service_room_general_tools = [
+    {
+        "type": "function",
+        "name": "peak_at_lamp_room_light",
+        "description": "While standing on the service room, you can check if the lamp room light is visible in the stairwell and the entrance to your room.",
         "parameters": {
             "type": "object",
             "properties": {},

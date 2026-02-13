@@ -1674,5 +1674,27 @@
             "hydration": -5.0,
             "energy": 8.0
         }
+    },
+    {
+        "name": "Vinegar (250 ml)",
+        "descriptions": [
+            "A 250 ml bottle of white vinegar — acidic, sharp and shelf-stable.",
+            "Used for cooking, cleaning and preserving; sour and pungent."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You chug down the vinegar, the sour liquid burning your throat and making your eyes water.",
+            "Unpleasant on its own but useful for seasoning or preserving.",
+            "You feel nauseous and sick."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": -15.0,
+            "energy": -10.0
+        }
     }
 ]

@@ -1,0 +1,91 @@
+[
+    {
+        "name": "Hardtack",
+        "descriptions": [
+            "A hard, dry biscuit, made out of flour and water."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the hardtack, it's dry and bland but it's filling.",
+            "As you take a bite, you can feel your teeth almost cracking before the biscuit finally breaks.",
+            "A bland and dry paste forms in your mouth, a dense cheweing material that reduces your hunger."
+        ],
+        "stats_edit": {
+            "fullness": 15.0,
+            "hydration": -10.0,
+            "energy": 5.0
+        }
+    },
+    {
+        "name": "bully beef can",
+        "descriptions": [
+            "A type of canned, cured meat. A concoction of gelatin, fat, finely minced pre-cooked meat, and salts.",
+            "Remarkably catfood-like in sight, texture and flavor!"
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the bully beaf straight, with a metalic taste that engulfs your whole mouth, the soft texture, it is like eating a savory raw cookie dough, but with a gelatinous aftertaste.",
+            "Eating the whole can, you can feel the paste of cured meats all around your gums and teeth, the metalic taste reaches your nostrils.",
+            "The cracking open of the can releases a pungent aroma, a paste of cured meats and fat."
+        ],
+        "stats_edit": {
+            "fullness": 20.0,
+            "hydration": -2.5,
+            "energy": 15.0
+        }
+    },
+    {
+        "name": "bacon strip",
+        "descriptions": [
+            "A strip of raw bacon, cured pork belly, sliced into strips, saltier than you'd expect.",
+            "It has a smoky and salty aroma, with a hint of sweetness.",
+            "Meats prepared this way have a longer shelf-life, making them a staple for long voyages."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You munch on the raw bacon, the saltiness is overwhelming, it's like eating a salt lick with a hint of smoke.",
+            "The fat is gelatinous and slick, coating your mouth in a greasy film.",
+            "The raw bacon makes your stomach churn, the salt and fat are too much to handle, and the texture is just... wrong."
+        ],
+        "stats_edit": {
+            "fullness": -5.0,
+            "hydration": -10.0,
+            "energy": -5.0
+        }
+    },
+    {
+        "name": "molasses ration",
+        "descriptions": [
+            "A ration of molasses, a thick, dark syrup made from sugarcane.",
+            "It is sweet and sticky, with a rich, caramel-like flavor.",
+            "A dark roasted flavor, with a hint of smoke."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You eat the molasses ration, it's sweet and sticky, with a rich, caramel-like flavor.",
+            "You fight to swallow the sticky sweet, dense liquid, it coats your mouth and throat.",
+            "The molasses ration makes your stomach churn, the sweetness is overwhelming, and the texture is just... wrong."
+        ],
+        "stats_edit": {
+            "fullness": 10.0,
+            "hydration": -20.0,
+            "energy": 25.0
+        }
+    }
+]

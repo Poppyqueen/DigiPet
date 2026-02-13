@@ -57,6 +57,15 @@ CLEAN_LENS_COSTS = {
     "fullness": -0.010
 }
 
+OIL_MECHANISM_COSTS = {
+    "energy": -0.010,
+    "hydration": -0.008,
+    "fullness": -0.005
+}
+
+OIL_PUMP_RATE = .005 # of max 1.0
+
+SPIRIT_CONSUME_RATE = .05
 
 class LighthouseController:
     def __init__(self, state_manager, signal, open_meteo_handle):
@@ -179,12 +188,18 @@ class LighthouseController:
 
     def windup_clockwork(self, turns: int = 10):
         if turns < 0:
-            return "Nope, can't do that."
+            return "Nope, can't do that. The handle won't give that way."
+
+        results = []
+
+        results.append(f"You spin the handle of the clockwork {turns} times.")
 
         value = float(turns * WIND_UP_RATE)
-        stats_res = self._adjust_stats(WIND_UP_COSTS, value)
+        stats_res = self._adjust_stats(WIND_UP_COSTS, turns)
         response = self.lighthouse_manager.windup_clockwork(value)
-        return "\n".join([response, stats_res])
+        results.append(response)
+        results.append(stats_res)
+        return "\n".join(results)
 
 
     ## IOV Lamp Actions
@@ -221,15 +236,11 @@ class LighthouseController:
         return "\n".join(text_results)
 
     def lamp_refill_spirit_pan(self, spirit_pan_id, spirit_source_id): 
-        print(f"Refilling spirit pan {spirit_pan_id} with spirit source {spirit_source_id}")
         text_results = []
         item_check_result = self.state_manager.validate_item_data(spirit_pan_id, "iov_spirit_pan", "inventory")  
-        print(f"Item check result: {item_check_result}")
 
         spirit_source_inventory_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "inventory")
-        print(f"Spirit source inventory result: {spirit_source_inventory_result}")
         spirit_source_room_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "room")
-        print(f"Spirit source room result: {spirit_source_room_result}")
 
         if spirit_source_inventory_result == False and spirit_source_room_result == False:
             return "You don't have any Spirit Source in your inventory or room."
@@ -245,10 +256,16 @@ class LighthouseController:
         if denatured_alcohol_details["spirit_quantity"] == 0:
             return "The denatured alcohol container is empty."
         
-        denatured_alcohol_details["spirit_quantity"] -= .15
 
+        denatured_alcohol_details["spirit_quantity"] -= SPIRIT_CONSUME_RATE
+        text_results.append(f"Spirit source consumed {SPIRIT_CONSUME_RATE} units of spirit. {denatured_alcohol_details['spirit_quantity']:.0%} units remaining.")
+        
         if denatured_alcohol_details["spirit_quantity"] < 0:
             denatured_alcohol_details["spirit_quantity"] = 0
+            flag, message = self.state_manager.remove_item(spirit_source_id, internal=True)
+            text_results.append("Spirit source has been consumed entirely!")
+            text_results.append(message)
+            
 
         error_message = self.state_manager.inventory_service.persist_item_changes(spirit_source_id)
 
@@ -266,7 +283,7 @@ class LighthouseController:
             return error_message
         # TODO: add signal for icon popups
 
-        return "Spirit pan refilled."
+        return "Spirit pan refilled." + "\n".join(text_results)
 
     def lamp_remove_spirit_pan(self):
         text_results = []
@@ -372,9 +389,53 @@ class LighthouseController:
 
         return "\n".join(text_results)
 
-    
+
+    # Oil Mechanism
+    def controller_oil_mechanism(self, pumps: int = 1, oiler_id: str = None):
+        text_results = []
+        # check for "oiler set" in inventory
+        item_check_result = self.state_manager.validate_item_data(oiler_id, "oiler_set", "inventory")
+        if item_check_result == False:
+            return "You don't have any Oiler Set in your inventory."
+
+        amount = pumps * OIL_PUMP_RATE
+
+        response, events, success = self.lighthouse_manager.oil_mechanism(amount, internal=True)
+        text_results.append(response)
+
+        if success:
+            text_results.append(f"You oil the clockwork mechanism {pumps} time{'s' if pumps != 1 else ''}.")
+            stats_res = self._adjust_stats(OIL_MECHANISM_COSTS, pumps)
+            text_results.append(stats_res)
+            # TODO: add signal for icon popups
+
+        return "\n".join(text_results)
+
+    def examine_spirit_source(self, spirit_source_id):
+        inventory_item_check_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "inventory")
+        room_item_check_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "room")
+
+        if inventory_item_check_result == False and room_item_check_result == False:
+            return "Could not find the item in your inventory or room."
+
+        item_data, error = self.state_manager.inventory_service.get_validated_item_data(spirit_source_id, "spirit_source")
 
 
+        return f"You examine the {item_data['name']} ID {item_data['id']}. {item_data['descriptions']} Spirit Contents: {item_data['spirit_quantity']:.0%}"
+        
+
+    def service_room_light_check(self):
+        # If we are inside the service room, we should be able to see the light state.
+        light_state = self.lighthouse_manager.lamp.get_light_state()
+
+        return light_state
+
+
+    def get_lantern_room_interior_status(self):
+        lines = []
+        lines.append(self.lighthouse_manager.lantern.get_interior_status())
+        lines.append(self.lighthouse_manager.lamp.get_light_state())
+        return "\n".join(lines)
     
     ## Tick!
    

@@ -13,19 +13,37 @@
         "IOV Spirit Pan",
         "Denatured alcohol barrel",
         "Set of matches",
-        "Fresnel lens clockwork apparatus"
+        "Fresnel lens clockwork apparatus",
+        "Wooden stool"
     ],
     "Fresnel Lens": [
         "IOV Lamp Top"
     ],
     "Storage Room": [
-        "IOV Mantle[x100]",
+        "IOV Mantle[x75]",
         "Kerosene container[x55]",
-        "Denatured alcohol barrel",
-        "Set of matches"
+        "Denatured alcohol barrel[x25]",
+        "Set of matches",
+        "Oiler Set"
     ],
-    "Sleeping Nook": [],
-    "Kitchen": [],
-    "Stairwell": [],
+    "Sleeping Nook": [
+        "Bed nook[x3]",
+        "Tall Oak Bookshelf",
+        "Landscape Oil Painting (Gilded Frame)",
+        "Throw Pillow Bundle (Assorted Textiles)"
+    ],
+    "Kitchen": [
+        "Hardtack[x100]",
+        "all-purpose flour[x75]",
+        "dried kidney beans (500 g)[x35]",
+        "bully beef can[x75]",
+        "bacon strip[x35]",
+        "Bag of white rice (uncooked)[x35]",
+        "molasses ration[x25]",
+        "Raw Potatoes (3 pcs)[x25]",
+        "Vinegar (250 ml)[x45]",
+        "onion[x15]",
+        "jar of pickles[x55]"
+    ],
     "inventory": []
 }

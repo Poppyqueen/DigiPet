@@ -8,6 +8,8 @@
 
 # Useful as a testing bed for the tooling and environment with a light token footprint
 
+# TODO: refactor this, use the ai_handle that chatbot_api uses
+
 import os
 import asyncio
 import random
@@ -302,7 +304,8 @@ class UserInterfaceChatbot:
             "player_items": player_items,
             "stats": stats,
             "available_rooms": available_rooms,
-            "tools_info": self.functions_builder.get_current_tools_info()
+            "tools_info": self.functions_builder.get_current_tools_info(),
+            "context": self.functions_builder.construct_context()
         }
 
     async def _check_wellness_consequences(self):

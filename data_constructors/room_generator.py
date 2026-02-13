@@ -321,7 +321,7 @@ class room_crafter:
             return None
 
         # Set default directories if none provided
-        if image_dirs is None:
+        if image_dirs is None: # TODO: I think these ones are hardcoded in another part of the codebase, move them to a single place
             image_dirs = ["style/images/rooms_images", "style/images/local_rooms_images", "style/images/local_rooms_images/local_ai_gens"]
         if music_dirs is None:
             music_dirs = ["style/sounds/music/rooms", "style/sounds/local_music/rooms"]

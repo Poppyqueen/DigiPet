@@ -519,7 +519,7 @@
         ],
         "stats_edit": {
             "fullness": 3.0,
-            "hydration": 2.0,
+            "hydration": -2.5,
             "energy": 1.0
         }
     },

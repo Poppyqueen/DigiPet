@@ -22,5 +22,18 @@
             "sheet"
         ],
         "stackable": false
+    },
+    {
+        "name": "Oiler Set",
+        "descriptions": [
+            "A set of tools for oiling mechanisms.",
+            "Includes a small bottle of oil and a pump-action applicator.",
+            "Used for oiling clockwork mechanisms."
+        ],
+        "static": false,
+        "type": [
+            "oiler_set"
+        ],
+        "stackable": false
     }
 ]

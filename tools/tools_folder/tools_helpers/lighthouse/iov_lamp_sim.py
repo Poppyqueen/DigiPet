@@ -249,6 +249,32 @@ class SprayTables:
             hazard
         )
 
+# ============================================================================
+# LIGHT LEVEL CALCULATION
+# ============================================================================
+
+@dataclass(frozen=True)
+class LightLevel: # Consistent with your SprayLevel pattern
+    min_val: float
+    max_val: float
+    description: str
+
+class LightTables:
+    LEVELS = [
+        LightLevel(0.0, 0.0, "You can't see any light coming from the IOV lamp."),
+        LightLevel(0.01, 0.4, "You can see a dim light coming from the IOV lamp."),
+        LightLevel(0.41, 0.9, "A bright light is coming from the IOV lamp."),
+        LightLevel(0.91, 1.0, "A brilliant light is coming from the IOV lamp."),
+    ]
+
+    @staticmethod
+    def find_level(value: float, levels: List[LightLevel]) -> Optional[LightLevel]:
+        for level in levels:
+            # Your preferred inclusive check
+            if level.min_val <= value <= level.max_val:
+                return level
+        return None
+
 
 # ============================================================================
 # DERIVED STATE COMPUTER
@@ -849,6 +875,9 @@ class IOVLamp:
             f"Fuel: {self.physics.fuel_level * 100:.0f}%",
             f"Main Valve: {'OPEN' if self.controls.main_valve_open else 'closed'}",
             f"Piping Up: {'TRUE' if self.derived.piping_up else 'FALSE'}",
+            "",
+            "=== LANTERN LIGHT VISIBLE FROM SERVICE ROOM ===",
+            f"Light State: {self.get_light_state()}",
             ""
         ]
         return "\n".join(lines)
@@ -870,6 +899,13 @@ class IOVLamp:
             ""
         ]
         return "\n".join(lines)
+
+    def get_light_state(self) -> str:
+        """Get light state."""
+
+        level : LightLevel = LightTables.find_level(self.derived.light_intensity, LightTables.LEVELS)
+        description = level.description if level else "You can't see any light comming from above in the lantern room."
+        return description
     
     def get_status(self) -> str:
         """Complete status report."""
