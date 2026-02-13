@@ -172,6 +172,8 @@ When running the project, you can expect:
 
 * When double clicking on the agent, send a message to it with messages like "you feel a unnusual chill on your body" or "an itch on your back overcomes you for a second", "there is a tickle on your head", etc. 
 
+* Flag any "DIRECT KEY MODIFICATION" for item data in the code with a TODO comment if seen.
+
 
 #### Long Term:
 

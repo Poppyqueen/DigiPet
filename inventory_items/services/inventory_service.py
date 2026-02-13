@@ -1021,23 +1021,60 @@ class InventoryService:
         return is_valid
         
 
-    def set_item_attribute(self, item_id: int, key: str, value, quantity: int = 1) -> str: # TODO: Experimental
-        """
-        Modifies a single attribute (key/value) on one or more units of an item stack,
-        then recalculates stacking state.
+# ── New helper ──────────────────────────────────────────────────────────
 
-        If the item is stackable and the key is part of the stacking key (i.e. it would
-        change which stack this item belongs to), the affected units are "split off" from
-        their source stack and either:
-        - Merged into an existing compatible stack in the same location, or
-        - Inserted as a new, separate stack entry.
+    def _apply_nested_set(self, data: dict, path: list[str] | None, key: str, value) -> None:
+        """
+        Traverse *path* into *data* (creating intermediate dicts as needed),
+        then set data[key] = value at that level.
+
+        Examples
+        --------
+        _apply_nested_set(item, None,                    "name",     "Bob")
+          → item["name"] = "Bob"
+
+        _apply_nested_set(item, ["dispenser_state"],     "contents", {...})
+          → item["dispenser_state"]["contents"] = {...}
+
+        _apply_nested_set(item, ["a", "b"],              "c",        42)
+          → item["a"]["b"]["c"] = 42
+        """
+        target = data
+        for segment in (path or []):
+            if not isinstance(target.get(segment), dict):
+                target[segment] = {}
+            target = target[segment]
+        target[key] = value
+
+    # ── Modified method signature ────────────────────────────────────────────
+
+    def set_item_attribute(self, item_id: int, key: str, value, quantity: int = 1,
+                           path: list[str] | None = None) -> str:
+        """
+        Modifies a single attribute (key/value) on one or more units of an item
+        stack, then recalculates stacking state.
+
+        If *path* is provided the write is applied at a nested location inside
+        the item dict.  For example::
+
+            set_item_attribute(id, "contents", new_dict, path=["dispenser_state"])
+
+        writes ``item_data["dispenser_state"]["contents"] = new_dict`` instead
+        of touching the top-level key directly.
+
+        The stacking-fingerprint logic only considers the *top-level* key when
+        path is None; when path is provided the fingerprint comparison uses the
+        top-level segment (path[0]) so that nested writes on non-stacking keys
+        remain fast-pathed correctly.
 
         Args:
             item_id:  The ID of the item (or stack) to modify.
-            key:      The attribute key to set.
+            key:      The attribute key to set (at the leaf of *path*).
             value:    The new value for that attribute.
-            quantity: How many units of the stack to affect. Defaults to 1.
-                    Pass 0 or a value >= available quantity to affect the whole stack.
+            quantity: How many units of the stack to affect.  Defaults to 1.
+                      Pass 0 or a value >= available quantity to affect the whole stack.
+            path:     Optional list of dict keys to traverse before setting *key*.
+                      Intermediate dicts are created automatically if absent.
 
         Returns:
             A human-readable result string.
@@ -1050,102 +1087,88 @@ class InventoryService:
         if not item_info:
             return f"Failed to set attribute: item with ID {item_id} not found."
 
-        item_data     = item_info["item_data"]   # live reference inside the state list
-        location      = item_info["location"]    # "inventory" or "room"
+        item_data     = item_info["item_data"]
+        location      = item_info["location"]
         location_id   = item_info["location_id"]
 
         item_display  = self._format_item_for_display(item_data)
         is_stackable  = item_data.get("stackable", False)
 
+        # The "effective top-level key" for fingerprint purposes:
+        # when a path is given the stacking key is path[0], not key.
+        fingerprint_key = path[0] if path else key
+
         # --- 2. Resolve how many units are affected ---
         available = item_data.get("quantity", 1)
         if quantity <= 0 or quantity >= available:
-            actual_qty = available   # whole stack
+            actual_qty = available
         else:
-            actual_qty = quantity    # partial
+            actual_qty = quantity
 
-        # --- 3. Resolve the target list (the live list inside state) ---
+        # --- 3. Resolve the target list ---
         if location == "inventory":
             target_list = self._state_store.get_state_section("inventory", [])
         elif location == "room":
             if not self._room_manager:
                 return "Error: RoomManager not set; cannot modify room item."
-            room_data   = self._room_manager._find_room_by_id(location_id)
+            room_data = self._room_manager._find_room_by_id(location_id)
             if not room_data or not isinstance(room_data.get("items"), list):
                 return f"Error: Room {location_id} not found or corrupted."
             target_list = room_data["items"]
         else:
             return f"Error: Unknown item location '{location}'."
 
-        # --- 4. Would this key change the stacking fingerprint? ---
-        #
-        # We do this by comparing the stacking key BEFORE and AFTER the edit.
-        # Non-stackable items skip all of this — we just set the value directly.
-
+        # --- 4. Non-stackable: just mutate and persist ---
         if not is_stackable:
-            # Simple case: just mutate in place and persist.
-            item_data[key] = value
+            self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
                 return f"Set '{key}' on {item_display}, but failed to persist: {err}"
-            return f"Set '{key}' = {value!r} on {item_display}."
+            path_str = ".".join(path + [key]) if path else key
+            return f"Set '{path_str}' = {value!r} on {item_display}."
 
         # --- Stackable path ---
         stacking_key_before = self._get_item_stacking_key(item_data)
 
-        # Build a temporary "what would the modified item look like" dict
-        # so we can compute the new stacking key without touching live data yet.
-        modified_preview         = item_data.copy()
-        modified_preview[key]    = value
-        stacking_key_after       = self._get_item_stacking_key(modified_preview)
+        modified_preview = item_data.copy()
+        self._apply_nested_set(modified_preview, path, key, value)
+        stacking_key_after = self._get_item_stacking_key(modified_preview)
 
         fingerprint_unchanged = (stacking_key_before == stacking_key_after)
 
         if fingerprint_unchanged:
-            # --- 4a. Key is NOT part of the stacking fingerprint ---
-            # Safe to mutate the whole stack in-place, regardless of actual_qty,
-            # because all units are identical and will remain identical.
-            item_data[key] = value
+            self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
                 return f"Set '{key}' on {item_display}, but failed to persist: {err}"
-            return f"Set '{key}' = {value!r} on all {available} unit(s) of {item_display}."
+            path_str = ".".join(path + [key]) if path else key
+            return f"Set '{path_str}' = {value!r} on all {available} unit(s) of {item_display}."
 
-        # --- 4b. Key IS part of the stacking fingerprint ---
-
+        # --- Fingerprint changes: split logic (unchanged from original) ---
         remaining_in_source = available - actual_qty
 
-        # Step A: Check if another existing stack already matches the post-edit fingerprint.
-        # We need to do this BEFORE we remove the source from the list, so that
-        # _find_matching_stack_in_list doesn't accidentally match the source itself.
-        # Build the preview to search with.
-        detached_preview = {**item_data, key: value, "quantity": actual_qty}
-        existing_target  = next(
+        detached_preview = {**item_data, **({path[0]: modified_preview[path[0]]} if path else {key: value}), "quantity": actual_qty}
+        existing_target = next(
             (i for i in target_list
-            if i.get("id") != item_id   # exclude self
-            and i.get("stackable", False)
-            and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
-            and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
+             if i.get("id") != item_id
+             and i.get("stackable", False)
+             and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
+             and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
             None
         )
 
-        messages = []
-
         if remaining_in_source == 0 and existing_target is None:
-            # ── Fast path: whole stack, no merge target ──────────────────────────
-            # Just mutate in place. Keep the same ID, no list surgery needed.
-            item_data[key] = value
+            self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
                 return f"Set '{key}' on {item_display}, but failed to persist: {err}"
-            return f"Set '{key}' = {value!r} on {item_display} (ID kept, stack updated in place)."
+            path_str = ".".join(path + [key]) if path else key
+            return f"Set '{path_str}' = {value!r} on {item_display} (ID kept, stack updated in place)."
 
-        # Step B: Build the detached item with the new attribute applied.
-        detached             = item_data.copy() if remaining_in_source > 0 else item_data
-        detached             = {**item_data, key: value, "quantity": actual_qty}
-        # (We deliberately do NOT copy the old id yet; we may reuse or assign new below.)
+        detached = {**item_data}
+        self._apply_nested_set(detached, path, key, value)
+        detached["quantity"] = actual_qty
 
-        # Step C: Try to merge the detached units into an existing compatible stack.
         existing_target = self._find_matching_stack_in_list(target_list, detached)
 
         messages = []
@@ -1157,25 +1180,17 @@ class InventoryService:
             messages.append(
                 f"Merged {can_merge} unit(s) into existing stack {self._format_item_for_display(existing_target)}."
             )
-
             if leftover > 0:
-                # The target stack was full; create a new stack for the remainder.
-                new_id             = self._state_store.get_next_item_id()
-                overflow_stack     = {**detached, "id": new_id, "quantity": leftover}
+                new_id = self._state_store.get_next_item_id()
+                overflow_stack = {**detached, "id": new_id, "quantity": leftover}
                 target_list.append(overflow_stack)
-                messages.append(
-                    f"Created new stack (ID:{new_id:06d}) for remaining {leftover} unit(s)."
-                )
+                messages.append(f"Created new stack (ID:{new_id:06d}) for remaining {leftover} unit(s).")
         else:
-            # No compatible stack exists; insert as a brand-new stack.
-            new_id         = self._state_store.get_next_item_id()
-            new_stack      = {**detached, "id": new_id, "quantity": actual_qty}
+            new_id = self._state_store.get_next_item_id()
+            new_stack = {**detached, "id": new_id, "quantity": actual_qty}
             target_list.append(new_stack)
-            messages.append(
-                f"Created new stack {self._format_item_for_display(new_stack)} with {actual_qty} unit(s)."
-            )
+            messages.append(f"Created new stack {self._format_item_for_display(new_stack)} with {actual_qty} unit(s).")
 
-        # Step D: Persist both the source reduction and the new/merged stack.
         if location == "inventory":
             self._state_store.update_state_section("inventory", target_list)
         else:

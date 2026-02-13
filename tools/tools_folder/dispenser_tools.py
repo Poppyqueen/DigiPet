@@ -3,9 +3,10 @@
 from inventory_items.items_provider.item_store import ItemStore
 import random
 
+
 class DispenserTools:
     def __init__(self, state_manager, signal=None):
-        self.state = state_manager # This is InventoryHouseManager
+        self.state = state_manager  # This is InventoryHouseManager
         self.item_store = ItemStore()
         self._signal_callback = signal
 
@@ -17,23 +18,22 @@ class DispenserTools:
             except Exception as e:
                 print(f"Error sending signal from DispenserTools: {e}")
 
+    def examine_dispenser(self, item_id: int):
+        """
+        Examines the dispenser and returns its status.
+        """
+        item_data, error = self.state.inventory_service.get_validated_item_data(item_id, required_type="dispenser")
+        if error:
+            return error
 
-    def _update_description(self, item_data, count): ## TODO: Remove this, do not change item description directly.
-        """Updates the visible description of the dispenser."""
-        descriptions = item_data.get("descriptions", [])
-        new_status = f"Status: {count} candies left"
-        updated = False
-        
-        for i, line in enumerate(descriptions):
-            if line.startswith("Status:"):
-                descriptions[i] = new_status
-                updated = True
-                break
-        
-        if not updated:
-            descriptions.append(new_status)
-            
-        item_data["descriptions"] = descriptions
+        dispenser_state = item_data.get("dispenser_state", {})
+        contents = dispenser_state.get("contents", {})
+        total_count = sum(contents.values())
+
+        if total_count <= 0:
+            return "The dispenser is empty. You need to refill it."
+
+        return f"The dispenser has {total_count} candies left."
 
     def dispense_candy(self, item_id: int):
         """
@@ -43,108 +43,76 @@ class DispenserTools:
         if error:
             return error
 
-        # Check dispenser state (default to empty dict if missing)
         dispenser_state = item_data.get("dispenser_state", {})
-        
         contents = dispenser_state.get("contents", {})
         total_count = sum(contents.values())
-        
+
         if total_count <= 0:
             self._send_signal({"type": "show_message_popup", "message": "Click! It's empty."})
             return "The dispenser is empty. You need to refill it."
 
-        # Weighted Random Selection
-        candy_types = list(contents.keys())
-        counts = list(contents.values())
-        selected_candy = random.choices(candy_types, weights=counts, k=1)[0]
-        
-        # Create Single Candy
-        single_candy_blueprint = self.item_store.get_item(selected_candy)
+        # Weighted random selection
+        selected_candy = random.choices(list(contents.keys()), weights=list(contents.values()), k=1)[0]
+
+        # Create the dispensed candy item
+        single_candy_blueprint = self.item_store.get_item(selected_candy) or self.item_store.get_item("Single Candy")
         if not single_candy_blueprint:
-             # Fallback
-             single_candy_blueprint = self.item_store.get_item("Single Candy")
-             if not single_candy_blueprint:
-                return f"Error: Could not find candy definition for '{selected_candy}'."
+            return f"Error: Could not find candy definition for '{selected_candy}'."
 
-        creation_result = self.state.create_item("inventory", None, single_candy_blueprint, internal=True)
-        
-        if not creation_result:
-             return "Error: Failed to dispense candy (could not create item)."
+        if not self.state.create_item("inventory", None, single_candy_blueprint, internal=True):
+            return "Error: Failed to dispense candy (could not create item)."
 
-        # Update Dispenser State ## TODO: DIRECT KEY MODIFICATION
-        contents[selected_candy] -= 1
-        if contents[selected_candy] <= 0:
-            del contents[selected_candy]
-            
-        dispenser_state["contents"] = contents
-        # Update total count for description
-        new_total = sum(contents.values())
-        
-        item_data["dispenser_state"] = dispenser_state
-        self._update_description(item_data, new_total)
-        
-        # Persist ## TODO: DIRECT KEY MODIFICATION
-        persist_error = self.state.inventory_service.persist_item_changes(item_id)
-        if persist_error:
-            return persist_error
+        # Build the new contents (copy-on-write)
+        new_contents = dict(contents)
+        new_contents[selected_candy] -= 1
+        if new_contents[selected_candy] <= 0:
+            del new_contents[selected_candy]
+        new_total = sum(new_contents.values())
+
+        # Single authoritative write
+        result = self.state.inventory_service.set_item_attribute(
+            item_id, "contents", new_contents, path=["dispenser_state"]
+        )
+        if result.startswith("Error") or "failed" in result.lower():
+            return result
+
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/candy.png", "popup_type": 2})
-
         return f"You turn the handle. Clatter! A {selected_candy} falls out. You have {new_total} candies left."
 
-    def refill_dispenser(self, item_id: int):
+    def refill_dispenser(self, dispenser_id: int, bag_id: int):
         """
         Refills the dispenser using a Candy Refill Bag from inventory.
         """
-        # Check for Refill Bag
-        inventory_items = self.state.get_inventory_items(internal=True)
-        refill_bag = None
-        
-        for item in inventory_items:
-            # Check for new candy_bag type
-            if "candy_bag" in item.get("type", []):
-                refill_bag = item
-                break
-        
-        if not refill_bag:
-            return "You don't have any candy refill bags in your inventory."
-
-        # Get Dispenser Data
-        item_data, error = self.state.inventory_service.get_validated_item_data(item_id, required_type="dispenser")
+        dispenser_data, error = self.state.inventory_service.get_validated_item_data(dispenser_id, required_type="dispenser")
         if error:
             return error
 
-        # Consume Refill Bag
-        if not self.state.remove_item(refill_bag.get("id"), internal=True):
-            return "Error: Failed to use the refill bag."
+        bag_data, error = self.state.inventory_service.get_validated_item_data(bag_id, required_type="candy_bag")
+        if error:
+            return error
 
-        # Determine Contents
-        bag_contents = refill_bag.get("contents")
-        if not bag_contents:
-            # Try looking up blueprint by name
-            blueprint = self.item_store.get_item(refill_bag.get("name"))
-            if blueprint:
-                bag_contents = blueprint.get("contents")
-        
+        # Resolve bag contents (from item data, or fall back to blueprint)
+        bag_contents = bag_data.get("contents")
+
         if not bag_contents:
             return "Error: The refill bag seems to be empty or invalid."
 
-        # Update Dispenser State
-        dispenser_state = item_data.get("dispenser_state", {"contents": {}})
-        current_contents = dispenser_state.get("contents", {})
-        
-        # Additive update
-        for candy, qty in bag_contents.items():
-            current_contents[candy] = current_contents.get(candy, 0) + qty
-            
-        dispenser_state["contents"] = current_contents
-        
-        total_count = sum(current_contents.values())
-        self._update_description(item_data, total_count)
+        # Consume the refill bag before writing new state
+        if not self.state.remove_item(bag_id, internal=True):
+            return "Error: Failed to use the refill bag."
 
-        # Persist
-        persist_error = self.state.inventory_service.persist_item_changes(item_id)
-        if persist_error:
-            return persist_error
+        # Build the merged contents (copy-on-write)
+        current_contents = dispenser_data.get("dispenser_state", {}).get("contents", {})
+        new_contents = dict(current_contents)
+        for candy, qty in bag_contents.items():
+            new_contents[candy] = new_contents.get(candy, 0) + qty
+
+        # Single authoritative write
+        result = self.state.inventory_service.set_item_attribute(
+            dispenser_id, "contents", new_contents, path=["dispenser_state"]
+        )
+        if result.startswith("Error") or "failed" in result.lower():
+            return result
 
         self._send_signal({"type": "show_message_popup", "message": "Dispenser refilled!"})
-        return f"You pour the {refill_bag.get('name')} into the dispenser. It looks full and colorful now!"
+        return f"You pour the {bag_data.get('name')} into the dispenser. It looks full and colorful now!"

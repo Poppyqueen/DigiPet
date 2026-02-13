@@ -177,9 +177,29 @@ dispenser_tools=[
         "parameters": {
             "type": "object",
             "properties": {
-                "item_id": {
+                "dispenser_id": {
                     "type": "number",
                     "description": "The item ID of the candy dispenser to refill."
+                },
+                "bag_id": {
+                    "type": "number",
+                    "description": "The item ID of the candy refill bag to use."
+                }
+            },
+            "required": ["dispenser_id", "bag_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "examine_dispenser",
+        "description": "Examine the candy dispenser to see how many candies are left.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The item ID of the candy dispenser to examine."
                 }
             },
             "required": ["item_id"],

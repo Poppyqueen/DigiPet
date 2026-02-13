@@ -567,7 +567,8 @@ class FunctionBuilder:
             "dispenser": {
                 "functions": {
                     "dispense_candy": self.dispenser_tools.dispense_candy,
-                    "refill_dispenser": self.dispenser_tools.refill_dispenser
+                    "refill_dispenser": self.dispenser_tools.refill_dispenser,
+                    "examine_dispenser": self.dispenser_tools.examine_dispenser
                 },
                 "definitions": dispenser_tools,
                 "item_types": ["dispenser"],
@@ -939,12 +940,14 @@ class FunctionBuilder:
             return f"The {item_name} is already turned {state_str}."
         
         # Toggle the state ## TODO: DIRECT KEY MODIFICATION
-        item_data["power_toggle"] = turn_on 
+        # item_data["power_toggle"] = turn_on 
+
+        self.state_manager.inventory_service.set_item_attribute(item_id, "power_toggle", turn_on)
         
         # Persist the changes
-        persist_error = self.state_manager.inventory_service.persist_item_changes(item_id) ## TODO: DIRECT KEY MODIFICATION
-        if persist_error:
-            return persist_error
+        # persist_error = self.state_manager.inventory_service.persist_item_changes(item_id) ## TODO: DIRECT KEY MODIFICATION
+        # if persist_error:
+        #     return persist_error
         
         # Send feedback
         state_str = "ON" if turn_on else "OFF"
