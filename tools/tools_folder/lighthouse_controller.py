@@ -241,10 +241,9 @@ class LighthouseController:
         item_check_result = self.state_manager.validate_item_data(spirit_pan_id, "iov_spirit_pan", "inventory")  
 
         spirit_source_inventory_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "inventory")
-        spirit_source_room_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "room")
 
-        if spirit_source_inventory_result == False and spirit_source_room_result == False:
-            return "You don't have any Spirit Source in your inventory or room."
+        if spirit_source_inventory_result == False: # Removed room check, only inventory check
+            return "You don't have any Spirit Source in your inventory."
 
 
         if item_check_result == False:
@@ -433,7 +432,7 @@ class LighthouseController:
         return f"You examine the {item_data['name']} ID {item_data['id']}. {item_data['descriptions']} Spirit Contents: {item_data['spirit_quantity']:.0%}"
         
 
-    def service_room_light_check(self):
+    def accessible_room_light_check(self): # TODO: Change name and descriptive texts, register along with other rooms where it would be applicable.
         # If we are inside the service room, we should be able to see the light state.
         light_state = self.lighthouse_manager.lamp.get_light_state()
 

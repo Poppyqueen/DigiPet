@@ -38,7 +38,7 @@ from .my_tools import (
     lantern_room_tools,
     fresnel_lens_tools,
     spirit_source_tools,
-    service_room_general_tools,
+    accessible_light_viewing_room_tools,
 )
 from tools.tools_folder import simulation
 
@@ -592,14 +592,14 @@ class FunctionBuilder:
                 "use_level": "room_only",
                 "display_information": self.lighthouse.lighthouse_manager.get_service_room_status # TODO: Display information is used for the GUI, not the LLM, however, having a similar key for "agent information" when tools are active like in get_current_tools_info might be valuable. One thing is that these GUI info tools are not token optimized, an example is the wikipedia info tool which returns the full article, if we want to put this tool information it will implode the context window, the idea would be to put this info inside the function construct_context, but we would need to make info tools for every tool, that's fine but out of the scope of right now. construct_context is appended onto each system message for each LLM call so it will propagate into the LLM context window, that's why some particular tools need adjustement, another example is the A-life sim, which renders the simulation in human text, and returns clues, or names of the categorization or classification of the A-life entities which is something we are hidding from the LLM context window. What I am trying to say, this info tool returns "herbivore", "carnivore", and "plant" when these 3 categories should be hidden from the LLM in a hope that it figures out what this simulation is a model of... rqamble ramble ramble...
             },
-            "service_room_general": {
+            "accessible_light_viewing_room": {
                 "functions": {
-                    "peak_at_lamp_room_light": self.lighthouse.service_room_light_check
+                    "peak_at_IOV_lamp_light": self.lighthouse.accessible_room_light_check
                 },
-                "definitions": service_room_general_tools,
+                "definitions": accessible_light_viewing_room_tools,
                 "use_level": "room_type",
-                "room_types": ["service_room"],
-                "display_information": self.lighthouse.service_room_light_check
+                "room_types": ["accessible_light_viewing_room"],
+                "display_information": self.lighthouse.accessible_room_light_check
             },
             "lamp": {
                 "functions": {

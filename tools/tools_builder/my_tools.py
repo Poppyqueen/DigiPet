@@ -2087,11 +2087,11 @@ spirit_source_tools = [
     }
 ]
 
-service_room_general_tools = [
+accessible_light_viewing_room_tools = [
     {
         "type": "function",
-        "name": "peak_at_lamp_room_light",
-        "description": "While standing on the service room, you can check if the lamp room light is visible in the stairwell and the entrance to your room.",
+        "name": "peak_at_IOV_lamp_light",
+        "description": "While standing on an adjacent room to the lantern room, you can get a look at the state of the light from the IOV lamp.",
         "parameters": {
             "type": "object",
             "properties": {},

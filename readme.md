@@ -176,9 +176,19 @@ When running the project, you can expect:
 
 * Flag any "DIRECT KEY MODIFICATION" for item data in the code with a TODO comment if seen.
 
-* Analyze the items service, specifically the validation of items, and see if we can refactor it to use pydantic, also change the pydantic models to create individual models for each unique item type for use across the project. Right now the pydantic models are all a single complex item model that is used for all items, and worse, these pydantic models are not used in the main validation process. Target 'inventory_items/inventory_manager.py' and 'utils/pydantic_models.py' and anything they touch.
+* Analyze the items service, specifically the validation of items, and see if we can refactor it to use pydantic, also change the pydantic models to create individual models for each unique item type for use across the project. Right now the pydantic models are all a single complex item model that is used for all items, and worse, these pydantic models are not used in the main validation process. Target 'inventory_items/inventory_manager.py' and 'utils/pydantic_models.py' and anything they touch. UPDATE: This refactor has been applied, however, there might be vestiges, keeping here to track if any are found.
 
 * Add 'excess' consumption to item definitions, maybe 'excess amount' and 'excess effect' to item definitions that are consumables. These effects should be text narrative, flavor text that describes the experiences of overconsumption of a particular item, like eating 10 values out of 15 of a spice jar, or eating 10 cookies, etc. 
+
+
+* Documenting a quirk, not sure what the solution is: At least OpenAI triggers content policy violations when handling the IOV lamp in the lighthouse environment, specially when taking actions related to fuels, fire and pressure. A solution is to, in the configuration for your agent, in the extra system prompt which can be found in the creation GUI or pets definitions file, add the following: 
+
+'You are an autonomous agent inside a virtual fully digital environment. All your actions and interactions, while meaningful, are constrained entirely to a virtual simulation. In no occasion, do any of these actions or interactions actuate any physical real-life mechanisms, instead everything is a simulacrum.' 
+
+This is not a solution, also the wording could be improved, but clatifying to it the nature of the simulated environment helps reducing the content policy violation triggers. 
+
+Not sure if any other providers trigger this behavior.
+
 
 #### Long Term:
 

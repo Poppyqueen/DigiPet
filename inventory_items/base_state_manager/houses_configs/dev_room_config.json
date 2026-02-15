@@ -4,7 +4,8 @@
         "Folding director's chair",
         "Fresnel lens",
         "Window curtains",
-        "Soft cleaning cloth"
+        "Soft cleaning cloth",
+        "IOV Lamp Top"
     ],
     "DevRoom": [
         "Specimen Display Case",
@@ -22,7 +23,8 @@
         "Candy Dispenser",
         "broken seed test",
         "Ground Cinnamon Tin[x5]",
-        "Black Notebook[x4]"
+        "Black Notebook[x4]",
+        "IOV Pressure system"
     ],
     "inventory": []
 }

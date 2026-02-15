@@ -4,7 +4,8 @@
         "image": "lantern_room",
         "room_types": [
             "lantern_room",
-            "outdoors_view"
+            "outdoors_view",
+            "accessible_light_viewing_room"
         ],
         "music": "garden",
         "descriptions": {
@@ -53,7 +54,8 @@
         "name": "Service Room",
         "image": "service_room",
         "room_types": [
-            "outdoors_view"
+            "outdoors_view",
+            "accessible_light_viewing_room"
         ],
         "plot_number": 3,
         "music": "white_room",
@@ -102,7 +104,8 @@
         "image": "lighthouse_gallery",
         "room_types": [
             "lighthouse_gallery",
-            "outdoors_view"
+            "outdoors_view",
+            "accessible_light_viewing_room"
         ],
         "music": "white_room",
         "descriptions": {
@@ -149,7 +152,8 @@
         "name": "Fresnel Lens",
         "image": "fresnel_lens_int",
         "room_types": [
-            "fresnel_lens_interior"
+            "fresnel_lens_interior",
+            "accessible_light_viewing_room"
         ],
         "music": "white_room",
         "descriptions": {

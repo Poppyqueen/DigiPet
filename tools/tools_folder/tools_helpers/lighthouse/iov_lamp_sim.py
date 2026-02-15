@@ -13,6 +13,10 @@ from dataclasses import dataclass, replace
 from typing import Callable, Dict, List, Tuple, Optional
 from enum import Enum, auto
 
+import random
+
+# TODO: !! mantle_burned_in to be moved to PhysicalState, change all the relevant sections, this is to fix its event reporting
+
 
 # ============================================================================
 # CORE STATE - Only Physical Reality
@@ -56,6 +60,14 @@ class DerivedState:
     hazard_multiplier: float = 0.0
     safety_valve_popped: bool = False
 
+    control_gauge_pressure: float = 0.0  # ← ADD THIS
+
+
+    is_air_blowing: bool = False          # ← ADD
+    air_flow_level: Optional[str] = None  # ← ADD (stores description for display)
+    air_destroys_mantle: bool = False     # ← ADD
+
+
 
 # ============================================================================
 # EVENTS - What Changed
@@ -87,7 +99,8 @@ class Constants:
     MIN_PRESSURE_FOR_PIPING = 40
 
     SAFETY_VALVE_THRESHOLD = OPTIMAL_PRESSURE_MAX + GRACE_RANGE + 5
-    PRESSURE_DROP_SAFETY_VALVE = 10.0 # The pressure level after a pop
+    PRESSURE_DROP_SAFETY_VALVE_MIN = 2.0 # The pressure level after a pop
+    PRESSURE_DROP_SAFETY_VALVE_MAX = 17.0 # The pressure level after a pop
     
     # Temperature
     TEMP_THRESHOLD_VAPORIZING = 0.95
@@ -107,8 +120,8 @@ class Constants:
     
     # NEW: Improved pressure consumption model
     PRESSURE_LEAK_SERVICE = 2.0  # When air valve open
-    PRESSURE_BASE_OPERATING = 0.15  # Base consumption when flowing
-    PRESSURE_PER_VALVE_PERCENT = 0.0075  # Additional per 1% valve opening
+    # PRESSURE_BASE_OPERATING = 0.15  # Base consumption when flowing
+    # PRESSURE_PER_VALVE_PERCENT = 0.0075  # Additional per 1% valve opening
     
     # NEW: Improved fuel consumption model
     FUEL_BASE_VAPORIZING = 0.0015  # Base rate when vaporizing
@@ -116,6 +129,18 @@ class Constants:
     FUEL_PER_VALVE_PERCENT = 0.00005  # Additional per 1% valve opening
     FUEL_BUNSEN_MULTIPLIER = 1.25  # Extra consumption when bunsen lit
 
+    LINE_RESISTANCE = 0.80  # Inlet pressure is ~80% of air pressure (line losses)
+
+    # Base open system consumption
+    PRESSURE_BASE_OPEN = 0.15
+    PRESSURE_PER_VALVE_PERCENT = 0.0075
+
+    # State modifiers
+    PRESSURE_MOD_AIR_BLOW    = 2.0   # No liquid resistance, drains fastest
+    PRESSURE_MOD_VAPORIZING  = 1.0   # Normal operating baseline
+    PRESSURE_MOD_LIQUID_SPRAY = 0.8  # Liquid column resists flow slightly
+
+    MIN_PRESSURE_FOR_AIR_BLOW = 1.0 # Not used for now
 
 # ============================================================================
 # RULES - Pure Functions
@@ -123,6 +148,15 @@ class Constants:
 
 class Rules:
     """All game logic as pure, testable functions."""
+
+    @staticmethod
+    def is_system_open(phys: PhysicalState, ctrl: Controls) -> bool:
+        """The path from tank to jet is open — something is flowing, regardless of what."""
+        return (
+            ctrl.main_valve_open and
+            ctrl.control_valve > 0 and
+            phys.air_pressure > 0
+        )
     
     @staticmethod
     def is_piping_up(phys: PhysicalState, ctrl: Controls) -> bool:
@@ -186,7 +220,39 @@ class Rules:
         
         return pressure_factor * valve_factor
 
+    @staticmethod
+    def calculate_control_gauge_pressure(phys: PhysicalState, ctrl: Controls) -> float:
+        if not ctrl.main_valve_open or phys.air_pressure <= 0:
+            return 0.0
+        
+        # Fuel level acts as a dampener — more fuel = slightly more resistance
+        # Range: 0.75 (empty) to 0.85 (full), centered on your LINE_RESISTANCE of 0.80
+        fuel_factor = 0.75 + (phys.fuel_level * 0.10)
+        
+        return phys.air_pressure * fuel_factor * (1.0 - ctrl.control_valve)
+    
+    @staticmethod
+    def calculate_jet_strength(phys: PhysicalState, ctrl: Controls) -> float:
+        """Calculate jet strength based on pressure and valve position."""
+        if not ctrl.main_valve_open or phys.air_pressure <= 0:
+            return 0.0
+        
+        # Fuel level acts as a dampener — more fuel = slightly more strength
+        # Range: 0.75 (empty) to 0.85 (full), centered on your LINE_RESISTANCE of 0.80
+        fuel_factor = 0.75 + (phys.fuel_level * 0.10)
+        
+        return  phys.air_pressure * fuel_factor * ctrl.control_valve
 
+
+    @staticmethod
+    def is_air_blowing(phys: PhysicalState, ctrl: Controls) -> bool:
+        """Air is flowing through the top with no fuel — pure air jet."""
+        return (
+            ctrl.main_valve_open and
+            ctrl.control_valve > 0 and
+            phys.air_pressure >= Constants.MIN_PRESSURE_FOR_AIR_BLOW and
+            phys.fuel_level < Constants.MIN_FUEL_FOR_OPERATION
+        )
 # ============================================================================
 # SPRAY HAZARD CALCULATION
 # ============================================================================
@@ -276,6 +342,29 @@ class LightTables:
         return None
 
 
+@dataclass(frozen=True)
+class AirFlowLevel:
+    min_val: float
+    max_val: float
+    description: str
+    destroys_mantle: bool
+
+class AirFlowTables:
+    LEVELS = [
+        AirFlowLevel(0.01, 15.0,  "A faint breath of air escapes from the jet.",          False),
+        AirFlowLevel(15.1, 35.0,  "A steady stream of air hisses from the jet.",           False),
+        AirFlowLevel(35.1, 55.0,  "A strong jet of air blasts from the top of the IOV.",   True),
+        AirFlowLevel(55.1, 100.0, "A powerful pressurized air jet roars from the IOV top.", True),
+    ]
+
+    @staticmethod
+    def find_level(gauge_psi: float) -> Optional[AirFlowLevel]:
+        for level in AirFlowTables.LEVELS:
+            if level.min_val <= gauge_psi <= level.max_val:
+                return level
+        return None
+
+
 # ============================================================================
 # DERIVED STATE COMPUTER
 # ============================================================================
@@ -305,6 +394,21 @@ class StateComputer:
 
         safety_popped = Rules.is_safety_valve_popped(phys, ctrl)
 
+        gauge_pressure = Rules.calculate_control_gauge_pressure(phys, ctrl)
+
+
+        # Air blowing state
+        air_blowing = Rules.is_air_blowing(phys, ctrl)
+        air_flow_desc = None
+        air_destroys = False
+        if air_blowing:
+            air_level = AirFlowTables.find_level(
+                Rules.calculate_jet_strength(phys, ctrl) # reuse the formula
+            )
+            if air_level:
+                air_flow_desc = air_level.description
+                air_destroys = air_level.destroys_mantle
+
         # Partial derived state for light calculation
         partial = DerivedState(
             piping_up=piping,
@@ -314,7 +418,12 @@ class StateComputer:
             spray_temp_level=temp_desc,
             spray_flow_level=flow_desc,
             hazard_multiplier=hazard,
-            safety_valve_popped=safety_popped 
+            safety_valve_popped=safety_popped,
+            # New fields
+            control_gauge_pressure=gauge_pressure,
+            is_air_blowing=air_blowing,
+            air_flow_level=air_flow_desc,
+            air_destroys_mantle=air_destroys,
         )
         
         light = Rules.calculate_light_intensity(phys, ctrl, partial)
@@ -328,35 +437,63 @@ class StateComputer:
 
 class PhysicsEngine:
     """Applies physical laws to update physical state."""
-    
+        
     @staticmethod
-    def resolve_stability(phys: PhysicalState, derived: DerivedState) -> PhysicalState:
-        """
-        Pure function: Enforces immediate physical constraints.
-        If fuel stops, fire dies immediately.
-        """
+    def resolve_stability(
+        phys: PhysicalState,
+        ctrl: Controls,
+        derived: DerivedState
+    ) -> Tuple[PhysicalState, Controls]:
+        """Enforces immediate physical constraints."""
+        
+        # Flame dies if not vaporizing
         if phys.flame_lit and not derived.vaporizing:
-            return replace(phys, flame_lit=False)
-                # IMMEDIATELY clamp the pressure down.
+            phys = replace(phys, flame_lit=False)
+        
+        # Safety valve pop
         if derived.safety_valve_popped:
-            phys = replace(phys, air_pressure=Constants.PRESSURE_DROP_SAFETY_VALVE)
-        return phys
+            randy_pressure = round(random.uniform(Constants.PRESSURE_DROP_SAFETY_VALVE_MIN, Constants.PRESSURE_DROP_SAFETY_VALVE_MAX), 3)
+            print(f"Safety valve popped! Pressure dropped by {randy_pressure}")
+            phys = replace(phys, air_pressure=randy_pressure)
+        
+        # Mantle destroyed by liquid spray or strong air jet
+        mantle_destruction = (
+            ctrl.mantle_burned_in and (
+                derived.is_liquid_spray or
+                derived.air_destroys_mantle
+            )
+        )
+        if mantle_destruction:
+            ctrl = replace(ctrl, mantle_installed=False, mantle_burned_in=False)
+        
+        return phys, ctrl
 
     @staticmethod
-    def calculate_pressure_leak(phys: PhysicalState, ctrl: Controls, derived: DerivedState) -> float:
-        """
-        NEW: Improved pressure consumption model.
-        Pressure consumption scales with valve position.
-        """
+    def calculate_pressure_leak(phys, ctrl, derived) -> float:
+        
+        consumption = 0.0
+        
+        # Service valve leak — additive, independent of everything else
         if ctrl.air_valve_open:
-            return Constants.PRESSURE_LEAK_SERVICE
+            consumption += Constants.PRESSURE_LEAK_SERVICE
         
-        if not (derived.vaporizing or derived.is_liquid_spray):
-            return 0.0
+        # System is closed — nothing else to add
+        if not Rules.is_system_open(phys, ctrl):
+            return consumption
         
-        # Base consumption + proportional to valve opening
+        # Base open system rate + valve scaling
         valve_percent = ctrl.control_valve * 100
-        consumption = Constants.PRESSURE_BASE_OPERATING + (valve_percent * Constants.PRESSURE_PER_VALVE_PERCENT)
+        base = Constants.PRESSURE_BASE_OPEN + (valve_percent * Constants.PRESSURE_PER_VALVE_PERCENT)
+        
+        # State modifier on top of base
+        if derived.is_air_blowing:
+            base *= Constants.PRESSURE_MOD_AIR_BLOW
+        elif derived.vaporizing:
+            base *= Constants.PRESSURE_MOD_VAPORIZING
+        elif derived.is_liquid_spray:
+            base *= Constants.PRESSURE_MOD_LIQUID_SPRAY
+        
+        consumption += base
         
         return consumption
     
@@ -401,7 +538,7 @@ class PhysicsEngine:
     def tick(phys: PhysicalState, ctrl: Controls, derived: DerivedState) -> PhysicalState:
         """Apply physics for one tick."""
         # 1. Apply stability first
-        phys = PhysicsEngine.resolve_stability(phys, derived)
+        phys, ctrl = PhysicsEngine.resolve_stability(phys, ctrl, derived)
         
         # 2. Calculate standard rates with NEW models
         pressure_leak = PhysicsEngine.calculate_pressure_leak(phys, ctrl, derived)
@@ -418,7 +555,7 @@ class PhysicsEngine:
             air_pressure=new_pressure,
             tube_temp=new_temp,
             fuel_level=new_fuel
-        )
+        ), ctrl
 
 
 # ============================================================================
@@ -543,7 +680,8 @@ class EventDetector:
                 }
             ))
             
-            if new_ctrl.mantle_burned_in:
+            if (old_derived.is_liquid_spray is False and new_derived.is_liquid_spray and
+                old_ctrl.mantle_burned_in and not new_ctrl.mantle_burned_in):
                 events.append(Event(
                     "mantle_destroyed",
                     "The previous burned-in mantle is disturbed by the commotion and disintegrates instantly!"
@@ -569,6 +707,28 @@ class EventDetector:
                 "mantle_burned_in",
                 "The mantle catches fire and burns down to a delicate ash skeleton instantly. 'A Welsbach mantle', you heard someone once call it."
             ))
+
+        # Air jet transitions
+        if not old_derived.is_air_blowing and new_derived.is_air_blowing:
+            events.append(Event(
+                "air_blowing_started",
+                new_derived.air_flow_level
+            ))
+        elif old_derived.is_air_blowing and not new_derived.is_air_blowing:
+            events.append(Event(
+                "air_blowing_stopped",
+                "The air jet subsides."
+            ))
+
+        # Mantle destroyed by air jet
+        if (old_derived.is_air_blowing and
+            old_ctrl.mantle_burned_in and
+            not new_ctrl.mantle_burned_in):
+            print("mantle destroyed event sent")
+            events.append(Event(
+                "mantle_destroyed",
+                "The powerful air jet scatters the delicate mantle ash into nothing!"
+            ))
         
         return events
 
@@ -591,7 +751,9 @@ class IOVLamp:
         old_ctrl = self.controls
         old_derived = self.derived
         
-        self.physics = PhysicsEngine.tick(self.physics, self.controls, self.derived)
+        self.physics, self.controls = PhysicsEngine.tick(
+            self.physics, self.controls, self.derived
+        )
         self.derived = StateComputer.compute(self.physics, self.controls)
         
         events = EventDetector.detect_transitions(
@@ -608,9 +770,11 @@ class IOVLamp:
         old_phys = self.physics
         
         self.derived = StateComputer.compute(self.physics, self.controls)
-        self.physics = PhysicsEngine.resolve_stability(self.physics, self.derived)
+        self.physics, self.controls = PhysicsEngine.resolve_stability(
+            self.physics, self.controls, self.derived
+        )
         
-        if self.physics != old_phys:
+        if self.physics != old_phys or self.controls != old_ctrl:
             self.derived = StateComputer.compute(self.physics, self.controls)
         
         events = EventDetector.detect_transitions(
@@ -806,8 +970,12 @@ class IOVLamp:
         NEW: Dynamic output description based on actual light_intensity.
         No more false claims of bright white light when intensity is 0%!
         """
-        if not self.derived.piping_up or self.controls.control_valve == 0:
+        if not Rules.is_system_open(self.physics, self.controls):
             return "The IOV top is not flowing with anything."
+
+
+        if self.derived.is_air_blowing:
+            return self.derived.air_flow_level or "Air is escaping from the jet."
         
         if self.derived.vaporizing:
             # Vaporizing mode - check actual light levels
@@ -875,9 +1043,6 @@ class IOVLamp:
             f"Fuel: {self.physics.fuel_level * 100:.0f}%",
             f"Main Valve: {'OPEN' if self.controls.main_valve_open else 'closed'}",
             f"Piping Up: {'TRUE' if self.derived.piping_up else 'FALSE'}",
-            "",
-            "=== LANTERN LIGHT VISIBLE FROM SERVICE ROOM ===",
-            f"Light State: {self.get_light_state()}",
             ""
         ]
         return "\n".join(lines)
@@ -889,6 +1054,7 @@ class IOVLamp:
             f"  Tubes Temp: {self.get_temp_description()}",
             f"  Pre-burner: {self.get_preburner_description()}",
             f"  Control Valve: {self.controls.control_valve * 100:.0f}%",
+            f"  Control Gauge: {self.derived.control_gauge_pressure:.1f} PSI",
             f"  Vaporizing: {'TRUE' if self.derived.vaporizing else 'FALSE'}",
             f"  Vapor Flame: {'LIT' if self.physics.flame_lit else 'out'}",
             f"  Bunsen: {'LIT' if self.derived.bunsen_lit else 'out'}",
@@ -904,7 +1070,7 @@ class IOVLamp:
         """Get light state."""
 
         level : LightLevel = LightTables.find_level(self.derived.light_intensity, LightTables.LEVELS)
-        description = level.description if level else "You can't see any light comming from above in the lantern room."
+        description = level.description if level else "You can't see any light comming from the IOV lamp."
         return description
     
     def get_status(self) -> str:
@@ -916,7 +1082,7 @@ class IOVLamp:
 # DEMO / TESTING
 # ============================================================================
 
-def demo():
+def demo(): # Outdated
     """Demo showing the improvements."""
     lamp = IOVLamp()
     
