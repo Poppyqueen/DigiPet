@@ -15,8 +15,6 @@ from enum import Enum, auto
 
 import random
 
-# TODO: !! mantle_burned_in to be moved to PhysicalState, change all the relevant sections, this is to fix its event reporting
-
 
 # ============================================================================
 # CORE STATE - Only Physical Reality
@@ -29,6 +27,8 @@ class PhysicalState:
     tube_temp: float = 0.0  # 0=cold, 1=red hot
     fuel_level: float = 0.0  # 0-1
     flame_lit: bool = False
+    mantle_burned_in: bool = False  # ← moved here
+
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class Controls:
     spirit_pan_lit: bool = False
     
     mantle_installed: bool = False
-    mantle_burned_in: bool = False
+    #mantle_burned_in: bool = False
 
 
 @dataclass(frozen=True)
@@ -206,7 +206,7 @@ class Rules:
         Returns 0.0 to 1.0
         """
         if not (ctrl.mantle_installed and 
-                ctrl.mantle_burned_in and 
+                phys.mantle_burned_in and 
                 phys.flame_lit and
                 derived.bunsen_lit):
             return 0.0
@@ -231,6 +231,7 @@ class Rules:
         
         return phys.air_pressure * fuel_factor * (1.0 - ctrl.control_valve)
     
+    # Clones! both needed...
     @staticmethod
     def calculate_jet_strength(phys: PhysicalState, ctrl: Controls) -> float:
         """Calculate jet strength based on pressure and valve position."""
@@ -458,13 +459,14 @@ class PhysicsEngine:
         
         # Mantle destroyed by liquid spray or strong air jet
         mantle_destruction = (
-            ctrl.mantle_burned_in and (
+            phys.mantle_burned_in and (
                 derived.is_liquid_spray or
                 derived.air_destroys_mantle
             )
         )
         if mantle_destruction:
-            ctrl = replace(ctrl, mantle_installed=False, mantle_burned_in=False)
+            ctrl = replace(ctrl, mantle_installed=False)
+            phys = replace(phys, mantle_burned_in=False)
         
         return phys, ctrl
 
@@ -680,8 +682,9 @@ class EventDetector:
                 }
             ))
             
-            if (old_derived.is_liquid_spray is False and new_derived.is_liquid_spray and
-                old_ctrl.mantle_burned_in and not new_ctrl.mantle_burned_in):
+            # Mantle destroyed by liquid spray
+            if (not old_derived.is_liquid_spray and new_derived.is_liquid_spray and
+                old_phys.mantle_burned_in and not new_phys.mantle_burned_in):
                 events.append(Event(
                     "mantle_destroyed",
                     "The previous burned-in mantle is disturbed by the commotion and disintegrates instantly!"
@@ -698,11 +701,11 @@ class EventDetector:
                 "light_extinguished",
                 "The light goes out, the room being quickly robbed of light."
             ))
-        
+                
         # Mantle burn-in
-        if (new_ctrl.mantle_installed and 
-            not old_ctrl.mantle_burned_in and 
-            new_ctrl.mantle_burned_in):
+        if (new_ctrl.mantle_installed and
+            not old_phys.mantle_burned_in and
+            new_phys.mantle_burned_in):
             events.append(Event(
                 "mantle_burned_in",
                 "The mantle catches fire and burns down to a delicate ash skeleton instantly. 'A Welsbach mantle', you heard someone once call it."
@@ -721,10 +724,13 @@ class EventDetector:
             ))
 
         # Mantle destroyed by air jet
+        print(f"old_derived.is_air_blowing: {old_derived.is_air_blowing}")
+        print(f"old_phys.mantle_burned_in: {old_phys.mantle_burned_in}")
+        print(f"new_phys.mantle_burned_in: {new_phys.mantle_burned_in}")
         if (old_derived.is_air_blowing and
-            old_ctrl.mantle_burned_in and
-            not new_ctrl.mantle_burned_in):
-            print("mantle destroyed event sent")
+            old_phys.mantle_burned_in and
+            not new_phys.mantle_burned_in):
+            print("Mantle destroyed by air jet!")
             events.append(Event(
                 "mantle_destroyed",
                 "The powerful air jet scatters the delicate mantle ash into nothing!"
@@ -915,12 +921,13 @@ class IOVLamp:
         if self.physics.flame_lit:
             return "Can't remove the mantle while vapor is lit.", False, [], False
         
-        was_burned = self.controls.mantle_burned_in
+        was_burned = self.physics.mantle_burned_in
         self.controls = replace(
             self.controls,
-            mantle_installed=False,
-            mantle_burned_in=False
+            mantle_installed=False
+            #mantle_burned_in=False
         )
+        self.physics = replace(self.physics, mantle_burned_in=False)
         events = self._update_derived()
         
         if was_burned:
@@ -936,9 +943,9 @@ class IOVLamp:
         self.physics = replace(self.physics, flame_lit=True)
         
         will_burn_mantle = (self.controls.mantle_installed and 
-                           not self.controls.mantle_burned_in)
+                           not self.physics.mantle_burned_in)
         if will_burn_mantle:
-            self.controls = replace(self.controls, mantle_burned_in=True)
+            self.physics = replace(self.physics, mantle_burned_in=True)
             
         events = self._update_derived()
         
@@ -980,7 +987,7 @@ class IOVLamp:
         if self.derived.vaporizing:
             # Vaporizing mode - check actual light levels
             if self.physics.flame_lit:
-                if self.controls.mantle_burned_in:
+                if self.physics.mantle_burned_in:
                     # Describe light based on actual intensity
                     if self.derived.light_intensity >= 0.9:
                         return "On top of the IOV lamp, a source of brilliant white light blazes, reaching every cranny of the room, leaving everything under its revealing shine."
@@ -1022,7 +1029,7 @@ class IOVLamp:
     def get_mantle_description(self) -> str:
         """Human-readable mantle state."""
         if not self.controls.mantle_installed: return "Not installed"
-        elif self.controls.mantle_burned_in: return "Burned-in (ready)"
+        elif self.physics.mantle_burned_in: return "Burned-in (ready)"
         return "New (needs fire)"
 
     def get_service_room_status(self) -> str:
