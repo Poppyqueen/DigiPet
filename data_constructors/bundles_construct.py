@@ -58,8 +58,8 @@ class bundles_maker:
         """
         # Use the ItemDefinitionListContainer structure for the response
         # Refined the system prompt to clearly state the conditional fields,
-        # guiding the AI to provide data that matches the optional fields in the Pydantic model.
-        system = """
+        # guiding the AI to provide data that matches the optional fields in the Pydantic model. # TODO: Update this prompt to be more concise and clear.
+        system = """ 
 
 You are a Common Sense AI Crafter. Your mission is to create logical and realistic items. Every item you define must be grounded in common sense.
 

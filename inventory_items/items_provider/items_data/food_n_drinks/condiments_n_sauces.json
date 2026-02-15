@@ -103,9 +103,9 @@
             "It's rich and savory, leaving a warm, lingering oiliness rather than immediate fullness."
         ],
         "stats_edit": {
-            "fullness": 0.75,
+            "fullness": 0.25,
             "hydration": -1.25,
-            "energy": 0.75
+            "energy": 0.35
         },
         "consume_uses_left": 30
     },
@@ -125,9 +125,9 @@
             "It livens the mouth and appetite more than it fills you, leaving a bright, lingering herbiness."
         ],
         "stats_edit": {
-            "fullness": 0.75,
+            "fullness": 0.25,
             "hydration": -1.25,
-            "energy": 0.75
+            "energy": 0.35
         },
         "consume_uses_left": 25
     },
@@ -147,9 +147,9 @@
             "The high oil and seed content feels substantial and caloric rather than watery."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": -0.50,
-            "energy": 1.0
+            "fullness": 0.45,
+            "hydration": -0.45,
+            "energy": 0.25
         },
         "consume_uses_left": 60
     },

@@ -289,9 +289,10 @@
             "Each successive layer crunches loudly, releasing more of the acrid juice as you eat the raw, unadorned vegetable."
         ],
         "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 2.0,
-            "energy": 3.0
-        }
+            "fullness": 0.25,
+            "hydration": -0.45,
+            "energy": 0.1
+        },
+        "consume_uses_left": 20
     }
 ]

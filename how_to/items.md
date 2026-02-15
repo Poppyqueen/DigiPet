@@ -2,74 +2,157 @@
 
 ## What are items?
 
-Let's divide the concept of items into two categories. There are item definitions/structures, and there are items in the game state. This guide will contain information on how to create these definitions for items (which we will think of as 'blueprints'), and how instantiating them in the project would work.
+Let's divide the concept of items into two categories. There are item definitions/structures,
+and there are items in the game state. This guide contains information on how to create
+definitions for items (which we think of as 'blueprints'), and how instantiating them
+in the project works.
 
-Item definitions/structures, or 'blueprints', are JSON definitions inside our `inventory_items/items_provider/items_data` directory. We have an `inventory_items/items_provider/item_store.py` that walks the files in this directory to populate a store of item definitions for usage across the DigiPet project.
+Item definitions/structures, or 'blueprints', are JSON definitions inside
+`inventory_items/items_provider/items_data/`. We have an
+`inventory_items/items_provider/item_store.py` that walks the files in this directory
+to populate a store of item definitions for usage across the DigiPet project.
 
-All items have requirements for certain keys on their blueprints, depending on the types they are, while always including certain specific basic values.
+All items require certain keys on their blueprints depending on their types, while always
+including the base keys described below.
 
-## How to use instantiate an item?
+---
 
-`tools/tools_folder/tools_data/harvesting_data.py` displays the usage of the ItemStore. It involves initializing our store with the path to the directory where we keep our item blueprints, and then we can query the store to get item definitions with the item name. We receive the item blueprint which we can manipulate as we like inside the game, i.e., calling a create item method with this blueprint retrieved.
+## How to instantiate an item?
 
-It is simple to import a new item store, and use it to get the item blueprints with their name.
+`tools/tools_folder/tools_data/harvesting_data.py` shows the usage of `ItemStore`. It
+involves initialising the store with the path to the items directory, then querying by
+name to get a blueprint you can pass to `create_item`.
 
 ```python
-from inventory_items.items_provider.item_store import ItemStore # import item store
+from inventory_items.items_provider.item_store import ItemStore
 
-cc = ItemStore("inventory_items/items_provider/items_data") # Initialize the store with our items path
+cc = ItemStore("inventory_items/items_provider/items_data")
 
-carrot_blueprint = cc.get_item("carrot") # Query for an item definition for an item called "carrot". Here you can manipulate this blueprint with the inventory manager as you like to instantiate it into the game.
+carrot_blueprint = cc.get_item("carrot")
+# Pass the blueprint to the inventory manager to instantiate it in the game:
+# state_manager.create_item("room", room_id, carrot_blueprint)
+# state_manager.create_item("inventory", None, carrot_blueprint)
 ```
+
+---
 
 ## How to create an item?
 
-To create an item, go into the directory `inventory_items/items_provider/items_data/`
+Go into `inventory_items/items_provider/items_data/` and either create a new JSON file
+or add to an existing one.
 
-Here you can create new JSON files or add into the existing ones.
+### Base Keys (required on every item)
 
-Some items have extra required keys, alongside the base ones.
+| Key | Type | Notes |
+|-----|------|-------|
+| `name` | string | Human-readable item name |
+| `descriptions` | list of strings | One or more description strings shown to the player |
+| `static` | bool | `true` if the item cannot be picked up or moved (e.g. furniture) |
+| `type` | list of strings | At least one valid type tag — see valid types below |
+| `stackable` | bool | Defaults to `false`. Set `true` for small non-unique items (seeds, coins). Unique or large items must be `false` |
 
-**Base Keys (all items use):**
+### Optional Base Keys
 
-- `name` - string
-- `descriptions` - list of strings
-- `static` - bool
-- `type` - list of valid item types *1
-- `stackable` - bool, defaults to False if not given
+| Key | Type | Notes |
+|-----|------|-------|
+| `quantity` | positive int | Defaults to `1`. Must be `1` for non-stackable items |
+| `max_stack_size` | positive int or omitted | Maximum units per stack. Omit for unlimited |
 
-Items with certain specific 'types' might require specific keys. Here are all the specific items that require extra keys and what they require:
+---
 
-**Optional Keys:**
-- `power_toggle` - bool, optional, truthy value, if missing the item is not a power toggled item. If true, the item is considered to be On as default, if false it is considered to be Off as default. The agent can use this toggle with a tool to toggle the tools avalibility related to this item. i.e, A computer being on and Off changing the availability of the wikipedia or other tools related to it. If the key is missing, the item will follow the default behavior of conditional rules.
+### Type-Specific Required Keys
 
-The power conditional toggle is on top of the conditional rules, and the standard conditional rules are applied after the power toggle.
+Items with certain type tags require additional keys. Every required key is enforced by
+the validation system — items missing required keys will be rejected at creation and on
+load.
 
-**Types:**
+**`consumable`**
+- `stats_edit` — dict with keys `fullness`, `hydration`, `energy` as floats (positive or negative)
+- `effects` — list of strings: narrative descriptions shown to the player on consumption
 
-**seed:**
-- `plant_type` - a string relating this seed to its valid parent plant type *2
+**`seed`**
+- `plant_type` — string mapping the seed to a valid plant type *2
 
-**consumable:**
-- `effects` - string list, descriptions of effects or phenomenal narrative for consuming this item
-- `stats_edit` - a dictionary with the keys `fullness`, `hydration` and `energy` as positive or negative floats to adjust stats with when consumed
+**`book`**
+- `chapters` — list of chapter dicts, each with keys `title` (string) and `content` (string)
+- `is_locked` — bool, defaults to `false`. Locked books cannot have chapters added or edited
 
-**book:**
-- `chapters` - a list of dictionaries for individual chapters, each dictionary item in this list contains the keys `title` and `content` where both are single strings
+**`dispenser`**
+- `dispenser_state` — dict tracking the internal state of the dispenser mechanism
 
-After creating the correct blueprint structure for your item, it will be accessible for the project using the ItemStore automatically.
+**`candy_bag`**
+- `contents` — dict mapping contained item names to their quantities, e.g. `{"candy": 5}`
 
-**Notes:**
+**Toggable types** (`tv`, `bluesky_social`, `iPod`, `cellphone`, `maze`, `laptop`, `desktop_computer`)
+- `power_toggle` — bool. `true` = item starts On, `false` = item starts Off. Controls whether
+  tools associated with this item are available to the agent. Toggling power is handled by
+  the agent via a dedicated tool.
 
-*1 Item 'type' key: This is a list of strings from a valid pool of item types. For example, an item can be both a seed and a consumable. You can see the valid item types inside `utils/pydantic_models.py`.
+---
 
+### Multi-type items
 
-Adding a new allowed item type without extra keys only requires you to add its type name into this list. 
+A single item can belong to multiple types simultaneously, and must satisfy the required
+keys for all of them. For example, lettuce seeds are both `seed` and `consumable`:
 
-If your new item type requires an extra key like consumables or books do you will have to add to the the validation method to consider this.
+```json
+{
+    "name": "Lettuce Seeds",
+    "descriptions": ["Small pale seeds for growing lettuce."],
+    "static": false,
+    "type": ["seed", "consumable"],
+    "stackable": true,
+    "plant_type": "lettuce",
+    "stats_edit": { "fullness": 0.3, "hydration": 0.2, "energy": 0.8 },
+    "effects": ["A faint refreshing boost."]
+}
+```
 
-Different item types afford the agent with varied functions; these are mapped inside the tools manager. More about mapping new item types in the tools how_to md file.
+---
 
-When creating an item blueprint, changing the item type will change the tool affordances for the agent actions while holding them or some by being in a room that holds them. Those types that give the agent tools currently are `book`, `seed`, `chair` and `consumable`. `chair` is the only example of an environmental item that affords actions or tools to the agent. The rest need to be in inventory.
+## Adding a new item type
 
-*2 Plant type: In `tools/tools_folder/tools_data/harvesting_data.py` you will find definitions of plant harvesting structures that determine their behavior for growing. Here we can find all the valid plant types that exist in the garden simulator. If you are creating a seed, this `plant_type` key maps the seed to its specific behavior. i.e., you can make a seed object called "magical seed" and if the plant type is set as 'lettuce' it will behave as a lettuce and grow a lettuce. Make sure to use existing plant types in this garden manager or expand on it.
+### Type with no required extra fields
+
+Add the type name string to the `item_types` list in `inventory_items/item_pydantic_models.py`. That's it —
+the item will pass validation with only the base keys.
+
+### Type with required extra fields
+
+1. Add the type name to `item_types` in `inventory_items/item_pydantic_models.py`.
+2. Write a field contract mixin in the same file:
+    ```python
+    class MyNewTypeFields(BaseModel):
+        model_config = ConfigDict(extra="allow")
+        my_required_key: str = Field(description="What this key does.")
+        my_optional_key: Optional[int] = Field(default=None, description="...")
+    ```
+3. Register it in `TYPE_FIELD_CONTRACTS`:
+    ```python
+    TYPE_FIELD_CONTRACTS["my_new_type"] = MyNewTypeFields
+    ```
+
+That's all. The runtime validator (`validate_item_dict`) and the AI generation schema
+(`ItemDefinitionListContainer`) both update automatically — no other files need changing.
+
+---
+
+## Notes
+
+*1 **Valid item types**: The full list lives in `inventory_items/item_pydantic_models.py` in the `item_types`
+list. Types that introduce required fields also have a registered mixin in
+`TYPE_FIELD_CONTRACTS` in the same file. See the interactive items workflow guide for
+how new types connect to agent tool affordances.
+
+Different item types afford the agent varied functions mapped inside the tools manager.
+Types that currently give the agent tools are `book`, `seed`, `seat`, and `consumable`.
+`seat` is the only example of an environmental item that affords actions to the agent
+without being in inventory — the rest require the item to be carried.
+
+*2 **Plant types**: Valid plant types are defined in
+`tools/tools_folder/tools_data/harvesting_data.py`, which contains the harvesting
+structures that govern plant growth behaviour. The `plant_type` key on a seed maps it
+to one of these definitions. You can name the seed item anything — a seed called
+"magical seed" with `plant_type: "lettuce"` will grow exactly like a lettuce. To add
+a new plant type, extend the harvesting data structures there and add the new name to
+`valid_plants` in `inventory_items/item_pydantic_models.py`.

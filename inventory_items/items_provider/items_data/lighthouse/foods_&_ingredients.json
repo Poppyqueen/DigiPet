@@ -15,10 +15,11 @@
             "A bland and dry paste forms in your mouth, a dense cheweing material that reduces your hunger."
         ],
         "stats_edit": {
-            "fullness": 15.0,
-            "hydration": -10.0,
-            "energy": 5.0
-        }
+            "fullness": 3.0,
+            "hydration": -2.0,
+            "energy": 1.0
+        },
+        "consume_uses_left": 5
     },
     {
         "name": "bully beef can",
@@ -37,10 +38,11 @@
             "The cracking open of the can releases a pungent aroma, a paste of cured meats and fat."
         ],
         "stats_edit": {
-            "fullness": 20.0,
-            "hydration": -2.5,
-            "energy": 15.0
-        }
+            "fullness": 1.5,
+            "hydration": -1.0,
+            "energy": 1.25
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "bacon strip",
@@ -60,10 +62,11 @@
             "The raw bacon makes your stomach churn, the salt and fat are too much to handle, and the texture is just... wrong."
         ],
         "stats_edit": {
-            "fullness": -5.0,
-            "hydration": -10.0,
-            "energy": -5.0
-        }
+            "fullness": 0.05,
+            "hydration": -1.0,
+            "energy": -1.25
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "molasses ration",
@@ -83,9 +86,10 @@
             "The molasses ration makes your stomach churn, the sweetness is overwhelming, and the texture is just... wrong."
         ],
         "stats_edit": {
-            "fullness": 10.0,
-            "hydration": -20.0,
-            "energy": 25.0
-        }
+            "fullness": 1.25,
+            "hydration": -3.5,
+            "energy": 1.5
+        },
+        "consume_uses_left": 25
     }
 ]

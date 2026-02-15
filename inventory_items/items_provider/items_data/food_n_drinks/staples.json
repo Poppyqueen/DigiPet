@@ -84,10 +84,11 @@
             "Raw kidney beans contain natural toxins that can upset the gut; eating them uncooked often causes nausea and vomiting."
         ],
         "stats_edit": {
-            "fullness": -15.0,
-            "hydration": -25.0,
-            "energy": -40.0
-        }
+            "fullness": 0.1,
+            "hydration": -0.65,
+            "energy": -1.0
+        },
+        "consume_uses_left": 40
     },
     {
         "name": "rolled oats (500 g)",
@@ -262,10 +263,11 @@
             "The rice feels filling but gritty; it leaves your mouth and throat dry and makes you reach for water."
         ],
         "stats_edit": {
-            "fullness": 20.0,
-            "hydration": -30.0,
-            "energy": 5.0
-        }
+            "fullness": 0.2,
+            "hydration": -1.25,
+            "energy": -1.5
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "Wheat flour (bag)",
@@ -482,10 +484,11 @@
             "It fills you with a blunt, dense satiation but lacks the mellow comfort of cooked potato."
         ],
         "stats_edit": {
-            "fullness": 15.0,
-            "hydration": 2.0,
-            "energy": 12.0
-        }
+            "fullness": -2.0,
+            "hydration": -2.5,
+            "energy": -2.5
+        },
+        "consume_uses_left": 18
     },
     {
         "name": "Raw Carrots (bunch)",
@@ -691,28 +694,6 @@
             "fullness": -10.0,
             "hydration": -30.0,
             "energy": -50.0
-        }
-    },
-    {
-        "name": "all-purpose flour (1 kg)",
-        "descriptions": [
-            "A paper sack of all-purpose wheat flour.",
-            "Intended for baking and cooking, but fine, powdery and bland on its own."
-        ],
-        "static": false,
-        "type": [
-            "consumable",
-            "misc"
-        ],
-        "stackable": true,
-        "effects": [
-            "You eat a spoonful of raw flour. The dry powder coats your mouth, feels unpleasant and dusty.",
-            "It mildly soothes hunger but makes you thirsty and leaves a chalky aftertaste."
-        ],
-        "stats_edit": {
-            "fullness": 8.0,
-            "hydration": -8.0,
-            "energy": 2.0
         }
     },
     {
@@ -1609,8 +1590,9 @@
         ],
         "stats_edit": {
             "fullness": 0.0,
-            "hydration": -15.0,
-            "energy": -10.0
-        }
+            "hydration": -2.5,
+            "energy": -0.25
+        },
+        "consume_uses_left": 20
     }
 ]

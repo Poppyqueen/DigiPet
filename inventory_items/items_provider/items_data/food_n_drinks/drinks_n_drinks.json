@@ -15,10 +15,11 @@
             "No strong flavor, just clean hydration."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 30.0,
-            "energy": 0.0
-        }
+            "fullness": 0.25,
+            "hydration": 5.0,
+            "energy": 0.15
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Sparkling Water",
@@ -36,10 +37,11 @@
             "Lighter than still water but still hydrating."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 25.0,
-            "energy": 0.0
-        }
+            "fullness": 0.35,
+            "hydration": 2.5,
+            "energy": 0.25
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Cola",
@@ -57,10 +59,11 @@
             "Tastes indulgent but is less hydrating than plain water."
         ],
         "stats_edit": {
-            "fullness": 5.0,
-            "hydration": 15.0,
-            "energy": 8.0
-        }
+            "fullness": 0.5,
+            "hydration": -0.10,
+            "energy": 0.5
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Orange Juice",
@@ -78,10 +81,11 @@
             "Good for a quick boost of flavor and calories."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 18.0,
-            "energy": 10.0
-        }
+            "fullness": 1.0,
+            "hydration": 0.25,
+            "energy": 0.75
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Black Coffee",
@@ -99,10 +103,11 @@
             "Aromatic bitterness clears the head and wakes you up."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 8.0,
-            "energy": 25.0
-        }
+            "fullness": 0.35,
+            "hydration": -0.15,
+            "energy": 1.55
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Iced Tea",
@@ -122,8 +127,9 @@
         "stats_edit": {
             "fullness": 4.0,
             "hydration": 20.0,
-            "energy": 7.0
-        }
+            "energy": 0.75
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Milk (1L carton)",
@@ -141,11 +147,11 @@
             "Feels nourishing and mildly satisfying."
         ],
         "stats_edit": {
-            "fullness": 10.0,
-            "hydration": 12.0,
-            "energy": 6.0
+            "fullness": 0.45,
+            "hydration": 0.65,
+            "energy": 0.95
         },
-        "consume_uses_left": 20
+        "consume_uses_left": 30
     },
     {
         "name": "Hot Chocolate",
@@ -163,10 +169,11 @@
             "The chocolatey flavor is filling and satisfying."
         ],
         "stats_edit": {
-            "fullness": 12.0,
-            "hydration": 10.0,
-            "energy": 6.0
-        }
+            "fullness": 0.25,
+            "hydration": 0.35,
+            "energy": 0.75
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Fresh-squeezed Orange Juice (300ml)",
@@ -185,10 +192,11 @@
             "Feels very refreshing and hydrating; a light, natural sweetness without processed aftertaste."
         ],
         "stats_edit": {
-            "fullness": 12.0,
-            "hydration": 28.0,
-            "energy": 18.0
-        }
+            "fullness": 0.45,
+            "hydration": 0.05,
+            "energy": 0.85
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Pasteurized Orange Juice Carton (1L)",
@@ -207,10 +215,11 @@
             "Comforting and filling for a quick energy boost; less of the fresh tang of squeezed juice."
         ],
         "stats_edit": {
-            "fullness": 18.0,
-            "hydration": 40.0,
-            "energy": 30.0
-        }
+            "fullness": 0.55,
+            "hydration": 0.35,
+            "energy": 0.75
+        },
+        "consume_uses_left": 40
     },
     {
         "name": "Cold-pressed Green Juice",
@@ -229,10 +238,11 @@
             "Provides a clean, green lift rather than a sugary rush; might leave a mild vegetal aftertaste."
         ],
         "stats_edit": {
-            "fullness": 10.0,
-            "hydration": 26.0,
-            "energy": 15.0
-        }
+            "fullness": 0.65,
+            "hydration": 0.45,
+            "energy": 0.75
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Shelf-stable Apple Juice Carton (200ml)",
@@ -251,10 +261,11 @@
             "Quickly replenishes a small thirst and gives a gentle sugar lift."
         ],
         "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 15.0,
-            "energy": 22.0
-        }
+            "fullness": 0.65,
+            "hydration": 0.55,
+            "energy": 0.85
+        },
+        "consume_uses_left": 10
     },
     {
         "name": "Mixed Fruit Juice Box (apple, grape, strawberry)",
@@ -273,10 +284,11 @@
             "Easy to drink quickly; pleasant for a short energy pick-me-up."
         ],
         "stats_edit": {
-            "fullness": 9.0,
-            "hydration": 16.0,
-            "energy": 18.0
-        }
+            "fullness": 0.65,
+            "hydration": -0.05,
+            "energy": 0.65
+        },
+        "consume_uses_left": 12
     },
     {
         "name": "Frozen Orange Concentrate (375ml can)",
@@ -295,10 +307,11 @@
             "If drunk undiluted, it's overwhelmingly sweet and syrupy \u2014 satisfying as a sugar hit but not very refreshing."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 2.0,
-            "energy": 45.0
-        }
+            "fullness": 0.65,
+            "hydration": 0.55,
+            "energy": 0.65
+        },
+        "consume_uses_left": 19
     },
     {
         "name": "bottled cold brew coffee",
@@ -316,10 +329,11 @@
             "The high caffeine content sharpens your focus and shakes off grogginess, giving a brisk mental clarity."
         ],
         "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 18.0,
-            "energy": 30.0
-        }
+            "fullness": 0.65,
+            "hydration": -0.025,
+            "energy": 0.99
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "canned iced latte",
@@ -337,10 +351,11 @@
             "The coffee provides a steady wakefulness without the sharp jolt of straight black coffee."
         ],
         "stats_edit": {
-            "fullness": 18.0,
-            "hydration": 22.0,
-            "energy": 15.0
-        }
+            "fullness": 0.75,
+            "hydration": -0.05,
+            "energy": 0.85
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "bottled green tea",
@@ -358,10 +373,11 @@
             "A mild caffeine lift eases mental fog without jitteriness."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 28.0,
-            "energy": 8.0
-        }
+            "fullness": 0.25,
+            "hydration": 0.55,
+            "energy": 0.65
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "bottled chamomile tea",
@@ -379,10 +395,11 @@
             "The caffeine-free infusion soothes and helps unwind after a busy day."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 30.0,
-            "energy": 2.0
-        }
+            "fullness": 0.25,
+            "hydration": 0.65,
+            "energy": 0.65
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "ready-to-drink matcha latte",
@@ -400,10 +417,11 @@
             "Matcha delivers a calm, sustained energy that feels steadier than a sharp espresso spike."
         ],
         "stats_edit": {
-            "fullness": 16.0,
-            "hydration": 15.0,
-            "energy": 20.0
-        }
+            "fullness": 0.70,
+            "hydration": -0.05,
+            "energy": 0.75
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "sparkling cold brew coffee",
@@ -421,10 +439,11 @@
             "The combination of carbonation and caffeine provides an energetic, refreshing kick."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 15.0,
-            "energy": 28.0
-        }
+            "fullness": 0.55,
+            "hydration": 0.35,
+            "energy": 0.85
+        },
+        "consume_uses_left": 15
     },
     {
         "name": "Whole Roasted Coffee Beans",
@@ -442,10 +461,11 @@
             "The crunchy bean leaves a lingering bitter aftertaste and a slightly dry sensation on your tongue."
         ],
         "stats_edit": {
-            "fullness": 3.0,
-            "hydration": -3.0,
-            "energy": 30.0
-        }
+            "fullness": -0.2,
+            "hydration": -2.0,
+            "energy": 1.0
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "Ground Coffee (Medium Roast)",
@@ -463,10 +483,11 @@
             "A caffeinated buzz builds quickly, leaving a metallic dryness and a lingering bitter film."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": -3.0,
-            "energy": 25.0
-        }
+            "fullness": -0.2,
+            "hydration": -2.5,
+            "energy": 1.0
+        },
+        "consume_uses_left": 40
     },
     {
         "name": "Instant Coffee Granules",
@@ -484,10 +505,11 @@
             "A quick, sharp caffeine spike follows, making your hands tingle with alertness."
         ],
         "stats_edit": {
-            "fullness": 1.0,
+            "fullness": -0.24,
             "hydration": -4.0,
-            "energy": 20.0
-        }
+            "energy": 0.9
+        },
+        "consume_uses_left": 25
     },
     {
         "name": "Espresso Roast Beans",
@@ -505,10 +527,11 @@
             "Your heart races and focus sharpens rapidly; the bean leaves a persistent roasted aftertaste."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": -5.0,
-            "energy": 35.0
-        }
+            "fullness": -0.2,
+            "hydration": -4.5,
+            "energy": 1.0
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "Decaffeinated Coffee Beans",
@@ -526,10 +549,11 @@
             "It tastes like coffee with the stimulation largely dialed down, leaving behind a dry, roasted mouthfeel."
         ],
         "stats_edit": {
-            "fullness": 2.0,
+            "fullness": 0.1,
             "hydration": -2.0,
-            "energy": 3.0
-        }
+            "energy": 0.25
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "Green Coffee Beans (Unroasted)",
@@ -547,10 +571,11 @@
             "You feel a modest stimulant effect and an uncomfortable dryness as tannins cling to your tongue."
         ],
         "stats_edit": {
-            "fullness": 2.0,
+            "fullness": 0.05,
             "hydration": -4.0,
-            "energy": 15.0
-        }
+            "energy": 0.25
+        },
+        "consume_uses_left": 50
     },
     {
         "name": "Black Tea Leaves",
@@ -568,10 +593,11 @@
             "The flavor is brisk and slightly astringent, leaving your throat dry but your mind more alert."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": -2.0,
-            "energy": 15.0
-        }
+            "fullness": -0.2,
+            "hydration": 0.0,
+            "energy": 0.35
+        },
+        "consume_uses_left": 55
     },
     {
         "name": "Earl Grey Loose Tea (Bergamot-Flavored)",
@@ -589,10 +615,11 @@
             "A light caffeine lift occurs along with a lingering citrus perfume in your mouth."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": -2.0,
-            "energy": 13.0
-        }
+            "fullness": -0.2,
+            "hydration": 0.15,
+            "energy": 0.45
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Green Tea Leaves (Sencha)",
@@ -610,10 +637,11 @@
             "A gentle, clear caffeine lift follows, with a mild drying sensation from the leaves' tannins."
         ],
         "stats_edit": {
-            "fullness": 1.5,
-            "hydration": -1.5,
-            "energy": 12.0
-        }
+            "fullness": -0.2,
+            "hydration": -0.25,
+            "energy": 0.55
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Matcha Powder",
@@ -631,10 +659,11 @@
             "The powder leaves a chalky texture on your tongue and a pleasantly lingering umami note."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": -3.0,
-            "energy": 20.0
-        }
+            "fullness": 0.25,
+            "hydration": -4.5,
+            "energy": 1.0
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Chamomile Herbal Tea Blend",
@@ -652,10 +681,11 @@
             "Rather than stimulating, the herb brings a slight drowsy calm and a soft relaxation spreading through your limbs."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": -1.0,
-            "energy": -5.0
-        }
+            "fullness": 0.15,
+            "hydration": -0.15,
+            "energy": -0.55
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Rooibos (Red Bush) Tea Leaves",
@@ -673,10 +703,11 @@
             "Its calming, caffeine-free profile leaves you relaxed and without the dryness typical of oxidized teas."
         ],
         "stats_edit": {
-            "fullness": 1.0,
-            "hydration": 0.0,
-            "energy": 0.0
-        }
+            "fullness": 0.15,
+            "hydration": -0.75,
+            "energy": 0.75
+        },
+        "consume_uses_left": 60
     },
     {
         "name": "Cold-Pressed Orange Juice (Fresh)",
@@ -694,10 +725,11 @@
             "The pulp gives little chewy bits between sips, making it feel unusually fresh and lively."
         ],
         "stats_edit": {
-            "fullness": 8.0,
-            "hydration": 30.0,
-            "energy": 10.0
-        }
+            "fullness": 0.55,
+            "hydration": 0.05,
+            "energy": 0.75
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Pasteurized Apple Juice (Bottled)",
@@ -715,10 +747,11 @@
             "The liquid slides easily, leaving a gentle sweetness that lingers on the tongue."
         ],
         "stats_edit": {
-            "fullness": 10.0,
-            "hydration": 25.0,
-            "energy": 15.0
-        }
+            "fullness": 0.45,
+            "hydration": -0.15,
+            "energy": 0.45
+        },
+        "consume_uses_left": 12
     },
     {
         "name": "Green Detox Juice (Kale & Cucumber)",
@@ -736,10 +769,11 @@
             "It tastes cleansing and green, like a concentrated garden in a bottle."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 35.0,
-            "energy": 8.0
-        }
+            "fullness": 0.55,
+            "hydration": 0.65,
+            "energy": 0.65
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Beet & Carrot Juice Blend",
@@ -757,10 +791,11 @@
             "Its color stains the tongue, and each sip feels hearty and grounding."
         ],
         "stats_edit": {
-            "fullness": 9.0,
-            "hydration": 28.0,
-            "energy": 12.0
-        }
+            "fullness": 0.65,
+            "hydration": 0.35,
+            "energy": 0.65
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Tropical Smoothie (Mango-Pineapple-Banana)",
@@ -778,10 +813,11 @@
             "The banana adds creaminess while mango and pineapple punch up the sweetness and tang."
         ],
         "stats_edit": {
-            "fullness": 25.0,
-            "hydration": 20.0,
-            "energy": 30.0
-        }
+            "fullness": 0.65,
+            "hydration": 0.05,
+            "energy": 0.65
+        },
+        "consume_uses_left": 20
     },
     {
         "name": "Citrus Concentrate Syrup (Straight)",
@@ -800,10 +836,11 @@
             "It feels syrupy and heavy, leaving a sticky, mouth-coating residue that demands water afterward."
         ],
         "stats_edit": {
-            "fullness": 2.0,
-            "hydration": 2.0,
-            "energy": 40.0
-        }
+            "fullness": 0.05,
+            "hydration": -1.5,
+            "energy": 0.25
+        },
+        "consume_uses_left": 10
     },
     {
         "name": "Savory Vegetable Broth (Canned)",
@@ -821,10 +858,11 @@
             "It settles quietly in your stomach and leaves a pleasant warmth spreading inward."
         ],
         "stats_edit": {
-            "fullness": 6.0,
-            "hydration": 15.0,
-            "energy": 5.0
-        }
+            "fullness": 2.5,
+            "hydration": -0.5,
+            "energy": 2.0
+        },
+        "consume_uses_left": 7
     },
     {
         "name": "Aloe Vera Juice",
@@ -845,7 +883,8 @@
             "fullness": 4.0,
             "hydration": 20.0,
             "energy": 3.0
-        }
+        },
+        "consume_uses_left": 7
     },
     {
         "name": "Berry Nectar (Strawberry & Blueberry, Sweetened)",
