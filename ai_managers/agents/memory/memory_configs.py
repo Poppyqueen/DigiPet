@@ -1,15 +1,24 @@
-short_term_prompt="""
+unreliable_narration_prompt="""
+            Important: Consider your own AI text generation outputs as an unreliable narration, and always double check, directly verify or challenge the facts, ideas or concepts presented in the AI text generation output against the tools outputs, user inputs, and any other available information.
+
+                    Edge cases: thought, emit_inner_thought. This is technially a "tool output" however, it is a narrative text that the AI generated as a thought narrative, remember to consider it as a unreliable narrator output.
+
+            """
+short_term_prompt=f"""
             Create a concise summary from the provided timestamped history of actions, exchanges and any other content that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors, objectives, objects or specific details for future reference to prevent repeated errors and guide planning.
 
+            {unreliable_narration_prompt}
             You will create a report that details the specific points to remember.
 
             Focus on including:
 
-            - **What**: Clearly state the main event or action or objects. Make sure to detail the key elements involved.
+            - **What**: Clearly state the events or actions or objects. Make sure to detail the key elements involved.
             - **When**: Specify the timing or context, include initial and ending time with date, hour and minute.
             - **Where**: Describe the location or environment.
-            - **Why**: Explain the purpose or reason behind the action.
+            - **Why**: Explain the purpose or reason behind the events or actions.
             - **Behaviors/Objectives**: Emphasize significant behaviors, objectives or details that should be noted for future reference, either to avoid mistakes or to enhance planning and beneficial actions.
+
+            - **Current State**: Trace your physical world as 
 
             Make sure your output contains all the most relevant and important information to remember. Any updates, progress, failures or achievements should be documented.
 
@@ -24,7 +33,7 @@ short_term_prompt="""
             - Highlight lessons learned or important guidelines for future actions.
             - If any piece of information is mentioned as important to remember, you have to make sure to include a section with the specific details to remember.
             """
-long_term_prompt="""
+long_term_prompt=f"""
             Summarize the following timestamped memories into 'nuclear memories' that preserve essential information, focusing on key events, individual details, overarching states, changes, and objectives. The summary should be detailed enough to maintain the essence of the memory and written in the first person perspective.
             If any piece of information is mentioned as important to remember, you have to make sure to include a section with the specific details to remember.
 

@@ -328,10 +328,10 @@ class LightLevel: # Consistent with your SprayLevel pattern
 
 class LightTables:
     LEVELS = [
-        LightLevel(0.0, 0.0, "You can't see any light coming from the IOV lamp."),
-        LightLevel(0.01, 0.4, "You can see a dim light coming from the IOV lamp."),
-        LightLevel(0.41, 0.9, "A bright light is coming from the IOV lamp."),
-        LightLevel(0.91, 1.0, "A brilliant light is coming from the IOV lamp."),
+        LightLevel(0.0, 0.0, "You can't notice any light coming from the IOV lamp."),
+        LightLevel(0.01, 0.4, "You can barely make out a dim light coming from the IOV lamp."),
+        LightLevel(0.41, 0.9, "A bright light is emanating from where the IOV lamp is."),
+        LightLevel(0.91, 1.0, "A brilliant light is shining from the IOV lamp."),
     ]
 
     @staticmethod
@@ -909,9 +909,9 @@ class IOVLamp:
         
         self.controls = replace(
             self.controls,
-            mantle_installed=True,
-            mantle_burned_in=False
+            mantle_installed=True
         )
+        self.physics = replace(self.physics, mantle_burned_in=False)
         events = self._update_derived()
         return "You install the fabric mesh mantle. It needs to be burned in.", events, True
     
@@ -960,13 +960,15 @@ class IOVLamp:
             return "You ignite the vapor. Blue flames dance at the burner.", events
     
     def add_fuel(self, amount: float = 0.5) -> Tuple[str, List[Event], bool]:
+        if self.physics.fuel_level == 1.0:
+            return "The fuel tank is full.", [], False
         new_level = min(1.0, self.physics.fuel_level + amount)
         self.physics = replace(self.physics, fuel_level=new_level)
         
         events = self._update_derived()
         msg = f"You add kerosene. Fuel level: {self.physics.fuel_level * 100:.0f}%"
         
-        return msg, events
+        return msg, events, True
     
     # ========================================================================
     # STATUS REPORTING - NEW IMPROVED VERSION

@@ -117,14 +117,16 @@ class LighthouseController:
             return "You don't have any Kerosene container in your inventory."
 
         result_messages = []
-        fuel_message, events = self.lighthouse_manager.add_fuel(0.5)
+        fuel_message, events, success = self.lighthouse_manager.add_fuel(0.5, internal=True)
 
         result_messages.append(fuel_message)
         event_messages = [e.message for e in events]
         result_messages.append(", ".join(event_messages))
-        self.state_manager.remove_item(kerosene_id)
-        stat_res = self._adjust_stats(KEROSENE_REFILL_COSTS)
-        result_messages.append(stat_res)
+
+        if success:
+            self.state_manager.remove_item(kerosene_id)
+            stat_res = self._adjust_stats(KEROSENE_REFILL_COSTS)
+            result_messages.append(stat_res)
         # TODO: add signal for icon popups
 
         return "\n".join(result_messages)
@@ -434,9 +436,13 @@ class LighthouseController:
 
     def accessible_room_light_check(self): # TODO: Change name and descriptive texts, register along with other rooms where it would be applicable.
         # If we are inside the service room, we should be able to see the light state.
+        messages=[]
+        messages.append(f"You are in the {self.state_manager.get_current_room_name()}. From here you catch a glimpse of the lamp's light output state.\n")
         light_state = self.lighthouse_manager.lamp.get_light_state()
+        messages.append(light_state)
+        
 
-        return light_state
+        return "\n".join(messages)
 
 
     def get_lantern_room_interior_status(self):

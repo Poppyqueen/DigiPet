@@ -2090,8 +2090,8 @@ spirit_source_tools = [
 accessible_light_viewing_room_tools = [
     {
         "type": "function",
-        "name": "peak_at_IOV_lamp_light",
-        "description": "While standing on an adjacent room to the lantern room, you can get a look at the state of the light from the IOV lamp.",
+        "name": "peek_at_lamp_light_output",
+        "description": "While this function is active you can catch a glimpse of the light coming from the IOV lamp head, but you cannot see the lamp head itself.",
         "parameters": {
             "type": "object",
             "properties": {},

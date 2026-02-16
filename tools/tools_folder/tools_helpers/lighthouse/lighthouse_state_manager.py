@@ -305,10 +305,12 @@ class LighthouseManager:
         self._save_state()
         return self._format_action_result(msg, events)
     
-    def add_fuel(self, amount: float = 0.5) -> str:
+    def add_fuel(self, amount: float = 0.5, internal=False) -> str:
         """Add fuel."""
-        msg, events= self.lamp.add_fuel(amount)
+        msg, events, success = self.lamp.add_fuel(amount)
         self._save_state()
+        if internal:
+            return msg, events, success
         return self._format_action_result(msg, events)
     
     def _format_action_result(self, msg: str, events: List) -> str:

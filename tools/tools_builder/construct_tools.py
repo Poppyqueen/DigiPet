@@ -594,7 +594,7 @@ class FunctionBuilder:
             },
             "accessible_light_viewing_room": {
                 "functions": {
-                    "peak_at_IOV_lamp_light": self.lighthouse.accessible_room_light_check
+                    "peek_at_lamp_light_output": self.lighthouse.accessible_room_light_check
                 },
                 "definitions": accessible_light_viewing_room_tools,
                 "use_level": "room_type",
