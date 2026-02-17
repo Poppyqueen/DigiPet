@@ -304,7 +304,7 @@ class UserInterfaceChatbot:
             "player_items": player_items,
             "stats": stats,
             "available_rooms": available_rooms,
-            "tools_info": self.functions_builder.get_current_tools_info(),
+            #"tools_info": self.functions_builder.get_current_tools_info(),
             "context": self.functions_builder.construct_context()
         }
 

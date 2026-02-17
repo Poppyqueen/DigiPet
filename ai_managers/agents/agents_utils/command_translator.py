@@ -101,10 +101,7 @@ Command: "fly to moon" | Executed: none
         # Build context message
         context_str = f"""CURRENT GAME STATE:
 - Context: {current_context.get('context', [])}
-- Room Items: {', '.join(current_context.get('room_items', [])) or 'none'}
 - Available Rooms: {current_context.get('available_rooms', [])}
-- Tools info: {current_context.get('tools_info', [])['title']}
-- Tools state: {current_context.get('tools_info', [])['body']}
 USER COMMAND: {user_input}"""
 
         # Construct a minimal StructuredMemory (no history needed)
@@ -175,6 +172,21 @@ USER COMMAND: {user_input}"""
         
         # Build context message
 
+#         context_str = f"""USER'S COMMAND:
+# {user_input}
+
+# WHAT HAPPENED:
+# {results_summary}
+
+# CURRENT STATE:
+# - Context: {current_context.get('context', [])}
+# - Room Items: {', '.join(current_context.get('room_items', [])) or 'none'}
+# - Available Rooms: {current_context.get('available_rooms', [])}
+# - Tools info: {current_context.get('tools_info', [])['title']}
+# - Tools state: {current_context.get('tools_info', [])['body']}
+
+# Generate a narrative response (1-3 sentences):"""
+
         context_str = f"""USER'S COMMAND:
 {user_input}
 
@@ -183,12 +195,12 @@ WHAT HAPPENED:
 
 CURRENT STATE:
 - Context: {current_context.get('context', [])}
-- Room Items: {', '.join(current_context.get('room_items', [])) or 'none'}
 - Available Rooms: {current_context.get('available_rooms', [])}
-- Tools info: {current_context.get('tools_info', [])['title']}
-- Tools state: {current_context.get('tools_info', [])['body']}
 
 Generate a narrative response (1-3 sentences):"""
+# Context should contain all the previous information alonside a bit more,
+# adding Available rooms manually, should think if we want to add that to the context crafter itself.
+# this context grabber is shared with the agent, or bot
 
         # Construct minimal StructuredMemory
         structured_memory = StructuredMemory(

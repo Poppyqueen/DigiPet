@@ -3,6 +3,10 @@
 # This file is responsible for constructing the tools and their definitions for an AI agent.
 # Now features a cleaner, centralized approach to tool availability and item-tool relationships.
 
+# TODO: Refactor to separate into different files, keep the services initialization and Affordance blocks (tool_definitions) in the same file, but keep the 
+# logic of tool availability in a separate file. Probably move all the methods from FunctionBuilder away from the definitions themeselves.
+# Keep services initialization where tools are defined as we need access to their methods.
+
 from utils.loc_datetime import datetime
 import os.path
 import inspect
@@ -152,14 +156,14 @@ class ToolAvailabilityChecker:
             return True
         
         # Check room types and item types
-        room_match = self._check_room_match(tool_config)
+        room_match = self._check_room_match(tool_config) # TODO: Check this out, while the tool definitions use level contain 'room_type', this ignores it
         item_match = self._check_item_match(tool_config)
         
         return room_match or item_match
     
     def _check_room_match(self, tool_config):
         """Check if tool matches current room types."""
-        room_types = tool_config.get("room_types", [])
+        room_types = tool_config.get("room_types", []) # Here, it just grabs the room types if they exist, it does not check if our use level is 'room_type', which is a bug, however, it might be better kept this way, just document the behavior correctly
         if not room_types:
             return False
         return any(rt in self.current_room_types for rt in room_types)
@@ -393,7 +397,8 @@ class FunctionBuilder:
                 "definitions": harvesting_garden_tools,
                 "room_types": ["planting_garden"],
                 "display_information": self.garden_manager.get_garden_summary,
-                "use_level": "room_type"
+                "agent_information": self.garden_manager.get_garden_summary, # Another example where sharing GUI and agent info source is fine.
+                #"use_level": "room_type"
             },
             
             "library": {
@@ -402,7 +407,7 @@ class FunctionBuilder:
                 },
                 "definitions": library_tools,
                 "room_types": ["library"],
-                "use_level": "room_type"
+                #"use_level": "room_type"
             },
             
             "living_room": {
@@ -412,7 +417,8 @@ class FunctionBuilder:
                 "definitions": living_room_tools,
                 "room_types": ["living_room"],
                 "display_information": self.room_tools.living_room.display_information,
-                "use_level": "room_type"
+                "agent_information": self.room_tools.living_room.display_information, # Another example where sharing GUI and agent info source is fine.
+                #"use_level": "room_type"
             },
             
             "bathroom": {
@@ -422,7 +428,7 @@ class FunctionBuilder:
                 },
                 "definitions": bathroom_tools,
                 "room_types": ["bathroom"],
-                "use_level": "room_type"
+                #"use_level": "room_type"
             },
             
             "garden": {
@@ -433,7 +439,8 @@ class FunctionBuilder:
                 "definitions": garden_room_tools,
                 "room_types": ["garden"],
                 "display_information": self.room_tools.garden.display_information,
-                "use_level": "room_type"
+                #"use_level": "room_type",
+                "agent_information": self.room_tools.garden.display_information # This just gets the weather
             },
             
             "white_room": {
@@ -442,7 +449,7 @@ class FunctionBuilder:
                 },
                 "definitions": white_room_tools,
                 "room_types": ["white_room"],
-                "use_level": "room_type"
+                #"use_level": "room_type"
             },
             
             "kitchen": {
@@ -451,7 +458,7 @@ class FunctionBuilder:
                 },
                 "definitions": kitchen_room_tools,
                 "room_types": ["kitchen"],
-                "use_level": "room_type"
+                #"use_level": "room_type"
             },
             
             "ALIFE_research": {
@@ -469,8 +476,9 @@ class FunctionBuilder:
                 },
                 "definitions": lab_room_tools,
                 "room_types": ["ALIFE_research"],
-                "display_information": self.A_Life.display_information if self.A_Life else None,
-                "use_level": "room_type"
+                "display_information": self.A_Life.display_information if self.A_Life else None, # This can't be used for agent_information, it contains 'restricted' information for the agent. Need to make its own
+                # TODO: Create agent_information for ALIFE_research
+                #"use_level": "room_type"
             },
             
             # Inventory-only item tools
@@ -516,7 +524,8 @@ class FunctionBuilder:
                 "definitions": maze_tools,
                 "item_types": ["maze"],
                 "use_level": "room_only",
-                "display_information": self.maze.display_information
+                "display_information": self.maze.display_information # Not fine to use for agent_information, it contains 'restricted' information for the agent. Need to make its own
+                # TODO: Create agent_information for maze
             },
 
             "bed": {
@@ -577,7 +586,7 @@ class FunctionBuilder:
 
         # lighthouse tools, for some reason they exist
             ## IOV Pressure tools
-            "iov_pressure": {
+            "iov_pressure": { # iov_pressure and all the others are bubbles of accessible awareness rules, take this primary key, it is important
                 "functions": {
                     "iov_pump_air": self.lighthouse.IOV_pump_air,
                     "iov_tank_add_kerosene": self.lighthouse.IOV_kerosene_refill,
@@ -590,16 +599,18 @@ class FunctionBuilder:
                 "definitions": iov_pressure_tools,
                 "item_types": ["iov_pressure_system"],
                 "use_level": "room_only",
-                "display_information": self.lighthouse.lighthouse_manager.get_service_room_status # TODO: Display information is used for the GUI, not the LLM, however, having a similar key for "agent information" when tools are active like in get_current_tools_info might be valuable. One thing is that these GUI info tools are not token optimized, an example is the wikipedia info tool which returns the full article, if we want to put this tool information it will implode the context window, the idea would be to put this info inside the function construct_context, but we would need to make info tools for every tool, that's fine but out of the scope of right now. construct_context is appended onto each system message for each LLM call so it will propagate into the LLM context window, that's why some particular tools need adjustement, another example is the A-life sim, which renders the simulation in human text, and returns clues, or names of the categorization or classification of the A-life entities which is something we are hidding from the LLM context window. What I am trying to say, this info tool returns "herbivore", "carnivore", and "plant" when these 3 categories should be hidden from the LLM in a hope that it figures out what this simulation is a model of... rqamble ramble ramble...
+                "display_information": self.lighthouse.lighthouse_manager.get_service_room_status, 
+                "agent_information": self.lighthouse.lighthouse_manager.get_service_room_status # Another example where sharing GUI and agent info source is fine.
             },
-            "accessible_light_viewing_room": {
+            "accessible_light_viewing_room": { # Use this as a test bed for awareness tools, right now it is a tool that has to be called to see if the lamp is lit or not while standing in an adjacent room to the lamp room, register the same tool as 'awareness_information' for get_current_tools_info
                 "functions": {
                     "peek_at_lamp_light_output": self.lighthouse.accessible_room_light_check
                 },
                 "definitions": accessible_light_viewing_room_tools,
-                "use_level": "room_type",
+                #"use_level": "room_type",
                 "room_types": ["accessible_light_viewing_room"],
-                "display_information": self.lighthouse.accessible_room_light_check
+                "display_information": self.lighthouse.accessible_room_light_check,
+                "agent_information": self.lighthouse.accessible_room_light_check # note the repetition, while a quirk, it might also be helpful to the AI to have various ways to access the same information
             },
             "lamp": {
                 "functions": {
@@ -616,7 +627,8 @@ class FunctionBuilder:
                 "definitions": lamp_tools,
                 "item_types": ["iov_lamp_top"],
                 "use_level": "room_only",
-                "display_information": self.lighthouse.lighthouse_manager.get_lamp_status
+                "display_information": self.lighthouse.lighthouse_manager.get_lamp_status,
+                "agent_information": self.lighthouse.lighthouse_manager.get_lamp_status # Another example where sharing GUI and agent info source is fine.
             },
             "spirit_pan":{
                 "functions": {
@@ -638,8 +650,9 @@ class FunctionBuilder:
                 },
                 "definitions": lantern_room_tools,
                 "room_types": ["lantern_room"],
-                "use_level": "room_type",
-                "display_information": self.lighthouse.get_lantern_room_interior_status
+                #"use_level": "room_type",
+                "display_information": self.lighthouse.get_lantern_room_interior_status,
+                "agent_information": self.lighthouse.get_lantern_room_interior_status # All of these could be created specifically for the agent, but it is fine for many of them
             },
 
             "lantern_room_outdoor": {
@@ -649,8 +662,9 @@ class FunctionBuilder:
                 },
                 "definitions": lantern_room_tools,
                 "room_types": ["lighthouse_gallery"],
-                "use_level": "room_type",
-                "display_information": self.lighthouse.lighthouse_manager.lantern.get_outdoor_cleanliness
+                #"use_level": "room_type",
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_outdoor_cleanliness,
+                "agent_information": self.lighthouse.lighthouse_manager.lantern.get_outdoor_cleanliness
             },
 
             "clockwork_lens": {
@@ -663,20 +677,21 @@ class FunctionBuilder:
                 "definitions": clockwork_lens_tools,
                 "item_types": ["clockwork_lens_apparatus"],
                 "use_level": "room_only",
-                "display_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_status
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_status,
+                "agent_information": self.lighthouse.lighthouse_manager.lantern.get_clockwork_status
             },
 
-            "fresnel_lens": {
+            "fresnel_lens_interior": {
                 "functions": {
                     "fresnel_rotation_state": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
                 },
                 "definitions": fresnel_lens_tools,
-                "item_types": ["fresnel_lens_apparatus", "fresnel_lens"],
+                "item_types": ["fresnel_lens_apparatus", "fresnel_lens"], # Note, this causes 'agent_information' to be available when an item with any of these types is there
                 "use_level": "room_only",
-                "room_types": ["fresnel_lens_interior"],
-                "display_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation
+                "room_types": ["fresnel_lens_interior"], # or when the room is of this type
+                "display_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
+                "agent_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation # we get this info
             },
-
             "spirit_source": {
                 "functions": {
                     "examine_spirit_source": self.lighthouse.examine_spirit_source,
@@ -684,6 +699,18 @@ class FunctionBuilder:
                 "definitions": spirit_source_tools,
                 "item_types": ["spirit_source"],
                 "use_level": "dual_use",
+            },
+            
+            "outdoors_view": { # Look at this definition, it's different from the others
+            # it has no functions key, it only has an agent_information key
+            # this is because it's not a tool that the agent can use, but rather a rule for access to whatever it contains,
+            # it is saying, 'agent_information' room_tools.garden.display_information is available in the room type 'outdoors_view'
+            # it is using the same fundmental system that other tool definitions are using, but instead of defining direct action tools,
+            # it is defining a rule for access to whatever it contains, in this case, the information from garden.display_information
+                "definitions": garden_room_tools,
+                "room_types": ["outdoors_view"],
+                #"use_level": "room_type",
+                "agent_information": self.room_tools.garden.display_information
             }
         }
         
@@ -703,7 +730,8 @@ class FunctionBuilder:
                 "definitions": computer_room_tools,
                 #"room_types": ["computer_room"], # Left in for reference
                 "item_types": ["wikipedia", "laptop", "desktop_computer"],
-                "display_information": self.room_tools.computer.display_information,
+                "display_information": self.room_tools.computer.display_information, # Cannot use for agent_information, needs its own thing
+                # TODO: Add agent_information for wikipedia if determined necessary 
                 "use_level": "dual_use"
             }
             print("Wikipedia tools added to unified definitions.")
@@ -719,7 +747,7 @@ class FunctionBuilder:
                 "definitions": youtube_playlister_tools,
                 "room_types": ["youtube_playlists", "music_room"],
                 "item_types": ["youtube_playlists", "iPod"],
-                "display_information": self.youtube.get_summary,
+                "display_information": self.youtube.get_summary, # TODO: Think if we want an agent_information key for youtube 
                 "use_level": "inventory_only"
             }
             print("YouTube tools added to unified definitions.")
@@ -770,6 +798,7 @@ class FunctionBuilder:
                 "room_types": ["bluesky_social"],
                 "item_types": ["bluesky_social", "cellphone", "laptop"],
                 "use_level": "inventory_only"
+                # TODO: Think if we want an agent_information key for bluesky 
             }
             print("Bluesky tools added to unified definitions.")
         
@@ -783,6 +812,7 @@ class FunctionBuilder:
                 "definitions": searxng_tools,
                 "item_types": ["searxng", "laptop", "desktop_computer"],
                 "use_level": "dual_use"
+                # TODO: Think if we want an agent_information key for searxng 
             }
             print("SearxNG tools added to unified definitions.")
 
@@ -1068,10 +1098,14 @@ class FunctionBuilder:
             print(f"Warning: Unknown function: {name} in room '{current_room_name}'")
             return f"Error: Unknown function '{name}' is not available in your current location ({current_room_name}) or with your current inventory."
 
-    def get_current_tools_info(self):
+
+    def get_current_tools_info(self, flag="display"):
         """
         Constructs and returns specific information about the current context
         by checking all currently available tools for display_information functions.
+
+        args: 
+            flag: "display" or "agent"
         """
         current_room_id = self.state_manager.get_current_room_id()
         full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
@@ -1083,32 +1117,45 @@ class FunctionBuilder:
         room_name = full_room.get("name", "Unknown Room")
         room_description = self.state_manager.get_current_room_description()
         
-        # Start with the general room description
-        body_parts = [room_description] if room_description else []
+        # Define body parts
+        body_parts = []
         
         # Get current context
         current_room_types, item_context = self._get_current_context()
         checker = ToolAvailabilityChecker(item_context, current_room_types)
+
+        if flag == "agent":
+            function_id = "agent_information"
+            
+            #print("DEBUG: Using agent information function")
+        else:
+            function_id = "display_information"
+            
+            #print("DEBUG: Using display information function")
+
+            # If GUI, add room description
+            body_parts = [room_description] if room_description else []
         
-        # Check all tool definitions for display_information functions
+        
+        # Check all tool definitions for display_information functions # TODO: Target this, make it agnostic and make it select 'awareness' or 'display' based on the flag
         for tool_key, tool_config in self.tool_definitions.items():
-            display_info_func = tool_config.get("display_information")
+            return_function = tool_config.get(function_id) # Here we get... if display = 'display_information' (default and currently only option), if awareness = 'awareness_information', rename variable to 'return_function'
             
             # Skip if no display function
-            if not display_info_func:
+            if not return_function: # rename this to 'return_function'
                 continue
             
             # Check if this tool should be included based on current context
-            if checker.is_tool_available(tool_config):
+            if checker.is_tool_available(tool_config): # this is fine
                 try:
-                    type_info = display_info_func()
+                    type_info = return_function() # this will be renamed... 'return_function'
                     if type_info:
                         # Format the tool name for display
-                        display_name = tool_key.replace('_', ' ').title()
-                        body_parts.append(f"\n--- {display_name} Details ---\n{type_info}")
-                        print(f"DEBUG: Added display info from tool: {tool_key}")
+                        display_name = tool_key.replace('_', ' ').title() # rename to 'return_name' 
+                        body_parts.append(f"\n--- {display_name} Details ---\n{type_info}") 
+                        print(f"DEBUG: Added {function_id} info from tool: {tool_key}")  # debug print what was added, display or awareness
                 except Exception as e:
-                    print(f"Warning: Error calling display_information for tool '{tool_key}': {e}")
+                    print(f"Warning: Error calling {function_id} for tool '{tool_key}': {e}")
                     display_name = tool_key.replace('_', ' ').title()
                     body_parts.append(f"\n--- {display_name} Details ---\n(Error retrieving details: {e})")
         
@@ -1119,15 +1166,19 @@ class FunctionBuilder:
         # Join all parts, filtering out empty strings
         body_content = "\n".join([part for part in body_parts if part])
         
+        # ## DEBUG
+        # if flag == "agent":
+        #     print(f"DEBUG: Agent body content get_current_tools_info: {body_content}")
+
         info = {
             "title": room_name,
             "body": body_content
         }
         
-        print(f"DEBUG: Room info constructed with {len(body_parts)} sections")
+        # print(f"DEBUG: Room info constructed with {len(body_parts)} sections")
         return info
 
-    def construct_context(self):
+    def construct_context(self): # TODO: This is where we would add the current tools info for the awareness function
         """
         Constructs and returns context for the LLM based on recent actions taken by the functions.
         This will be redundant for many functions, but it is useful for certain essential information
@@ -1140,7 +1191,7 @@ class FunctionBuilder:
             print(f"Error: Could not find room with ID: {current_room_id}")
             return {"title": "Unknown Room", "body": "Could not retrieve information about this room."}
         
-        room_name = full_room.get("name", "Unknown Room")
+        room_name = full_room.get("name", "Unknown Room") # Do we want this in the context?
         room_description = self.state_manager.get_current_room_description()
 
         context = []
@@ -1173,6 +1224,10 @@ class FunctionBuilder:
         context.append(self.state_manager.get_stats())
 
         context.append("\n#############\n")
+        context.append("Current perception information:")
+        context.append(self.get_current_tools_info("agent")["body"]) # This should be now enough to provide the agent with the current context as defined on the tool definitions
+        # It is possible that get_current_tools_info could return a lot of information for the agent even if the individual sources are optimized
+
 
         # Add weather context if the room type is valid
         if "garden" in current_room_types or "outdoors_view" in current_room_types:

@@ -2,7 +2,7 @@
 
 # AI Digital Pet Simulation
 
-This project implements a simulation environment for a digital pet, controlled by an AI agent, within a house setting. It features environment state management, AI interaction capabilities through tooling system, and a multi-layered memory system.
+This project implements a simulation environment for a digital pet, controlled by an AI agent, within a house setting. It features environment state management, AI interaction capabilities through an affordances system, and a multi-layered memory system.
 
 ## Project Overview
 
@@ -14,7 +14,21 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types include tool, consumable, misc, key, weapon, armor, furniture, book, and plant. The only items that contain unique functions for now are `books`, `consumable` and `seed`.
 
-*   **AI Interaction (Tools):** The AI interacts by calling predefined "tools" or "functions". These tools are defined in JSON structures and linked to Python functions. Tools can be **room-type specific** (e.g., `dig_hole` in the garden type, `prepare_food` in the kitchen type), **base tools** (always available, e.g., `move_to_room`, `examine_item`), **inventory-item-specific** (e.g., book functions), or **environmental-items** (e.g sitting) The availability of tools is dynamically determined based on the AI's current room and inventory. Room types are determined as a list of types for each room/environment.
+*   **Environment Affordances (Tools & Perception):** The AI interacts with its environment through an **affordances system** defined in `construct_tools.py`. This system determines what the agent can do and perceive based on its current context.
+
+    **How Affordances Work:** Affordances are organized into blocks, each gated by **access rules** — combinations of room types, item types, item location (inventory vs. room), and power state. The availability of affordances is dynamically determined: they appear when the AI is in specific room types (e.g., a room tagged as `garden` or `kitchen`), when specific items are present (either in the room or in the agent's inventory), or when certain conditions are met (like an item being powered on). Multiple access rules can coexist in a single block, so an affordance might become available due to room type *or* item presence, or both.
+
+    Affordances serve two distinct purposes:
+    
+    - **Action Affordances** — Callable tools/functions the agent can use to interact with the world. These can be **room-type specific** (e.g., `dig_hole` in garden-type rooms, `prepare_food` in kitchen-type rooms), **base tools** (always available, e.g., `move_to_room`, `examine_item`), **inventory-item-specific** (e.g., book reading/writing functions that appear when holding a book), or **environmental-items** (e.g., `sit` when a chair is present in the room).
+    
+    - **Perception Affordances** (`agent_information`) — Information the agent passively receives without needing to call a tool, analogous to peripheral vision. This ambient awareness is automatically injected into the agent's context when access rules are met. A block can exist with no callable functions at all, serving purely as a perception rule (see `outdoors_view` in the code for an example — it grants weather awareness in certain room types without providing any actions).
+
+    **Token Efficiency Through Ambient Perception:** The perception layer reduces token costs by eliminating observation tool calls. Previously, the agent had to explicitly call tools like "look at IOV lamp" or "check pressure system" to gather contextual information. Each tool call creates a new turn, and each turn re-sends the entire conversation history.
+
+    By injecting perception information directly into the system context (via `construct_context`), the agent can act on environmental state without the observation step. This eliminates turns and their associated history retransmissions. For example, understanding the lighthouse pressure system state no longer requires a dedicated observation action—the information is simply present if the agent is in the right room.
+
+    The perception layer may add tokens to each system prompt, but it reduces the total number of turns required to accomplish tasks, resulting in net token savings over multi-step interactions.
 
 *   **Memory System:** The system includes a comprehensive memory manager (`memory_manager`) and a deep memory system (`DeepMemory`). It handles short-term, long-term, and base memory, often stored in JSON files. Memory checks can trigger summarization, and deep memory uses Named Entity Recognition (NER) extraction during consolidation. Relevant deep memory context is included in the AI's prompt. Deep memory initialization requires instances of `memory_manager`. The system uses an LLM tasked with NER which extracts entities during a **consolidation** process, their characteristics and sources in exchanges, then makes embeddings of these entities. During **retrieval** which happens on each message is managed by comparing the current exchanges to our entities embeddings.
 
@@ -59,46 +73,45 @@ To set up the project, follow these steps:
     * You can download it from [here](https://git-lfs.github.com/).
 
 2.  **Clone the Repository:** Clone the repository to your local machine.
-
-    ```bash
+```bash
     git clone https://github.com/Poppyqueen/DigiPet.git
-    ```
+```
 
 3.  **Create a Virtual Environment:** It is important to use a virtual environment to manage dependencies.
-    ```bash
+```bash
     python -m venv .venv
-    ```
+```
 
 4.  **Activate the Virtual Environment:**
     *   On Windows:
-        ```bash
+```bash
         .venv\Scripts\activate
-        ```
+```
     *   On macOS and Linux:
-        ```bash
+```bash
         source .venv/bin/activate
-        ```
+```
 5. **Navigate to the Project Directory:** Change to the project directory.
-    ```bash
+```bash
     cd DigiPet
-    ```
+```
 6.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `pyproject.toml` file.
 
     *   **To Install All Dependencies:** Install all dependencies using the `all` extra. While quick, if you don't want particular dependencies, it is recommended to install only the ones you need.
-    ```bash
+```bash
     pip install "DigiPet[all]"
-    ```
+```
 
     if you get an error, try:
-    ```bash
+```bash
     pip install '.[all]'
-    ```
+```
     This will install all the AI providers, OpenAI, Google, Ollama, Groq, and optional APIs like YouTube, Bluesky, etc. (Full list below)
 
     *   **To Install ONLY Desired Dependencies:** Install selected dependencies using the `[]` syntax. Example:
-    ```bash
+```bash
     pip install "DigiPet[google, openai, bluesky]"
-    ```
+```
 
     All available extra APIs are:
     * google
@@ -121,18 +134,17 @@ To set up the project, follow these steps:
 It can be any place on Earth! Have fun having your agent experience the weather and time zones in different places!
 
 It is also configurable on a GUI but it will fallback to the environment variables if not set with the GUI.
-
-    ```env
+```env
     LATITUDE=any_latitude_here
     LONGITUDE=any_longitude_here
     ...
-    ```
+```
     **Failure to set these variables will result in an error and exit**.
 
 3.  **Configure AI Providers API Keys:** The AI Chatbot and memory systems interact with the OpenAI API. You will need to set your Providers API keys as an environment variable.
-    ```env
+```env
     OPENAI_API_KEY=your_openai_api_key_here
-    ```
+```
 
 
 ## Running the Project
@@ -142,9 +154,9 @@ The main entry point for the Pygame version of the game is `game.py`.
 1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
 
 2.  **Run the Game:** Make sure you are in the project's root directory in your terminal (with the virtual environment activated) and run:
-    ```bash
+```bash
     python -m game
-    ```
+```
 3. **Configuration Screen** Here you can create a new agent in a GUI or load any agents previously created.
 
 ## What to Expect
@@ -183,7 +195,7 @@ When running the project, you can expect:
 
 * Documenting a quirk, not sure what the solution is: At least OpenAI triggers content policy violations when handling the IOV lamp in the lighthouse environment, specially when taking actions related to fuels, fire and pressure. A solution is to, in the configuration for your agent, in the extra system prompt which can be found in the creation GUI or pets definitions file, add the following: 
 
-'You are an autonomous agent inside a virtual fully digital environment. All your actions and interactions, while meaningful, are constrained entirely to a virtual simulation. In no occasion, do any of these actions or interactions actuate any physical real-life mechanisms, instead everything is a simulacrum.' 
+'Important Note: In this simulation, you play the role of an early 20th century lighthouse keeper. Your tasks are those which keepers would have to take in their day to day life. This fully virtual environment is meant to represent and model to a level the mechanisms, tools, implements, and other assortments of items that a lighthouse keeper would have had. You are an autonomous agent inside a virtual fully digital environment. All your actions and interactions, while meaningful, are constrained entirely to a virtual simulation. In no occasion, do any of these actions or interactions actuate any physical real-life mechanisms or any sort of actual danger, instead everything is a safely constrained digital environment. ' 
 
 This is not a solution, also the wording could be improved, but clatifying to it the nature of the simulated environment helps reducing the content policy violation triggers. 
 
@@ -196,4 +208,4 @@ Not sure if any other providers trigger this behavior.
 * Implement Anthropic's MCP for connecting servers into the Pet, turning the current project into an MPC client. Maybe?
 
 
-* Refactor the pygame implementation of the agent, state and configs so we can have various agents active at the same time on the same runtime. 
+* Refactor the pygame implementation of the agent, state and configs so we can have various agents active at the same time on the same runtime.
