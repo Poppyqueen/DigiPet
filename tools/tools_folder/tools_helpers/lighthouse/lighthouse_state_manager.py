@@ -35,6 +35,8 @@ from tools.tools_folder.tools_helpers.lighthouse.fresnel_lens import (
     LanternEvent
 )
 
+from .models import ActionInternalResponse
+
 
 class LighthouseManager:
     """
@@ -47,12 +49,13 @@ class LighthouseManager:
     - Coordinate with LanternRoomManager
     """
     
-    def __init__(self, state_manager, open_meteo_handle=None):
+    def __init__(self, state_manager, open_meteo_handle=None, is_toolset_available=None):
         self.state_manager = state_manager
         self.json_filename = "lighthouse_data.json"
         self.base_path = state_manager.base_path
         self.filepath = Path(self.base_path) / self.json_filename
-        
+        self.is_toolset_available = is_toolset_available # New, method to check if a string matches a toolset or affordance block currently active based on the game state.
+
         # Create the clean lamp
         self.lamp = IOVLamp()
         
@@ -139,7 +142,10 @@ class LighthouseManager:
     # GAME LOOP
     # ========================================================================
     
-    def tick(self) -> Dict[str, Any]:
+    def tick(self) -> Dict[str, Any]: # TODO: Change how this works.
+        # What is calling this is turning everything into a string
+        # We want to filter the events 
+        # so... pass the events raw as a response here
         """
         Called every game tick.
         
@@ -152,186 +158,180 @@ class LighthouseManager:
         
         # Convert lamp events to game messages
         if lamp_events:
-            messages['lamp'] = self._format_lamp_events(lamp_events)
+            messages['lamp'] = self._get_current_formatted_events(lamp_events)
         
         # Tick lantern room
         lantern_events = self.lantern.tick()
         
         # Convert lantern events to game messages
         if lantern_events:
-            messages['lantern'] = self._format_lantern_events(lantern_events)
+            messages['lantern'] = lantern_events
         
         # Save state after tick
         self._save_state()
         
         return messages
-    
-    def _format_lantern_events(self, events: List[LanternEvent]) -> Dict[str, Any]:
-        """
-        Convert clean LanternEvent objects to game engine format.
-        """
-        formatted = {}
-        
+
+
+
+    def _get_current_formatted_events(self, events: List) -> str:
+        formatted_events = []
         for event in events:
-            formatted[event.type] = {
-                'message': event.message,
-                'data': event.data
-            }
-            
-            # Special handling for sun hazard
-            if event.type == 'sun_hazard_started':
-                formatted['hazard_warning'] = {
-                    'level': event.data.get('hazard_level', 0),
-                    'message': f"☀️  DANGER: {event.message}"
-                }
-        
-        return formatted
-    
-    def _format_lamp_events(self, events: List[LampEvent]) -> Dict[str, Any]:
-        """
-        Convert clean Event objects to game engine format.
-        
-        This is where you can customize event formatting for your game.
-        """
-        formatted = {}
-        
-        for event in events:
-            # Store event by type
-            formatted[event.type] = {
-                'message': event.message,
-                'data': event.data
-            }
-            
-            # Special handling for dangerous events
-            if event.type == 'liquid_spray_started':
-                formatted['hazard_warning'] = {
-                    'level': event.data.get('hazard', 0),
-                    'message': f"⚠️  DANGER: {event.message}"
-                }
-        
-        return formatted
+            if any(self.is_toolset_available(key) for key in event.event_affordances_keys):
+                formatted_events.append(event.message)
+        return "\n".join(formatted_events)
     
     # ========================================================================
     # PLAYER ACTIONS - Thin delegation layer
     # ========================================================================
     
-    def open_air_service_valve(self) -> str:
+    def open_air_service_valve(self) -> ActionInternalResponse:
         """Open air service valve."""
         msg, events = self.lamp.open_air_valve()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def close_air_service_valve(self) -> str:
+    def close_air_service_valve(self) -> ActionInternalResponse:
         """Close air service valve."""
         msg, events = self.lamp.close_air_valve()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def pump_air(self, strokes: int = 10, internal=False) -> str:
+    def pump_air(self, strokes: int = 10) -> ActionInternalResponse:
         """Pump air into system."""
         msg, events, success = self.lamp.pump_air(strokes)
+        print(f"DEBUG: pump_air returned: {msg}")
+        print(f"DEBUG: events: {events}")
+        print(f"DEBUG: success: {success}")
         self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
     
-    def open_main_valve(self) -> str:
+    def open_main_valve(self) -> ActionInternalResponse:
         """Open main fuel valve."""
         msg, events = self.lamp.open_main_valve()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def close_main_valve(self) -> str:
+    def close_main_valve(self) -> ActionInternalResponse:
         """Close main fuel valve."""
         msg, events = self.lamp.close_main_valve()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def place_spirit_pan(self, internal=False) -> str:
+    def place_spirit_pan(self) -> ActionInternalResponse:
         """Place spirit pan."""
         msg, events, success = self.lamp.place_spirit_pan()
         self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
     
-    def remove_spirit_pan(self, internal=False) -> str:
-        """Remove spirit pan."""
-        msg, pan_state, events, success = self.lamp.remove_spirit_pan()
-        self._save_state()
-        # Could do something with pan_state ("full" or "empty") if needed
-        if internal:
-            return msg, pan_state, events, success
-        return self._format_action_result(msg, events)
-    
-    def light_spirit_pan(self) -> str:
+    def light_spirit_pan(self) -> ActionInternalResponse:
         """Light spirit pan."""
         msg, events = self.lamp.light_spirit_pan()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def open_valve(self, amount: float = 0.5) -> str:
+    def open_valve(self, amount: float = 0.5) -> ActionInternalResponse:
         """Open control valve."""
         msg, events = self.lamp.open_control_valve(amount)
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def close_valve(self, amount: float = 0.5) -> str:
+    def close_valve(self, amount: float = 0.5) -> ActionInternalResponse:
         """Close control valve."""
         msg, events = self.lamp.close_control_valve(amount)
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def install_mantle(self, internal=False) -> str:
+    def install_mantle(self) -> ActionInternalResponse:
         """Install mantle."""
         msg, events, success = self.lamp.install_mantle()
         self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
     
-    def remove_mantle(self, internal=False) -> str:
-        """Remove mantle."""
-        msg, was_fabric, events, success = self.lamp.remove_mantle()
-        self._save_state()
-        # Could track the fabric if needed
-        if internal:
-            return msg, was_fabric, events, success
-        return self._format_action_result(msg, events)
-    
-    def ignite_vapor(self) -> str:
+    def ignite_vapor(self) -> ActionInternalResponse:
         """Ignite vapor."""
         msg, events = self.lamp.ignite_vapor()
         self._save_state()
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
     
-    def add_fuel(self, amount: float = 0.5, internal=False) -> str:
+    def add_fuel(self, amount: float = 0.5) -> ActionInternalResponse:
         """Add fuel."""
         msg, events, success = self.lamp.add_fuel(amount)
         self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
+
     
-    def _format_action_result(self, msg: str, events: List) -> str:
-        """
-        Format action result for display.
-        
-        Combines the main message with any event messages.
-        Works with both LampEvent and LanternEvent.
-        """
-        result = msg
-        
-        # Append event messages
-        for event in events:
-            if event.message not in msg:  # Avoid duplicates
-                result += f" {event.message}"
-        
-        return result
+    def oil_mechanism(self, amount: float = None) -> ActionInternalResponse:
+        msg, events, success = self.lantern.oil_mechanism(amount)
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
+
+
+    # ========================================================================
+    # LANTERN ROOM DELEGATION
+    # ========================================================================
+    
+    
+    def clean_wp(self, amount: float = 0.5) -> ActionInternalResponse: # wp = window panes, window panes or weather panes, or storm panes, in the lantern room, held by astragals, not to be confused with the Fresnel lens
+        """Clean the fresnel lens (exterior)."""
+        msg, events = self.lantern.clean_window_panes(amount)
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
+    
+    def clean_condensation(self, amount: float = 0.5) -> ActionInternalResponse: # also cleans the wp
+        """Clean condensation from interior glass."""
+        msg, events = self.lantern.clean_condensation(amount)
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
+    
+    def windup_clockwork(self, amount: float = 0.5) -> ActionInternalResponse:
+        """Wind up the clockwork mechanism."""
+        msg, events = self.lantern.windup_clockwork(amount)
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=True)
+    
+    def place_sheet(self) -> ActionInternalResponse:
+        """Place protective sheet."""
+        msg, events, success = self.lantern.place_sheet()
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
+    
+    def remove_sheet(self) -> ActionInternalResponse:
+        """Remove protective sheet."""
+        msg, events, success = self.lantern.remove_sheet()
+        self._save_state()
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success)
+    
+
+# DATA RETURNING METHODS
+    def remove_spirit_pan(self) -> ActionInternalResponse:
+        """Remove spirit pan."""
+        msg, pan_state, events, success = self.lamp.remove_spirit_pan()
+        self._save_state()
+        data_dict = {
+            "pan_state": pan_state
+        }
+        # Could do something with pan_state ("full" or "empty") if needed
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success, data=data_dict)
+    
+
+    def remove_mantle(self) -> ActionInternalResponse:
+        """Remove mantle."""
+        msg, was_fabric, events, success = self.lamp.remove_mantle()
+        self._save_state()
+        data_dict = {
+            "was_fabric": was_fabric
+        }
+        # Could track the fabric if needed
+        return ActionInternalResponse(message=msg, formatted_events=self._get_current_formatted_events(events), events=events, success=success, data=data_dict)
     
     # ========================================================================
     # STATUS QUERIES
     # ========================================================================
+
+    def get_lantern_room_status(self) -> str:
+        """Get lantern room status."""
+        return self.lantern.get_status()
     
     def get_status(self) -> str:
         """Get IOV lamp status."""
@@ -348,49 +348,7 @@ class LighthouseManager:
     def get_lantern_room_status(self) -> str: # lantern room is different from the lamp
         """Get lantern room status."""
         return self.lantern.get_status()
-    
-    # ========================================================================
-    # LANTERN ROOM DELEGATION
-    # ========================================================================
-    
-    def get_lantern_room_status(self) -> str:
-        """Get lantern room status."""
-        return self.lantern.get_status()
-    
-    def clean_wp(self, amount: float = 0.5) -> str: # wp = window panes, window panes or weather panes, or storm panes, in the lantern room, held by astragals, not to be confused with the Fresnel lens
-        """Clean the fresnel lens (exterior)."""
-        msg, events = self.lantern.clean_window_panes(amount)
-        self._save_state()
-        return self._format_action_result(msg, events)
-    
-    def clean_condensation(self, amount: float = 0.5) -> str: # also cleans the wp
-        """Clean condensation from interior glass."""
-        msg, events = self.lantern.clean_condensation(amount)
-        self._save_state()
-        return self._format_action_result(msg, events)
-    
-    def windup_clockwork(self, amount: float = 0.5) -> str:
-        """Wind up the clockwork mechanism."""
-        msg, events = self.lantern.windup_clockwork(amount)
-        self._save_state()
-        return self._format_action_result(msg, events)
-    
-    def place_sheet(self, internal=False) -> str:
-        """Place protective sheet."""
-        msg, events, success = self.lantern.place_sheet()
-        self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
-    
-    def remove_sheet(self, internal=False) -> str:
-        """Remove protective sheet."""
-        msg, events, success = self.lantern.remove_sheet()
-        self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
-    
+
     # ========================================================================
     # ADVANCED: Direct state access for game engine #
     # ========================================================================
@@ -479,14 +437,6 @@ class LighthouseManager:
                 lines.append(f"☀️  LANTERN: {hazards['lantern']['description']}")
         
         return "\n".join(lines)
-
-    def oil_mechanism(self, amount: float = None, internal=False):
-        msg, events, success = self.lantern.oil_mechanism(amount)
-        self._save_state()
-        if internal:
-            return msg, events, success
-        return self._format_action_result(msg, events)
-
 
 # ============================================================================
 # EXAMPLE USAGE

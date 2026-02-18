@@ -2091,7 +2091,7 @@ accessible_light_viewing_room_tools = [
     {
         "type": "function",
         "name": "peek_at_lamp_light_output",
-        "description": "While this function is active you can catch a glimpse of the light coming from the IOV lamp head, but you cannot see the lamp head itself.",
+        "description": "While this function is active you can catch a glimpse of the light coming from the IOV lamp burner, but you cannot see the lamp itself.",
         "parameters": {
             "type": "object",
             "properties": {},

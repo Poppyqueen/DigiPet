@@ -73,13 +73,25 @@ class DerivedState:
 # EVENTS - What Changed
 # ============================================================================
 
+# @dataclass(frozen=True)
+# class Event:
+#     """Something that happened this tick."""
+#     type: str
+#     message: str
+#     data: Dict = None
+    
+#     def __post_init__(self):
+#         if self.data is None:
+#             object.__setattr__(self, 'data', {})
+
+
 @dataclass(frozen=True)
 class Event:
-    """Something that happened this tick."""
+    event_affordances_keys: list[str]
     type: str
     message: str
     data: Dict = None
-    
+
     def __post_init__(self):
         if self.data is None:
             object.__setattr__(self, 'data', {})
@@ -281,7 +293,7 @@ class SprayTables:
     FLOW_LEVELS = [
         SprayLevel(0.0, 0.05, "slow drip", 1),
         SprayLevel(0.05, 0.2, "steady stream", 2),
-        SprayLevel(0.2, 0.5, "spraying", 4),
+        SprayLevel(0.2, 0.5, "strong spray", 4),
         SprayLevel(0.5, 1.0, "powerful jet", 8),
     ]
     
@@ -566,11 +578,12 @@ class PhysicsEngine:
 
 class EventDetector:
     """Detects state transitions and generates events."""
+
     
-    @staticmethod
-    def detect_transitions(
+    @staticmethod # Try keeping events inside here!
+    def detect_transitions( 
         old_phys: PhysicalState,
-        old_ctrl: Controls,
+        # old_ctrl: Controls,
         old_derived: DerivedState,
         new_phys: PhysicalState,
         new_ctrl: Controls,
@@ -582,8 +595,9 @@ class EventDetector:
         # Piping transitions
         if not old_derived.piping_up and new_derived.piping_up:
             events.append(Event(
-                "piping_started",
-                "You hear a gurgle of liquid, as you realize that pressurized liquid kerosene begins flowing through the service line to the IOV head."
+                event_affordances_keys=["iov_pressure"], # TODO: Kind of a hack, but it should work.
+                type="piping_started",
+                message="You hear a gurgle of liquid, as you realize that pressurized liquid kerosene begins flowing through the service line to the IOV head."
             ))
         elif old_derived.piping_up and not new_derived.piping_up:
             reasons = []
@@ -594,88 +608,101 @@ class EventDetector:
             if new_phys.fuel_level < Constants.MIN_FUEL_FOR_OPERATION:
                 reasons.append("fuel depleted")
             events.append(Event(
-                "piping_stopped",
-                f"Fuel flow stopped: {', '.join(reasons)}."
+                event_affordances_keys=["iov_pressure"], # TODO: Kind of a hack, but it should work. All of these are.
+                type="piping_stopped",
+                message=f"Fuel flow stopped: {', '.join(reasons)}."
             ))
         
         # Vaporizing transitions
         if not old_derived.vaporizing and new_derived.vaporizing:
             events.append(Event(
-                "vaporizing_started",
-                "Kerosene vapor begins flowing through the flash boiler of the IOV, its vaporizing tubes hiss and transmute the liquid into vapor."
+                event_affordances_keys=["lamp"], # TODO: 'lamp' might need to be changed to 'iov_lamp' or 'iov_burner'
+                type="vaporizing_started",
+                message="Kerosene vapor begins flowing through the flash boiler of the IOV, its vaporizing tubes hiss and transmute the liquid into vapor."
             ))
         elif old_derived.vaporizing and not new_derived.vaporizing:
             events.append(Event(
-                "vaporizing_stopped",
-                "Vaporization has stopped."
+                event_affordances_keys=["lamp"],
+                type="vaporizing_stopped",
+                message="Vaporization has stopped."
             ))
             if old_phys.flame_lit:
                 events.append(Event(
-                    "flame_extinguished",
-                    "The vapor flame extinguishes."
+                    event_affordances_keys=["lamp"],
+                    type="flame_extinguished",
+                    message="The vapor flame extinguishes."
                 ))
         
         # Bunsen transitions
         if not old_derived.bunsen_lit and new_derived.bunsen_lit:
             events.append(Event(
-                "bunsen_ignited",
-                "The Bunsen burner ignites with small, but piping-hot blue flames."
+                event_affordances_keys=["lamp"],
+                type="bunsen_ignited",
+                message="The Bunsen burner ignites with small, but piping-hot blue flames."
             ))
         elif old_derived.bunsen_lit and not new_derived.bunsen_lit:
             events.append(Event(
-                "bunsen_extinguished",
-                "The Bunsen flames extinguish."
+                event_affordances_keys=["lamp"],
+                type="bunsen_extinguished",
+                message="The Bunsen flames extinguish."
             ))
         
         # Temperature transitions
         if (old_phys.tube_temp < Constants.TEMP_THRESHOLD_READY and 
             new_phys.tube_temp >= Constants.TEMP_THRESHOLD_READY):
             events.append(Event(
-                "tubes_ready",
-                "The vaporizing tubes glow dull red. They're ready."
+                event_affordances_keys=["lamp"],
+                type="tubes_ready",
+                message="The vaporizing tubes glow dull red. They're ready."
             ))
         elif (old_phys.tube_temp >= Constants.TEMP_THRESHOLD_READY and 
               new_phys.tube_temp < Constants.TEMP_THRESHOLD_READY):
             events.append(Event(
-                "tubes_cooling",
-                "The vaporizing tubes are cooling. No longer hot enough."
+                event_affordances_keys=["lamp"],
+                type="tubes_cooling",
+                message="The vaporizing tubes are cooling. No longer hot enough."
             ))
         
         # Pressure warnings
         if old_phys.air_pressure > 0 and new_phys.air_pressure <= 0:
             events.append(Event(
-                "pressure_depleted",
-                "Air pressure has completely bled out!"
+                event_affordances_keys=["iov_pressure"],
+                type="pressure_depleted",
+                message="Air pressure has completely bled out!"
             ))
         elif (Rules.is_pressure_optimal(old_phys) and 
               not Rules.is_pressure_optimal(new_phys)):
             events.append(Event(
-                "pressure_suboptimal",
-                "Air pressure has dropped below optimal range."
+                event_affordances_keys=["iov_pressure"],
+                type="pressure_suboptimal",
+                message="Air pressure has dropped below optimal range."
             ))
 
         if (old_phys.air_pressure > Constants.SAFETY_VALVE_THRESHOLD and 
             new_phys.air_pressure < old_phys.air_pressure):
             events.append(Event(
-                "safety_valve_popped",
-                f"The safety valve pops open as it reaches {old_phys.air_pressure} PSI with a loud hiss! Suddenly, the pressure drops in a violent manner to {new_phys.air_pressure} PSI."
+                event_affordances_keys=["iov_pressure"],
+                type="safety_valve_popped",
+                message=f"The safety valve pops open as it reaches {old_phys.air_pressure} PSI with a loud hiss! Suddenly, the pressure drops in a violent manner to {new_phys.air_pressure} PSI."
             ))
         
         # Fuel warnings
         if (old_phys.fuel_level >= Constants.MIN_FUEL_FOR_OPERATION and 
             new_phys.fuel_level < Constants.MIN_FUEL_FOR_OPERATION):
             events.append(Event(
-                "fuel_critical",
-                "Fuel is running critically low."
+                event_affordances_keys=["iov_pressure"],
+                type="fuel_critical",
+                message="Fuel is running critically low."
             ))
         
         # Liquid spray transitions
         if not old_derived.is_liquid_spray and new_derived.is_liquid_spray:
             msg = f"The IOV top is spraying {new_derived.spray_temp_level} liquid kerosene in a {new_derived.spray_flow_level}!"
             events.append(Event(
-                "liquid_spray_started",
-                msg,
-                {
+                event_affordances_keys=["lamp"],
+                type="liquid_spray_started",
+                message=msg,
+                data={
                     'hazard': new_derived.hazard_multiplier,
                     'temp_level': new_derived.spray_temp_level,
                     'flow_level': new_derived.spray_flow_level,
@@ -686,20 +713,23 @@ class EventDetector:
             if (not old_derived.is_liquid_spray and new_derived.is_liquid_spray and
                 old_phys.mantle_burned_in and not new_phys.mantle_burned_in):
                 events.append(Event(
-                    "mantle_destroyed",
-                    "The previous burned-in mantle is disturbed by the commotion and disintegrates instantly!"
+                    event_affordances_keys=["lamp"],
+                    type="mantle_destroyed",
+                    message="The previous burned-in mantle is disturbed by the commotion and disintegrates instantly!"
                 ))
         
         # Light transitions
         if old_derived.light_intensity < 0.5 and new_derived.light_intensity >= 0.5:
             events.append(Event(
-                "light_ignited",
-                "The mantle flashes brilliant light! For a second, everything you see is bleached white."
+                event_affordances_keys=["lamp"],
+                type="light_ignited",
+                message="The mantle flashes brilliant light! For a second, everything you see is bleached white."
             ))
         elif old_derived.light_intensity > 0 and new_derived.light_intensity == 0:
             events.append(Event(
-                "light_extinguished",
-                "The light goes out, the room being quickly robbed of light."
+                event_affordances_keys=["lamp"],
+                type="light_extinguished",
+                message="The light goes out, the room being quickly robbed of light."
             ))
                 
         # Mantle burn-in
@@ -707,20 +737,23 @@ class EventDetector:
             not old_phys.mantle_burned_in and
             new_phys.mantle_burned_in):
             events.append(Event(
-                "mantle_burned_in",
-                "The mantle catches fire and burns down to a delicate ash skeleton instantly. 'A Welsbach mantle', you heard someone once call it."
+                event_affordances_keys=["lamp"],
+                type="mantle_burned_in",
+                message="The mantle catches fire and burns down to a delicate ash skeleton instantly. 'A Welsbach mantle', you heard someone once call it."
             ))
 
         # Air jet transitions
         if not old_derived.is_air_blowing and new_derived.is_air_blowing:
             events.append(Event(
-                "air_blowing_started",
-                new_derived.air_flow_level
+                event_affordances_keys=["lamp"],
+                type="air_blowing_started",
+                message=new_derived.air_flow_level
             ))
         elif old_derived.is_air_blowing and not new_derived.is_air_blowing:
             events.append(Event(
-                "air_blowing_stopped",
-                "The air jet subsides."
+                event_affordances_keys=["lamp"],
+                type="air_blowing_stopped",
+                message="The air jet subsides."
             ))
 
         # Mantle destroyed by air jet
@@ -732,8 +765,9 @@ class EventDetector:
             not new_phys.mantle_burned_in):
             print("Mantle destroyed by air jet!")
             events.append(Event(
-                "mantle_destroyed",
-                "The powerful air jet scatters the delicate mantle ash into nothing!"
+                event_affordances_keys=["lamp"],
+                type="mantle_destroyed",
+                message="The powerful air jet scatters the delicate mantle ash into nothing!"
             ))
         
         return events
@@ -754,7 +788,7 @@ class IOVLamp:
     def tick(self) -> List[Event]:
         """Advance simulation by one tick."""
         old_phys = self.physics
-        old_ctrl = self.controls
+        # old_ctrl = self.controls
         old_derived = self.derived
         
         self.physics, self.controls = PhysicsEngine.tick(
@@ -763,7 +797,7 @@ class IOVLamp:
         self.derived = StateComputer.compute(self.physics, self.controls)
         
         events = EventDetector.detect_transitions(
-            old_phys, old_ctrl, old_derived,
+            old_phys, old_derived,
             self.physics, self.controls, self.derived
         )
         
@@ -784,7 +818,7 @@ class IOVLamp:
             self.derived = StateComputer.compute(self.physics, self.controls)
         
         events = EventDetector.detect_transitions(
-            old_phys, old_ctrl, old_derived,
+            old_phys, old_derived,
             self.physics, self.controls, self.derived
         )
         
@@ -1059,11 +1093,11 @@ class IOVLamp:
     def get_lamp_status(self) -> str:
         """Get burner-specific status."""
         lines = [
-            "=== IOV LAMP TOP ===",
-            f"  Tubes Temp: {self.get_temp_description()}",
+            "=== Incandescent Oil Vapor Burner ===",
+            f"  Inlet Gauge: {self.derived.control_gauge_pressure:.1f} PSI",
+            f"  Tubes Temperature: {self.get_temp_description()}", # TODO: Add heating up/stable state
             f"  Pre-burner: {self.get_preburner_description()}",
             f"  Control Valve: {self.controls.control_valve * 100:.0f}%",
-            f"  Control Gauge: {self.derived.control_gauge_pressure:.1f} PSI",
             f"  Vaporizing: {'TRUE' if self.derived.vaporizing else 'FALSE'}",
             f"  Vapor Flame: {'LIT' if self.physics.flame_lit else 'out'}",
             f"  Bunsen: {'LIT' if self.derived.bunsen_lit else 'out'}",

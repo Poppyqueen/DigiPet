@@ -14,198 +14,163 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types include tool, consumable, misc, key, weapon, armor, furniture, book, and plant. The only items that contain unique functions for now are `books`, `consumable` and `seed`.
 
-*   **Environment Affordances (Tools & Perception):** The AI interacts with its environment through an **affordances system** defined in `construct_tools.py`. This system determines what the agent can do and perceive based on its current context.
+*   **Environment Affordances (Tools & Perception):** The AI interacts with its environment through an **affordances system** split across three files:
 
-    **How Affordances Work:** Affordances are organized into blocks, each gated by **access rules** — combinations of room types, item types, item location (inventory vs. room), and power state. The availability of affordances is dynamically determined: they appear when the AI is in specific room types (e.g., a room tagged as `garden` or `kitchen`), when specific items are present (either in the room or in the agent's inventory), or when certain conditions are met (like an item being powered on). Multiple access rules can coexist in a single block, so an affordance might become available due to room type *or* item presence, or both.
+    - `tool_registry.py` — service initialization and the `tool_definitions` dict
+    - `tool_availability.py` — stateless availability logic
+    - `construct_tools.py` — runtime dispatch, map construction, and context building
 
-    Affordances serve two distinct purposes:
-    
-    - **Action Affordances** — Callable tools/functions the agent can use to interact with the world. These can be **room-type specific** (e.g., `dig_hole` in garden-type rooms, `prepare_food` in kitchen-type rooms), **base tools** (always available, e.g., `move_to_room`, `examine_item`), **inventory-item-specific** (e.g., book reading/writing functions that appear when holding a book), or **environmental-items** (e.g., `sit` when a chair is present in the room).
-    
-    - **Perception Affordances** (`agent_information`) — Information the agent passively receives without needing to call a tool, analogous to peripheral vision. This ambient awareness is automatically injected into the agent's context when access rules are met. A block can exist with no callable functions at all, serving purely as a perception rule (see `outdoors_view` in the code for an example — it grants weather awareness in certain room types without providing any actions).
+    Affordances are organized into blocks, each gated by access rules — combinations of room types, item types, item location (inventory vs. room), and power state. They serve two purposes:
 
-    **Token Efficiency Through Ambient Perception:** The perception layer reduces token costs by eliminating observation tool calls. Previously, the agent had to explicitly call tools like "look at IOV lamp" or "check pressure system" to gather contextual information. Each tool call creates a new turn, and each turn re-sends the entire conversation history.
+    - **Action Affordances** — Callable tools the agent can use to interact with the world. Can be room-type specific, always available, inventory-item-specific, or triggered by environmental items.
 
-    By injecting perception information directly into the system context (via `construct_context`), the agent can act on environmental state without the observation step. This eliminates turns and their associated history retransmissions. For example, understanding the lighthouse pressure system state no longer requires a dedicated observation action—the information is simply present if the agent is in the right room.
+    - **Perception Affordances** (`agent_information`) — Information the agent passively receives without calling a tool, analogous to peripheral vision. Automatically injected into context when access rules are met. A block can exist with no callable functions at all, serving purely as a perception rule.
 
-    The perception layer may add tokens to each system prompt, but it reduces the total number of turns required to accomplish tasks, resulting in net token savings over multi-step interactions.
+    **Token Efficiency Through Ambient Perception:** The perception layer reduces token costs by eliminating observation tool calls. Information like lighthouse pressure state or garden conditions is simply present in context when the agent is in the right room, eliminating dedicated observation turns and their associated history retransmissions.
 
-*   **Memory System:** The system includes a comprehensive memory manager (`memory_manager`) and a deep memory system (`DeepMemory`). It handles short-term, long-term, and base memory, often stored in JSON files. Memory checks can trigger summarization, and deep memory uses Named Entity Recognition (NER) extraction during consolidation. Relevant deep memory context is included in the AI's prompt. Deep memory initialization requires instances of `memory_manager`. The system uses an LLM tasked with NER which extracts entities during a **consolidation** process, their characteristics and sources in exchanges, then makes embeddings of these entities. During **retrieval** which happens on each message is managed by comparing the current exchanges to our entities embeddings.
+    See `how_to/TOOL_FRAMEWORK.md` for the full guide on adding new affordances.
 
-*   **Content Generation:** AI models are used in separate scripts (`bundles_construct.py`, `tv_data_construct.py`, `room_generator.py`) to generate game data definitions for bundles, care packages, room descriptions, TV channel names and program content. This generation typically happens **outside the main runtime**.
+*   **Memory System:** The system includes a comprehensive memory manager (`memory_manager`) and a deep memory system (`DeepMemory`). It handles short-term, long-term, and base memory stored in JSON files. Deep memory uses Named Entity Recognition (NER) extraction during consolidation — a separate LLM call extracts entities, their characteristics, and sources from exchanges, then creates embeddings. During retrieval (on each message), current exchanges are compared against entity embeddings to surface relevant context.
 
-*   **Item Components:** Specific logic for item types, like books (`BookComponent`) or stats modification (`StatsComponent`), is handled by separate components. An items definitions data store has been introduced and applied across the system.
+*   **Content Generation:** AI models are used in separate scripts (`bundles_construct.py`, `tv_data_construct.py`, `room_generator.py`) to generate game data definitions for bundles, care packages, room descriptions, and TV content. This generation happens **outside the main runtime**.
 
-*   **GUI configurations manager:** A dedicated menu to managing the loading and creation of different Pets.
+*   **Item Components:** Specific logic for item types, like books (`BookComponent`) or stats modification (`StatsComponent`), is handled by separate components. An items definitions data store is used across the system.
 
-
-## Real life context integration:
-
-Room/environment descriptions, which are prompted into the Pet each time it changes environments, change based on the current time of the simulation. **The system now uses the configured `LATITUDE` and `LONGITUDE` from the `.env` file to correctly determine the local timezone** using the `OpenMeteoLoc` service. All time-dependent features, such as the time of day for room descriptions, are calculated based on this localized time, ensuring the simulation's time context matches the agent's defined location rather than the user's machine time.
+*   **GUI Configuration Manager:** A dedicated menu for managing the loading and creation of different Pets.
 
 
-It includes optional integrations for the Agent to use *Wikipedia*, *YouTube*, *MusicBrainz*, *Discogs*, *SearxNG* and *Bluesky* with conditional importing.
+## Real Life Context Integration
 
-## Pet Play Modules:
-*   **A-Life Simulation:** A grid-based A-Life simulation component exists within the lab room (`ALIFE_research` room type). It has its own manager (`ALifeManager`) and supports entity types like plants, herbivores, and carnivores. This is used by the agent to play with and "study".
+Room and environment descriptions change based on the current time of the simulation. The system uses `LATITUDE` and `LONGITUDE` from the `.env` file to determine local timezone via the `OpenMeteoLoc` service. All time-dependent features are calculated based on this localized time, ensuring the simulation's context matches the agent's defined location rather than the user's machine time.
 
-*   **Harvesting Garden** A type of room, which allows the agent to engage in gardening related activities. It can plant, water and harvest items from it. It is a gamified idle garden simulation based on watering levels for the agent to take care of. Based on in-game ticks for plant growth.
+Optional integrations for the agent include *Wikipedia*, *YouTube*, *MusicBrainz*, *Discogs*, *SearxNG*, and *Bluesky*.
 
-*   **Cooking System** A simple cooking integration, works as a specialized "AI cook". A boundless, AI crafting system for our agent. With the given items and a recipe, a separate AI call will be invoked to generate dynamic item structures to return and give to our Pet. Uses pydantic validation for the AI items created by the cooking agent.
+## Pet Play Modules
 
-*   **TV Entertainment** Outside the main runtime, TV channels and programs are created within a defined structure. During runtime, our Pet can interact with a TV to retrieve random TV shows based on the current time. Individual programs are mapped to natural language names for different times of the day in our structure.
+*   **A-Life Simulation:** A grid-based A-Life simulation in the lab room (`ALIFE_research` room type). Supports entity types like plants, herbivores, and carnivores for the agent to observe and study.
 
-*   **Books** The book items give the ability to the agent to read. Books are also created outside the main runtime. They are missing an AI crafter helper for now. While focused on narrative entertainment for the agent, if an environment and set of tools is a bit too complex, you can make a book describing the agent how to interact with your tools. 
+*   **Harvesting Garden:** A room type enabling gardening activities — planting, watering, and harvesting. A gamified idle garden simulation driven by in-game ticks for plant growth.
 
-* **Wikipedia** Wikipedia access for the agent to look for and read Wikipedia articles.
+*   **Cooking System:** A specialized AI cook integration. A boundless crafting system where a separate AI call generates dynamic item structures from given ingredients and a recipe. Uses Pydantic validation for AI-generated items.
 
-* **SearxNG** Optional SearxNG access for the agent to look for and read articles from the web. Information on how to set it up can be found how_to/searxng.md
+*   **TV Entertainment:** TV channels and programs are created outside the main runtime within a defined structure. During runtime the agent can interact with a TV to retrieve programs based on current time.
+
+*   **Books:** Book items let the agent read. Books are created outside the main runtime. While focused on narrative entertainment, they can also be used to document complex tool environments for the agent.
+
+*   **Wikipedia:** Wikipedia access for the agent to search and read articles.
+
+*   **SearxNG:** Optional SearxNG integration for web search and article retrieval. Setup guide in `how_to/searxng.md`.
 
 ![AI Agent Writes Memoir Then Eats Yogurt](style/images/int_utils/yogurt_framework.png)
 
 ## Setup
 
-To set up the project, follow these steps:
-
-
 1.  **Install Git LFS:** Install Git LFS to handle large files in the repository.
-    * Make sure you have Git LFS installed to make sure the assets are downloaded correctly.
-    * You can download it from [here](https://git-lfs.github.com/).
+    * Download from [here](https://git-lfs.github.com/).
 
-2.  **Clone the Repository:** Clone the repository to your local machine.
+2.  **Clone the Repository:**
 ```bash
-    git clone https://github.com/Poppyqueen/DigiPet.git
+git clone https://github.com/Poppyqueen/DigiPet.git
 ```
 
-3.  **Create a Virtual Environment:** It is important to use a virtual environment to manage dependencies.
+3.  **Create a Virtual Environment:**
 ```bash
-    python -m venv .venv
+python -m venv .venv
 ```
 
 4.  **Activate the Virtual Environment:**
     *   On Windows:
 ```bash
-        .venv\Scripts\activate
+.venv\Scripts\activate
 ```
     *   On macOS and Linux:
 ```bash
-        source .venv/bin/activate
+source .venv/bin/activate
 ```
-5. **Navigate to the Project Directory:** Change to the project directory.
+
+5. **Navigate to the Project Directory:**
 ```bash
-    cd DigiPet
+cd DigiPet
 ```
-6.  **Install Dependencies:** Install the required Python packages using `pip`. The project includes a `pyproject.toml` file.
 
-    *   **To Install All Dependencies:** Install all dependencies using the `all` extra. While quick, if you don't want particular dependencies, it is recommended to install only the ones you need.
+6.  **Install Dependencies:**
+
+    *   **All dependencies:**
 ```bash
-    pip install "DigiPet[all]"
+pip install "DigiPet[all]"
 ```
-
-    if you get an error, try:
+    If you get an error, try:
 ```bash
-    pip install '.[all]'
+pip install '.[all]'
 ```
-    This will install all the AI providers, OpenAI, Google, Ollama, Groq, and optional APIs like YouTube, Bluesky, etc. (Full list below)
 
-    *   **To Install ONLY Desired Dependencies:** Install selected dependencies using the `[]` syntax. Example:
+    *   **Selected dependencies only:**
 ```bash
-    pip install "DigiPet[google, openai, bluesky]"
+pip install "DigiPet[google, openai, bluesky]"
 ```
 
-    All available extra APIs are:
-    * google
-    * openai
-    * ollama
-    * groq
-    * youtube
-    * bluesky
-    * musicbrainz
-    * discogs
-    * searx
-
-    Install minimum one of the AI providers, recommended to install at least two to distribute inference load. Use a provider for memory and another for general interactions.
+    Available extras:
+    * `google`, `openai`, `ollama`, `groq` — AI providers (install at least one, recommended two)
+    * `youtube`, `bluesky`, `musicbrainz`, `discogs`, `searx` — optional integrations
 
 ## Configuration
 
-1.  **Copy the `.env.example` file:** The system requires certain configuration values to be set as environment variables. Copy the `.env.example` file to a file named `.env` in the root directory of the project and fill in the values.
+1.  **Copy `.env.example` to `.env`** and fill in the values.
 
-2.  **Configure Location:** For features like weather integration (`open_meteo_handle`), the system reads latitude and longitude from the environment. **You must add `LATITUDE`, `LONGITUDE` and `OPENAI_API_KEY` to your `.env` file**.
-It can be any place on Earth! Have fun having your agent experience the weather and time zones in different places!
-
-It is also configurable on a GUI but it will fallback to the environment variables if not set with the GUI.
+2.  **Required variables:**
 ```env
-    LATITUDE=any_latitude_here
-    LONGITUDE=any_longitude_here
-    ...
+LATITUDE=any_latitude_here
+LONGITUDE=any_longitude_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
-    **Failure to set these variables will result in an error and exit**.
+    Location can be anywhere on Earth. Failure to set these will result in an error on startup.
 
-3.  **Configure AI Providers API Keys:** The AI Chatbot and memory systems interact with the OpenAI API. You will need to set your Providers API keys as an environment variable.
-```env
-    OPENAI_API_KEY=your_openai_api_key_here
-```
-
+3.  Location and some settings are also configurable via the GUI, which will take precedence over the `.env` values.
 
 ## Running the Project
 
-The main entry point for the Pygame version of the game is `game.py`.
-
-1.  **Ensure Configuration:** Make sure your `.env` file is correctly set up, especially with `LATITUDE`, `LONGITUDE`.
-
-2.  **Run the Game:** Make sure you are in the project's root directory in your terminal (with the virtual environment activated) and run:
 ```bash
-    python -m game
+python -m game
 ```
-3. **Configuration Screen** Here you can create a new agent in a GUI or load any agents previously created.
+
+The configuration screen will appear first — create a new agent or load a previously created one.
 
 ## What to Expect
 
-When running the project, you can expect:
-
 *   A Pygame window displaying the digital pet and its environment.
-*   An autonomous AI agent that can take actions every set amount of time if you don't interact with it directly.
-*   Interaction with an AI agent representing the pet, responding to inputs and performing actions.
-*   The AI agent will use available tools to interact with the environment (move between rooms, use items).
-*   The AI's memory (short-term conversation, long-term notes, base knowledge, and optionally deep memory) will influence its responses and actions.
-*   Item interactions, such as consuming items to change stats, or using specific item functions like reading or writing books.
-*   Changes in the environment state (items appearing/disappearing, AI stats changing) will be managed and signaled.
-*   Messages related to memory archiving and processing appears in the console and are logged into a text file.
+*   An autonomous AI agent that acts every set amount of time if you don't interact directly.
+*   The agent uses available tools to interact with the environment (move between rooms, use items, manage the lighthouse, tend the garden, etc.).
+*   The agent's memory (short-term conversation, long-term notes, base knowledge, deep memory) influences responses and actions.
+*   Item interactions: consuming items changes stats; books can be read and written; seeds can be planted.
+*   Environment state changes are managed and signaled to the GUI.
+*   Console output and a log file capture memory archiving and processing activity.
 
-## Modify your agent
+> **Note — Lighthouse and Content Policy:** At least OpenAI triggers content policy violations when handling the IOV lamp, particularly actions involving fuel, fire, and pressure. Adding the following to your agent's extra system prompt (in the creation GUI or pet definitions file) reduces this:
+>
+> *"Important Note: In this simulation, you play the role of an early 20th century lighthouse keeper. Your tasks are those which keepers would have to take in their day to day life. This fully virtual environment is meant to represent and model to a level the mechanisms, tools, implements, and other assortments of items that a lighthouse keeper would have had. You are an autonomous agent inside a virtual fully digital environment. All your actions and interactions, while meaningful, are constrained entirely to a virtual simulation. In no occasion, do any of these actions or interactions actuate any physical real-life mechanisms or any sort of actual danger, instead everything is a safely constrained digital environment."*
+>
+> This is a workaround, not a solution. It is not known whether other providers exhibit the same behavior.
 
-* Inside the folder how_to there are included tutorials that explain the process of creating new tools, rooms, items and more for the agent.
+## Modifying Your Agent
 
-## To-do: 
+The `how_to/` folder contains guides for creating new tools, rooms, items, and more.
 
-#### Short term:
+## To-do
 
-* Define "consume_uses_left" for all consumable items in the item store. 'inventory_items/items_provider/items_data'. All these JSON files preferably would have a "consume_uses_left" key with a sensible value based on what the item, is, also editing the stats edit keys to reflect the new consumption system. 
+#### Short term
 
-* Add things here
+* Define `consume_uses_left` for all consumable items in the item store (`inventory_items/items_provider/items_data`). All JSON files there should have a `consume_uses_left` key with a sensible value, and stats edit keys updated to reflect the new consumption system.
 
-* When double clicking on the agent, send a message to it with messages like "you feel a unnusual chill on your body" or "an itch on your back overcomes you for a second", "there is a tickle on your head", etc. 
+* When double-clicking on the agent, send it a message like "you feel an unusual chill on your body" or "an itch on your back overcomes you for a second".
 
-* Flag any "DIRECT KEY MODIFICATION" for item data in the code with a TODO comment if seen.
+* Flag any direct key modification of item data in the code with a `TODO: DIRECT KEY MODIFICATION` comment.
 
-* Analyze the items service, specifically the validation of items, and see if we can refactor it to use pydantic, also change the pydantic models to create individual models for each unique item type for use across the project. Right now the pydantic models are all a single complex item model that is used for all items, and worse, these pydantic models are not used in the main validation process. Target 'inventory_items/inventory_manager.py' and 'utils/pydantic_models.py' and anything they touch. UPDATE: This refactor has been applied, however, there might be vestiges, keeping here to track if any are found.
+* Add `excess` consumption to consumable item definitions — `excess_amount` and `excess_effect` (flavor text describing overconsumption).
 
-* Add 'excess' consumption to item definitions, maybe 'excess amount' and 'excess effect' to item definitions that are consumables. These effects should be text narrative, flavor text that describes the experiences of overconsumption of a particular item, like eating 10 values out of 15 of a spice jar, or eating 10 cookies, etc. 
+* Add sound settings (backend and GUI) for background music, sound effects, autonomous agent calls, and TTS — with volume and mute controls.
 
+#### Long term
 
-* Documenting a quirk, not sure what the solution is: At least OpenAI triggers content policy violations when handling the IOV lamp in the lighthouse environment, specially when taking actions related to fuels, fire and pressure. A solution is to, in the configuration for your agent, in the extra system prompt which can be found in the creation GUI or pets definitions file, add the following: 
+* Implement Anthropic's MCP for connecting servers, turning the project into an MCP client.
 
-'Important Note: In this simulation, you play the role of an early 20th century lighthouse keeper. Your tasks are those which keepers would have to take in their day to day life. This fully virtual environment is meant to represent and model to a level the mechanisms, tools, implements, and other assortments of items that a lighthouse keeper would have had. You are an autonomous agent inside a virtual fully digital environment. All your actions and interactions, while meaningful, are constrained entirely to a virtual simulation. In no occasion, do any of these actions or interactions actuate any physical real-life mechanisms or any sort of actual danger, instead everything is a safely constrained digital environment. ' 
-
-This is not a solution, also the wording could be improved, but clatifying to it the nature of the simulated environment helps reducing the content policy violation triggers. 
-
-Not sure if any other providers trigger this behavior.
-
-
-#### Long Term:
-
-
-* Implement Anthropic's MCP for connecting servers into the Pet, turning the current project into an MPC client. Maybe?
-
-
-* Refactor the pygame implementation of the agent, state and configs so we can have various agents active at the same time on the same runtime.
+* Refactor the Pygame implementation so multiple agents can be active simultaneously on the same runtime.

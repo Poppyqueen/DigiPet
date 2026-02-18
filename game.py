@@ -20,7 +20,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-game_mode = "ai_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
+game_mode = "user_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
                     # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to mock !!!!!
                     # main mode to use is "ai_player".
 
@@ -384,16 +384,16 @@ def garden_tick_worker(chatbot_instance): # TODO: Abstract the ticks, so we can 
     """
     if not chatbot_instance or \
     not hasattr(chatbot_instance, 'functions_builder') or \
-    not hasattr(chatbot_instance.functions_builder, 'garden_manager') or \
-    not callable(getattr(chatbot_instance.functions_builder.garden_manager, 'tick', None)):
+    not hasattr(chatbot_instance.functions_builder.registry, 'garden_manager') or \
+    not callable(getattr(chatbot_instance.functions_builder.registry.garden_manager, 'tick', None)):
         print("Chatbot or garden manager not fully available for tick. Skipping.")
         return
 
 
     print("Garden tick worker thread started.")
     try:
-        chatbot_instance.functions_builder.garden_manager.tick()
-        chatbot_instance.functions_builder.lighthouse.lighthouse_tick() # TODO: Move this from, preferably after abstraction of the tick function.
+        chatbot_instance.functions_builder.registry.garden_manager.tick()
+        chatbot_instance.functions_builder.registry.lighthouse.lighthouse_tick() # TODO: Move this from, preferably after abstraction of the tick function.
         print("Garden tick processed successfully.")
         print("Lighthouse tick processed successfully.")
 

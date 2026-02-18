@@ -2,9 +2,10 @@
     {
         "name": "IOV Pressure system",
         "descriptions": [
-            "Composed of a Kerosene tank and one air tank besides many pipes and an airpump.",
+            "Composed of a kerosene tank and one air tank besides many pipes, valves and an airpump.",
             "Shows a pressure gauge",
-            "Sturdy machinery, the apparatus is made out of dense metal, "
+            "Sturdy machinery, the apparatus is made out of dense metal.",
+            "It has a service pipe that travels all the way up into the room above, feeding the IOV burner inside the Fresnel lens."
         ],
         "static": true,
         "type": [
@@ -13,11 +14,12 @@
         "stackable": false
     },
     {
-        "name": "IOV Lamp Top",
+        "name": "IOV Burner",
         "descriptions": [
             "The top part of the IOV lamp. It for some reason is mesmersizing to look at.",
             "It is made out of brass, the torch on the top is the most prominent feature.",
-            "A complex apparatus, however compact, it is a beautiful piece of machinery."
+            "A complex apparatus, however compact, it is a beautiful piece of machinery.",
+            "The IOV burner, fed kerosene and air, sits at the center of the Fresnel lens."
         ],
         "static": true,
         "type": [
@@ -43,10 +45,10 @@
     {
         "name": "Fresnel lens",
         "descriptions": [
-            "A 1st order fresnel lens, large enought to hold a person inside of it.",
+            "A 1st order fresnel lens, large enough to hold a person inside of it.",
             "A beehive of glass, refracts light in a very specific way, its groves create an entrancing glissening rainbow effect.",
             "A giant and transparent jewel made out of glass, brought all the way from France.",
-            "It hosts the IOV lamp inside.",
+            "It hosts the IOV burner inside.",
             "With a tiny entrance around the bottom of the lens, it is possible to shimmy inside."
         ],
         "static": true,

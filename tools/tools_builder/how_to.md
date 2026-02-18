@@ -1,161 +1,231 @@
+# AI Agent Tool Framework: Creating and Managing Tools
 
-# AI Agent Tool Framework: Creating New Tools
+This document explains how to add new tools to the AI agent framework. It reflects the current architecture after the refactor that separated tool definitions, availability logic, and service initialization into distinct files.
 
-This document explains the basic structure for adding new tools to the AI agent framework using the provided `construct_tools.py` and `my_tools.py` files.
+## File Structure
 
-## Framework Overview
-
-This framework uses a `FunctionBuilder` class to manage which tools are available to the AI agent based on its current state (like the room it's in or items it possesses). Tool definitions are stored in `my_tools.py` as structured data, and the actual tool logic resides in separate Python files (e.g., within a `tools_folder`).
-
-The core idea is:
-
-1.  **Define** the tool's structure (name, description, parameters) in `my_tools.py`.
-2.  **Implement** the tool's functionality as a Python function or class method.
-3.  **Integrate** the definition and implementation in `construct_tools.py` so the `FunctionBuilder` knows about it and can make it available to the AI agent under the correct conditions.
-
-A key requirement is that **any tool meant for the AI agent to call must return a string describing the result of the action in natural language.** This string is what the AI agent receives as the output of the tool call.
-
-## Creating a Simple New Tool
-
-Let's walk through creating a simple tool. We'll create a tool called `greet_world` that simply returns a greeting message. This tool will be available in the `base_tools`, meaning it's always available.
-
-**Step 1: Write the Python Function**
-
-First, write the Python code for your tool. It should be a function that accepts arguments (if any) and returns a string explaining its result. You'll likely place this in a file within your `tools_folder` directory, perhaps alongside other utility functions.
-
-Let's add it to a file like `tools_folder/my_simple_tools.py`:
-
-```python
-# tools_folder/my_simple_tools.py
-
-def greet_world(name: str):
-    """
-    Greets a person by name.
-
-    Args:
-        name: The name of the person to greet.
-
-    Returns:
-        A string greeting the person.
-    """
-    if not name:
-        return "Hello, world!"
-    return f"Hello, {name}!"
-
-# You could add other simple, general-purpose tools here
-# def say_goodbye(name: str):
-#    if not name:
-#        return "Goodbye, world!"
-#    return f"Goodbye, {name}!"
+```
+tools/
+  construct_tools.py      # FunctionBuilder — runtime dispatch, context building
+  tool_registry.py        # Service initialization + tool_definitions dict
+  tool_availability.py    # Availability logic (no imports from services or state)
+  my_tools.py             # Tool definitions (JSON-like structures for the LLM)
+  tools_folder/           # Actual implementations
 ```
 
-**Step 2: Define the Tool in `my_tools.py`**
+### What each file owns
 
-Now, define the tool's structure in `my_tools.py`. We'll add it to the `base_tools` list since it's always available.
+**`my_tools.py`** — defines *what* tools look like to the LLM: name, description, parameters. Pure data, no logic.
 
-Open `my_tools.py` and add the following dictionary to the `base_tools` list:
+**`tool_registry.py`** — owns two things that belong together: service instances (`garden_manager`, `lighthouse`, etc.) and the `tool_definitions` dict that wires service methods to tool keys. Initialization follows a strict phase order (see below).
+
+**`tool_availability.py`** — stateless availability logic. `ItemContext`, `ToolAvailabilityChecker`, `ItemToolMapper`, and `make_toolset_checker`. No imports from services or state — can be tested in isolation.
+
+**`construct_tools.py`** — runtime mechanics. Builds the live `function_map`, constructs the tool list the LLM sees, dispatches calls, builds the context string.
+
+---
+
+## The `tool_definitions` Dict
+
+The heart of the system. Lives in `tool_registry.py`. Each entry is a **tool block** — a named group of related functions with rules for when they're available.
 
 ```python
-# my_tools.py
+"planting_garden": {
+    "functions": {
+        "plant_seed":   self.garden_manager.plant_seed,
+        "water_plot":   self.garden_manager.water_plot,
+    },
+    "definitions": harvesting_garden_tools,   # from my_tools.py
+    "room_types": ["planting_garden"],         # available in these room types
+    "display_information": self.garden_manager.get_garden_summary,  # shown in GUI
+    "agent_information":   self.garden_manager.get_garden_summary,  # shown to agent
+}
+```
 
-# Here are our JSON structures for defining the tools...
+### Availability rules
 
-base_tools = [
-    # ... existing base tool definitions ...
-    { # Add this new dictionary to the base_tools list
+A tool block becomes active when **any** of these match the current state:
+
+| Key | Meaning |
+|-----|---------|
+| `"use_level": "always_available"` | Always active, no conditions |
+| `"room_types": [...]` | Active when current room has any of these types |
+| `"item_types": [...]` + `"use_level": "inventory_only"` | Active when a matching item is in inventory |
+| `"item_types": [...]` + `"use_level": "room_only"` | Active when a matching item is in the current room |
+| `"item_types": [...]` + `"use_level": "dual_use"` | Active when a matching item is anywhere (room or inventory) |
+
+Room type and item type checks can coexist in the same block — either match activates it.
+
+### Information-only blocks
+
+A block doesn't need `"functions"` — it can exist purely to gate `agent_information` or `display_information` access by room type:
+
+```python
+"outdoors_view": {
+    "definitions": garden_room_tools,
+    "room_types": ["outdoors_view"],
+    "agent_information": self.room_tools.garden.display_information,
+}
+```
+
+---
+
+## Initialization Phase Order
+
+**This order is load-bearing.** Breaking it causes silent crashes.
+
+```
+Phase 1 — Services with no availability dependency
+          (garden_manager, images_lab, maze, A_Life, optional services...)
+
+Phase 2 — Build tool_definitions
+          (references Phase 1 service methods — they must exist first)
+
+Phase 3 — Build toolset_checker
+          (needs tool_definitions dict to exist)
+
+Phase 4 — Services that need the toolset_checker
+          (LighthouseController receives is_toolset_available=self.toolset_checker)
+
+Phase 5 — Tool blocks that reference Phase 4 services
+          (_add_lighthouse_tools() appends to tool_definitions after lighthouse exists)
+```
+
+**Rule:** If a service needs `toolset_checker` → it goes in Phase 4. If a tool block references that service → it goes in Phase 5 via a dedicated `_add_*_tools()` method, not inside `_build_tool_definitions`.
+
+---
+
+## Adding a New Tool: Step by Step
+
+### Simple case — new function in an existing tool block
+
+**1. Implement the function** in the appropriate service file. It must return a string.
+
+```python
+# tools_folder/rooms_tools.py (or wherever fits)
+def ring_bell(self) -> str:
+    return "You ring the bell. It echoes through the room."
+```
+
+**2. Add the definition** to the appropriate list in `my_tools.py`:
+
+```python
+living_room_tools = [
+    # ... existing definitions ...
+    {
         "type": "function",
-        "name": "greet_world", # MUST match the Python function name exactly
-        "description": "Greets a person by name. Useful for saying hello.", # Clear description for the AI
+        "name": "ring_bell",
+        "description": "Ring the bell in the living room.",
         "parameters": {
             "type": "object",
-            "properties": {
-                "name": { # MUST match the Python function argument name exactly
-                    "type": "string",
-                    "description": "The name of the person to greet. Use 'world' if no specific name is mentioned."
-                }
-            },
-            "required": [ # List any required arguments
-                "name"
-            ],
+            "properties": {},
+            "required": [],
             "additionalProperties": False
         }
     },
-    # ... rest of the existing base tool definitions ...
 ]
-
-# ... rest of my_tools.py (other lists like library_tools, mirror_tools, etc.) ...
 ```
 
-**Crucial Points:**
+**3. Add the function** to the relevant tool block in `tool_registry.py`:
 
-* The `"name"` in the definition (`"greet_world"`) **must** exactly match the Python function name (`def greet_world(...)`).
-* The keys under `"properties"` (`"name"`) **must** exactly match the Python function's argument names (`name` in `def greet_world(name)`).
-* The `"type"` in the definition (`"string"`) should match the expected Python type.
-* The `"description"` is vital for the AI to understand how and when to use the tool.
+```python
+"living_room": {
+    "functions": {
+        "look_at_window": self.room_tools.living_room.look_at_window,
+        "ring_bell":      self.room_tools.living_room.ring_bell,   # ← add here
+    },
+    ...
+}
+```
 
-**Step 3: Integrate the Tool in `construct_tools.py`**
+That's it. The availability system picks it up automatically.
 
-Finally, integrate your new function and its definition into the `FunctionBuilder` so it can be used.
+---
 
-Open `construct_tools.py`:
+### New tool block — new room or item type
 
-1.  **Import the Python function:** Add an import statement for your new function.
+**1–2.** Implement the function and add its definition to `my_tools.py` (same as above, possibly in a new list).
 
-    ```python
-    # construct_tools.py
+**3. Add a new tool block** to `_build_tool_definitions` in `tool_registry.py`:
 
-    # Import necessary components...
-    # ... existing imports ...
+```python
+"darkroom": {
+    "functions": {
+        "develop_photo": self.room_tools.darkroom.develop_photo,
+    },
+    "definitions": darkroom_tools,       # your new list from my_tools.py
+    "room_types": ["darkroom"],
+    "display_information": self.room_tools.darkroom.get_status,
+    "agent_information":   self.room_tools.darkroom.get_status,
+}
+```
 
-    # Import your simple tools functions
-    from tools_folder.my_simple_tools import greet_world
-    # If you added other functions to my_simple_tools.py, import them too
-    # from tools_folder.my_simple_tools import say_goodbye
+---
 
-    # Import tools and their definitions from the tools folder
-    # ... existing imports from .my_tools ...
-    ```
+### New tool block for a Phase 4 service (like lighthouse)
 
-2.  **Add the function mapping:** Since `greet_world` is a base tool, add it to the `self.base_function_map` in the `__init__` method. Map the tool name string (`"greet_world"`) to the actual Python function object (`greet_world`).
+If your tool block references a service initialized in Phase 4, it **cannot** go in `_build_tool_definitions`. Add it to a dedicated method and call it after Phase 4:
 
-    ```python
-    # construct_tools.py (__init__ method)
+```python
+# In __init__, after self.my_service = MyService(...):
+self._add_my_service_tools()
 
-    class FunctionBuilder:
-        def __init__(self, library_path="working_directory", room_handler=None, inventory_handler=None, crafter=None, emote_folder=None):
-            # ... existing initializations ...
+# New method:
+def _add_my_service_tools(self):
+    svc = self.my_service
+    self.tool_definitions["my_tool_block"] = {
+        "functions": {
+            "do_thing": svc.do_thing,
+        },
+        "definitions": my_service_tools,
+        "room_types": ["my_room"],
+    }
+```
 
-            # Create the mapping dictionary for base functions
-            self.base_function_map = {
-                #"get_weather": get_weather, # Example of imported function
-                # ... existing base function mappings ...
-                "greet_world": greet_world, # Add your new function mapping here
-                # "say_goodbye": say_goodbye, # Example of another mapping
-            }
+---
 
-            # Store the imported tool definitions
-            # ... existing storage of definitions ...
-            # No need to add a new list storage if it's in base_tools
+### Optional/conditional tools
 
-            # ... rest of __init__ ...
-    ```
+For tools gated by a config flag or optional service (YouTube, Discogs, etc.), add them in `_add_conditional_tools`:
 
-3.  **Ensure definition is included:** Since we added the definition to `base_tools` in `my_tools.py`, and `construct_tools.py` already extends `all_potential_definitions` with `self._base_tools_definitions` and then filters based on `self.function_map`, the `greet_world` definition will automatically be included when `construct_tools` is called. No changes are needed in `construct_tools` or `construct_map` for a simple base tool.
+```python
+def _add_conditional_tools(self, state_manager):
+    if self.my_feature_enabled:
+        self.tool_definitions["my_feature"] = {
+            "functions": {
+                "do_feature_thing": self.my_service.do_thing,
+            },
+            "definitions": my_feature_tools,
+            "item_types": ["my_item_type"],
+            "use_level": "dual_use",
+        }
+```
 
-**For Conditional Tools (More Advanced):**
+---
 
-If your tool should only be available in a specific room (like `library_tools`) or with a specific item (like `mirror_tools`), you would:
+## Using `toolset_checker` Inside Services
 
-* Create a new list or add to an existing conditional list in `my_tools.py` (Step 2).
-* Import this new list in `construct_tools.py` and store it (Step 3a, 3b).
-* In `construct_map`, add an `if current_room == "your_room":` or `if self.inventory_handler.verify_item_in_inventory("your_item"):` block. Inside this block, add your tool's mapping to `self.function_map.update(...)` (similar to how `library_functions` or `item_functions` are added).
-* In `construct_tools`, add a matching `if` block to `all_potential_definitions.extend(...)` to include the tool definition list when the condition is met.
+Services initialized in Phase 4 receive a `toolset_checker` callable. Use it to check whether a given tool block is currently active — for example, to decide whether to surface an event to the agent:
 
-## Key Takeaways for Creating Tools
+```python
+class MyService:
+    def __init__(self, ..., toolset_checker=None):
+        self.toolset_checker = toolset_checker
 
-* **`my_tools.py`:** Defines *what* the tool looks like to the AI (name, description, parameters).
-* **Tool Implementation (e.g., `tools_folder/*.py`):** Implements *how* the tool works in Python. **Must return a string result.**
-* **`construct_tools.py`:** Links the definition to the implementation and controls *when* the tool is available via `construct_map` and `construct_tools`.
-* **Matching Names:** Function/method names and argument names must match *exactly* between `my_tools.py` and the Python code.
-* **Return String:** Your tool's Python function/method **must** return a natural language string describing the outcome for the AI.
-* **Dependency Injection:** If your tool needs access to other parts of the system (inventory, room state, etc.), implement it as a method in a class and pass an instance of that class to the `FunctionBuilder` during initialization, then call the method via that instance.
+    def _should_surface_event(self, affordance_key: str) -> bool:
+        if not self.toolset_checker:
+            return False
+        return self.toolset_checker(affordance_key)
+```
+
+The `affordance_key` is the primary key of a tool block in `tool_definitions` (e.g. `"lamp"`, `"iov_pressure"`). Events in the lighthouse simulation carry `event_affordances_keys` for exactly this purpose — the checker filters them before they reach the agent.
+
+---
+
+## Key Rules
+
+- **Names must match exactly** between `my_tools.py` definitions and Python function/argument names.
+- **All tool functions must return a string** — this is what the agent receives.
+- **Derived state is never persisted** — only `PhysicalState` and `Controls` are saved to JSON. Always recompute derived state on load.
+- **Don't reference `self.lighthouse` (or any Phase 4 service) inside `_build_tool_definitions`** — use `_add_lighthouse_tools()` or equivalent instead.
+- **`tool_definitions` is shared by reference** between `ToolRegistry` and `FunctionBuilder`. Mutations anywhere are reflected everywhere — intentional, but worth knowing.

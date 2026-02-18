@@ -2,365 +2,345 @@
 
 ## What is the Tool Construction System?
 
-The Tool Construction System (now more accurately called the **Affordance Construction System**) is the central hub that dynamically builds and manages all available functions, tools, and perception for the AI agent based on the current context. It consists of the `FunctionBuilder` class in `construct_tools.py`, which intelligently determines what the agent can do and what it passively perceives based on:
+The Tool Construction System (now more accurately called the **Affordance Construction System**) is the central hub that dynamically builds and manages all available functions, tools, and perception for the AI agent based on the current context. It consists of three files working together:
 
-- **Current room types** - Different room types provide different capabilities and awareness
-- **Environmental items** - Items present in the current room that can be interacted with or observed
-- **Inventory items** - Items the agent is carrying that unlock specific functions or awareness
-- **Base functions** - Always-available core functions
-- **Optional integrations** - External services that can be enabled/disabled via configuration
-
-The system dynamically constructs both function mappings (what the agent can actually do), tool definitions (what the LLM knows about available functions), and perception context (what the agent passively knows about its environment) every time they're needed, ensuring the agent only has access to contextually relevant affordances.
-
-## How does the system work?
-
-### Core Architecture - The Unified Affordance Definition Map
-
-The `FunctionBuilder` class uses a single, unified data structure, **`self.tool_definitions`** (to be renamed in the future), to manage all affordances and their availability logic. Each entry in this map defines an *Affordance Block* and its conditions for use.
-
-| Key Structure | Description |
+| File | Responsibility |
 | :--- | :--- |
-| `tool_definitions` | The singular dictionary containing all Affordance Blocks. |
-| **`"functions"`** | *Optional Dictionary*. Maps function names to actual Python method references (action affordances). Can be omitted for perception-only blocks. |
-| **`"definitions"`** | A list of JSON-like tool definitions (for the LLM). |
-| **`"use_level"`** | The key that defines item-based availability: `"always_available"`, `"inventory_only"`, `"room_only"`, `"dual_use"`. Determines where items must be located to enable the affordance. Note: `"room_type"` is no longer a valid use_level value. |
-| **`"room_types"`** | *Optional List*. A list of room type strings. If present, the affordance is available when the agent is in a room with any of these types. This works **additively** (OR logic) with `item_types`. |
-| **`"item_types"`** | *Optional List*. A list of item type strings that enable the affordance. Where these items must be located is determined by `use_level`: `"inventory_only"` (agent's inventory), `"room_only"` (current room), or `"dual_use"` (either location). |
-| **`"display_information"`** | *Optional Function*. A method reference that provides string-based state information for the GUI (observer perspective). |
-| **`"agent_information"`** | *Optional Function*. A method reference that provides string-based perception information injected into the agent's context automatically (agent perspective). |
+| `tool_registry.py` | Service initialization + the `tool_definitions` dict |
+| `tool_availability.py` | Stateless availability logic — can be tested in isolation |
+| `construct_tools.py` | Runtime mechanics — dispatch, map construction, context building |
 
-### Understanding Affordance Availability Logic
+The system intelligently determines what the agent can do and what it passively perceives based on:
 
-**Affordances become available through OR logic combining room types and item types:**
+- **Current room types** — Different room types provide different capabilities and awareness
+- **Environmental items** — Items present in the current room
+- **Inventory items** — Items the agent is carrying
+- **Base functions** — Always-available core functions
+- **Optional integrations** — External services enabled/disabled via configuration
 
-An affordance block is available if **ANY** of these conditions are met:
+---
 
-1. **`use_level: "always_available"`** — Always available regardless of context
-2. **`room_types` match** — The current room has any of the specified types (if `room_types` is present)
-3. **`item_types` match** — An item with a matching type exists in the appropriate location (determined by `use_level`)
+## Core Architecture — The Unified Affordance Definition Map
 
-**Important:** The `room_types` key works independently of `use_level`. If you specify `room_types`, the affordance will be available in those room types regardless of what `use_level` you set (except `always_available`, which makes everything else irrelevant).
+The heart of the system is **`tool_definitions`** — a single dictionary in `ToolRegistry` that manages all affordances and their availability rules. Each entry is an *Affordance Block*.
 
-**Examples of combined availability:**
-```python
-# Available in garden rooms OR when holding a shovel
-{
-    "room_types": ["garden"],
-    "item_types": ["shovel"],
-    "use_level": "inventory_only"  # Only affects where the shovel must be
-}
+| Key | Description |
+| :--- | :--- |
+| **`"functions"`** | *Optional dict*. Maps function names to Python method references (action affordances). Omit for perception-only blocks. |
+| **`"definitions"`** | List of JSON-like tool definitions for the LLM (from `my_tools.py`). |
+| **`"use_level"`** | Item-based availability: `"always_available"`, `"inventory_only"`, `"room_only"`, `"dual_use"`. Controls where items must be located. |
+| **`"room_types"`** | *Optional list*. Active when current room has any of these types. Works additively (OR logic) with `item_types`. |
+| **`"item_types"`** | *Optional list*. Item types that enable the affordance. Location requirement set by `use_level`. |
+| **`"display_information"`** | *Optional function*. Returns state info for the GUI (observer perspective — can be omniscient). |
+| **`"agent_information"`** | *Optional function*. Returns perception info injected into agent context automatically (agent perspective — must be token-efficient and embodied). |
 
-# Available in lighthouse rooms OR when a lens apparatus is in the room
-{
-    "room_types": ["fresnel_lens_interior"],
-    "item_types": ["fresnel_lens_apparatus"],
-    "use_level": "room_only"  # Only affects where the apparatus must be
-}
+### Availability Logic
+
+An affordance block becomes active when **any** of these match:
+
+1. `"use_level": "always_available"` — always active
+2. `room_types` match — current room has any listed type
+3. `item_types` match — matching item exists in the location required by `use_level`
+
+Room type and item type checks combine with OR logic. A powered-off item (has `power_toggle: false`) will not activate its affordances even if location matches.
+
+**`use_level` only controls item location requirements:**
+
+| Value | Meaning |
+| :--- | :--- |
+| `"always_available"` | Special — ignores all other conditions |
+| `"inventory_only"` | Item must be in agent's inventory |
+| `"room_only"` | Item must be in current room |
+| `"dual_use"` | Item can be in either location |
+
+---
+
+## Initialization Phase Order
+
+**This order is load-bearing. Breaking it causes silent crashes.**
+
+```
+Phase 1 — Services with no availability dependency
+          (room_tools, garden_manager, images_lab, maze, A_Life, optional services)
+
+Phase 2 — Build tool_definitions
+          (_build_tool_definitions — references Phase 1 service methods, they must exist first)
+
+Phase 3 — Build toolset_checker
+          (make_toolset_checker — needs tool_definitions dict to exist)
+
+Phase 4 — Services that need the toolset_checker
+          (LighthouseController and any future service that queries tool availability)
+
+Phase 5 — Tool blocks that reference Phase 4 services
+          (_add_lighthouse_tools — appends to tool_definitions after lighthouse exists)
 ```
 
-**The `use_level` flag only controls item location requirements:**
+**Rule:** If a service needs `toolset_checker` → Phase 4. If a tool block references that service → Phase 5 via a dedicated `_add_*_tools()` method, **not** inside `_build_tool_definitions`.
 
-- `"inventory_only"` — Items must be in the agent's inventory
-- `"room_only"` — Items must be present in the current room
-- `"dual_use"` — Items can be in either location
-- `"always_available"` — Special case, ignores all other conditions
+This is the most common source of errors. If you see `AttributeError: 'ToolRegistry' object has no attribute 'X'` during init, a tool block is referencing a service that hasn't been created yet.
 
-### Understanding `display_information` vs `agent_information`
+---
+
+## Understanding `display_information` vs `agent_information`
 
 This is a critical architectural distinction:
 
-- **`display_information`**: Returns data for the GUI/human observer. This can include omniscient information, full article text, detailed maps, or "secret" data the agent shouldn't know. It prioritizes completeness over token efficiency.
+**`display_information`** — For the GUI/human observer. Can include omniscient information, full text, detailed maps, or data the agent shouldn't know. Prioritizes completeness.
 
-- **`agent_information`**: Returns data that represents what the agent **passively perceives** by being in a context, analogous to peripheral vision. This is automatically injected into `construct_context()` on every turn. It must be:
-  - Token-efficient (concise, relevant)
-  - From the agent's embodied perspective (no omniscient knowledge)
-  - Appropriate for the agent to know without taking an action
+**`agent_information`** — What the agent **passively perceives** by being in a context — analogous to peripheral vision. Automatically injected into `construct_context()` every turn. Must be:
+- Token-efficient (concise, relevant)
+- From the agent's embodied perspective (no omniscient knowledge)
+- Appropriate to know without taking an action
 
-Many simple affordance blocks can share the same function for both (e.g., `get_lamp_status`), but complex systems (A-Life simulation, maze, Wikipedia) need separate implementations because the observer needs more/different information than the agent should passively perceive.
+Many simple blocks can share the same function for both. Complex systems (A-Life, maze, Wikipedia) need separate implementations because the observer needs more or different information than the agent should passively receive.
 
-### Dynamic Affordance Construction Process
+---
+
+## The `toolset_checker` — For Services That Need Availability Queries
+
+Services initialized in Phase 4 receive a `toolset_checker` callable. This lets them ask "is affordance block X currently active?" without holding a reference to `FunctionBuilder` or any state directly.
+
 ```python
-# 1. Initialize FunctionBuilder with dependencies
-function_builder = FunctionBuilder(
-    state_manager=state_manager,
-    signal=signal_callback,
-    subdirectory=data_directory,
-    memory_manager=memory_manager,
-    config_manager=config_manager
-)
+class MyService:
+    def __init__(self, state_manager, signal, is_toolset_available=None):
+        self.is_toolset_available = is_toolset_available
 
-# 2. Construct available functions dynamically
-function_builder.construct_map()
-
-# 3. Get tool definitions for LLM
-available_tools = function_builder.construct_tools()
-
-# 4. Call functions dynamically
-result = await function_builder.call_function("function_name", {"arg1": "value1"})
-
-# 5. Get agent perception context (automatically called in construct_context)
-perception_info = function_builder.get_current_tools_info(flag="agent")
+    def _format_events(self, events):
+        formatted = []
+        for event in events:
+            if any(self.is_toolset_available(key) for key in event.affordance_keys):
+                formatted.append(event.message)
+        return "\n".join(formatted)
 ```
 
-## How to add a New Affordance Block (Room, Item, or Base)?
+The argument passed is the **primary key** of a tool block in `tool_definitions` (e.g. `"lamp"`, `"iov_pressure"`). Events in the lighthouse simulation carry `event_affordances_keys` for exactly this purpose — the checker filters them so the agent only receives events for things it can currently perceive.
 
-The process for adding any new affordance set (whether room-based, item-based, or dual-use) is unified:
+---
 
-### Step 1: Create your tool functions
+## How to Add a New Affordance Block
 
-Create your tool functions in the appropriate module within `tools/tools_folder/` and instantiate the handler class in `FunctionBuilder.__init__`.
+### Step 1: Implement the functions
+
+Create your tool functions in the appropriate module within `tools/tools_folder/`. All functions **must return a string**.
+
 ```python
-# In tools/tools_folder/my_new_tools.py
+# tools/tools_folder/my_new_tools.py
 class MyNewTools:
     def __init__(self, state_manager, signal_callback):
         self.state_manager = state_manager
         self.signal_callback = signal_callback
-    
-    def take_a_seat(self, item_id: int):
-        """A function for you to sit on any seat, chair or valid item you see around."""
-        # ... implementation ...
-        return f"Sat on: {item_id}"
-    
-    def get_seat_info(self):
-        """Perception info about nearby seats (agent perspective)."""
-        # ... implementation ...
+
+    def take_a_seat(self, item_id: int) -> str:
+        return f"You sit down on item {item_id}. Comfortable."
+
+    def get_seat_perception(self) -> str:
+        """Agent perspective — token-efficient."""
         return "You notice a comfortable-looking chair nearby."
 ```
 
-### Step 2: Create tool definitions
+### Step 2: Add the definition to `my_tools.py`
 
-Create the JSON-like tool definitions list in a dedicated file (e.g., `tools/my_tools.py`) and import it into `construct_tools.py`. These match the OpenAI tool schema.
 ```python
-# In tools/my_tools.py
 seat_tools = [
     {
         "type": "function",
         "name": "take_a_seat",
-        "description": "A function for you to sit on any seat, chair or valid item you see around.",
+        "description": "Sit on a seat, chair, or other suitable item.",
         "parameters": {
             "type": "object",
             "properties": {
                 "item_id": {
                     "type": "number",
-                    "description": "The item ID you want to take a seat on."
+                    "description": "The item ID to sit on."
                 }
             },
             "required": ["item_id"],
             "additionalProperties": False
         }
     }
-    # ... more tools ...
 ]
 ```
 
-### Step 3: Register in `_init_unified_tool_definitions`
+### Step 3: Register in `tool_registry.py`
 
-Add a new entry to the `self.tool_definitions` map within `FunctionBuilder._init_unified_tool_definitions` (or `_add_conditional_tools` for optional tools), configuring the `use_level` and contextual requirements.
+Instantiate the service in Phase 1, then add the tool block. **Where** you add it depends on whether it references a Phase 4 service:
 
-#### Example 1: Room-Type Specific Affordance Block
+- **References only Phase 1 services** → add inside `_build_tool_definitions`
+- **References a Phase 4 service** → add inside a dedicated `_add_*_tools()` method called after Phase 4
 
-Affordances only available when the agent is in a room with a specific type. Note that `use_level` can be set to any value except `always_available` — it's the presence of `room_types` that determines room-based availability.
+#### Example: Room-type block
 ```python
-self.tool_definitions["my_special_room"] = {
+"darkroom": {
     "functions": {
-        "special_room_action": self.my_new_tools.special_room_action
+        "develop_photo": self.room_tools.darkroom.develop_photo,
     },
-    "definitions": special_room_tools,
-    "room_types": ["my_special_room"],  # Available in rooms with this type
-    "display_information": self.my_new_tools.get_room_info,  # For GUI
-    "agent_information": self.my_new_tools.get_room_perception,  # For agent context
-    # "use_level": "dual_use"  # Use level is not needed when no item_types is specified
+    "definitions": darkroom_tools,
+    "room_types": ["darkroom"],
+    "display_information": self.room_tools.darkroom.get_status,
+    "agent_information":   self.room_tools.darkroom.get_perception,
 }
 ```
 
-#### Example 2: Inventory-Only Item Affordance Block
-
-Affordances only available if an item of a specific type is in the agent's inventory.
+#### Example: Inventory-only item block
 ```python
-self.tool_definitions["my_inventory_item"] = {
+"special_key": {
     "functions": {
-        "use_special_item": self.state_manager.use_special_item
+        "use_special_key": self.room_tools.use_special_key,
     },
-    "definitions": my_item_tools,
+    "definitions": special_key_tools,
     "item_types": ["special_key"],
-    "use_level": "inventory_only"  # Item must be in inventory
+    "use_level": "inventory_only",
 }
 ```
 
-#### Example 3: Dual-Use Item Affordance Block
-
-Affordances available if an item of a specific type is in the inventory *or* present in the current room.
+#### Example: Dual-use item block (room or inventory)
 ```python
-self.tool_definitions["interactive_furniture"] = {
+"seat": {
     "functions": {
-        "interact_with_furniture": self.room_tools.interact_with_furniture
+        "take_a_seat": self.room_tools.living_room.take_a_seat,
     },
-    "definitions": furniture_interaction_tools,
-    "item_types": ["interactive_furniture"],
-    "use_level": "dual_use"  # Item can be in inventory OR room
+    "definitions": seat_tools,
+    "item_types": ["seat"],
+    "use_level": "dual_use",
 }
 ```
 
-#### Example 4: Always Available Base Affordance Block
-
-The core affordance set, available regardless of location or inventory. This block only requires the `functions`, `definitions`, and `use_level` keys.
+#### Example: Combined room type + item type (OR logic)
 ```python
-self.tool_definitions["base_functions"] = {
+"fresnel_lens_interior": {
     "functions": {
-        "move_to_room": self.state_manager.set_current_room,
-        "emit_inner_thought": emit_inner_thought
-    },
-    "definitions": base_tools,
-    "use_level": "always_available"
-}
-```
-
-#### Example 5: Room-Only Item Affordance Block
-
-Affordances only available if an item of a specific type is present in the current room.
-```python
-self.tool_definitions["my_room_item"] = {
-    "functions": {
-        "use_special_item": self.state_manager.use_special_item
-    },
-    "definitions": my_item_tools,
-    "item_types": ["special_key"],
-    "use_level": "room_only"  # Item must be in the room
-}
-```
-
-#### Example 6: Combined Room and Item Affordance Block
-
-Affordances available in specific room types **OR** when specific items are present. This demonstrates the additive (OR) logic.
-```python
-self.tool_definitions["fresnel_lens_interior"] = {
-    "functions": {
-        "fresnel_rotation_state": self.lighthouse.get_fresnel_rotation
+        "fresnel_rotation_state": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
     },
     "definitions": fresnel_lens_tools,
-    "room_types": ["fresnel_lens_interior"],  # Available in these rooms
-    "item_types": ["fresnel_lens_apparatus", "fresnel_lens"],  # OR when these items are in room
-    "use_level": "room_only",  # Only affects item location requirement
-    "agent_information": self.lighthouse.get_fresnel_rotation
+    "room_types": ["fresnel_lens_interior"],   # active in this room type
+    "item_types": ["fresnel_lens_apparatus"],  # OR when this item is in the room
+    "use_level": "room_only",
+    "display_information": self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
+    "agent_information":   self.lighthouse.lighthouse_manager.lantern.get_fresnel_rotation,
 }
 ```
 
-In this example, the affordance is available if:
-- The agent is in a room of type `"fresnel_lens_interior"`, OR
-- An item of type `"fresnel_lens_apparatus"` or `"fresnel_lens"` is present in the current room
-
-#### Example 7: Perception-Only Affordance Block (no functions)
-
-An affordance block that provides only ambient awareness, with no callable actions. This is useful for granting the agent passive knowledge about adjacent or related spaces.
+#### Example: Perception-only block (no functions)
 ```python
-self.tool_definitions["outdoors_view"] = {
-    # Note: No "functions" key — this is perception only
-    "definitions": garden_room_tools,  # Still needed for structural consistency
-    "room_types": ["outdoors_view"],  # Available in these room types
-    "use_level": "dual_use",  # Arbitrary when no item_types specified
-    "agent_information": self.room_tools.garden.display_information  # Weather info
+"outdoors_view": {
+    # No "functions" key — perception only
+    "definitions": garden_room_tools,
+    "room_types": ["outdoors_view"],
+    "agent_information": self.room_tools.garden.display_information,
 }
 ```
 
-In this example, when the agent is in a room with type `"outdoors_view"`, it automatically receives weather information in its context without needing to call any function.
+When the agent is in a room with type `"outdoors_view"`, it automatically receives weather information in its context without calling any function.
 
-## How to add Optional External Integrations?
-
-Optional external services (like YouTube, Bluesky, etc.) are handled by conditional initialization in `__init__` and registration in `_add_conditional_tools`.
-
-### Step 1: Add configuration option
-
-Ensure your configuration system has an enable flag (e.g., `[Tools] enable_my_service = true`).
-
-### Step 2: Conditional initialization in `__init__`
+#### Example: Phase 5 block (references a Phase 4 service)
 ```python
-def __init__(self, ...):
-    # ... other initialization ...
-    
-    # Get configuration
-    my_service_enabled = config_manager.get_config('Tools', "enable_my_service")
-    self.my_service = None
-    
-    # Conditional import and initialization
-    if my_service_enabled:
-        try:
-            from tools.tools_folder.services import my_service_handler
-            self.my_service = my_service_handler.MyServiceTools()
-            print("MyServiceTools instance created.")
-        except Exception as e:
-            print(f"Error with MyService tools: {e}")
-            self.my_service = None
-            
-    # ...
-    self._add_conditional_tools()
+# In __init__, after self.lighthouse = LighthouseController(...):
+self._add_lighthouse_tools()
+
+def _add_lighthouse_tools(self):
+    lh = self.lighthouse
+    self.tool_definitions["lantern_room"] = {
+        "functions": {
+            "get_lantern_room_interior_status": lh.get_lantern_room_interior_status,
+            "clean_condensation":               lh.clean_condensation,
+        },
+        "definitions": lantern_room_tools,
+        "room_types": ["lantern_room"],
+        "display_information": lh.get_lantern_room_interior_status,
+        "agent_information":   lh.get_lantern_room_interior_status,
+    }
 ```
 
-### Step 3: Dynamic registration in `_add_conditional_tools`
+---
 
-Add the Affordance Block to the unified map only if the handler was successfully initialized.
+## How to Add Optional External Integrations
+
+### Step 1: Add a config flag
+
+Ensure your configuration has an enable flag: `[Tools] enable_my_service = true`.
+
+### Step 2: Conditional initialization in Phase 1
+
 ```python
-def _add_conditional_tools(self):
-    """Add optional tools to the unified map if they were successfully initialized."""
-    # ... existing conditional tools ...
-    
+self.my_service = None
+if config_manager.get_config("Tools", "enable_my_service"):
+    try:
+        from tools.tools_folder.services import my_service_handler
+        self.my_service = my_service_handler.MyServiceTools()
+        print("MyServiceTools instance created.")
+    except Exception as e:
+        print(f"Error with MyService tools: {e}")
+```
+
+### Step 3: Register in `_add_conditional_tools`
+
+```python
+def _add_conditional_tools(self, state_manager):
     if self.my_service:
-        self.tool_definitions["my_service_tools"] = {
+        self.tool_definitions["my_service"] = {
             "functions": {
-                "my_service_function": self.my_service.some_function
+                "my_service_action": self.my_service.do_thing,
             },
-            "definitions": my_service_tools_definitions,
-            # Affordances can be available via room type or a portable item
-            "room_types": ["my_service_room_type"],
-            "item_types": ["my_service_item_type"], 
-            "use_level": "dual_use"
+            "definitions": my_service_tools,
+            "item_types": ["my_service_item"],
+            "use_level": "dual_use",
         }
-        print("My service tools added to unified definitions.")
+        print("My service tools added.")
 ```
+
+---
 
 ## Context and Information System
 
-The system provides contextual information in two distinct ways:
+### For the Agent (LLM context)
 
-### For the Agent (LLM Context)
-```python
-# Get current context for the LLM (includes perception automatically)
-context = function_builder.construct_context()
-```
+`construct_context()` automatically calls `get_current_tools_info(flag="agent")` internally, which:
 
-The `construct_context()` method automatically calls `get_current_tools_info(flag="agent")` internally, which:
-- Checks all currently available Affordance Blocks for an `agent_information` function
-- Executes each found function and collects the results
-- Injects this perception data into the agent's system context on every turn
+- Checks all active affordance blocks for an `agent_information` function
+- Executes each and collects the results
+- Injects this perception data into the system context on every turn
 
-This ensures the AI agent always has passive awareness of its current situation without needing to take observation actions.
+The agent always has passive awareness of its current situation without needing observation actions.
 
 **Agent context includes:**
 - Current time and location
-- Agent's emotional state and available emotes
-- Inventory and room contents (minimal details)
+- Emotional state and available emotes
+- Inventory and room contents
 - Current stats (hunger, energy, etc.)
-- Weather information (for outdoor-aware rooms via `agent_information`)
-- Contextual perception (from all available affordance blocks' `agent_information` functions)
+- Passive perception from all active `agent_information` functions
 
-### For the GUI (Display Information)
+### For the GUI
+
 ```python
-# Get room-specific information for GUI display
-room_info = function_builder.get_current_tools_info(flag="display")  # default
+room_info = function_builder.get_current_tools_info(flag="display")
 ```
 
-With `flag="display"` (the default), `get_current_tools_info()` instead checks for `display_information` functions, which can provide more verbose, omniscient, or detailed data appropriate for human observers but not the agent.
+With `flag="display"`, the same method checks for `display_information` functions instead — which can provide more verbose, omniscient, or detailed data appropriate for human observers.
+
+---
 
 ## Token Efficiency Through Perception
 
-By injecting perception information directly into the system context rather than requiring tool calls, the system reduces token costs:
+By injecting perception into context rather than requiring tool calls, the system reduces turn costs:
 
-**Old System:**
-- Agent calls `look_at_lamp` (turn 1, sends full history)
-- Agent calls `check_pressure` (turn 2, sends full history + turn 1)
-- Agent acts on information (turn 3, sends full history + turns 1-2)
+**Without passive perception:**
+- Turn 1: Agent calls `look_at_lamp` (sends full history)
+- Turn 2: Agent calls `check_pressure` (sends full history + turn 1)
+- Turn 3: Agent acts (sends full history + turns 1–2)
 
-**New System:**
-- Lamp and pressure state already in context (no turn cost)
-- Agent acts immediately (turn 1, sends full history)
+**With passive perception:**
+- Turn 1: Lamp and pressure state already in context. Agent acts immediately.
 
-The perception layer adds tokens to each system prompt, but eliminates observation turns, resulting in net savings over multi-step interactions.
+The perception layer adds tokens to each system prompt but eliminates observation turns — net savings over multi-step interactions.
+
+---
+
+## Key Rules
+
+- **Names must match exactly** between `my_tools.py` definitions and Python function/argument names
+- **All tool functions must return a string** — this is what the agent receives
+- **Derived state is never persisted** — only source state (`PhysicalState`, `Controls`) goes to JSON; derived state is always recomputed on load
+- **Don't reference Phase 4 services inside `_build_tool_definitions`** — use a dedicated `_add_*_tools()` method called after Phase 4
+- **`tool_definitions` is shared by reference** between `ToolRegistry` and `FunctionBuilder` — intentional, mutations anywhere are reflected everywhere
+- **`agent_information` must be embodied and token-efficient** — it's injected on every turn; omniscient or verbose data belongs in `display_information` only

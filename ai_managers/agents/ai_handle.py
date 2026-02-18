@@ -13,7 +13,7 @@ from ai_managers.agents.agents_utils.llm_response_types import LLMResponse # Imp
 
 class ai_bot:
 
-    def __init__(self, data_filepath="captured_text.txt", act_model="gpt-4.1-mini", 
+    def __init__(self, data_filepath="captured_text.txt", act_model="gpt-5-mini", 
                  functions_builder=None, state_manager=None, signal=None, 
                  memory_manager=None, llm_client: AbstractLLMClient = None): # Inject the abstract client
         self._signal_callback = signal
