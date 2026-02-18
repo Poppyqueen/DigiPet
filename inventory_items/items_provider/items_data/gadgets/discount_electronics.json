@@ -8,7 +8,8 @@
         "static": false,
         "type": [
             "laptop",
-            "bluesky_social"
+            "bluesky_social",
+            "toggle_item_power"
         ],
         "stackable": false,
         "power_toggle": false
@@ -22,7 +23,8 @@
         "static": false,
         "type": [
             "misc",
-            "bluesky_social"
+            "bluesky_social",
+            "toggle_item_power"
         ],
         "stackable": false,
         "power_toggle": false

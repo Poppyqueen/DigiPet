@@ -7,7 +7,8 @@
         ],
         "static": false,
         "type": [
-            "iPod"
+            "iPod",
+            "toggle_item_power"
         ],
         "stackable": false,
         "power_toggle": false

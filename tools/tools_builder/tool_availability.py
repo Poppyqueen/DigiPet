@@ -104,6 +104,7 @@ class ToolAvailabilityChecker:
             return False
 
         use_level = tool_config.get("use_level", "")
+        ignore_power = tool_config.get("ignore_power_state", False)  # ← read flag
 
         if use_level == "inventory_only":
             candidates = self.item_context.get_items_by_type(item_types, location="inventory")
@@ -113,7 +114,7 @@ class ToolAvailabilityChecker:
             candidates = self.item_context.get_items_by_type(item_types)
 
         return any(
-            self.item_context.is_item_powered_on(item.get("id"))
+            (ignore_power or self.item_context.is_item_powered_on(item.get("id")))
             for item in candidates
             if item.get("id")
         )

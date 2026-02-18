@@ -22,6 +22,7 @@ from tools.tools_folder.dispenser_tools import DispenserTools
 from tools.tools_folder.auction_house import AuctionHouse
 from tools.tools_folder.maze import MazeEnvironment
 from tools.tools_folder.lighthouse_controller import LighthouseController
+from tools.tools_folder.items_toggle import ItemToggleTool
 
 from .my_tools import (
     base_tools,
@@ -54,6 +55,7 @@ from .my_tools import (
     fresnel_lens_tools,
     spirit_source_tools,
     accessible_light_viewing_room_tools,
+    toggle_item_power_tool,
 )
 
 from .tool_availability import make_toolset_checker
@@ -105,6 +107,8 @@ class ToolRegistry:
         self.maze           = MazeEnvironment(state_manager, signal)
         self.A_Life         = None
         self._init_alife(subdirectory, state_manager, signal)
+
+        self.item_toggle    = ItemToggleTool(state_manager, signal)
 
         # Optional services
         self.youtube         = None
@@ -280,11 +284,11 @@ class ToolRegistry:
                 "room_types": ["library"],
             },
             "living_room": {
-                "functions": {"look_at_window": self.room_tools.living_room.look_at_window},
+                "functions": {"look_at_window": self.room_tools.living_room.look_at_window}, # TODO: make this an item
                 "definitions": living_room_tools,
                 "room_types": ["living_room"],
-                "display_information":  self.room_tools.living_room.display_information,
-                "agent_information":    self.room_tools.living_room.display_information,
+                # "display_information":  self.room_tools.living_room.display_information, # TODO: This returns... TV info, not specific to room
+                # "agent_information":    self.room_tools.living_room.display_information,
             },
             "bathroom": {
                 "functions": {
@@ -450,6 +454,15 @@ class ToolRegistry:
                 "display_information": self.room_tools.garden.display_information,
                 "agent_information": self.room_tools.garden.display_information,
             },
+            "power_toggle": {
+                "functions": {
+                    "toggle_item_power": self.item_toggle.toggle_item_power_auto,
+                },
+                "definitions": [toggle_item_power_tool],
+                "item_types": ["toggle_item_power"],
+                "use_level": "dual_use",
+                "ignore_power_state": True
+            }
         }
 
     def _add_conditional_tools(self, state_manager):

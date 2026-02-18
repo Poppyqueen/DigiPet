@@ -23,7 +23,8 @@
         "static": true,
         "type": [
             "furniture",
-            "maze"
+            "maze",
+            "toggle_item_power"
         ],
         "stackable": false,
         "power_toggle": false

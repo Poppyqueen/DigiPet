@@ -81,47 +81,47 @@ class FunctionBuilder:
     # Power toggle — dynamic tools generated per-item
     # -----------------------------------------------------------------------
 
-    def _generate_power_toggle_tools(self, item_context: ItemContext) -> list:
-        toggle_definitions = []
-        for item_id, item in item_context.all_items.items():
-            if "power_toggle" not in item:
-                continue
-            item_name = item.get("name", "Unknown Item")
-            is_on = item.get("power_toggle", False)
-            direction = "OFF" if is_on else "ON"
-            toggle_definitions.append({
-                "type": "function",
-                "name": f"toggle_{direction}_{item_id}",
-                "description": (
-                    f"Turn {direction} the {item_name} {item_id}. "
-                    f"This will {'disable' if is_on else 'enable'} its functions."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "item_id": {
-                            "type": "number",
-                            "description": f"The ID of the item to toggle {direction} (use: {item_id})"
-                        }
-                    },
-                    "required": ["item_id"],
-                    "additionalProperties": False,
-                },
-            })
-        return toggle_definitions
+    # def _generate_power_toggle_tools(self, item_context: ItemContext) -> list:
+    #     toggle_definitions = []
+    #     for item_id, item in item_context.all_items.items():
+    #         if "power_toggle" not in item:
+    #             continue
+    #         item_name = item.get("name", "Unknown Item")
+    #         is_on = item.get("power_toggle", False)
+    #         direction = "OFF" if is_on else "ON"
+    #         toggle_definitions.append({
+    #             "type": "function",
+    #             "name": f"toggle_{direction}_{item_id}",
+    #             "description": (
+    #                 f"Turn {direction} the {item_name} {item_id}. "
+    #                 f"This will {'disable' if is_on else 'enable'} its functions."
+    #             ),
+    #             "parameters": {
+    #                 "type": "object",
+    #                 "properties": {
+    #                     "item_id": {
+    #                         "type": "number",
+    #                         "description": f"The ID of the item to toggle {direction} (use: {item_id})"
+    #                     }
+    #                 },
+    #                 "required": ["item_id"],
+    #                 "additionalProperties": False,
+    #             },
+    #         })
+    #     return toggle_definitions
 
-    def _toggle_item_power(self, item_id: str, turn_on: bool):
-        item_data, error = self.state_manager.inventory_service.get_validated_item_data(item_id)
-        if error:
-            return error
-        if "power_toggle" not in item_data:
-            return f"Error: Item '{item_data.get('name', 'Unknown')}' has no power toggle."
-        if item_data.get("power_toggle") == turn_on:
-            return f"The {item_data.get('name')} is already {'ON' if turn_on else 'OFF'}."
-        self.state_manager.inventory_service.set_item_attribute(item_id, "power_toggle", turn_on)
-        state_str = "ON" if turn_on else "OFF"
-        self._signal_callback({"type": "show_message_popup", "message": f"Toggled {item_data.get('name')} {state_str}"})
-        return f"Successfully turned {state_str} the {item_data.get('name')}."
+    # def _toggle_item_power(self, item_id: str, turn_on: bool):
+    #     item_data, error = self.state_manager.inventory_service.get_validated_item_data(item_id)
+    #     if error:
+    #         return error
+    #     if "power_toggle" not in item_data:
+    #         return f"Error: Item '{item_data.get('name', 'Unknown')}' has no power toggle."
+    #     if item_data.get("power_toggle") == turn_on:
+    #         return f"The {item_data.get('name')} is already {'ON' if turn_on else 'OFF'}."
+    #     self.state_manager.inventory_service.set_item_attribute(item_id, "power_toggle", turn_on)
+    #     state_str = "ON" if turn_on else "OFF"
+    #     self._signal_callback({"type": "show_message_popup", "message": f"Toggled {item_data.get('name')} {state_str}"})
+    #     return f"Successfully turned {state_str} the {item_data.get('name')}."
 
     # -----------------------------------------------------------------------
     # Core map / tool construction
@@ -134,19 +134,19 @@ class FunctionBuilder:
         current_room_types, _ = self._get_current_context()
         checker = ToolAvailabilityChecker(item_context, current_room_types)
 
-        # Dynamic toggle functions
-        for item_id, item in item_context.all_items.items():
-            if "power_toggle" not in item:
-                continue
-            is_on = item.get("power_toggle", False)
-            if is_on:
-                self.function_map[f"toggle_OFF_{item_id}"] = (
-                    lambda iid=item_id: self._toggle_item_power(iid, False)
-                )
-            else:
-                self.function_map[f"toggle_ON_{item_id}"] = (
-                    lambda iid=item_id: self._toggle_item_power(iid, True)
-                )
+        # # Dynamic toggle functions
+        # for item_id, item in item_context.all_items.items():
+        #     if "power_toggle" not in item:
+        #         continue
+        #     is_on = item.get("power_toggle", False)
+        #     if is_on:
+        #         self.function_map[f"toggle_OFF_{item_id}"] = (
+        #             lambda iid=item_id: self._toggle_item_power(iid, False)
+        #         )
+        #     else:
+        #         self.function_map[f"toggle_ON_{item_id}"] = (
+        #             lambda iid=item_id: self._toggle_item_power(iid, True)
+        #         )
 
         # Static tool functions
         for tool_key, tool_config in self.tool_definitions.items():
@@ -167,10 +167,10 @@ class FunctionBuilder:
         current_room_types, item_context = self._get_current_context()
         checker = ToolAvailabilityChecker(item_context, current_room_types)
 
-        # Toggle tools first
-        for toggle_def in self._generate_power_toggle_tools(item_context):
-            all_definitions.append(toggle_def)
-            seen_names.add(toggle_def["name"])
+        # # Toggle tools first
+        # for toggle_def in self._generate_power_toggle_tools(item_context):
+        #     all_definitions.append(toggle_def)
+        #     seen_names.add(toggle_def["name"])
 
         # Static tool definitions
         for tool_key, tool_config in self.tool_definitions.items():

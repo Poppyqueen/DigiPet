@@ -19,7 +19,7 @@ stringed_plant_types = ', '.join(f"'{p}'" for p in valid_plants)
 
 toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
-item_types = ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag"]
+item_types = ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag", "toggle_item_power"]
 item_types.extend(toggable_items)
 
 lighthouse_items = [
@@ -181,7 +181,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[BaseModel]] = {
     "candy_bag":   CandyBagFields,
     "iov_spirit_pan":  LighthouseSpiritPanFields,
     "spirit_source": LighthouseSpiritSourceFields,
-    **{t: ToggableFields for t in toggable_items},
+    "toggle_item_power": ToggableFields,
 }
 
 
