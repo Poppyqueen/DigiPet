@@ -14,6 +14,8 @@ from dataclasses import dataclass, replace
 from typing import List, Tuple, Optional, Dict, Any
 from bisect import bisect_left
 
+from .models import Event
+
 
 # ============================================================================
 # CORE STATE - Immutable
@@ -79,17 +81,18 @@ class LanternRoomDerived:
 # EVENTS
 # ============================================================================
 
-@dataclass(frozen=True)
-class LanternEvent:
-    """Something that happened in the lantern room."""
-    type: str
-    message: str
-    data: Dict = None
+# @dataclass(frozen=True)
+# class LanternEvent:
+#     """Something that happened in the lantern room."""
+#     type: str
+#     message: str
+#     data: Dict = None
     
-    def __post_init__(self):
-        if self.data is None:
-            object.__setattr__(self, 'data', {})
+#     def __post_init__(self):
+#         if self.data is None:
+#             object.__setattr__(self, 'data', {})
 
+LanternEvent = Event # New event model general for lighthouse 
 
 # ============================================================================
 # CONSTANTS
@@ -402,13 +405,15 @@ class LanternEventDetector:
         # Rotation changes
         if not old_derived.rotation_active and new_derived.rotation_active:
             events.append(LanternEvent(
-                "rotation_started",
-                "The clockwork mechanism engages. The Fresnel lens begins to rotate slowly."
+                event_affordances_keys=["clockwork_lens"], # only clockwork lens as an event wont be triggered unless there
+                type="rotation_started",
+                message="The clockwork mechanism engages. You see hundreds of gears kick into action, orderly steps, patterned movements, whirring and clicking."
             ))
         elif old_derived.rotation_active and not new_derived.rotation_active:
             events.append(LanternEvent(
-                "rotation_stopped",
-                "The clockwork winds down. The Fresnel lens stops rotating."
+                event_affordances_keys=["clockwork_lens"],
+                type="rotation_stopped",
+                message="The clockwork winds down. The Fresnel lens stops rotating."
             ))
         
         # # Rotation speed changes (if active)
@@ -422,78 +427,90 @@ class LanternEventDetector:
         # Sun hazard changes
         if not old_derived.sun_hazard_active and new_derived.sun_hazard_active:
             events.append(LanternEvent(
-                "sun_hazard_started",
-                "The Fresnel lens focuses the sun's rays into a concentrated beam! Danger!",
-                {'hazard_level': new_derived.sun_hazard_level}
+                event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                type="sun_hazard_started",
+                message="The Fresnel lens focuses the sun's rays into a concentrated beam! Danger!",
+                data={'hazard_level': new_derived.sun_hazard_level}
             ))
         elif old_derived.sun_hazard_active and not new_derived.sun_hazard_active:
             events.append(LanternEvent(
-                "sun_hazard_ended",
-                "The focused sunlight hazard has passed."
+                event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                type="sun_hazard_ended",
+                message="The focused sunlight hazard has passed."
             ))
         
         # Sheet covering changes
         if not old_ctrl.sheet_covering and new_ctrl.sheet_covering:
             if old_weather.is_day:
                 events.append(LanternEvent(
-                    "sheet_placed_day",
-                    "The sheet covers the storm panes, protecting everything from the Fresnel lens's concentrated rays."
+                    event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                    type="sheet_placed_day",
+                    message="The sheet covers the storm panes, protecting everything from the Fresnel lens's concentrated rays."
                 ))
             else:
                 events.append(LanternEvent(
-                    "sheet_placed_night",
-                    "The sheet covers the lens, obscuring it from view."
+                    event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                    type="sheet_placed_night",
+                    message="The sheet covers the lens, obscuring it from view."
                 ))
         elif old_ctrl.sheet_covering and not new_ctrl.sheet_covering:
             if new_weather.is_day:
                 events.append(LanternEvent(
-                    "sheet_removed_day",
-                    "The sheet is removed. Everything is now exposed to the Fresnel lens's concentrated rays!"
+                    event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                    type="sheet_removed_day",
+                    message="The sheet is removed. Everything is now exposed to the Fresnel lens's concentrated rays!"
                 ))
             else:
                 events.append(LanternEvent(
-                    "sheet_removed_night",
-                    "The sheet is removed. The lens is now visible through the glass."
+                    event_affordances_keys=["fresnel_lens_interior", "lantern_room_outdoor", "lantern_room"],
+                    type="sheet_removed_night",
+                    message="The sheet is removed. The lens is now visible through the glass."
                 ))
         
         # Cleanliness warnings
         if (old_phys.outdoor_cleanliness >= 0.5 and 
             new_phys.outdoor_cleanliness < 0.5):
             events.append(LanternEvent(
-                "lens_dirty",
-                "The lens has become quite dirty."
+                event_affordances_keys=["lantern_room_outdoor", "lantern_room"],
+                type="lens_dirty",
+                message="The lens has become quite dirty."
             ))
         
         # Condensation warnings
         if (old_phys.interior_condensation < 0.5 and 
             new_phys.interior_condensation >= 0.5):
             events.append(LanternEvent(
-                "condensation_heavy",
-                "Heavy condensation is forming on the interior of the glass."
+                event_affordances_keys=["lantern_room_outdoor", "lantern_room"],
+                type="condensation_heavy",
+                message="Heavy condensation is forming on the interior of the glass."
             ))
         
         # Day/night transitions
         if not old_weather.is_day and new_weather.is_day:
             events.append(LanternEvent(
-                "sunrise",
-                "The sun rises. The Fresnel lens begins to catch the light."
+                event_affordances_keys=["lantern_room_outdoor", "lantern_room"],
+                type="sunrise",
+                message="The sun rises. The Fresnel lens begins to catch the light."
             ))
         elif old_weather.is_day and not new_weather.is_day:
             events.append(LanternEvent(
-                "sunset",
-                "The sun sets. The danger of focused sunlight passes."
+                event_affordances_keys=["lantern_room_outdoor", "lantern_room"],
+                type="sunset",
+                message="The sun sets. The danger of focused sunlight passes."
             ))
 
         # Jam state changes
         if not old_derived.is_jammed and new_derived.is_jammed:
             events.append(LanternEvent(
-                "mechanism_jammed",
-                "The clockwork mechanism seizes up! It needs oil badly."
+                event_affordances_keys=["clockwork_lens"],
+                type="mechanism_jammed",
+                message="The clockwork mechanism seizes up! It needs oil badly."
             ))
         elif old_derived.is_jammed and not new_derived.is_jammed:
             events.append(LanternEvent(
-                "mechanism_freed",
-                "The clockwork mechanism moves freely again."
+                event_affordances_keys=["clockwork_lens"],
+                type="mechanism_freed",
+                message="The clockwork mechanism moves freely again."
             ))
         
         return events

@@ -22,3 +22,14 @@ class ActionInternalResponse:
     events: Optional[List] = None
     success: Optional[bool] = None
     data: Optional[Dict[str, Any]] = None
+
+@dataclass(frozen=True)
+class Event:
+    event_affordances_keys: list[str]
+    type: str
+    message: str
+    data: Dict = None
+
+    def __post_init__(self):
+        if self.data is None:
+            object.__setattr__(self, 'data', {})

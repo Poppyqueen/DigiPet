@@ -447,6 +447,7 @@ class ToolRegistry:
                 # because is_tool_available only None-checks values that exist.
                 "definitions": garden_room_tools,
                 "room_types": ["outdoors_view"],
+                "display_information": self.room_tools.garden.display_information,
                 "agent_information": self.room_tools.garden.display_information,
             },
         }
