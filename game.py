@@ -625,9 +625,12 @@ else:
     print("Chatbot not available. Skipping color configuration/load. Using default green.")
     state.pet_color = config.GREEN
 
+
+# TODO: This is a hack, re-do it. Tangled mess.
 print("Pet color set to:", state.pet_color)
 config_manager.set_config('game_settings','pet_color',state.pet_color)
 config_manager.save_config_to_current()
+#
 
 
 

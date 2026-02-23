@@ -1,3 +1,5 @@
+# TODO: Think of a better way to do all of this, not only this specific tool, but the whole toggle system.
+
 class ItemToggleTool:
     def __init__(self, state_manager, signal):
         self.state_manager = state_manager

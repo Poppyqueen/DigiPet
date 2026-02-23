@@ -1825,7 +1825,7 @@ lamp_tools = [
     {
         "type": "function",
         "name": "lamp_light_spirit_pan",
-        "description": "Lights the spirit pan in the lamp.",
+        "description": "Lights the pre-burner under the IOV burner, heating up the vaporizing tubes. It lights the spirit pan with a hand fire source.",
         "parameters": {
             "type": "object",
             "properties": {

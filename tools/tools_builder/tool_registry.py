@@ -122,7 +122,7 @@ class ToolRegistry:
         # Phase 2 — build tool_definitions (needs service methods to exist)
         # =================================================================
         self.tool_definitions = self._build_tool_definitions(state_manager, open_meteo)
-        self._add_conditional_tools(state_manager)
+        self._add_conditional_tools(state_manager) # State manager not used for these tools, but kept for consistency
 
         # =================================================================
         # Phase 3 — build toolset_checker (needs tool_definitions to exist)
@@ -454,7 +454,8 @@ class ToolRegistry:
                 "display_information": self.room_tools.garden.display_information,
                 "agent_information": self.room_tools.garden.display_information,
             },
-            "power_toggle": {
+            "power_toggle": { 
+                # Power toggle special key, ignores power state. Any item that has this key will be managed by a power toggle to active its functions.
                 "functions": {
                     "toggle_item_power": self.item_toggle.toggle_item_power_auto,
                 },
@@ -465,7 +466,7 @@ class ToolRegistry:
             }
         }
 
-    def _add_conditional_tools(self, state_manager):
+    def _add_conditional_tools(self, state_manager): # State manager not used for these tools, but kept for consistency
         """Append optional tool entries after the base dict is built."""
 
         if self.wikipedia_enabled:
