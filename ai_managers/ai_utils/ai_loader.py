@@ -46,7 +46,7 @@ class UnifiedLoader:
                 "simple_ai_class": "GroqProv",
                 "agent_module": "ai_managers.agents.agent_clients.groq_client",
                 "agent_class": "GroqClient",
-                "required_libraries": ["groq"],
+                "required_libraries": ["groq", "instructor"],
                 "api_key_env": "GROQ_API_KEY",
                 "requires_api_key": True
             },
@@ -58,6 +58,15 @@ class UnifiedLoader:
                 "required_libraries": ["ollama"],
                 "api_key_env": None,
                 "requires_api_key": False
+            },
+            "openrouter": {
+                "simple_ai_module": "ai_managers.simple_ai.providers.openrouter_provider",
+                "simple_ai_class": "OpenRouterProv",
+                "agent_module": "ai_managers.agents.agent_clients.openrouter_client",
+                "agent_class": "OpenRouterClient",
+                "required_libraries": ["openai", "instructor"],
+                "api_key_env": "OPENROUTER_API_KEY",
+                "requires_api_key": True
             }
         },
         
@@ -84,6 +93,12 @@ class UnifiedLoader:
                 "module": "ai_managers.tokens.token_providers.opensource_tokenizer",
                 "class": "OpenSourceTokenizer",
                 "required_libraries": ["tokenizers"],
+                "needs_model": True
+            },
+            "openrouter": {
+                "module": "ai_managers.tokens.token_providers.openrouter_tokenizer",
+                "class": "OpenRouterTokenizer",
+                "required_libraries": ["tiktoken", "google.genai", "tokenizers"],
                 "needs_model": True
             }
         },
