@@ -12,7 +12,7 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **AI Agent & Interface:** An AI chatbot module, `CLIChatbot`, acts as an endpoint for the AI agent and is integrated into `game.py`. It manages signals and interactions. It uses a providers ABCs system supporting OpenAI, Gemini, Groq and Ollama.
 
-*   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types include tool, consumable, misc, key, weapon, armor, furniture, book, and plant. The only items that contain unique functions for now are `books`, `consumable` and `seed`.
+*   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types are defined in `inventory_items/item_pydantic_models.py`. A variety of items have unique keys and validation provided by the pydantic models. 
 
 *   **Environment Affordances (Tools & Perception):** The AI interacts with its environment through an **affordances system** split across three files:
 

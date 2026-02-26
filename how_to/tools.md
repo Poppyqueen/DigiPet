@@ -2,7 +2,7 @@
 
 ## What is the Tool Construction System?
 
-The Tool Construction System (now more accurately called the **Affordance Construction System**) is the central hub that dynamically builds and manages all available functions, tools, and perception for the AI agent based on the current context. It consists of three files working together:
+The Tool Construction System (now more accurately called the **Affordance Construction System**) is the central hub that dynamically builds and manages all available functions, tools, and perception for the AI agent based on the current context. It consists of three files working together, living inside tools/tools_builder/:
 
 | File | Responsibility |
 | :--- | :--- |
@@ -29,7 +29,7 @@ The heart of the system is **`tool_definitions`** — a single dictionary in `To
 | **`"functions"`** | *Optional dict*. Maps function names to Python method references (action affordances). Omit for perception-only blocks. |
 | **`"definitions"`** | List of JSON-like tool definitions for the LLM (from `my_tools.py`). |
 | **`"use_level"`** | Item-based availability: `"always_available"`, `"inventory_only"`, `"room_only"`, `"dual_use"`. Controls where items must be located. |
-| **`"room_types"`** | *Optional list*. Active when current room has any of these types. Works additively (OR logic) with `item_types`. |
+| **`"room_types"`** | *Optional list*. Active when current room has any of these types. Works additively (OR logic) with `item_types`. If room types exists, use level is not required. (Maybe change that?)|
 | **`"item_types"`** | *Optional list*. Item types that enable the affordance. Location requirement set by `use_level`. |
 | **`"display_information"`** | *Optional function*. Returns state info for the GUI (observer perspective — can be omniscient). |
 | **`"agent_information"`** | *Optional function*. Returns perception info injected into agent context automatically (agent perspective — must be token-efficient and embodied). |

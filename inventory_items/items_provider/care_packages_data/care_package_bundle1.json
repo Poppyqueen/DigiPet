@@ -217,5 +217,11 @@
         "items": [
             "Kerosene container"
         ]
+    },
+    "lighthouse_kit_2": {
+        "package_color": "cheat",
+        "items": [
+            "Water Barrel"
+        ]
     }
 }

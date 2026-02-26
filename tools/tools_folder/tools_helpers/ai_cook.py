@@ -40,7 +40,8 @@ class cook:
         """
         system=f"""You are a cooking AI, given a set of items and a cooking related process, you will return a single
         food item definition that would result from applying such cooking process into the given items. 
-        You should identify the main resulting item which are 'consumable' directly from the preparation process. 
+        You should identify the main resulting item which are 'consumable' directly from the preparation process and the ingredients given. 
+        Your task is to create the item based on the items provided to you, no matter what the process says, if your ingredients are missing, your final output should reflect this. 
         Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, 
         make detailed and evocative descriptions and effects for the item, and in effects, write text directed to whomever just consumed this item, 
         i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', 

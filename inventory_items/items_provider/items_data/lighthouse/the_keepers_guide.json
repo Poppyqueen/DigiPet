@@ -2,7 +2,7 @@
     {
         "name": "The Keeper's Guide",
         "descriptions": [
-            "A worn, leather-bound book filled with handwritten notes and sketches of the lighthouse and its surroundings."
+            "A pristine, recently issued bulletin for the keeper of the lighthouse."
         ],
         "static": false,
         "type": [
@@ -11,12 +11,37 @@
         "chapters": [
             {
                 "title": "Introduction",
-                "content": "This book belongs to the lighthouse, not the keepers, but it is for the lighthouse to reveal to any new keeper how to best serve it."
+                "content": "1922, The Lighthouse Servers; A Keeper's Guide. To welcome new keepers, and old keepers alike to the new stations. As we embark on an era of rapid progress and adoption of technologies, the service has taken a strong effort to inform all the members of the service of the new changes and updates, processes and procedures, and the general expectations of the service. You should know this bulletin like the back of your hand, your service depends on it. The contents of this document span from technical operations of the existing systems, technologies and apparatuses that you will encounter in your station to the general expectations of the service. Besides maintaining the correct functioning of the light and related mechanisms, besides maintaining the machinery, you also have to take care to maintain and care of yourself, as a good health will make your service so much more effective, efficient and enjoyable. Asides of maintenance, you will be tasked with detailed report and logging in a personal Logbook, detailing diverse aspects of your service and life at the station. Each chapter contained in this bulletin will go in detail of each of these aspects. "
             },
             {
-                "title": "Bird's Eye View",
-                "content": "Let me tell you, you can have "
+                "title": "The Keeper's Duties",
+                "content": "Besides tending the light, a few duties for the keepers are here detailed: During day time, the lantern room has to host sheets placed on the window panes, to prevent the sun from entering the lantern room, and hitting the Fresnel lens inside. For the lantern room, the window panes have to be cleaned from interior moisture and exterior debris periodically, however, the Fresnel lens itself has not to be touched nor cleaned by you, and instead a head keeper should manage the care of the delicate Fresnel glass, your involvement with glass is limited to the window panes surrounding the lantern room, which are weather facing, held up by iron astragals. The light should be watched from the service room constantly, and every 30 minutes, the actual Burner has to be inspected and detailed by walking into the Fresnel lens which holds it to validate the quality of the light. Many other duties are expected from the keeper, these should all be infered from observations, common sense, and the careful attention to the lighthouse itsef."
+            },
+            {
+                "title": "The Keeper's Health",
+                "content": "As much as the station requires attention, the personal maintaining it also requires attention. A healthy keeper is an effective keeper. The station is packed with a variety of foods and conserves, as well as hosting a sleeping area, and a kitchen. These ammenities should be used in a way that ensures your health and well-being, growing accustumed to the spaces and the rhythm is key for a continious and effective maintenance of the station. Careful and deliberate observation of one own's body and mind is encouraged for all members of the service."
+            },
+            {
+                "title": "The Keeper's Log",
+                "content": "A crucial aspect of your service is keeping a detailed record of your activities, here are the required entries for your logbook: Detailed usage report of implements used during service, any single consumable or implement has to be reported in detail as a daily entry. During watch, exactly every 30 minutes a weather report has to be detailed as an entry, with the time and clear detailed observations. Each activity taken has to be documented, from providing service to the light, to the rotation mechanism, to self-care and hygiene, to the general state of the station as a daily single entry report. A detailed report of the observations of the IOV burner is required every 15 minutes, not only the report on the light as observed from the service room, but a physical trip to the room that contains the IOV burner is required, and the detailed report of the observed state has to be written down. Any failures to light the lamp during the required hours of more than 15 minutes has to be reported and documented in your logs. Having a neat, organized and complete logbook is expected from the keeper. A logbook is provided to you in your station, please make sure to procure it and keep in use."
+            },
+            {
+                "title": "Tending the Light",
+                "content": "In your station an IOV Lamp has been installed, up to 3,200 candlepower, it is a vast improvement over the old oil lamps, and should serve you well. The operation expects your careful observation and coordination, ensuring the lamp is lit at dusk, and extinguished at dawn. The IOV apparatus is composed of two separate sections, divided in the rooms in your station. In the service room, you will find a pair of pressure tanks, one for air, and one for fuel (in our case, kerosene). This system hosts a pressure mechanism, that will expect from you the correct operation of valves, leavers and pressure management. In broad strokes, an air service valve opens the system to the atmosphere, allowing air to flow in and out of the system, for pumping this valve should be open, while for operation the valve has to be shut as to prevent any leakage. The kerosene tank can be refilled in a quick move, and the system should be have a control valve, that allows to send the pressurized air and kerosene together up to the IOV burner hosted inside the fresnel lens on the lantern room. Inside the Fresnel lens, the IOV burner sits, with a line connected directly to the pressure system bellow. This section of the apparatus is of crucial importance, careful operation of it is expected, specially as valves are engaged, the operation of it involves pre-heating the vaporizer tubes beneath the IOV burner by placing a spirit pan beneath them, and waiting, checking for visual confirmation of the temperature, a visual hint is the expected red hot color of the vaporizer tubes, if your tubes are not in such a state and your fuel is engaged, you will fail to vaporize the fuel and instead you will let liquid fuel into the burner. The correct orchestration of all of these states will allow you to master the Incandescent Oil Vapor lamp, and provide the best possible service to the mariners. "
             }
-        ]
+        ],
+        "is_locked": true
+    },
+    {
+        "name": "The Keeper's Log",
+        "descriptions": [
+            "A personal journal. Leather bound, with a black featureless cover"
+        ],
+        "static": false,
+        "type": [
+            "book"
+        ],
+        "chapters": [],
+        "is_locked": false
     }
 ]

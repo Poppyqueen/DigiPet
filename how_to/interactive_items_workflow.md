@@ -138,9 +138,10 @@ self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_
 
 ---
 
-## 3. Register the Tools
+## 3. Register the Tools (Detailed How-To inside `how_to/tools.md`)
 
-### A. `tools/tools_builder/construct_tools.py`
+
+### A. `tools/tools_builder/tool_registry.py`
 
 1. **Import** your class at the top.
 2. **Instantiate** it in `__init__`:

@@ -91,5 +91,29 @@
             "energy": 1.5
         },
         "consume_uses_left": 25
+    },
+    {
+        "name": "Water Barrel",
+        "descriptions": [
+            "A barrel of water, used for drinking and cooking.",
+            "It is full of fresh water, perfect for a long voyage.",
+            "The water is clear and refreshing, with a hint of salt."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "effects": [
+            "You drink the water from the barrel, it's refreshing and hydrating.",
+            "The water is cold and crisp, it quenches your thirst immediately.",
+            "The water is salty and briny, it makes your stomach churn."
+        ],
+        "stats_edit": {
+            "fullness": 0.0,
+            "hydration": 5.0,
+            "energy": 0.0
+        },
+        "consume_uses_left": 100
     }
 ]

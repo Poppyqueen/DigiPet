@@ -309,8 +309,8 @@
         "music": "white_room",
         "descriptions": {
             "late night": [
-                "",
-                ""
+                "Quiet, the room is really quiet, and the visibility is low. Tip-toeing, you start to gain your bearings the longer you stand in it.",
+                "If you were to trust your eyes you would think the furniture was gone, but your hand assures you otherwise."
             ],
             "early morning": [
                 "The furniture, specially made to fit in a circular room, is like a giant jigsaw puzzle, fitting perfectly against each other.",
@@ -326,7 +326,7 @@
             "noon": [
                 "Noon has reached the world, warming the lighthouse, all the spice containers begin to tapdance, their caps bulging with heat, sacks and bags all shake and contort with a contagious rhythm.",
                 "Vapor coming from a thousand cracks on the wall, from the outside, it blasts items close to them across the room, as they land in their new places, they continue to dance.",
-                "The surrounding furniture, not trying to pull apart from each other, suddenly, everything jumps in the air and holds frozen for a second before falling back into their original places. The cracks in the wall are nowhere to be seen.",
+                "The surrounding furniture, now trying to pull apart from each other, suddenly, everything jumps in the air and holds frozen for a second before falling back into their original places. The cracks in the wall are nowhere to be seen.",
                 "The egg shaped room hosts many stuffs, some raw ingredients placed here on the shelves, different cooking utensils, cutlery, containers, rags and bags, bottles, jars, packs, some kettles, pots and pans, and a big wooden table in the middle of the room."
             ],
             "afternoon": [

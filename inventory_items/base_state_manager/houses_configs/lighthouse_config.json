@@ -30,7 +30,8 @@
         "Bed nook[x3]",
         "Tall Oak Bookshelf",
         "Landscape Oil Painting (Gilded Frame)",
-        "Throw Pillow Bundle (Assorted Textiles)"
+        "Throw Pillow Bundle (Assorted Textiles)",
+        "The Keeper's Log"
     ],
     "Kitchen": [
         "Hardtack[x100]",
@@ -45,5 +46,7 @@
         "onion[x15]",
         "jar of pickles[x55]"
     ],
-    "inventory": []
+    "inventory": [
+        "The Keeper's Guide"
+    ]
 }

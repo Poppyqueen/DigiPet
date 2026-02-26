@@ -109,7 +109,7 @@ class OpenMeteoLoc:
     Current apparent temperature: {current_apparent_temperature}°C
     Current relative humidity (2m): {current_relative_humidity_2m}%
     Is it daytime?: {is_day}, 
-    Current wind speed (10m): {current_wind_speed_10m} m/s
+    Current wind speed (10m): {current_wind_speed_10m} km/h
     Current precipitation: {current_precipitation} mm
     Current cloud cover: {current_cloud_cover}%
     """

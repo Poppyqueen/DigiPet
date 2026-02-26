@@ -30,12 +30,13 @@ Affordances represent both the actions that the AI agent can perform and the inf
     *   **Action Affordances (`functions`):** Callable tools the agent can use to interact with the world (e.g., `dig_hole`, `prepare_food`, `read_chapter`).
     *   **Perception Affordances (`agent_information`):** Information the agent passively receives without needing to call a tool, analogous to peripheral vision. This ambient awareness is automatically injected into the agent's context. A block can exist with no callable functions at all, serving purely as a perception rule (e.g., `outdoors_view` grants weather awareness in certain room types).
 
-*   **Enabling Affordances via `use_level`:** The system determines affordance availability by checking the following contextual rules:
-    *   **`always_available`:** The affordance is always present (e.g., `move_to_room`).
-    *   **`room_type`:** The affordance is available only if the current room's `room_types` list contains a required type (e.g., `planting_garden` enables gardening tools and garden status perception).
-    *   **`inventory_only`:** The affordance is available only if the agent's inventory contains an item with a required `type` (e.g., a `book` item enables `read_chapter`).
-    *   **`room_only`:** The affordance is available only if the current room contains an item with a required `type` (e.g., a `dispenser` item enables `refill_dispenser`, an `iov_lamp_top` enables lamp operation tools and lamp status perception).
-    *   **`dual_use`:** The affordance is available if a required `item_type` is found either in the agent's inventory *or* as an environmental item in the current room (e.g., a `laptop` enables `browse_auction_house` whether carried or placed on a desk).
+*   **Affordances block logic:** The system determines affordance availability by checking the following contextual rules:
+    
+    | Key | Description |
+    | :--- | :--- |
+    | **`"use_level"`** | Item-based availability: `"always_available"`, `"inventory_only"`, `"room_only"`, `"dual_use"`. Controls where items must be located. |
+    | **`"room_types"`** | *Optional list*. Active when current room has any of these types. Works additively (OR logic) with `item_types`. If room types exists, use level is not required. (Maybe change that?)|
+    | **`"item_types"`** | *Optional list*. Item types that enable the affordance. Location requirement set by `use_level`. |
 
 **In essence, the `type` fields of Items and the `room_types` of Environments act as explicit, structured affordances that the Affordance Construction System uses to decide which actions the agent can perform and what information the agent passively perceives based on its `use_level` criteria.**
 

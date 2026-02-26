@@ -28,8 +28,33 @@ class Event:
     event_affordances_keys: list[str]
     type: str
     message: str
-    data: Dict = None
+    data: Optional[Dict] = None
 
     def __post_init__(self):
         if self.data is None:
             object.__setattr__(self, 'data', {})
+
+
+
+
+@dataclass(frozen=True)
+class WeatherConditions:
+    """Current weather from external source."""
+    is_day: bool = False
+    temperature: float = 20.0  # Celsius
+    humidity: float = 0.5  # 0-1
+    precipitation: float = 0.0  # mm Preceding 15 minutes sum
+    wind_speed: float = 0.0  # km/h
+    cloud_cover: float = 0.0  # 0-1
+    
+    @classmethod
+    def from_weather_data(cls, weather_data: Dict[str, Any]) -> 'WeatherConditions':
+        """Create from OpenMeteo data."""
+        return cls(
+            is_day=weather_data.get("is_day", "False") == "True",
+            temperature=float(weather_data.get("temperature", 20.0)),
+            humidity=float(weather_data.get("humidity", 50.0)) / 100.0,
+            precipitation=float(weather_data.get("precipitation", 0.0)),
+            wind_speed=float(weather_data.get("wind_speed", 0.0)),
+            cloud_cover=float(weather_data.get("cloud_cover", 0.0)) / 100.0
+        )
