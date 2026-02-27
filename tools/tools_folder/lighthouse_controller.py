@@ -221,7 +221,7 @@ class LighthouseController:
 
         if response_object.success:
             item_data = self.item_store.get_item("Window curtains")
-            parts.append(self.state_manager.auto_create_item("inventory", None, item_data).message)
+            parts.append(self.state_manager.create_item("inventory", None, item_data).message)
 
         return "\n".join(parts)
 
@@ -395,7 +395,7 @@ class LighthouseController:
         if response_object.success:
             item_data = self.item_store.get_item("IOV Spirit Pan")
             item_data["filled"] = response_object.data.get("pan_state") == "full"
-            parts.append(self.state_manager.auto_create_item("inventory", None, item_data).message)
+            parts.append(self.state_manager.create_item("inventory", None, item_data).message)
         # TODO: add signal for icon popups
 
         return "\n".join(parts)
@@ -407,7 +407,7 @@ class LighthouseController:
 
         if response_object.success:
             if response_object.data.get("was_fabric"):
-                parts.append(self.state_manager.auto_create_item("inventory", None, self.item_store.get_item("IOV Mantle")).message)
+                parts.append(self.state_manager.create_item("inventory", None, self.item_store.get_item("IOV Mantle")).message)
             else:
                 parts.append("No item returned.")
         # TODO: add signal for icon popups

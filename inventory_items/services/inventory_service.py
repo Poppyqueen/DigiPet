@@ -145,21 +145,13 @@ class InventoryService:
         if not isinstance(new_description, str) or not new_description.strip():
             return "Failed to add description: New description must be a non-empty string."
 
-        inventory_list = self._state_store.get_state_section("inventory", [])
-        if not isinstance(inventory_list, list):
-            return "Error: Could not access inventory data to add description."
+        item_object : ItemLookupResult = self.find_item(item_id=item_id, required_type=None, required_location="inventory")
 
-        found_item = None
-        for item_data in inventory_list:
-            if isinstance(item_data, dict) and item_data.get("id") == item_id:
-                found_item = item_data
-                break
-
-        if found_item:
+        if item_object.success:
             timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
             timed_description = f"{timestamp} {new_description.strip()}"
 
-            descriptions_list_copy = copy.deepcopy(found_item.get("descriptions"))
+            descriptions_list_copy = copy.deepcopy(item_object.item_data.get("descriptions"))
             if not isinstance(descriptions_list_copy, list):
                 descriptions_list_copy = []
             descriptions_list_copy.append(timed_description)
@@ -167,7 +159,7 @@ class InventoryService:
             # Don't touch found_item here — let set_item_attribute handle the write
             attribute_result : SetItemAttributeResult = self.set_item_attribute(item_id, "descriptions", descriptions_list_copy)
 
-            item_name = found_item.get("name", "Unnamed Item")
+            item_name = item_object.item_data.get("name", "Unnamed Item")
             return f"Added description for '{item_name}' (ID: {item_id}) in inventory. {attribute_result.message}"
         else:
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
@@ -217,80 +209,18 @@ class InventoryService:
         else:
             return "Error: Could not access inventory. State might be corrupted."
 
-    def get_item_details(self, item_id: int, internal=False):
-        if not isinstance(item_id, int):
-            if internal:
-                return {"status": "error", "message": f"Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."}
-            else:
-                return f"Failed to examine: Item ID must be an integer, received '{item_id}'."
-
-        found_item_info = self._find_item_info_by_id(item_id)
-        current_room_id = self._state_store.get_state_section("current_room_id")
-
-        if not found_item_info:
-            if internal:
-                return {"status": "not_found", "message": f"Item with ID '{item_id}' not found anywhere."}
-            else:
-                return f"You don't see an item with ID '{item_id}' here or in your inventory."
-
-        item_location = found_item_info["location"]
-        item_location_id = found_item_info["location_id"]
-        item_data = found_item_info["item_data"]
-
-        is_accessible = (item_location == "inventory") or (item_location == "room" and item_location_id == current_room_id)
-        is_valid, msg = self._is_valid_item_data(item_data, check_id=True)
-
-        if not is_valid:
-            print(f"Warning: Found item ID {item_id} at {item_location} but data is invalid: {msg}. Reporting error.")
-            if internal:
-                return {"status": "error", "message": f"Found item ID {item_id} but data is corrupted: {msg}", "location": item_location}
-            else:
-                item_display = self._format_item_for_display(item_data)
-                return f"Error: Data for item {item_display} seems corrupted."
-
-        if not is_accessible:
-            item_display = self._format_item_for_display(item_data)
-            if internal:
-                location_desc = "inventory" if item_location == "inventory" else (self._room_manager._format_room_for_display(self._room_manager._find_room_by_id(item_location_id)) if item_location == "room" and self._room_manager else "an unknown location")
-                return {"status": "not_accessible", "message": f"Item {item_display} is not in your current location. It is in {location_desc}.", "location": item_location, "location_id": item_location_id}
-            else:
-                return f"You can only examine items in your current location or inventory. Item {item_display} is not here."
 
 
-        if internal:
-            return {
-                "status": "found",
-                "details": item_data,
-                "location": item_location,
-                "location_name": found_item_info["location_name"],
-                "location_id": item_location_id
-            }
-        else:
-            item_display = self._format_item_for_display(item_data)
-            descriptions = item_data.get("descriptions", [])
-            output_string = f"{item_display}\n\n"
-            if descriptions and isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
-                output_string += "\n".join(descriptions)
-            else:
-                output_string += "(No description available.)"
-            return output_string
 
-
-    def is_inventory_full(self):
-        current_inventory = self._state_store.get_state_section("inventory", [])
-        # Inventory is full if the number of distinct item stacks/non-stackable items
-        # reaches the maximum limit.
-        return len(current_inventory) >= self.MAX_INVENTORY_SLOTS
-
-
-    def _inventory_can_accept(self, item_data: dict) -> bool:
+    def _inventory_can_accept(self, item_data: dict, current_list: list | None = None) -> bool:
         """
         Returns True if this item can be placed in inventory —
         either because it will merge into an existing stack,
         or because there is a free slot available.
         """
+        inventory_list = current_list if current_list is not None else self._state_store.get_state_section("inventory", [])
+
         if item_data.get("stackable", False):
-            inventory_list = self._state_store.get_state_section("inventory", [])
             existing_stack = self._find_matching_stack_in_list(inventory_list, item_data)
             if existing_stack:
                 space = existing_stack.get("max_stack_size", float("inf")) - existing_stack.get("quantity", 0)
@@ -298,8 +228,7 @@ class InventoryService:
                     return True  # Will merge, no slot needed
 
         # No merge possible — needs a free slot
-        current_inventory = self._state_store.get_state_section("inventory", [])
-        return len(current_inventory) < self.MAX_INVENTORY_SLOTS
+        return len(inventory_list) < self.MAX_INVENTORY_SLOTS
 
 
     def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
@@ -340,31 +269,18 @@ class InventoryService:
         else:
             actual_quantity_to_pickup = min(quantity_to_pickup, available_in_source)
 
-        # --- UPDATED LOGIC: Keep original ID in room, create new ID for inventory ---
         item_to_move = None
         if actual_quantity_to_pickup < available_in_source:
-            # This is a partial pickup (splitting a stack)
-            # 1. Keep the original item in the room with reduced quantity
             item_data_in_source["quantity"] = available_in_source - actual_quantity_to_pickup
-            
-            # 2. Create a NEW item for the inventory with a new ID
             item_to_move = item_data_in_source.copy()
             item_to_move["id"] = self._state_store.get_next_item_id()
             item_to_move["quantity"] = actual_quantity_to_pickup
-            
-            # Note: The original item stays in the room's items list with its original ID
         else:
-            # This is a full pickup (taking the whole stack or non-stackable)
-            # Keep the original ID when moving the entire stack
             item_to_move = item_data_in_source
-            # Remove the item from the room list completely
             current_room["items"][:] = [item for item in current_room["items"] if item.get("id") != item_id]
-        # --- END UPDATED LOGIC ---
 
-        # Retrieve mutable copy of inventory list
         inventory_list = self._state_store.get_state_section("inventory", [])
-        
-        # --- Stacking logic now operates on `item_to_move` ---
+
         transfer_successful = False
         remaining_to_pickup = item_to_move.get("quantity", 1)
         messages = []
@@ -380,43 +296,36 @@ class InventoryService:
                     remaining_to_pickup -= amount_to_transfer
                     messages.append(f"Added {amount_to_transfer} to an existing stack of {self._format_item_for_display(target_stack)}.")
                     transfer_successful = True
-            
-            # If there's still quantity to add (because the first stack filled up or no stack existed)
-            # create a new stack in the inventory.
+
             if remaining_to_pickup > 0:
-                if self.is_inventory_full():
+                if not self._inventory_can_accept(item_to_move, current_list=inventory_list):
                     messages.append(f"Your inventory is full! Could not pick up the remaining {remaining_to_pickup} items.")
-                    # Put the item back in the room if it couldn't be placed
                     current_room["items"].append(item_to_move)
                 else:
-                    # The item_to_move already has the correct ID and quantity. Just add it.
                     inventory_list.append(item_to_move)
                     messages.append(f"Picked up a new stack of {self._format_item_for_display(item_to_move)}.")
-                    remaining_to_pickup = 0 # All of item_to_move is now in inventory
+                    remaining_to_pickup = 0
                     transfer_successful = True
-        else: # Not stackable
-            if self.is_inventory_full():
+        else:
+            if not self._inventory_can_accept(item_to_move, current_list=inventory_list):
                 messages.append(f"Your inventory is full! You cannot pick up the item.")
-                current_room["items"].append(item_to_move) # Put it back
+                current_room["items"].append(item_to_move)
             else:
                 inventory_list.append(item_to_move)
                 transfer_successful = True
                 messages.append(f"Picked up the {self._format_item_for_display(item_to_move)}.")
 
-        # --- State update and signaling ---
         if transfer_successful:
-            rooms_list = self._state_store.get_state_section("rooms", []) # Get latest reference before update
+            rooms_list = self._state_store.get_state_section("rooms", [])
             self._state_store.update_state_section("rooms", rooms_list)
             self._state_store.update_state_section("inventory", inventory_list)
 
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-            self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
-            self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+            self._send_signal({"type": "room_inventory", "item_list": list_room_items_names})
+            self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"})
             return " ".join(messages)
         else:
-            # If the transfer failed for some reason, we need to ensure the state is consistent.
-            # The logic above already puts it back if inventory is full.
             return f"Failed to pick up {item_display}. " + " ".join(messages)
 ####
     def list_inventories(self, formatted=False):
@@ -547,13 +456,14 @@ class InventoryService:
                 else:
                     source_item["quantity"] += actual_quantity_to_drop
                 return f"Failed to drop {item_display}."
-    
+        
     def create_item(
         self,
         target_location: str,
         target_location_id: int | None,
         item_creation_data: dict | list[dict],
         quantity: int = 1,
+        fallback_to_room: bool = True,
     ) -> ItemCreationResult:
         """
         Creates one or more items in the specified location.
@@ -564,6 +474,7 @@ class InventoryService:
         target_location_id  : Room ID when target_location="room", else None
         item_creation_data  : A single item dict or a list of item dicts (templates)
         quantity            : How many of each template to create. Defaults to 1.
+        fallback_to_room    : If True and inventory is full, place in current room instead.
 
         Returns
         -------
@@ -628,7 +539,13 @@ class InventoryService:
                 f"Invalid target location '{target_location}'. Must be 'room' or 'inventory'."
             )
 
-        # --- Main creation loop (logic unchanged) ---
+        # --- Resolve fallback room upfront ---
+        fallback_room = None
+        if fallback_to_room and target_location_lower == "inventory" and self._room_manager:
+            fallback_room_id = self._room_manager.get_current_room_id()
+            fallback_room = self._room_manager._find_room_by_id(fallback_room_id)
+
+        # --- Main creation loop ---
         successfully_created_ids = []
 
         for original_item_template in item_templates_to_create:
@@ -664,13 +581,19 @@ class InventoryService:
                             messages.append(f"Added {amount_to_transfer} units to existing stack {self._format_item_for_display(existing_stack)}.")
 
                     if current_quantity_to_add > 0:
-                        if target_location_lower == "inventory" and self.is_inventory_full():
-                            failed_items_info.append((
-                                self._format_item_for_display(item_data_template),
-                                f"Inventory full, could not create new stack for {current_quantity_to_add} units."
-                            ))
-                            current_quantity_to_add = 0
-                            break
+                        if target_location_lower == "inventory" and not self._inventory_can_accept(item_data_template, current_list=inventory_list):
+                            if fallback_room:
+                                target_location_lower = "room"
+                                target_room = fallback_room
+                                messages.append("Inventory full, placing in room instead.")
+                                continue
+                            else:
+                                failed_items_info.append((
+                                    self._format_item_for_display(item_data_template),
+                                    f"Inventory full, could not create new stack for {current_quantity_to_add} units."
+                                ))
+                                current_quantity_to_add = 0
+                                break
 
                         new_item_id    = self._state_store.get_next_item_id()
                         new_stack_item = item_data_template.copy()
@@ -698,13 +621,19 @@ class InventoryService:
                         created_this_iteration = True
 
                 else:  # Non-stackable
-                    if target_location_lower == "inventory" and self.is_inventory_full():
-                        failed_items_info.append((
-                            self._format_item_for_display(item_data_template),
-                            "Inventory full, could not create new non-stackable item."
-                        ))
-                        current_quantity_to_add = 0
-                        break
+                    if target_location_lower == "inventory" and len(inventory_list) >= self.MAX_INVENTORY_SLOTS:
+                        if fallback_room:
+                            target_location_lower = "room"
+                            target_room = fallback_room
+                            messages.append("Inventory full, placing in room instead.")
+                            continue
+                        else:
+                            failed_items_info.append((
+                                self._format_item_for_display(item_data_template),
+                                "Inventory full, could not create new non-stackable item."
+                            ))
+                            current_quantity_to_add = 0
+                            break
 
                     new_item_id     = self._state_store.get_next_item_id()
                     new_single_item = item_data_template.copy()
@@ -742,13 +671,11 @@ class InventoryService:
 
         # --- Build result ---
         if overall_successful_creation_count == 0:
-            # Everything failed
             all_reasons = "; ".join(f"{name}: {reason}" for name, reason in failed_items_info)
             return ItemCreationResult.fail(
                 f"Failed to create item(s): {all_reasons or 'Unknown reason.'}"
             )
 
-        # At least some items were created — build a human-readable summary
         item_plural = "item" if overall_successful_creation_count == 1 else "items"
         summary_parts = [f"Successfully created {overall_successful_creation_count} {item_plural}."]
         summary_parts.extend(messages)
@@ -1081,32 +1008,6 @@ class InventoryService:
             return result.item_data, None
         return None, result.error
 
-
-    def validate_item_data(self, item_id, expected_type, expected_loc): 
-        """
-        Args:
-            expected_loc: STRING, "room", "inventory"
-
-        """
-        item_id = int(item_id)
-        item_deets=self.get_item_details(item_id, internal=True)
-
-        is_valid=False
-
-        # 3. Check the status and location of the item based on the returned dictionary
-        if item_deets["status"] == "found":
-            # Item was found, now check its location and type
-            item_data = item_deets["details"] # Get the actual item data dict
-            item_location = item_deets["location"]
-
-            if item_location == expected_loc:
-                item_type_list = item_data.get("type", [])
-                
-                if expected_type in item_type_list:
-                    # Item is found, in the expected location, and of the expected type - looks good!
-                    is_valid=True
-        
-        return is_valid
         
 
 # ── New helper ──────────────────────────────────────────────────────────
@@ -1300,32 +1201,3 @@ class InventoryService:
             f"(source stack {'reduced to ' + str(remaining_in_source) + ' unit(s)' if remaining_in_source > 0 else 'fully consumed'}). "
         )
         return SetItemAttributeResult(success=True, message=split_msg + " ".join(messages))
-
-    def examine_consumable(self, item_id: int, internal=False): # TODO: Remove this?
-        found_item_info = self._find_item_info_by_id(item_id)
-        if not found_item_info:
-            if internal:
-                return {"status": "not_found", "message": f"Item with ID '{item_id}' not found anywhere."}
-            else:
-                return f"You don't see an item with ID '{item_id}' here or in your inventory."
-        item_location = found_item_info["location"]
-        item_location_id = found_item_info["location_id"]
-        item_data = found_item_info["item_data"]
-        is_accessible = (item_location == "inventory") or (item_location == "room" and item_location_id == self._state_store.get_state_section("current_room_id"))
-        is_valid, msg = self._is_valid_item_data(item_data, check_id=True)
-        if not is_valid:
-            print(f"Warning: Found item ID {item_id} at {item_location} but data is invalid: {msg}. Reporting error.")
-            if internal:
-                return {"status": "error", "message": f"Found item ID {item_id} but data is corrupted: {msg}", "location": item_location}
-            else:
-                return f"Found item ID {item_id} but data is corrupted: {msg}."
-        if not is_accessible:
-            if internal:
-                return {"status": "not_accessible", "message": f"Item with ID '{item_id}' is not accessible here."}
-            else:
-                return f"You don't see an item with ID '{item_id}' here or in your inventory."
-        if internal:
-            return item_data
-        
-        
-        return self._format_item_for_display(item_data)

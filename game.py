@@ -25,7 +25,7 @@ game_mode = "user_player" # available options: "user_player", "mock" or "ai_play
                     # main mode to use is "ai_player".
 
 def add_items(items_list, room):
-    """Adds items to the room with a chatbot function connected to its environment with add_items_room"""
+    """Adds items to the room with a chatbot function connected to its environment with create_item"""
     current_time_ms = pygame.time.get_ticks()
     # Check if input is generally locked (by sleep or panel)
     # This check is done *before* calling add_items now via mouse handler
@@ -39,7 +39,10 @@ def add_items(items_list, room):
     gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
     try:
         if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'create_item') and callable(chatbot.state_manager.create_item):
+            
             chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
+            # test
+            # chatbot.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=items_list)
             room_name=chatbot.state_manager.get_room_name(room)
             # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
             chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")

@@ -151,27 +151,10 @@ class UserInterfaceChatbot:
     def get_pet_color(self):
         return self.state_manager.get_pet_color()
 
-    def get_current_location(self):
-        return self.state_manager.get_current_room_id()
-
     def get_wellness_states(self):
         return self.state_manager.get_stats(internal=True)
 
-    def add_items_room(self, room_id, items_list):
-        for item_info in items_list:
-            if isinstance(item_info, dict) and 'name' in item_info:
-                self.state_manager.create_item(
-                    target_location="room", 
-                    target_location_id=room_id,
-                    item_creation_data=item_info
-                )
-        
-        self._signal_callback({
-            "type": "room_inventory",
-            "item_list": self.state_manager.list_inventories(formatted=True)
-        })
-
-    def get_room_name_out(self, room_id):
+    def get_room_name(self, room_id):
         return self.state_manager.get_room_name(room_id)
 
     def add_message_out(self, message, role):

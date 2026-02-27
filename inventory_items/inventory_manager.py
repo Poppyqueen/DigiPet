@@ -69,12 +69,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # This makes InventoryHouseManager a thin orchestrator.
 
     def get_sim_state(self):
-        return self.simulation_state_service.get_sim_state()
+        return self.simulation_state_service.get_sim_state() # move this out of here
 
     def set_sim_state(self, id_value=None, sim_current_step=None):
         return self.simulation_state_service.set_sim_state(id_value, sim_current_step)
 
-    def add_item_description(self, item_id: int, new_description: str) -> str:
+    def add_item_description(self, item_id: int, new_description: str) -> str: # this is a tool move to tools folder
         return self.inventory_service.add_item_description(item_id, new_description)
 
     def get_room_name(self, room_id: int) -> str:
@@ -93,17 +93,11 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def get_current_room_description(self):
         return self.room_manager.get_current_room_description()
 
-    def list_items_in_current_room(self, internal=False):
+    def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
         return self.inventory_service.list_items_in_current_room(internal)
 
-    def get_inventory_items(self, internal=False):
+    def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
         return self.inventory_service.get_inventory_items(internal)
-
-    def get_item_details(self, item_id: int, internal=False):
-        return self.inventory_service.get_item_details(item_id, internal)
-
-    def is_inventory_full(self):
-        return self.inventory_service.is_inventory_full()
 
     def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
         return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
@@ -129,35 +123,11 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool:
         return self.pet_state_manager.set_current_emote(emote_name, internal)
 
-    # def create_book_item(self, book_name: str, description: str) -> str:
-    #     return self.book_service.create_book_item(book_name, description)
-
-    # def list_inventory_books(self, internal=False) -> str | list[dict]:
-    #     return self.book_service.list_inventory_books(internal)
-
-    # def list_book_chapters(self, book_item_id: int) -> str:
-    #     return self.book_service.list_book_chapters(book_item_id)
-
-    # def read_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-    #     return self.book_service.read_book_chapter(book_item_id, chapter_title)
-
-    # def add_book_chapter(self, book_item_id: int, chapter_title: str, content: str) -> str:
-    #     return self.book_service.add_book_chapter(book_item_id, chapter_title, content)
-
-    # def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str) -> str:
-    #     return self.book_service.update_book_chapter(book_item_id, chapter_title, new_content, operation)
-
-    # def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-    #     return self.book_service.delete_book_chapter(book_item_id, chapter_title)
-
     def get_stats(self, internal: bool = False) -> str | dict:
         return self.stat_tracker.get_stats(internal)
 
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
         return self.stat_tracker.adjust_stat(stat_name, amount)
-
-    # def consume_item(self, item_id: int, uses: int = 1) -> str:
-    #     return self.stat_tracker.consume_item(item_id, uses)
 
     def get_pet_color(self) -> tuple[int, int, int] | None:
         return self.pet_state_manager.get_pet_color()
@@ -217,49 +187,15 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
     ###
 
-    def validate_item_data(self, item_id, expected_type, expected_loc): # Do not use, being deprecated
-        """
-        Args:
-            item_id: INT, the id of the item to validate
-            expected_type: STRING, any of the types in the pydantic_models.item_types list
-            expected_loc: STRING, "room", "inventory"
-
-        """
-        return self.inventory_service.validate_item_data(item_id, expected_type, expected_loc)
-
-
     def remove_item(self, item_id: int, quantity: int = 1):
         return self.inventory_service.remove_item(item_id, quantity)
 
-    def simple_create_item(
+    def create_item( 
         self,
         target_location: str,
         target_location_id: int | None,
         item_creation_data: dict | list[dict],
         quantity: int = 1,
+        fallback_to_room: bool = True,
     ):
-        return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity)
-
-
-    def auto_create_item( 
-        self,
-        target_location: str,
-        target_location_id: int | None,
-        item_creation_data: dict | list[dict],
-        quantity: int = 1,
-    ):
-        message = ""
-        if not self.inventory_service._inventory_can_accept(item_creation_data):
-            if target_location == "inventory":
-                target_location = "room"
-                target_location_id = self.room_manager.get_current_room_id()
-                message = "Inventory is full. Attempting to place item in room."
-        args = {
-            "target_location": target_location,
-            "target_location_id": target_location_id,
-            "item_creation_data": item_creation_data,
-            "quantity": quantity
-        }
-        response_object = self.inventory_service.create_item(**args)
-        response_object.message += f"{message}"
-        return response_object
+        return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)

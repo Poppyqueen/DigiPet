@@ -1,5 +1,7 @@
 # mock_chatbot.py
 
+# Old, do not use. For testing, use user_interface_api.py instead with 'user_player' in game.py
+
 # Util to mock the chatbot for UI testing without needing real AI APIs.
 
 import random
@@ -160,12 +162,6 @@ class MockChatbot:
         print(f"MockChatbot: get_pet_color() called")
         return self.state_manager.get_pet_color()
 
-    # This method is used for the *initial* background load in game.py,
-    # NOT subsequent ones triggered by signals.
-    def get_current_location(self):
-        """Mock: Returns the mock current location ID (from the MockChatbot's state)."""
-        print(f"MockChatbot: get_current_location() called")
-        return self.state_manager.get_current_room_id()
 
     def get_wellness_states(self):
         """Mock: Returns a copy of the mock pet stats."""

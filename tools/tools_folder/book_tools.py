@@ -68,7 +68,7 @@ class BookTools:
             "chapters": [],
             "is_locked": False,
         }
-        result = self.state_manager.simple_create_item("inventory", None, book_data)
+        result = self.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=book_data)
         self._send_signal({
             "type": "show_icon_popup",
             "icon_path": "style/images/action_icons/book_icon.png",

@@ -51,7 +51,7 @@ class AuctionHouse:
         
     def _add_item_to_inventory(self, item_name):
         item_data = self.item_store.get_item(item_name)
-        return self.state_manager.auto_create_item("inventory", None, item_data)
+        return self.state_manager.create_item("inventory", None, item_data)
 
     def _calc_buy_price(self, mini, maxi, item):
         """Calculate price for items available for purchase"""
@@ -344,19 +344,6 @@ class AuctionHouse:
         """
         if quantity <= 0:
             return "Quantity must be greater than 0."
-
-        # item_info = self.state_manager.inventory_service.get_item_details(item_id, True)
-
-        # if not item_info:
-        #     return f"Item with id {item_id} not found."
-
-        # item_status = item_info.get("status")
-        # if item_status != "found":
-        #     return f"Cannot sell item: status is '{item_status}'."
-
-        # location_name = item_info.get("location")
-        # if location_name != "inventory":
-        #     return f"Cannot sell item: it is located in '{location_name}', not in inventory."
 
         item_object : ItemLookupResult = self.state_manager.find_item(item_id=item_id, required_type=None, required_location="inventory")
 

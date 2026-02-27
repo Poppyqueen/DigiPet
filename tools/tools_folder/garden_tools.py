@@ -658,22 +658,8 @@ class Garden_Mananger(GenericJsonTool):
                 quantity = item_data.get("quantity", 0)
                 
                 if item_def and quantity > 0:
-                    # RE-EVALUATE current inventory length inside the loop
-                    # This ensures we get the most up-to-date count of occupied slots
-                    current_inventory = self.state_manager._state_store.get_state_section("inventory", [])
-                    current_inventory_length = len(current_inventory)
-                    
-                    # Check if there's enough space in inventory for this specific item quantity
-                    # This is a simplified check assuming create_item will either consume
-                    # 0 new slots (if stacking onto an existing item) or 1 new slot (if creating a new stack).
-                    # if (current_inventory_length + 1) <= max_inventory: 
-                    self.state_manager.auto_create_item("inventory", None, item_def, quantity=quantity)
-                    #     items_placed_in_inventory.append(f"{quantity} {item_def.get('name', 'unknown item')}")
-                    #     # NO MANUAL INCREMENT HERE: current_inventory_length will be recalculated on the next iteration
-                    # else:
-                    #     # Inventory full, place in room
-                    #     self.state_manager.auto_create_item("room", int(current_room_id), item_def, quantity=quantity) # Create item expects an int for the room
-                    #     items_placed_in_room.append(f"{quantity} {item_def.get('name', 'unknown item')}")
+
+                    self.state_manager.create_item("inventory", None, item_def, quantity=quantity)
 
         harvest_message_prefix = (f"Successfully harvested {plant_type} (UID: {plant_uid}) from plot {plot_id} in garden {current_room_id}. {life_cycle_quality_message}")
         

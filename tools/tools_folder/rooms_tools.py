@@ -189,7 +189,7 @@ class room_kitchen:
         print(f"Creating {len(list_generated_items_data)} new item(s)...")
         for generated_item_data in list_generated_items_data:
             item_name = generated_item_data.get("name", "Unnamed Item")
-            creation_result = self.state_manager.auto_create_item("inventory", None, generated_item_data)
+            creation_result = self.state_manager.create_item("inventory", None, generated_item_data)
 
             if not creation_result.success:
                 print(f"  Failed to create '{item_name}'. Rolling back {len(successfully_created_items_info)} already-created item(s).")
@@ -284,7 +284,7 @@ class room_kitchen:
 
             if new_consume_uses_left == 0 or new_consume_uses_left is None:
                 print(f"  Re-creating removed ingredient '{item_name}' (original ID: {item_id})...")
-                result = self.state_manager.auto_create_item("inventory", None, item_data)
+                result = self.state_manager.create_item("inventory", None, item_data)
                 if not result.success:
                     print(f"  CRITICAL: Failed to re-create '{item_name}'. Item may be lost! {result.message}")
                 else:
@@ -400,7 +400,7 @@ class room_bedroom:
         message = "You look under the bed and found nothing."
         if check_one_in(50):
             found_item = random_object.load_and_get_random_item("found_items/underbed_found_data.json")
-            result = self.state_manager.auto_create_item("inventory", None, found_item)
+            result = self.state_manager.create_item("inventory", None, found_item)
             if result.success:
                 message = f"You found something under the bed! It is a {found_item['name']}. {result.message}"
             else:
@@ -448,7 +448,7 @@ class room_garden:
 
         if check_one_in(50):
             found_item = random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
-            result = self.state_manager.auto_create_item("inventory", None, found_item)
+            result = self.state_manager.create_item("inventory", None, found_item)
             if result.success:
                 message = (
                     f"While digging in the garden you found something! "

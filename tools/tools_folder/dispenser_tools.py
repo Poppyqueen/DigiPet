@@ -71,7 +71,7 @@ class DispenserTools:
             return f"Error: Could not find candy definition for '{selected_candy}'."
 
         # NEW
-        creation_result = self.state_manager.auto_create_item("inventory", None, single_candy_blueprint)
+        creation_result = self.state_manager.create_item("inventory", None, single_candy_blueprint)
         if not creation_result.success:
             return f"Error: Failed to dispense candy. {creation_result.error} {creation_result.message}"
 

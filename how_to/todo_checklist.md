@@ -30,7 +30,6 @@ This document tracks all `TODO:` comments found in the DigiPet codebase.
 - [ ] **ai_cook.py:87** - Investigate why AI response sometimes hangs (OpenAI as cook)
 
 ## Inventory & Models
-- [ ] **inventory_service.py:1113** - Remove `examine_consumable`?
 - [ ] **book_service.py:164** - Fix direct modification of state in `book_data["chapters"]`
 - [ ] **item_pydantic_models.py:6** - Register lighthouse items that require mixins
 - [ ] **item_pydantic_models.py:45** - Check if any item types need particular key mixins definitions
