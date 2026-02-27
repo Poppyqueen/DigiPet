@@ -156,8 +156,8 @@ class StatTracker:
         message = "" 
         # Remove the item from inventory using InventoryService
         if item_data.get("consume_uses_left", 1) - uses <= 0:
-            removal_success = self._inventory_service.remove_item(item_id, internal=True)
-            removal_status = f"Item {item_display} consumed."
+            removal_success, removal_status = self._inventory_service.remove_item(item_id, internal=True)
+            message+= f"Item {item_display} consumed."
             if not removal_success:
                 removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
                 print(removal_status)

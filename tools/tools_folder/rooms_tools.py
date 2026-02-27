@@ -271,7 +271,8 @@ class room_kitchen:
 
                 if new_consume_uses_left <= 0:
                     # Remove the item entirely
-                    if not self.state.remove_item(item_id, internal=True):
+                    removal_success, removal_status = self._inventory_service.remove_item(item_id, internal=True)
+                    if not removal_success:
                         print(f"  Failed to remove depleted item '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (

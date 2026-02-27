@@ -753,7 +753,7 @@ class InventoryService:
             else:
                 actual_quantity_to_trash = quantity_to_trash
 
-            removal_result_status, removal_message = self.remove_item(item_id, actual_quantity_to_trash, internal=True)
+            removal_result_status, removal_message = self.remove_item(item_id, internal=True, quantity_to_remove=actual_quantity_to_trash)
             
             if removal_result_status: # True indicates success
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trashcan_icon.png"})
