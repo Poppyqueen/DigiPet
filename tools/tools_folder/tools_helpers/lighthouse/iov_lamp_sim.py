@@ -1203,7 +1203,7 @@ class IOVLamp:
     def get_temp_description(self) -> str:
         t = self.physics.tube_temp
         if t >= 0.95: return "Red hot"
-        elif t >= 0.7: return "Very hot"
+        elif t >= 0.7: return "Hot"
         elif t >= 0.4: return "Warm"
         elif t > 0:    return "Cool"
         return "Cold"

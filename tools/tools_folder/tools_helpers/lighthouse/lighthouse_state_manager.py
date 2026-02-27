@@ -270,6 +270,12 @@ class LighthouseManager:
     # ========================================================================
     # LANTERN ROOM DELEGATION
     # ========================================================================
+
+    def clean_jet(self, amount) -> ActionInternalResponse:
+        """Clean the jet generated soot"""
+        msg, events, success = self.lamp.clean_jet(amount)
+        self._save_state
+        return ActionInternalResponse(message=msg,formatted_events=self._get_current_formatted_events(events), events=events, success=success)
     
     
     def clean_wp(self, amount: float = 0.5) -> ActionInternalResponse: # wp = window panes, window panes or weather panes, or storm panes, in the lantern room, held by astragals, not to be confused with the Fresnel lens

@@ -67,6 +67,12 @@ OIL_MECHANISM_COSTS = {
     "fullness": -0.005
 }
 
+CLEAN_JET_COSTS = {
+    "energy": -0.010,
+    "hydration": -0.008,
+    "fullness": -0.005
+}
+
 OIL_PUMP_RATE = .005 # of max 1.0
 
 SPIRIT_CONSUME_RATE = .05
@@ -343,6 +349,16 @@ class LighthouseController:
 
         response_object: ActionInternalResponse = self.lighthouse_manager.light_spirit_pan()
         parts = self._collect_response(response_object)
+        # TODO: add signal for icon popups
+
+        return "\n".join(parts)
+
+    def clean_jet_soot(self):
+        response_object = ActionInternalResponse = self.lighthouse_manager.clean_jet(float(random.uniform(-0.8, -0.25)))
+        parts = self._collect_response(response_object)
+        if response_object.success:
+            stats_res = self._adjust_stats(CLEAN_JET_COSTS)
+            parts.append(stats_res)
         # TODO: add signal for icon popups
 
         return "\n".join(parts)
