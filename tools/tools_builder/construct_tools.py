@@ -353,8 +353,10 @@ class FunctionBuilder:
         elif info["has_power_switch"] and not info["is_powered_on"]:
             extra.append("Turn the power on to use this item's tools.")
 
-        item_meta = self.state_manager.get_item_details(item_id, internal=True)
-        data = item_meta.get("details", {})
+        item_object = self.state_manager.find_item(item_id)
+        if not item_object.success:
+            return item_object.error
+        data = item_object.item_data
         item_display = self.state_manager.inventory_service._format_item_for_display(data)
         descriptions = data.get("descriptions", [])
 

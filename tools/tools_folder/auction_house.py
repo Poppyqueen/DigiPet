@@ -51,7 +51,7 @@ class AuctionHouse:
         
     def _add_item_to_inventory(self, item_name):
         item_data = self.item_store.get_item(item_name)
-        return self.state_manager.create_item("inventory", None, item_data)
+        return self.state_manager.auto_create_item("inventory", None, item_data)
 
     def _calc_buy_price(self, mini, maxi, item):
         """Calculate price for items available for purchase"""
@@ -324,15 +324,18 @@ class AuctionHouse:
 
         messages = []
         for i in range(quantity):
-            message = self._add_item_to_inventory(actual_name)
+            item_lookup_result : ItemLookupResult = self._add_item_to_inventory(actual_name)
+            message = item_lookup_result.message
             messages.append(message)
+            if not item_lookup_result.success:
+                return message
         
         self.state_manager.pet_state_manager.adjust_currency(-total_cost)
 
         if quantity == 1:
-            return f"Successfully bought {actual_name} for {item_price}. {messages}"
+            return f"Successfully bought {actual_name} for {item_price}. {'\n'.join(messages)}"
         else:
-            return f"Successfully bought {quantity}x {actual_name} for {total_cost} currency total ({item_price} each). {message}"
+            return f"Successfully bought {quantity}x {actual_name} for {total_cost} currency total ({item_price} each). {'\n'.join(messages)}"
 
     def sell_item(self, item_id, quantity=1):
         """

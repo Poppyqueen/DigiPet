@@ -211,7 +211,7 @@ class LighthouseController:
         parts = self._collect_response(response_object)
 
         if response_object.success:
-            parts.append(self.state_manager.remove_item(sheet_id))
+            parts.append(self.state_manager.remove_item(sheet_id).message)
 
         return "\n".join(parts)
 
@@ -221,7 +221,7 @@ class LighthouseController:
 
         if response_object.success:
             item_data = self.item_store.get_item("Window curtains")
-            parts.append(self.state_manager.create_item("inventory", None, item_data))
+            parts.append(self.state_manager.auto_create_item("inventory", None, item_data).message)
 
         return "\n".join(parts)
 
@@ -263,7 +263,7 @@ class LighthouseController:
         parts = self._collect_response(response_object)
 
         if response_object.success:
-            parts.append(self.state_manager.remove_item(spirit_pan_id))
+            parts.append(self.state_manager.remove_item(spirit_pan_id).message)
             parts.append("Placed spirit pan! Spirit pan consumed.")
 
         return "\n".join(parts)
@@ -294,9 +294,9 @@ class LighthouseController:
 
         if new_spirit_content < 0:
             parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", 0).message)
-            success, message = self.state_manager.remove_item(spirit_source_id, internal=True)
+            removal_result = self.state_manager.remove_item(spirit_source_id, internal=True)
             parts.append("Spirit source has been consumed entirely!")
-            parts.append(message)
+            parts.append(removal_result.message)
 
         parts.append(self.state_manager.set_item_attribute(spirit_pan_id, "filled", True).message)
 
@@ -312,7 +312,7 @@ class LighthouseController:
         parts = self._collect_response(response_object)
 
         if response_object.success:
-            parts.append(self.state_manager.remove_item(mantle_id))
+            parts.append(self.state_manager.remove_item(mantle_id).message)
             parts.append(self._adjust_stats(MANTLE_INSTALL_COSTS))
         # TODO: add signal for icon popups
 
@@ -395,7 +395,7 @@ class LighthouseController:
         if response_object.success:
             item_data = self.item_store.get_item("IOV Spirit Pan")
             item_data["filled"] = response_object.data.get("pan_state") == "full"
-            parts.append(self.state_manager.create_item("inventory", None, item_data))
+            parts.append(self.state_manager.auto_create_item("inventory", None, item_data).message)
         # TODO: add signal for icon popups
 
         return "\n".join(parts)
@@ -407,7 +407,7 @@ class LighthouseController:
 
         if response_object.success:
             if response_object.data.get("was_fabric"):
-                parts.append(self.state_manager.create_item("inventory", None, self.item_store.get_item("IOV Mantle")))
+                parts.append(self.state_manager.auto_create_item("inventory", None, self.item_store.get_item("IOV Mantle")).message)
             else:
                 parts.append("No item returned.")
         # TODO: add signal for icon popups

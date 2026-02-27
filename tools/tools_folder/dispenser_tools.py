@@ -70,8 +70,10 @@ class DispenserTools:
         if not single_candy_blueprint:
             return f"Error: Could not find candy definition for '{selected_candy}'."
 
-        if not self.state_manager.create_item("inventory", None, single_candy_blueprint, internal=True):
-            return "Error: Failed to dispense candy (could not create item)."
+        # NEW
+        creation_result = self.state_manager.auto_create_item("inventory", None, single_candy_blueprint)
+        if not creation_result.success:
+            return f"Error: Failed to dispense candy. {creation_result.error} {creation_result.message}"
 
         # Build the new contents (copy-on-write)
         new_contents = dict(contents)
@@ -98,7 +100,7 @@ class DispenserTools:
 
         candy_bag_result : ItemLookupResult = self.state_manager.find_item(bag_id, required_type="candy_bag", required_location="inventory")
         if not candy_bag_result.success:
-            return dispenser_result.error
+            return candy_bag_result.error
 
         # Resolve bag contents (from item data)
         bag_data=candy_bag_result.item_data
@@ -110,9 +112,9 @@ class DispenserTools:
             return "Error: The refill bag seems to be empty or invalid."
 
         # Consume the refill bag before writing new state
-        success, message = self.state_manager.remove_item(bag_id, internal=True)
-        if not success:
-            return f"Error: Failed to use the refill bag. {message}"
+        removal_result = self.state_manager.remove_item(bag_id)
+        if not removal_result.success:
+            return f"Error: Failed to use the refill bag. {removal_result.error}"
 
         # Build the merged contents (copy-on-write)
         current_contents = dispenser_data.get("dispenser_state", {}).get("contents", {})

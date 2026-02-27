@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
     from inventory_items.services.item_lookup_result import ItemLookupResult
     from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
+    from inventory_items.services.item_removal_result import ItemRemovalResult
 
 def check_one_in(number: int):
   """
@@ -86,39 +87,19 @@ class room_kitchen:
         if not stats_edit:
             return {}
         return {k: round(v * amount, 2) for k, v in stats_edit.items()}
-    
+        
+
     def prepare_food(self, process, items_list):
-        """
-        Prepares a food item using specified ingredients from the inventory.
-        Validates that all required items exist in inventory, are of type 'consumable' or 'tool',
-        and retrieves their detailed data for the AI process.
-
-        Consumable items will have their consume_uses_left decremented by the specified amount;
-        if consume_uses_left reaches 0, the item is removed from inventory via self.state_manager.remove_item.
-        Tool items are passed to the cook AI but are never consumed.
-
-        Implements rollback logic for inventory changes on failure.
-
-        Args:
-            process (str): Description of the preparation process for the AI.
-            items_list (list of [item_id, amount]): Each entry is [int item_id, int amount].
-
-        Returns:
-            str: An error message if validation or inventory management fails.
-            str: A success message including details of created items.
-        """
-
         # --- 1. Validate input is not empty ---
         if not items_list:
             return "Error: No items specified for preparation."
 
-        valid_consumable_details = []  # (item_data, amount_to_use)  — will be consumed
-        valid_tool_details = []        # item_data only              — passed to AI, not consumed
+        valid_consumable_details = []
+        valid_tool_details = []
         validation_errors = []
 
         # --- 2. Validate every item before touching any state ---
         for entry in items_list:
-            # Validate entry shape
             if not (isinstance(entry, dict) and "item_id" in entry and "amount" in entry):
                 validation_errors.append(f"Invalid entry format: {entry!r}. Expected {{'item_id': id, 'amount': amount}}.")
                 continue
@@ -126,7 +107,6 @@ class room_kitchen:
             item_id_raw = entry["item_id"]
             amount = entry["amount"]
 
-            # Validate item_id type
             if not isinstance(item_id_raw, int):
                 try:
                     item_id = int(item_id_raw)
@@ -136,14 +116,11 @@ class room_kitchen:
             else:
                 item_id = item_id_raw
 
-            # Validate amount
             if not isinstance(amount, (int, float)) or amount <= 0:
                 validation_errors.append(f"Invalid amount {amount!r} for item ID {item_id}: must be a positive number.")
                 continue
 
-            # Look up item
             item_result = self.state_manager.find_item(item_id, required_location="inventory")
-
             if not item_result.success:
                 validation_errors.append(item_result.error)
                 continue
@@ -177,14 +154,10 @@ class room_kitchen:
                 print(f"  - {error}")
             return "Preparation failed: " + "; ".join(validation_errors)
 
-        print(
-            f"Validation passed: {len(valid_consumable_details)} consumable(s), "
-            f"{len(valid_tool_details)} tool(s)."
-        )
+        print(f"Validation passed: {len(valid_consumable_details)} consumable(s), {len(valid_tool_details)} tool(s).")
 
         # --- 3. Call cook AI (no state changes yet) ---
         COOK_AI_FIELDS = {"name", "descriptions", "effects", "stats_edit"}
-
 
         all_ingredient_details = [
             {**{k: v for k, v in d.items() if k in COOK_AI_FIELDS},
@@ -210,47 +183,35 @@ class room_kitchen:
             return "Preparation process completed, but no food items were created by the cook."
 
         # --- 4. Create new items BEFORE consuming ingredients ---
-        # If creation fails here, nothing has been consumed yet — no rollback needed.
-        current_room_id = self.state_manager.get_current_room_id()
-        if self.state_manager.is_inventory_full():
-            creation_location_type = "room"
-            creation_location_id = current_room_id
-        else:
-            creation_location_type = "inventory"
-            creation_location_id = None
-
+        # Facade wrapper handles inventory-full fallback automatically.
         successfully_created_items_info = []
 
-        print(f"Creating {len(list_generated_items_data)} new item(s) in {creation_location_type}...")
+        print(f"Creating {len(list_generated_items_data)} new item(s)...")
         for generated_item_data in list_generated_items_data:
             item_name = generated_item_data.get("name", "Unnamed Item")
-            new_item_ids = self.state_manager.create_item(
-                creation_location_type, creation_location_id, generated_item_data, internal=True
-            )
+            creation_result = self.state_manager.auto_create_item("inventory", None, generated_item_data)
 
-            if new_item_ids and isinstance(new_item_ids, list):
-                for new_item_id in new_item_ids:
-                    print(f"  Created '{item_name}' → ID {new_item_id}.")
-                    successfully_created_items_info.append({
-                        "id": new_item_id,
-                        "location_type": creation_location_type,
-                        "location_id": creation_location_id,
-                        "name": item_name,
-                    })
-            else:
-                # Nothing was consumed yet, so just clean up any items created in this loop.
+            if not creation_result.success:
                 print(f"  Failed to create '{item_name}'. Rolling back {len(successfully_created_items_info)} already-created item(s).")
                 self._rollback_preparation([], successfully_created_items_info)
                 return (
                     f"Preparation failed: Could not create generated item '{item_name}'. "
+                    f"{creation_result.error} "
                     "No ingredients were consumed. Rolled back partial item creation."
                 )
 
+            for new_item_id in creation_result.created_ids:
+                print(f"  Created '{item_name}' → ID {new_item_id} in {creation_result.location}.")
+                successfully_created_items_info.append({
+                    "id": new_item_id,
+                    "location_type": creation_result.location,
+                    "name": item_name,
+                })
+
         print("All new items created successfully.")
 
-        # --- 5. Consume ingredients (decrement consume_uses_left, remove at 0) ---
-        # Rollback from here means removing the created items above.
-        successfully_consumed = []  # track for rollback: (item_data, new_consume_uses_left)
+        # --- 5. Consume ingredients ---
+        successfully_consumed = []
 
         print("Consuming ingredients...")
         for item_data, amount in valid_consumable_details:
@@ -262,39 +223,39 @@ class room_kitchen:
                 new_consume_uses_left = consume_uses_left - amount
 
                 if new_consume_uses_left <= 0:
-                    # Remove the item entirely
-                    removal_success, removal_status = self._inventory_service.remove_item(item_id, internal=True)
-                    if not removal_success:
+                    removal_result = self.state_manager.remove_item(item_id)
+                    if not removal_result.success:
                         print(f"  Failed to remove depleted item '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (
                             f"Preparation failed: Could not remove depleted ingredient '{item_name}' "
-                            "(ID: {item_id}). Rolled back changes."
+                            f"(ID: {item_id}). Rolled back changes."
                         )
                     print(f"  Removed depleted item '{item_name}' (ID: {item_id}).")
                     successfully_consumed.append((item_data, 0))
+
                 else:
-                    # Decrement consume_uses_left
-                    result : SetItemAttributeResult = self.state_manager.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left)
-                    if not result.success:
+                    attr_result = self.state_manager.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left)
+                    if not attr_result.success:
                         print(f"  Failed to decrement consume_uses_left for '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (
-                            f"Preparation failed: {result.message}"
+                            f"Preparation failed: {attr_result.message} "
                             f"(ID: {item_id}). Rolled back changes."
                         )
                     print(f"  '{item_name}' (ID: {item_id}): consume_uses_left {consume_uses_left} → {new_consume_uses_left}.")
                     successfully_consumed.append((item_data, new_consume_uses_left))
-            else:
-                # Item has no consume_uses_left field — remove it entirely (legacy / uncounted consumable)
 
-                removal_success, removal_message = self.state_manager.remove_item(item_id, internal=True)
-                if not removal_success:
+            else:
+                # No consume_uses_left field — remove entirely
+                removal_result = self.state_manager.remove_item(item_id)
+                if not removal_result.success:
                     print(f"  Failed to remove ingredient '{item_name}' (ID: {item_id}).")
                     self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                     return (
                         f"Preparation failed: Could not remove ingredient '{item_name}' "
-                        f"(ID: {item_id}). Rolled back changes."
+                        f"(ID: {item_id}). Rolled back changes.\n"
+                        f"{removal_result.error}"
                     )
                 print(f"  Removed ingredient '{item_name}' (ID: {item_id}) (no consume_uses_left field).")
                 successfully_consumed.append((item_data, None))
@@ -303,7 +264,7 @@ class room_kitchen:
 
         # --- 6. Success ---
         item_names_and_ids = [
-            f"{info.get('name', 'Unnamed')} (ID: {info.get('id', '?')})"
+            f"{info.get('name', 'Unnamed')} (ID: {info.get('id', '?')}) in {info.get('location_type', '?')}"
             for info in successfully_created_items_info
         ]
         self._send_signal({
@@ -311,54 +272,37 @@ class room_kitchen:
             "icon_path": "style/images/action_icons/plate_icon.png",
             "popup_type": 2,
         })
-        return (
-            f"Preparation successful! "
-            f"New item(s) created in {creation_location_type}: {', '.join(item_names_and_ids)}."
-        )
+        return f"Preparation successful! Created: {', '.join(item_names_and_ids)}."
+
 
     def _rollback_preparation(self, consumed_ingredients, created_items_info):
-        """
-        Reverses inventory changes from a failed preparation.
-
-        Args:
-            consumed_ingredients: list of (item_data, new_consume_uses_left) tuples.
-                new_consume_uses_left == 0  → item was removed; re-create it in inventory.
-                new_consume_uses_left > 0   → consume_uses_left was decremented; restore the old value.
-                new_consume_uses_left None  → item had no consume_uses_left field and was removed; re-create it.
-            created_items_info: list of {"id", "location_type", "location_id", "name"} dicts
-                for items that were already created and must be removed.
-        """
         print("Preparation failed — attempting rollback...")
 
-        # 1. Undo ingredient consumption (reverse order for cleanliness)
         for item_data, new_consume_uses_left in reversed(consumed_ingredients):
             item_id = item_data.get("id", "?")
             item_name = item_data.get("name", "Unnamed")
 
             if new_consume_uses_left == 0 or new_consume_uses_left is None:
-                # Item was fully removed — re-create it in inventory
                 print(f"  Re-creating removed ingredient '{item_name}' (original ID: {item_id})...")
-                new_ids = self.state_manager.create_item("inventory", None, item_data, internal=True)
-                if not new_ids:
-                    print(f"  CRITICAL: Failed to re-create '{item_name}'. Item may be lost!")
+                result = self.state_manager.auto_create_item("inventory", None, item_data)
+                if not result.success:
+                    print(f"  CRITICAL: Failed to re-create '{item_name}'. Item may be lost! {result.message}")
                 else:
-                    print(f"  Re-created '{item_name}' → new ID: {new_ids[0]}.")
+                    print(f"  Re-created '{item_name}' → new ID: {result.created_ids[0]}.")
             else:
-                # consume_uses_left was decremented — restore the previous value
                 original_consume_uses_left = item_data.get("consume_uses_left")
                 print(
                     f"  Restoring consume_uses_left for '{item_name}' (ID: {item_id}): "
                     f"{new_consume_uses_left} → {original_consume_uses_left}..."
                 )
-                result : SetItemAttributeResult = self.state_manager.set_item_attribute(
+                attr_result = self.state_manager.set_item_attribute(
                     int(item_id), "consume_uses_left", original_consume_uses_left
                 )
-                if not result.success:
+                if not attr_result.success:
                     print(f"  CRITICAL: Failed to restore consume_uses_left for '{item_name}' (ID: {item_id})!")
                 else:
                     print(f"  Restored consume_uses_left for '{item_name}'.")
 
-        # 2. Remove any items that were already created
         for item_info in reversed(created_items_info):
             item_id = item_info.get("id")
             item_name = item_info.get("name", "Unnamed")
@@ -366,12 +310,13 @@ class room_kitchen:
                 print(f"  Internal error: created item info missing ID: {item_info}")
                 continue
             print(f"  Removing created item '{item_name}' (ID: {item_id})...")
-
-            removal_success, removal_message = self.state_manager.remove_item(item_id, internal=True)
-            if not removal_success:
-                print(f"  CRITICAL: Failed to remove created item '{item_name}' (ID: {item_id}). Duplicate may exist!")
+            removal_result = self.state_manager.remove_item(item_id)
+            if not removal_result.success:
+                print(f"  CRITICAL: Failed to remove created item '{item_name}' (ID: {item_id}). Duplicate may exist!\n"
+                f"{removal_result.error}")
             else:
-                print(f"  Removed created item '{item_name}' (ID: {item_id}).")
+                print(f"  Removed created item '{item_name}' (ID: {item_id}).\n"
+                f"{removal_result.message}")
 
         print("Rollback complete.")
 
@@ -417,7 +362,7 @@ class room_bedroom:
         self.memory=memory
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state_manager = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         #print("Bedroom initialized.")
 
     # Add the helper method
@@ -450,21 +395,17 @@ class room_bedroom:
         # ------------------------
         return "You give the pillow a big hug, it is comfortable."
 
+
     def look_under_bed(self):
-        message=f"You look uder the bed around and found nothing."
-        # --- Add signal call for looking ---
-        #self._send_signal({"type": "show_message", "message": "You look under the bed..."})
-        # -----------------------------------
+        message = "You look under the bed and found nothing."
         if check_one_in(50):
-            found_item=random_object.load_and_get_random_item("found_items/underbed_found_data.json")
-            #found_item=random_object.load_and_get_random_item("food_n_drinks/")
-
-            creation_message=self.state_manager.create_item("inventory", None, found_item)
-            message=f"You found something under the bed! It is a {found_item["name"]}, it is now in your inventory."
-            # --- Add signal call for finding something ---
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"}) # Example icon
-            # -------------------------------------------
-
+            found_item = random_object.load_and_get_random_item("found_items/underbed_found_data.json")
+            result = self.state_manager.auto_create_item("inventory", None, found_item)
+            if result.success:
+                message = f"You found something under the bed! It is a {found_item['name']}. {result.message}"
+            else:
+                message = f"You found something under the bed, but couldn't pick it up. {result.error}"
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"})
         return message
 
 
@@ -492,22 +433,34 @@ class room_garden:
         # ------------------------
         return message
 
+
     def dig_hole(self):
-        edit=-15
+        edit = -15
         self.state_manager.adjust_stat("energy", edit)
         self.state_manager.adjust_stat("hydration", edit)
         self.state_manager.adjust_stat("fullness", edit)
-        message=f"You dig around and found nothing, all your stats have been lowered by {abs(edit)}. It at least was a good excercise." # Use abs for positive display
-        # --- Add signal call for digging ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png"})
-        # -----------------------------------
+
+        message = (
+            f"You dig around and found nothing. All your stats have been lowered by {abs(edit)}. "
+            "It at least was good exercise."
+        )
+
         if check_one_in(50):
-            found_item=random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
-            creation_message=self.state_manager.create_item("inventory", None, found_item)
-            message=f"While digging on the garden you found something! It is a {found_item["name"]}! It's been added to your inventory. All your stats have been lowered by {abs(edit)} for digging around."
-             # --- Add signal call for finding something while digging ---
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2}) # Example icon
-            # ---------------------------------------------------------
+            found_item = random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
+            result = self.state_manager.auto_create_item("inventory", None, found_item)
+            if result.success:
+                message = (
+                    f"While digging in the garden you found something! "
+                    f"It is a {found_item['name']}! {result.message} "
+                    f"All your stats have been lowered by {abs(edit)} for digging around."
+                )
+            else:
+                message = (
+                    f"While digging you found something, but couldn't pick it up. {result.error} "
+                    f"All your stats have been lowered by {abs(edit)}."
+                )
+            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2})
 
         return message
 
@@ -530,23 +483,26 @@ class room_living_room:
         message=f"The last TV show watched was:\n {self.last_show_watched}"
         return message
     
-    def take_a_seat(self, item_id:int):
-        item_object : ItemLookupResult = self.state_manager.find_item(item_id=item_id, required_type="seat", required_location="room")
-        item_details= item_object.item_data
+
+    def take_a_seat(self, item_id: int):
+        item_object = self.state_manager.find_item(item_id=item_id, required_type="seat", required_location="room")
         if not item_object.success:
             return item_object.error
 
-        print(f"Ok to sit on!")
-        edit=1
-        message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
+        # Safe to access item_data only after success check
+        item_details = item_object.item_data
+
+        edit = 1
+        message = f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
         if check_one_in(10):
-            edit=5
-            message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
+            edit = 5
+            message = f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points."
+
         self.state_manager.adjust_stat("energy", edit)
+
         item_name = item_details.get("name", "")
         item_desc = "\n".join(item_details.get("descriptions", []))
-        return f"You take a sit on the {item_name}\n {item_desc} \n {message}"
-        
+        return f"You take a seat on the {item_name}\n{item_desc}\n{message}"
 
     def watch_tv(self):
         """

@@ -17,6 +17,9 @@ from typing import Literal
 from inventory_items.services.item_lookup_result import ItemLookupResult
 from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
+from inventory_items.services.item_creation_result import ItemCreationResult
+from inventory_items.services.item_removal_result import ItemRemovalResult
+
 
 
 class InventoryService:
@@ -280,6 +283,24 @@ class InventoryService:
         return len(current_inventory) >= self.MAX_INVENTORY_SLOTS
 
 
+    def _inventory_can_accept(self, item_data: dict) -> bool:
+        """
+        Returns True if this item can be placed in inventory —
+        either because it will merge into an existing stack,
+        or because there is a free slot available.
+        """
+        if item_data.get("stackable", False):
+            inventory_list = self._state_store.get_state_section("inventory", [])
+            existing_stack = self._find_matching_stack_in_list(inventory_list, item_data)
+            if existing_stack:
+                space = existing_stack.get("max_stack_size", float("inf")) - existing_stack.get("quantity", 0)
+                if space > 0:
+                    return True  # Will merge, no slot needed
+
+        # No merge possible — needs a free slot
+        current_inventory = self._state_store.get_state_section("inventory", [])
+        return len(current_inventory) < self.MAX_INVENTORY_SLOTS
+
 
     def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
         if not isinstance(item_id, int):
@@ -527,206 +548,226 @@ class InventoryService:
                     source_item["quantity"] += actual_quantity_to_drop
                 return f"Failed to drop {item_display}."
     
-    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
-        print(f"DEBUG: Starting create_item. target_location: '{target_location}', target_location_id: '{target_location_id}', quantity: {quantity}, internal: {internal}")
+    def create_item(
+        self,
+        target_location: str,
+        target_location_id: int | None,
+        item_creation_data: dict | list[dict],
+        quantity: int = 1,
+    ) -> ItemCreationResult:
+        """
+        Creates one or more items in the specified location.
+
+        Parameters
+        ----------
+        target_location     : "inventory" or "room"
+        target_location_id  : Room ID when target_location="room", else None
+        item_creation_data  : A single item dict or a list of item dicts (templates)
+        quantity            : How many of each template to create. Defaults to 1.
+
+        Returns
+        -------
+        ItemCreationResult
+            Always returns this model — never a raw string or list.
+            Check result.success before using result.created_ids.
+            result.message is always safe to append to a parts list.
+        """
+        print(f"DEBUG: Starting create_item. target_location: '{target_location}', "
+            f"target_location_id: '{target_location_id}', quantity: {quantity}")
 
         failed_items_info = []
         messages = []
         overall_successful_creation_count = 0
-        
-        if not isinstance(quantity, int) or quantity <= 0:
-            msg = f"Failed to create item(s): 'quantity' must be a positive integer, received '{quantity}' ({type(quantity).__name__})."
-            print(f"DEBUG: Quantity validation failed: {msg}")
-            if internal: return [] if isinstance(item_creation_data, list) else False
-            return msg
 
-        item_templates_to_create = []
+        # --- Validate quantity ---
+        if not isinstance(quantity, int) or quantity <= 0:
+            return ItemCreationResult.fail(
+                f"Failed to create item(s): 'quantity' must be a positive integer, "
+                f"received '{quantity}' ({type(quantity).__name__})."
+            )
+
+        # --- Normalise item_creation_data to a list of templates ---
         if isinstance(item_creation_data, dict):
             item_templates_to_create = [item_creation_data]
         elif isinstance(item_creation_data, list):
             item_templates_to_create = item_creation_data
         else:
-            msg = f"Failed to create item(s): item_creation_data must be a dict or a list of dicts, received {type(item_creation_data).__name__}."
-            print(f"DEBUG: Invalid item_creation_data type: {msg}")
-            if internal: return [] if isinstance(item_creation_data, list) else False
-            return msg
+            return ItemCreationResult.fail(
+                f"Failed to create item(s): item_creation_data must be a dict or list of dicts, "
+                f"received {type(item_creation_data).__name__}."
+            )
 
         if not item_templates_to_create:
-             msg = "No valid item data provided after applying quantity."
-             print(f"DEBUG: No data list templates after initial processing: {msg}")
-             if internal: return [] if isinstance(item_creation_data, list) else []
-             return msg
+            return ItemCreationResult.fail("No valid item data provided.")
 
-        # Fetch current state lists to modify
+        # --- Fetch state lists ---
         inventory_list = self._state_store.get_state_section("inventory", [])
-        rooms_list = self._state_store.get_state_section("rooms", [])
+        rooms_list     = self._state_store.get_state_section("rooms", [])
 
         target_location_lower = target_location.strip().lower()
         target_room = None
+
         if target_location_lower == "room":
             if not isinstance(target_location_id, int) or not self._room_manager:
-                return f"Target room ID must be an integer when creating item(s) in a room, received '{target_location_id}' ({type(target_location_id).__name__})."
+                return ItemCreationResult.fail(
+                    f"Target room ID must be an integer when creating item(s) in a room, "
+                    f"received '{target_location_id}' ({type(target_location_id).__name__})."
+                )
             target_room = self._room_manager._find_room_by_id(target_location_id)
             if not target_room or not isinstance(target_room.get("items"), list):
-                return f"Target room with ID '{target_location_id}' not found or room data corrupted."
-            
+                return ItemCreationResult.fail(
+                    f"Target room with ID '{target_location_id}' not found or room data corrupted."
+                )
+
         elif target_location_lower == "inventory":
             if not isinstance(inventory_list, list):
-                 return "Inventory state corrupted. Cannot create items."
+                return ItemCreationResult.fail("Inventory state corrupted. Cannot create items.")
+
         else:
-            return f"Invalid target location '{target_location}'. Must be 'room' or 'inventory'."
+            return ItemCreationResult.fail(
+                f"Invalid target location '{target_location}'. Must be 'room' or 'inventory'."
+            )
 
-
+        # --- Main creation loop (logic unchanged) ---
         successfully_created_ids = []
 
-        for item_template_idx, original_item_template in enumerate(item_templates_to_create):
+        for original_item_template in item_templates_to_create:
             item_data_template = original_item_template.copy()
             item_data_template.setdefault("stackable", False)
             item_data_template.setdefault("quantity", 1)
-            # Validate the template before trying to create it
+
             is_valid, error_msg = self._is_valid_item_data(item_data_template, check_id=False)
             if not is_valid:
-                display_name = item_data_template.get('name', 'Unnamed Item') if isinstance(item_data_template, dict) else 'Invalid Data'
+                display_name = item_data_template.get("name", "Unnamed Item") if isinstance(item_data_template, dict) else "Invalid Data"
                 failed_items_info.append((display_name, f"Template validation failed: {error_msg}"))
                 continue
 
-            # # Check if a static item is trying to be created in inventory (which makes no sense conceptually) # We now allow it to retain its static flag for items like furniture placed in inventory
-            # if item_data_template.get("static", False) and target_location_lower == "inventory":
-            #      failed_items_info.append((self._format_item_for_display(item_data_template), "Cannot create a static item directly in inventory."))
-            #      continue
-
-            current_quantity_to_add = quantity # The total quantity for this template type
+            current_quantity_to_add = quantity
 
             while current_quantity_to_add > 0:
                 created_this_iteration = False
 
                 if item_data_template.get("stackable", False):
-                    # Try to find an existing stack to add to
                     target_list = inventory_list if target_location_lower == "inventory" else (target_room["items"] if target_room else [])
                     existing_stack = self._find_matching_stack_in_list(target_list, item_data_template)
 
                     if existing_stack:
-                        space_in_target = existing_stack.get("max_stack_size", float('inf')) - existing_stack.get("quantity", 0)
+                        space_in_target = existing_stack.get("max_stack_size", float("inf")) - existing_stack.get("quantity", 0)
                         amount_to_transfer = min(current_quantity_to_add, space_in_target)
 
                         if amount_to_transfer > 0:
-                            # Safely get the current quantity, defaulting to 0 if the key is missing
-                            current_qty = existing_stack.get("quantity", 0)
-                            # Set the new, updated quantity
-                            existing_stack["quantity"] = current_qty + amount_to_transfer
-                            
+                            existing_stack["quantity"] = existing_stack.get("quantity", 0) + amount_to_transfer
                             current_quantity_to_add -= amount_to_transfer
                             overall_successful_creation_count += amount_to_transfer
-                            successfully_created_ids.append(existing_stack["id"]) # Add existing ID to list for tracking
+                            successfully_created_ids.append(existing_stack["id"])
                             created_this_iteration = True
                             messages.append(f"Added {amount_to_transfer} units to existing stack {self._format_item_for_display(existing_stack)}.")
 
-                    if current_quantity_to_add > 0: # If still units left after trying to merge
-                        # Check for inventory full only if creating a NEW stack in inventory
+                    if current_quantity_to_add > 0:
                         if target_location_lower == "inventory" and self.is_inventory_full():
-                            failed_items_info.append((self._format_item_for_display(item_data_template), f"Inventory full, could not create new stack for {current_quantity_to_add} units."))
-                            current_quantity_to_add = 0 # Stop trying to add this template
-                            break # Break out of while loop for this template
+                            failed_items_info.append((
+                                self._format_item_for_display(item_data_template),
+                                f"Inventory full, could not create new stack for {current_quantity_to_add} units."
+                            ))
+                            current_quantity_to_add = 0
+                            break
 
-                        # Create a new stack
-                        new_item_id = self._state_store.get_next_item_id()
+                        new_item_id    = self._state_store.get_next_item_id()
                         new_stack_item = item_data_template.copy()
-                        new_stack_item["id"] = new_item_id
-                        new_stack_item["quantity"] = current_quantity_to_add # Add remaining quantity
-                        # --- CORRECTED: Retain original static flag ---
-                        # new_stack_item["static"] = (target_location_lower == "room") # REMOVED THIS LINE
-                        # The 'static' flag is part of the item_data_template already and shouldn't change.
-                        # --- END CORRECTED ---
+                        new_stack_item["id"]       = new_item_id
+                        new_stack_item["quantity"] = current_quantity_to_add
 
-                        # Clamp quantity if it exceeds max_stack_size (should ideally be handled by _is_valid_item_data but as a fallback)
-                        max_size = new_stack_item.get("max_stack_size", float('inf'))
+                        max_size = new_stack_item.get("max_stack_size", float("inf"))
                         if new_stack_item["quantity"] > max_size:
-                            original_clamped_qty = new_stack_item["quantity"]
+                            original_qty = new_stack_item["quantity"]
                             new_stack_item["quantity"] = max_size
-                            failed_items_info.append((self._format_item_for_display(new_stack_item), f"Quantity ({original_clamped_qty}) for new stack exceeded max_stack_size ({max_size}); clamped to {max_size}. Remaining units lost."))
-                            
+                            failed_items_info.append((
+                                self._format_item_for_display(new_stack_item),
+                                f"Quantity ({original_qty}) exceeded max_stack_size ({max_size}); clamped. Remaining units lost."
+                            ))
+
                         if target_location_lower == "inventory":
                             inventory_list.append(new_stack_item)
                         elif target_room:
                             target_room["items"].append(new_stack_item)
-                        
+
                         overall_successful_creation_count += new_stack_item["quantity"]
                         successfully_created_ids.append(new_stack_item["id"])
                         messages.append(f"Created a new stack of {self._format_item_for_display(new_stack_item)}.")
-                        current_quantity_to_add = 0 # All handled for this template in this iteration
+                        current_quantity_to_add = 0
                         created_this_iteration = True
 
-                else: # Not stackable item
+                else:  # Non-stackable
                     if target_location_lower == "inventory" and self.is_inventory_full():
-                        failed_items_info.append((self._format_item_for_display(item_data_template), f"Inventory full, could not create new non-stackable item."))
-                        current_quantity_to_add = 0 # Stop trying to add this template
-                        break # Break out of while loop for this template
-                    
-                    new_item_id = self._state_store.get_next_item_id()
+                        failed_items_info.append((
+                            self._format_item_for_display(item_data_template),
+                            "Inventory full, could not create new non-stackable item."
+                        ))
+                        current_quantity_to_add = 0
+                        break
+
+                    new_item_id     = self._state_store.get_next_item_id()
                     new_single_item = item_data_template.copy()
-                    new_single_item["id"] = new_item_id
-                    new_single_item["quantity"] = 1 # Non-stackable items always have quantity 1
-                    # --- CORRECTED: Retain original static flag ---
-                    # new_single_item["static"] = (target_location_lower == "room") # REMOVED THIS LINE
-                    # --- END CORRECTED ---
+                    new_single_item["id"]       = new_item_id
+                    new_single_item["quantity"] = 1
 
                     if target_location_lower == "inventory":
                         inventory_list.append(new_single_item)
                     elif target_room:
                         target_room["items"].append(new_single_item)
-                    
+
                     overall_successful_creation_count += 1
                     successfully_created_ids.append(new_single_item["id"])
                     messages.append(f"Created {self._format_item_for_display(new_single_item)}.")
-                    current_quantity_to_add -= 1 # One unit processed
+                    current_quantity_to_add -= 1
                     created_this_iteration = True
-                
+
                 if not created_this_iteration and current_quantity_to_add > 0:
-                    failed_items_info.append((self._format_item_for_display(item_data_template), f"Failed to place remaining {current_quantity_to_add} units (unknown reason)."))
-                    current_quantity_to_add = 0 # Prevent infinite loop
+                    failed_items_info.append((
+                        self._format_item_for_display(item_data_template),
+                        f"Failed to place remaining {current_quantity_to_add} units (unknown reason)."
+                    ))
+                    current_quantity_to_add = 0
 
-        self._state_store.update_state_section("inventory", inventory_list)
-        self._state_store.update_state_section("rooms", rooms_list)
+        # --- Persist ---
+        if target_location_lower == "inventory":
+            self._state_store.update_state_section("inventory", inventory_list)
+        else:
+            self._state_store.update_state_section("rooms", rooms_list)
 
-
-        
         if overall_successful_creation_count > 0:
             list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-            self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
-            self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+            self._send_signal({"type": "room_inventory",   "item_list": list_room_items_names})
+            self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
 
-        final_report_messages = []
-        if overall_successful_creation_count > 0:
-            item_plural = "item" if overall_successful_creation_count == 1 else "items"
-            final_report_messages.append(f"Successfully created {overall_successful_creation_count} {item_plural}.")
-        
+        # --- Build result ---
+        if overall_successful_creation_count == 0:
+            # Everything failed
+            all_reasons = "; ".join(f"{name}: {reason}" for name, reason in failed_items_info)
+            return ItemCreationResult.fail(
+                f"Failed to create item(s): {all_reasons or 'Unknown reason.'}"
+            )
+
+        # At least some items were created — build a human-readable summary
+        item_plural = "item" if overall_successful_creation_count == 1 else "items"
+        summary_parts = [f"Successfully created {overall_successful_creation_count} {item_plural}."]
+        summary_parts.extend(messages)
+
         if failed_items_info:
-            grouped_failures = {}
+            grouped = {}
             for name, reason in failed_items_info:
-                key = (name, reason)
-                grouped_failures[key] = grouped_failures.get(key, 0) + 1
-            
-            failure_summaries = []
-            for (name, reason), count in grouped_failures.items():
-                if count > 1: failure_summaries.append(f"- {count}x {name}: {reason}")
-                else: failure_summaries.append(f"- {name}: {reason}")
-            
-            failed_plural = "item" if len(failed_items_info) == 1 else "items"
-            final_report_messages.append(f"{len(failed_items_info)} {failed_plural} failed to be created or placed:\n" + "\n".join(failure_summaries))
+                grouped[(name, reason)] = grouped.get((name, reason), 0) + 1
+            failure_lines = [
+                f"- {count}x {name}: {reason}" if count > 1 else f"- {name}: {reason}"
+                for (name, reason), count in grouped.items()
+            ]
+            summary_parts.append("Some items failed:\n" + "\n".join(failure_lines))
 
-        if not final_report_messages:
-            return "No item creation attempts were processed."
-        
-        if internal:
-            return successfully_created_ids # Return the list of IDs for internal calls
-        
-        final_items_list=[]
-        for item_id in successfully_created_ids:
-            item_info=self._find_item_info_by_id(item_id)
-            final_items_list.append(self._format_item_for_display(item_info["item_data"]))
-
-        final_report_messages.append("\n".join(final_items_list))
-        return "\n".join(final_report_messages)
+        return ItemCreationResult.ok(
+            created_ids=successfully_created_ids,
+            location=target_location_lower,
+            message="\n".join(summary_parts),
+        )
 
 
     def trash_item(self, item_id: int, confirm: bool, quantity_to_trash: int = 1) -> str:
@@ -761,96 +802,123 @@ class InventoryService:
             else:
                 actual_quantity_to_trash = quantity_to_trash
 
-            removal_result_status, removal_message = self.remove_item(item_id, internal=True, quantity_to_remove=actual_quantity_to_trash)
+            removal_result = self.remove_item(item_id, quantity_to_remove=actual_quantity_to_trash)
             
-            if removal_result_status: # True indicates success
+            if removal_result.success: # True indicates success
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trashcan_icon.png"})
-                return f"You trashed {actual_quantity_to_trash} unit(s) of {item_display}. {removal_message}"
+                return f"You trashed {actual_quantity_to_trash} unit(s) of {item_display}. {removal_result.message}"
             else:
-                print(f"Warning: trash_item called remove_item for {item_display} (ID:{item_id}) but it failed: {removal_message}")
-                return f"Failed to trash {item_display}: {removal_message}"
+                print(f"Warning: trash_item called remove_item for {item_display} (ID:{item_id}) but it failed: {removal_result.message}")
+                return f"Failed to trash {item_display}: {removal_result.message}"
         else:
             return f"Destruction of item {item_id} cancelled."
 
-    def remove_item(self, item_id: int,  internal=False, quantity_to_remove: int = 1):
-        # Returns (success_bool, message_string)
+
+    def remove_item(
+        self,
+        item_id: int,
+        quantity: int = 1,
+    ) -> ItemRemovalResult:
+        """
+        Removes one or more units of an item from wherever it currently is.
+
+        Parameters
+        ----------
+        item_id  : The integer ID of the item to remove.
+        quantity : How many units to remove. Pass 0 to remove the entire stack.
+                Defaults to 1.
+
+        Returns
+        -------
+        ItemRemovalResult
+            Always returns this model — never a raw string or tuple.
+            Check result.success before acting on failure.
+            result.message is always safe to append to a parts list.
+        """
         if not isinstance(item_id, int):
-            if internal: return (False, f"Item ID must be an integer, received '{item_id}' ({type(item_id).__name__}).")
-            return f"Failed to remove: Item ID must be an integer, received '{item_id}'."
+            return ItemRemovalResult.fail(
+                f"Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
+            )
 
         item_info = self._find_item_info_by_id(item_id)
         if not item_info:
-            if internal: return (False, f"Item with ID '{item_id}' not found anywhere.")
-            return f"Failed to remove item: Item with ID '{item_id}' not found anywhere."
+            return ItemRemovalResult.fail(
+                f"Item with ID '{item_id}' not found anywhere."
+            )
 
-        item_data_to_remove = item_info["item_data"] # This is the actual dict in the list, changes will persist
-        item_display = self._format_item_for_display(item_data_to_remove)
-        location = item_info["location"]
-        location_id = item_info["location_id"]
-        
-        # If the item is static, it should not be removable by the player through general means.
-        # This is a strong failsafe.
-        # if item_data_to_remove.get("static", False):
-        #     if internal: return (False, f"Cannot remove {item_display}. It is a static item.")
-        #     return f"Failed to remove {item_display}: It is a static item."
-
+        item_data_to_remove = item_info["item_data"]
+        item_display        = self._format_item_for_display(item_data_to_remove)
+        location            = item_info["location"]
+        location_id         = item_info["location_id"]
 
         available_quantity = item_data_to_remove.get("quantity", 1)
-        if quantity_to_remove <= 0 or quantity_to_remove > available_quantity:
-            actual_quantity_to_remove = available_quantity # Remove the whole stack/item by default
+        if quantity <= 0 or quantity > available_quantity:
+            actual_quantity_to_remove = available_quantity
         else:
-            actual_quantity_to_remove = quantity_to_remove
+            actual_quantity_to_remove = quantity
 
-        message_suffix = f" ({actual_quantity_to_remove} unit(s))" if actual_quantity_to_remove > 1 else ""
-        
-        location_desc = "an unknown location"
-        
+        # --- Inventory removal ---
         if location == "inventory":
             inventory_list = self._state_store.get_state_section("inventory")
-            if isinstance(inventory_list, list):
-                if item_data_to_remove.get("stackable", False) and item_data_to_remove["quantity"] > actual_quantity_to_remove:
-                    item_data_to_remove["quantity"] -= actual_quantity_to_remove
-                    message = f"Removed {actual_quantity_to_remove} unit(s) from {item_display} in your inventory. Remaining quantity: {item_data_to_remove['quantity']}."
-                else:
-                    inventory_list[:] = [item for item in inventory_list if item.get("id") != item_id] # Remove the entire stack
-                    message = f"Removed {item_display} from your inventory."
-                
-                self._state_store.update_state_section("inventory", inventory_list)
-                location_desc = "your inventory"
-            else:
-                if internal: return (False, "Cannot remove item from inventory, inventory state corrupted.")
-                return "Error: Cannot remove item from inventory, inventory state corrupted."
+            if not isinstance(inventory_list, list):
+                return ItemRemovalResult.fail(
+                    "Cannot remove item from inventory — inventory state corrupted."
+                )
 
+            if item_data_to_remove.get("stackable", False) and item_data_to_remove["quantity"] > actual_quantity_to_remove:
+                item_data_to_remove["quantity"] -= actual_quantity_to_remove
+                message = (
+                    f"Removed {actual_quantity_to_remove} unit(s) from {item_display} in your inventory. "
+                    f"Remaining: {item_data_to_remove['quantity']}."
+                )
+            else:
+                inventory_list[:] = [item for item in inventory_list if item.get("id") != item_id]
+                message = f"Removed {item_display} from your inventory."
+
+            self._state_store.update_state_section("inventory", inventory_list)
+
+        # --- Room removal ---
         elif location == "room":
             rooms_list = self._state_store.get_state_section("rooms")
             if not self._room_manager:
-                if internal: return (False, "RoomManager not set in InventoryService, cannot remove from room.")
-                return "Error: RoomManager not set in InventoryService, cannot remove from room."
+                return ItemRemovalResult.fail(
+                    "RoomManager not set — cannot remove item from room."
+                )
 
             room_data = self._room_manager._find_room_by_id(location_id)
-            if room_data and isinstance(room_data.get("items"), list):
-                if item_data_to_remove.get("stackable", False) and item_data_to_remove["quantity"] > actual_quantity_to_remove:
-                    item_data_to_remove["quantity"] -= actual_quantity_to_remove
-                    message = f"Removed {actual_quantity_to_remove} unit(s) from {item_display} in {self._room_manager._format_room_for_display(room_data)}. Remaining quantity: {item_data_to_remove['quantity']}."
-                else:
-                    room_data["items"][:] = [item for item in room_data["items"] if isinstance(item, dict) and item.get("id") != item_id] # Remove entire stack
-                    message = f"Removed {item_display} from {self._room_manager._format_room_for_display(room_data)}."
-                
-                self._state_store.update_state_section("rooms", rooms_list) # Save the overall rooms list
-                location_desc = f"the {self._room_manager._format_room_for_display(room_data)}"
+            if not room_data or not isinstance(room_data.get("items"), list):
+                return ItemRemovalResult.fail(
+                    f"Cannot remove item from room '{location_id}' — room data corrupted."
+                )
+
+            room_display = self._room_manager._format_room_for_display(room_data)
+
+            if item_data_to_remove.get("stackable", False) and item_data_to_remove["quantity"] > actual_quantity_to_remove:
+                item_data_to_remove["quantity"] -= actual_quantity_to_remove
+                message = (
+                    f"Removed {actual_quantity_to_remove} unit(s) from {item_display} "
+                    f"in {room_display}. Remaining: {item_data_to_remove['quantity']}."
+                )
             else:
-                if internal: return (False, f"Cannot remove item from room '{location_id}', room data corrupted.")
-                return f"Error: Cannot remove item from room '{location_id}', room data corrupted."
+                room_data["items"][:] = [
+                    item for item in room_data["items"]
+                    if isinstance(item, dict) and item.get("id") != item_id
+                ]
+                message = f"Removed {item_display} from {room_display}."
+
+            self._state_store.update_state_section("rooms", rooms_list)
+
         else:
-            if internal: return (False, f"Failed to remove item {item_display}: Unknown location type '{location}'.")
-            return f"Failed to remove item {item_display}: Unknown location type '{location}'."
+            return ItemRemovalResult.fail(
+                f"Failed to remove {item_display}: unknown location type '{location}'."
+            )
 
+        # --- Signals ---
         list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-        self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
-        self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+        self._send_signal({"type": "room_inventory",   "item_list": list_room_items_names})
+        self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
 
-        if internal: return (True, message)
-        return message
+        return ItemRemovalResult.ok(message)
 
     def persist_item_changes(self, item_id: int) -> str | None:
         """

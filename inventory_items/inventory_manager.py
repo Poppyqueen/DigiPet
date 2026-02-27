@@ -114,14 +114,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
         return self.inventory_service.drop_item(item_id, quantity_to_drop)
 
-    def create_item(self, target_location: str, target_location_id: int | None, item_creation_data: dict | list[dict], internal=False, quantity=1):
-        return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, internal, quantity)
-
-    def trash_item(self, item_id: int, confirm: bool) -> str:
+    def trash_item(self, item_id: int, confirm: bool) -> str: # TODO: Move to a tooling system model, however, it is not used in game
         return self.inventory_service.trash_item(item_id, confirm)
-
-    def remove_item(self, item_id: int, internal=False, quantity=1):
-        return self.inventory_service.remove_item(item_id, internal, quantity)
 
     def get_all_rooms(self):
         return self.room_manager.get_all_rooms()
@@ -203,7 +197,9 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self._state_store.save_state()
         print("State saved successfully.")
 
-    # Main Public Method to find validated item in the state
+
+
+    # Public Methods verified for tools and services use.
 
     def find_item(
         self,
@@ -232,3 +228,38 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.inventory_service.validate_item_data(item_id, expected_type, expected_loc)
 
 
+    def remove_item(self, item_id: int, quantity: int = 1):
+        return self.inventory_service.remove_item(item_id, quantity)
+
+    def simple_create_item(
+        self,
+        target_location: str,
+        target_location_id: int | None,
+        item_creation_data: dict | list[dict],
+        quantity: int = 1,
+    ):
+        return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity)
+
+
+    def auto_create_item( 
+        self,
+        target_location: str,
+        target_location_id: int | None,
+        item_creation_data: dict | list[dict],
+        quantity: int = 1,
+    ):
+        message = ""
+        if not self.inventory_service._inventory_can_accept(item_creation_data):
+            if target_location == "inventory":
+                target_location = "room"
+                target_location_id = self.room_manager.get_current_room_id()
+                message = "Inventory is full. Attempting to place item in room."
+        args = {
+            "target_location": target_location,
+            "target_location_id": target_location_id,
+            "item_creation_data": item_creation_data,
+            "quantity": quantity
+        }
+        response_object = self.inventory_service.create_item(**args)
+        response_object.message += f"{message}"
+        return response_object

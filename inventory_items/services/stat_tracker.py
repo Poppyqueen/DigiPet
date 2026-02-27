@@ -141,8 +141,8 @@ class StatTracker:
         is_valid, msg = self._inventory_service._is_valid_item_data(item_data, check_id=True)
         if not is_valid:
             print(f"Warning: Attempted to consume invalid item ID {item_id}: {msg}. Removing from inventory due to corruption.")
-            remove_result = self._inventory_service.remove_item(item_id, internal=True)
-            return f"Failed to consume {item_display}: Item data is corrupted. It has been removed from your inventory. ({msg})"
+            remove_result = self._inventory_service.remove_item(item_id)
+            return f"Failed to consume {item_display}: Item data is corrupted. It has been removed from your inventory. ({msg} {remove_result.message})"
 
         if "consumable" not in item_data.get("type", []):
             return f"Failed to consume {item_display}: This item is not a consumable type (types found: {item_data.get('type', ['unknown type'])})."
@@ -161,12 +161,12 @@ class StatTracker:
         message = "" 
         # Remove the item from inventory using InventoryService
         if item_data.get("consume_uses_left", 1) - uses <= 0:
-            removal_success, removal_status = self._inventory_service.remove_item(item_id, internal=True)
+            removal_result = self._inventory_service.remove_item(item_id)
             message+= f"Item {item_display} consumed."
-            if not removal_success:
+            if not removal_result.success:
                 removal_status = f"Warning: Item {item_display} consumed but could not be removed from inventory list."
                 print(removal_status)
-            message += removal_status
+            message += removal_result.message
         else:
             item_status : SetItemAttributeResult = self._inventory_service.set_item_attribute(item_id, "consume_uses_left", item_data.get("consume_uses_left", 1) - uses)
             if item_status.success:
