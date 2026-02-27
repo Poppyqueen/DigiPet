@@ -109,8 +109,7 @@ class ToolRegistry:
         self.dispenser_tools = DispenserTools(state_manager, signal)
         self.auction_house  = AuctionHouse(state_manager)
         self.maze           = MazeEnvironment(state_manager, signal)
-        self.A_Life         = None
-        self._init_alife(subdirectory, state_manager, signal)
+        self.A_Life         = ALifeController(state_manager=state_manager, signal=signal, base_path=subdirectory)
         self.book_tools     = BookTools(state_manager, signal)
         self.consumables_tools = ConsumablesTools(state_manager, signal)
 
@@ -153,14 +152,6 @@ class ToolRegistry:
     # Phase 1 helpers
     # ------------------------------------------------------------------
 
-    def _init_alife(self, subdirectory, state_manager, signal):
-        archive_dir = os.path.join(subdirectory, "simulation_archives")
-        try:
-            self.A_Life = ALifeController(state_manager, signal, archive_dir)
-            print("ALifeController instance created.")
-        except Exception as e:
-            print(f"Error initializing ALifeController: {e}")
-            self.A_Life = None
 
     def _init_optional_services(self, state_manager, signal):
         if self.youtube_enabled:
@@ -309,12 +300,11 @@ class ToolRegistry:
                     "details_of_simulation":        al.details_of_simulation           if al else None,
                     "update_simulation_name":       al.update_simulation_name          if al else None,
                     "add_simulation_detail":        al.add_simulation_detail           if al else None,
-                    "display_information":          al.display_information             if al else None,
+                    #"display_information":          al.display_information             if al else None,
                 },
                 "definitions": lab_room_tools,
                 "room_types": ["ALIFE_research"],
                 "display_information": al.display_information if al else None,
-                "agent_information": al.display_information if al else None,
                 # agent_information intentionally omitted — contains restricted info (see TODO in original)
             },
 

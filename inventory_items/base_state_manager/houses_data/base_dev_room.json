@@ -43,7 +43,7 @@
         "image": "lab_room",
         "room_types": [
             "accessible_light_viewing_room",
-            "library"
+            "ALIFE_research"
         ],
         "plot_number": 3,
         "music": "white_room",
