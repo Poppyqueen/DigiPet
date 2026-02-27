@@ -982,34 +982,6 @@ class InventoryService:
         )
 
 
-    # ============================================================================
-    # UPDATED WRAPPER — replaces the old get_validated_item_data
-    # Keeps the same (data, error) tuple signature so existing callers don't break.
-    # Internally delegates to find_item.
-    # Mark for deletion once all callers are migrated to find_item.
-    # ============================================================================
-
-    def get_validated_item_data(
-        self,
-        item_id: int,
-        required_type: str | None = None,
-    ) -> tuple[dict | None, str | None]:
-        """
-        DEPRECATED — use find_item() for new code.
-
-        Thin wrapper around find_item() that preserves the old (data, error) tuple
-        interface so existing callers continue to work without changes.
-
-        Note: this wrapper does NOT apply a location filter.
-        Callers that need location enforcement should migrate to find_item() directly.
-        """
-        result = self.find_item(item_id, required_type=required_type)
-        if result.success:
-            return result.item_data, None
-        return None, result.error
-
-        
-
 # ── New helper ──────────────────────────────────────────────────────────
 
     def _apply_nested_set(self, data: dict, path: list[str] | None, key: str, value) -> None:
