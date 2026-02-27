@@ -13,7 +13,7 @@
 #   Phase 4: Services that NEED the toolset_checker (lighthouse, etc.)
 
 import os
-from tools.tools_folder import simulation
+from tools.tools_folder.alife_controller import ALifeController
 from tools.tools_folder.garden_tools import Garden_Mananger
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
@@ -155,38 +155,11 @@ class ToolRegistry:
 
     def _init_alife(self, subdirectory, state_manager, signal):
         archive_dir = os.path.join(subdirectory, "simulation_archives")
-        os.makedirs(archive_dir, exist_ok=True)
         try:
-            self.A_Life = simulation.ALifeSimulation(
-                archive_path=archive_dir,
-                state_manager=state_manager,
-                signal=signal,
-            )
-            manager = self.A_Life.simulations_manager
-            if manager:
-                sim_ids = list(manager._state.keys())
-                if sim_ids:
-                    state_info = state_manager.get_sim_state()
-                    sim_id = state_info.get("id_value")
-                    current_step = state_info.get("sim_current_step", 0)
-                    current_sim_id = sim_id if sim_id in sim_ids else sim_ids[0]
-                    msg = self.A_Life.load_previous_simulation(current_sim_id, current_step)
-                    print(f"Loaded simulation: {msg}")
-                else:
-                    msg = self.A_Life.create_new_simulation()
-                    current_sim_id = (
-                        list(self.A_Life.simulations_manager._state.keys())[0]
-                        if self.A_Life.simulations_manager._state
-                        else "N/A"
-                    )
-                    print(f"Created new simulation: {msg}")
-
-                if self.A_Life and self.A_Life.history:
-                    state_manager.set_sim_state(current_sim_id, self.A_Life.current_tick)
-
-            print("ALifeSimulation instance created.")
+            self.A_Life = ALifeController(state_manager, signal, archive_dir)
+            print("ALifeController instance created.")
         except Exception as e:
-            print(f"Error initializing ALifeSimulation: {e}")
+            print(f"Error initializing ALifeController: {e}")
             self.A_Life = None
 
     def _init_optional_services(self, state_manager, signal):
@@ -332,14 +305,16 @@ class ToolRegistry:
                     "backward_ALIFE":               al.backward_ALIFE                  if al else None,
                     "create_new_simulation":        al.create_new_simulation           if al else None,
                     "load_previous_simulation":     al.load_previous_simulation        if al else None,
-                    "list_simulations":             al.simulations_manager.list_simulations       if al and al.simulations_manager else None,
-                    "details_of_simulation":        al.simulations_manager.details_of_simulation  if al and al.simulations_manager else None,
-                    "update_simulation_name":       al.simulations_manager.update_simulation_name if al and al.simulations_manager else None,
-                    "add_simulation_detail":        al.simulations_manager.add_simulation_detail  if al and al.simulations_manager else None,
+                    "list_simulations":             al.list_simulations                if al else None,
+                    "details_of_simulation":        al.details_of_simulation           if al else None,
+                    "update_simulation_name":       al.update_simulation_name          if al else None,
+                    "add_simulation_detail":        al.add_simulation_detail           if al else None,
+                    "display_information":          al.display_information             if al else None,
                 },
                 "definitions": lab_room_tools,
                 "room_types": ["ALIFE_research"],
                 "display_information": al.display_information if al else None,
+                "agent_information": al.display_information if al else None,
                 # agent_information intentionally omitted — contains restricted info (see TODO in original)
             },
 

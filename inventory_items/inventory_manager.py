@@ -10,7 +10,6 @@ from inventory_items.services.room_manager import RoomManager
 #from inventory_items.services.book_service import BookService # This has been moved to the tools folder
 from inventory_items.services.stat_tracker import StatTracker # This will replace the old stats_component
 from inventory_items.services.pet_state_manager import PetStateManager
-from inventory_items.services.simulation_state_service import SimulationStateService
 
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
@@ -54,7 +53,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self.stat_tracker = StatTracker(self._state_store, self._signal_callback)
         #self.book_service = BookService(self._state_store, self._signal_callback)
         self.pet_state_manager = PetStateManager(self._state_store, self._signal_callback)
-        self.simulation_state_service = SimulationStateService(self._state_store)
 
         # 4. Resolve explicit circular dependencies or cross-service references
         self.inventory_service.set_room_manager(self.room_manager)
@@ -67,12 +65,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # --- Facade Methods (Public API of InventoryHouseManager) ---
     # These methods will now simply delegate to the appropriate service.
     # This makes InventoryHouseManager a thin orchestrator.
-
-    def get_sim_state(self):
-        return self.simulation_state_service.get_sim_state() # move this out of here
-
-    def set_sim_state(self, id_value=None, sim_current_step=None):
-        return self.simulation_state_service.set_sim_state(id_value, sim_current_step)
 
     def add_item_description(self, item_id: int, new_description: str) -> str: # this is a tool move to tools folder
         return self.inventory_service.add_item_description(item_id, new_description)
