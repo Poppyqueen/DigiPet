@@ -7,7 +7,7 @@ from inventory_items.services.state_store import StateStore
 # Import the new service classes (will be created in subsequent steps)
 from inventory_items.services.inventory_service import InventoryService
 from inventory_items.services.room_manager import RoomManager
-from inventory_items.services.book_service import BookService # This will replace the old book_component
+#from inventory_items.services.book_service import BookService # This has been moved to the tools folder
 from inventory_items.services.stat_tracker import StatTracker # This will replace the old stats_component
 from inventory_items.services.pet_state_manager import PetStateManager
 from inventory_items.services.simulation_state_service import SimulationStateService
@@ -52,15 +52,15 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self.inventory_service = InventoryService(self._state_store, self._signal_callback)
         self.room_manager = RoomManager(self._state_store, self._signal_callback)
         self.stat_tracker = StatTracker(self._state_store, self._signal_callback)
-        self.book_service = BookService(self._state_store, self._signal_callback)
+        #self.book_service = BookService(self._state_store, self._signal_callback)
         self.pet_state_manager = PetStateManager(self._state_store, self._signal_callback)
         self.simulation_state_service = SimulationStateService(self._state_store)
 
         # 4. Resolve explicit circular dependencies or cross-service references
         self.inventory_service.set_room_manager(self.room_manager)
         self.room_manager.set_inventory_service(self.inventory_service)
-        self.stat_tracker.set_inventory_service(self.inventory_service) # StatTracker needs InventoryService for consume_item
-        self.book_service.set_inventory_service(self.inventory_service) # BookService needs InventoryService for create_book_item, etc.
+        # self.stat_tracker.set_inventory_service(self.inventory_service) # StatTracker needs InventoryService for consume_item
+        #self.book_service.set_inventory_service(self.inventory_service) # BookService needs InventoryService for create_book_item, etc.
 
         print(f"InventoryHouseManager initialized. Current room ID: {self._state_store.get_state_section('current_room_id')}")
 
@@ -129,26 +129,26 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool:
         return self.pet_state_manager.set_current_emote(emote_name, internal)
 
-    def create_book_item(self, book_name: str, description: str) -> str:
-        return self.book_service.create_book_item(book_name, description)
+    # def create_book_item(self, book_name: str, description: str) -> str:
+    #     return self.book_service.create_book_item(book_name, description)
 
-    def list_inventory_books(self, internal=False) -> str | list[dict]:
-        return self.book_service.list_inventory_books(internal)
+    # def list_inventory_books(self, internal=False) -> str | list[dict]:
+    #     return self.book_service.list_inventory_books(internal)
 
-    def list_book_chapters(self, book_item_id: int) -> str:
-        return self.book_service.list_book_chapters(book_item_id)
+    # def list_book_chapters(self, book_item_id: int) -> str:
+    #     return self.book_service.list_book_chapters(book_item_id)
 
-    def read_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-        return self.book_service.read_book_chapter(book_item_id, chapter_title)
+    # def read_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
+    #     return self.book_service.read_book_chapter(book_item_id, chapter_title)
 
-    def add_book_chapter(self, book_item_id: int, chapter_title: str, content: str) -> str:
-        return self.book_service.add_book_chapter(book_item_id, chapter_title, content)
+    # def add_book_chapter(self, book_item_id: int, chapter_title: str, content: str) -> str:
+    #     return self.book_service.add_book_chapter(book_item_id, chapter_title, content)
 
-    def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str) -> str:
-        return self.book_service.update_book_chapter(book_item_id, chapter_title, new_content, operation)
+    # def update_book_chapter(self, book_item_id: int, chapter_title: str, new_content: str, operation: str) -> str:
+    #     return self.book_service.update_book_chapter(book_item_id, chapter_title, new_content, operation)
 
-    def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
-        return self.book_service.delete_book_chapter(book_item_id, chapter_title)
+    # def delete_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
+    #     return self.book_service.delete_book_chapter(book_item_id, chapter_title)
 
     def get_stats(self, internal: bool = False) -> str | dict:
         return self.stat_tracker.get_stats(internal)
@@ -156,8 +156,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
-    def consume_item(self, item_id: int, uses: int = 1) -> str:
-        return self.stat_tracker.consume_item(item_id, uses)
+    # def consume_item(self, item_id: int, uses: int = 1) -> str:
+    #     return self.stat_tracker.consume_item(item_id, uses)
 
     def get_pet_color(self) -> tuple[int, int, int] | None:
         return self.pet_state_manager.get_pet_color()

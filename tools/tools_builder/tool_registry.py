@@ -24,6 +24,10 @@ from tools.tools_folder.maze import MazeEnvironment
 from tools.tools_folder.lighthouse_controller import LighthouseController
 from tools.tools_folder.items_toggle import ItemToggleTool
 
+from tools.tools_folder.book_tools import BookTools
+from tools.tools_folder.consumables import ConsumablesTools
+
+
 from .my_tools import (
     base_tools,
     library_tools,
@@ -107,6 +111,8 @@ class ToolRegistry:
         self.maze           = MazeEnvironment(state_manager, signal)
         self.A_Life         = None
         self._init_alife(subdirectory, state_manager, signal)
+        self.book_tools     = BookTools(state_manager, signal)
+        self.consumables_tools = ConsumablesTools(state_manager, signal)
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
@@ -256,10 +262,10 @@ class ToolRegistry:
                 "use_level": "always_available",
             },
             "consumables_tools": {
-                "functions": {"consume_item": state_manager.consume_item},
+                "functions": {"consume_item": self.consumables_tools.consume_item},
                 "definitions": base_tools,
                 "use_level": "inventory_only",
-                "item_types": ["consumable"],
+                "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item
             },
 
             # ----------------------------------------------------------------
@@ -279,7 +285,7 @@ class ToolRegistry:
                 "agent_information":    self.garden_manager.get_garden_summary,
             },
             "library": {
-                "functions": {"create_book_item": state_manager.create_book_item},
+                "functions": {"create_book_item": self.book_tools.create_book_item},
                 "definitions": library_tools,
                 "room_types": ["library"],
             },
@@ -342,11 +348,11 @@ class ToolRegistry:
             # ----------------------------------------------------------------
             "book": {
                 "functions": {
-                    "list_chapters":        state_manager.list_book_chapters,
-                    "add_chapter":          state_manager.add_book_chapter,
-                    "read_chapter":         state_manager.read_book_chapter,
-                    "delete_chapter":       state_manager.delete_book_chapter,
-                    "update_book_chapter":  state_manager.update_book_chapter,
+                    "list_chapters":        self.book_tools.list_book_chapters,
+                    "add_chapter":          self.book_tools.add_book_chapter,
+                    "read_chapter":         self.book_tools.read_book_chapter,
+                    "delete_chapter":       self.book_tools.delete_book_chapter,
+                    "update_book_chapter":  self.book_tools.update_book_chapter,
                 },
                 "definitions": book_tools,
                 "item_types": ["book"],
