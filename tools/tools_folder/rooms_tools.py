@@ -283,7 +283,7 @@ class room_kitchen:
                     successfully_consumed.append((item_data, 0))
                 else:
                     # Decrement consume_uses_left
-                    if not self.state.inventory_service.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left):
+                    if not self.state.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left):
                         print(f"  Failed to decrement consume_uses_left for '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (
@@ -355,7 +355,7 @@ class room_kitchen:
                     f"  Restoring consume_uses_left for '{item_name}' (ID: {item_id}): "
                     f"{new_consume_uses_left} → {original_consume_uses_left}..."
                 )
-                if not self.state.inventory_service.set_item_attribute(
+                if not self.state.set_item_attribute(
                     int(item_id), "consume_uses_left", original_consume_uses_left
                 ):
                     print(f"  CRITICAL: Failed to restore consume_uses_left for '{item_name}' (ID: {item_id})!")

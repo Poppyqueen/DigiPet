@@ -15,6 +15,8 @@ from inventory_items.services.simulation_state_service import SimulationStateSer
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
+from typing import Literal
+
 class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     MAX_INVENTORY_SLOTS = 30 # This constant can stay here or move to InventoryService
 
@@ -201,10 +203,25 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self._state_store.save_state()
         print("State saved successfully.")
 
+    # Main Public Method to find validated item in the state
 
+    def find_item(
+        self,
+        item_id: int,
+        required_type: str | None = None,
+        required_location: Literal["inventory", "room", "accessible"] | None = None,
+    ):
+        return self.inventory_service.find_item(item_id=item_id,required_type=required_type,required_location=required_location)
+
+    def set_item_attribute(self,
+    item_id: int, key: str, value, quantity: int = 1,
+                           path: list[str] | None = None
+
+    ):
+        return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
     ###
 
-    def validate_item_data(self, item_id, expected_type, expected_loc): 
+    def validate_item_data(self, item_id, expected_type, expected_loc): # Do not use, being deprecated
         """
         Args:
             item_id: INT, the id of the item to validate

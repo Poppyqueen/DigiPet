@@ -10,6 +10,12 @@ from tools.tools_folder.tools_helpers.lighthouse.models import ActionInternalRes
 
 import random
 
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.item_lookup_result import ItemLookupResult
+
 # TODO: Add popup signals to all methods
 # TODO: Add keys more in depth for items like the oiler, kerosene containers, hand_fire_source, etc.
 
@@ -79,7 +85,7 @@ SPIRIT_CONSUME_RATE = .05
 
 class LighthouseController:
     def __init__(self, state_manager, signal, open_meteo_handle, is_toolset_available):
-        self.state_manager = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         self._signal_callback = signal
 
         self.item_store = ItemStore()
@@ -100,9 +106,10 @@ class LighthouseController:
         return "\n".join(responses)
 
     def _validate_inventory_item(self, item_id, item_type, friendly_name) -> str | None:
-        """Returns an error string if the item is not found in inventory, None if valid."""
-        if not self.state_manager.validate_item_data(item_id, item_type, "inventory"):
-            return f"The item {item_id} given is not a {friendly_name} in your inventory!"
+        result : ItemLookupResult = self.state_manager.find_item(item_id, required_type=item_type, required_location="inventory")
+        if not result.success:
+            return result.error
+
         return None
 
     def _collect_response(self, response_object: ActionInternalResponse, extra_lines: list = None) -> list:
@@ -242,17 +249,14 @@ class LighthouseController:
         parts = self._collect_response(response_object)
         return "\n".join(parts)
 
-    
+        
 
     def lamp_place_spirit_pan(self, spirit_pan_id) -> str:
-        if err := self._validate_inventory_item(spirit_pan_id, "iov_spirit_pan", "Spirit Pan"):
-            return err
+        result : ItemLookupResult = self.state_manager.find_item(spirit_pan_id, required_type="iov_spirit_pan", required_location="inventory")
+        if not result.success:
+            return result.error
 
-        spirit_pan_details, error_message = self.state_manager.inventory_service.get_validated_item_data(spirit_pan_id, "iov_spirit_pan")
-        if error_message:
-            return error_message
-
-        if not spirit_pan_details.get("filled"):
+        if not result.item_data.get("filled"):
             return "Please re-fill the spirit pan with spirit before placing it in the IOV lamp."
 
         response_object: ActionInternalResponse = self.lighthouse_manager.place_spirit_pan()
@@ -261,38 +265,40 @@ class LighthouseController:
         if response_object.success:
             parts.append(self.state_manager.remove_item(spirit_pan_id))
             parts.append("Placed spirit pan! Spirit pan consumed.")
-        # TODO: add signal for icon popups
 
         return "\n".join(parts)
 
     def lamp_refill_spirit_pan(self, spirit_pan_id, spirit_source_id) -> str:
-        if err := self._validate_inventory_item(spirit_source_id, "spirit_source", "Spirit Source"):
-            return err
-        if err := self._validate_inventory_item(spirit_pan_id, "iov_spirit_pan", "Spirit Pan"):
-            return err
+        source_result : ItemLookupResult = self.state_manager.find_item(spirit_source_id, required_type="spirit_source", required_location="inventory")
+        if not source_result.success:
+            return source_result.error
 
-        spirit_pan_details, _ = self.state_manager.inventory_service.get_validated_item_data(spirit_pan_id, "iov_spirit_pan")
-        denatured_alcohol_details, _ = self.state_manager.inventory_service.get_validated_item_data(spirit_source_id, "spirit_source")
+        pan_result : ItemLookupResult = self.state_manager.find_item(spirit_pan_id, required_type="iov_spirit_pan", required_location="inventory")
+        if not pan_result.success:
+            return pan_result.error
+
+        spirit_pan_details = pan_result.item_data
+        denatured_alcohol_details = source_result.item_data
+
+
+        if spirit_pan_details.get("filled"):
+            return "This spirit pan is already filled with spirit."
 
         if denatured_alcohol_details["spirit_quantity"] == 0:
             return "The denatured alcohol container is empty."
 
         parts = []
         new_spirit_content = denatured_alcohol_details["spirit_quantity"] - SPIRIT_CONSUME_RATE
-        parts.append(self.state_manager.inventory_service.set_item_attribute(spirit_source_id, "spirit_quantity", new_spirit_content))
+        parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", new_spirit_content))
         parts.append(f"Spirit source consumed {SPIRIT_CONSUME_RATE} units of spirit. {new_spirit_content:.0%} units remaining.")
 
         if new_spirit_content < 0:
-            parts.append(self.state_manager.inventory_service.set_item_attribute(spirit_source_id, "spirit_quantity", 0))
-            _, message = self.state_manager.remove_item(spirit_source_id, internal=True)
+            parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", 0))
+            success, message = self.state_manager.remove_item(spirit_source_id, internal=True)
             parts.append("Spirit source has been consumed entirely!")
             parts.append(message)
 
-        if spirit_pan_details.get("filled"):
-            return "This spirit pan is already filled with spirit."
-
-        parts.append(self.state_manager.inventory_service.set_item_attribute(spirit_pan_id, "filled", True))
-        # TODO: add signal for icon popups
+        parts.append(self.state_manager.set_item_attribute(spirit_pan_id, "filled", True))
 
         return "Spirit pan refilled.\n" + "\n".join(p for p in parts if p)
 
@@ -411,13 +417,10 @@ class LighthouseController:
     # --- State Inspection / Examination ---
 
     def examine_spirit_source(self, spirit_source_id) -> str:
-        inventory_item_check_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "inventory")
-        room_item_check_result = self.state_manager.validate_item_data(spirit_source_id, "spirit_source", "room")
-
-        if not inventory_item_check_result and not room_item_check_result:
-            return "Could not find the item in your inventory or room."
-
-        item_data, error = self.state_manager.inventory_service.get_validated_item_data(spirit_source_id, "spirit_source")
+        result : ItemLookupResult = self.state_manager.find_item(spirit_source_id, required_type="spirit_source", required_location="accessible")
+        if not result.success:
+            return result.error
+        item_data = result.item_data
 
         return f"You examine the {item_data['name']} ID {item_data['id']}. {item_data['descriptions']} Spirit Contents: {item_data['spirit_quantity']:.0%}"
 

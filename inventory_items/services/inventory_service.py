@@ -1,5 +1,7 @@
 
 # services/inventory_service.py
+from __future__ import annotations
+
 from utils.loc_datetime import datetime
 
 import json
@@ -8,6 +10,11 @@ import json
 from inventory_items.item_pydantic_models import validate_item_dict, ignore_fingerprint_keys
 
 import copy
+
+from typing import Literal
+
+# ── Place ItemLookupResult import at the top of inventory_service.py ────────
+from inventory_items.services.item_lookup_result import ItemLookupResult
 
 
 
@@ -870,25 +877,140 @@ class InventoryService:
             
         return None
 
-    def get_validated_item_data(self, item_id: int, required_type: str = None) -> tuple[dict | None, str | None]:
-        """
-        Retrieves item data by ID and validates it.
-        Optionally checks if the item has a specific type.
-        Returns (item_data, None) on success, or (None, error_message) on failure.
-        """
-        item_id = int(item_id)
-        item_info = self._find_item_info_by_id(item_id)
-        if not item_info:
-            return None, f"Item {item_id} not found."
 
-        item_data = item_info["item_data"]
-        
-        if required_type:
+    # ============================================================================
+    # NEW PUBLIC METHOD — add inside InventoryService class
+    # ============================================================================
+
+    def find_item(
+        self,
+        item_id: int,
+        required_type: str | None = None,
+        required_location: Literal["inventory", "room", "accessible"] | None = None,
+    ) -> "ItemLookupResult":
+        """
+        Unified item lookup with optional filters.
+
+        Parameters
+        ----------
+        item_id           : The integer ID of the item to find.
+        required_type     : If given, the item's type list must include this string.
+        required_location : Controls where the item is allowed to be:
+                            None           → anywhere in the whole state
+                            "inventory"    → must be in the player's inventory
+                            "room"         → must be in any room
+                            "accessible"   → must be in inventory OR the current room
+
+        Returns
+        -------
+        ItemLookupResult
+            Always returns this model.
+            Check result.success before using result.item_data.
+        """
+        # 1. Coerce and validate the ID
+        if not isinstance(item_id, int):
+            try:
+                item_id = int(item_id)
+            except (ValueError, TypeError):
+                return ItemLookupResult.fail(
+                    f"Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
+                )
+
+        # 2. Find the item anywhere in state (inventory + all rooms)
+        raw = self._find_item_info_by_id(item_id)
+        if raw is None:
+            return ItemLookupResult.fail(f"Item {item_id} not found.")
+
+        item_data    = raw["item_data"]
+        location     = raw["location"]        # "inventory" or "room"
+        location_id  = raw["location_id"]     # int or None
+        location_name = raw["location_name"]  # str or None
+
+        # 3. Type filter
+        if required_type is not None:
             if required_type not in item_data.get("type", []):
-                return None, f"Item {item_id} is not a {required_type}."
-        
-        return item_data, None
+                return ItemLookupResult.fail(
+                    f"Item {item_id} ('{item_data.get('name', '?')}') "
+                    f"is not of type '{required_type}' "
+                    f"(found types: {item_data.get('type', [])})."
+                )
 
+        # 4. Location filter
+        if required_location is not None:
+            if required_location == "inventory":
+                if location != "inventory":
+                    return ItemLookupResult.fail(
+                        f"Item {item_id} ('{item_data.get('name', '?')}') "
+                        f"is not in your inventory (found in {location!r}"
+                        + (f", room '{location_name}'" if location_name else "")
+                        + ")."
+                    )
+
+            elif required_location == "room":
+                current_room_id = self._state_store.get_state_section("current_room_id")
+                in_current_room = location == "room" and location_id == current_room_id
+                if not in_current_room:
+                    where = (
+                        f"room '{location_name}' (ID {location_id})"
+                        if location == "room"
+                        else "your inventory"
+                    )
+                    return ItemLookupResult.fail(
+                        f"Item {item_id} ('{item_data.get('name', '?')}') "
+                        f"is not in your current room "
+                        f"(it is in {where})."
+                    )
+
+            elif required_location == "accessible":
+                current_room_id = self._state_store.get_state_section("current_room_id")
+                in_inventory    = location == "inventory"
+                in_current_room = location == "room" and location_id == current_room_id
+                if not (in_inventory or in_current_room):
+                    where = (
+                        f"room '{location_name}' (ID {location_id})"
+                        if location == "room"
+                        else "an unknown location"
+                    )
+                    return ItemLookupResult.fail(
+                        f"Item {item_id} ('{item_data.get('name', '?')}') "
+                        f"is not accessible from your current location "
+                        f"(it is in {where})."
+                    )
+
+        # 5. All filters passed
+        return ItemLookupResult.ok(
+            item_data=item_data,
+            location=location,
+            location_id=location_id,
+            location_name=location_name,
+        )
+
+
+    # ============================================================================
+    # UPDATED WRAPPER — replaces the old get_validated_item_data
+    # Keeps the same (data, error) tuple signature so existing callers don't break.
+    # Internally delegates to find_item.
+    # Mark for deletion once all callers are migrated to find_item.
+    # ============================================================================
+
+    def get_validated_item_data(
+        self,
+        item_id: int,
+        required_type: str | None = None,
+    ) -> tuple[dict | None, str | None]:
+        """
+        DEPRECATED — use find_item() for new code.
+
+        Thin wrapper around find_item() that preserves the old (data, error) tuple
+        interface so existing callers continue to work without changes.
+
+        Note: this wrapper does NOT apply a location filter.
+        Callers that need location enforcement should migrate to find_item() directly.
+        """
+        result = self.find_item(item_id, required_type=required_type)
+        if result.success:
+            return result.item_data, None
+        return None, result.error
 
 
     def validate_item_data(self, item_id, expected_type, expected_loc): 

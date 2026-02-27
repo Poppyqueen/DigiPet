@@ -20,7 +20,7 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
-game_mode = "ai_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
+game_mode = "user_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
                     # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to mock !!!!!
                     # main mode to use is "ai_player".
 
