@@ -882,7 +882,7 @@ kitchen_room_tools=[
                             },
                             "amount": {
                                 "type": "number",
-                                "description": "The amount of uses for the item in the recipe."
+                                "description": "The amount of uses for the item in the recipe. It represents portions, spoonfuls or pinches, depending on the nature of the item."
                             }
                         },
                         "required": ["item_id", "amount"],

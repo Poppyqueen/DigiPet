@@ -66,7 +66,6 @@ ValidPlantType = Annotated[str, AfterValidator(_check_plant)]
 
 class BookChapter(BaseModel):
     """A single chapter inside a book item."""
-    model_config = ConfigDict(extra="forbid")
     title: str
     content: str
     is_locked: bool = Field(default=True, description="Whether the chapter is locked.")
@@ -74,24 +73,13 @@ class BookChapter(BaseModel):
 
 class ItemStatsEdit(BaseModel):
     """Stat deltas applied when a consumable item is used."""
-    model_config = ConfigDict(extra="forbid")
     fullness: float = Field(description="Change to fullness stat. Negative values allowed for harmful or other hunger causing items.")
     hydration: float = Field(description="Change to hydration stat. Negative values allowed for harmful or other thrist causing items.")
     energy: float = Field(description="Change to energy stat. Negative values allowed for harmful or other energy reducing items.")
 
-
-# =============================================================================
-# DISPENSER STATE SUB-MODEL
-# Replaces Dict[str, Any] which OpenAI's strict mode rejects.
-# =============================================================================
-
 class DispenserState(BaseModel):
-    """Internal state for a dispenser item."""
-    model_config = ConfigDict(extra="forbid")
-    item_name: Optional[str] = Field(default=None, description="Name of the item being dispensed.")
-    quantity: Optional[int] = Field(default=None, description="How many items remain in the dispenser.")
-    is_empty: Optional[bool] = Field(default=None, description="Whether the dispenser is empty.")
-
+    model_config = ConfigDict(extra="allow")  # keep allow for runtime
+    contents: Dict[str, int] = Field(default_factory=dict, description="Maps existing item names to remaining quantities.")
 
 # =============================================================================
 # BASE ITEM
@@ -119,17 +107,6 @@ class BaseItem(BaseModel):
             if self.max_stack_size is not None and self.max_stack_size > 1:
                 raise ValueError("Non-stackable item cannot have max_stack_size > 1")
         return self
-
-
-# =============================================================================
-# STRICT BASE ITEM
-# Used as the base for the LLM schema — forbids extra fields so OpenAI's
-# strict mode gets additionalProperties: false on every object in the schema.
-# BaseItem (extra="allow") is still used for internal validate_item_dict calls.
-# =============================================================================
-
-class StrictBaseItem(BaseItem):
-    model_config = ConfigDict(extra="forbid")
 
 
 # =============================================================================
@@ -168,8 +145,7 @@ class BookFields(BaseModel):
 
 class DispenserFields(BaseModel):
     model_config = ConfigDict(extra="allow")
-    # Dict[str, Any] replaced with DispenserState — OpenAI strict mode rejects open dicts with Any values
-    dispenser_state: DispenserState = Field(description="Internal state dictionary for the dispenser mechanism.")
+    dispenser_state: DispenserState = Field(description="Internal state of the dispenser.")
 
 
 class CandyBagFields(BaseModel):
@@ -286,18 +262,11 @@ def build_llm_schema() -> Type[BaseModel]:
     Builds and returns an ItemDefinition model for LLM structured output.
     All type-specific fields are Optional with None defaults.
     Base fields (name, descriptions, static, type, stackable, quantity) remain required.
-    Uses StrictBaseItem so OpenAI's strict mode gets additionalProperties: false.
     """
     fields: Dict[str, Any] = {}
 
-    # Track which type_str introduced each field so we can annotate descriptions.
-    # When multiple types share a field (e.g. two mixins both define 'effects'),
-    # only the first registration wins — seen set prevents overwriting.
     seen: set = set()
 
-    # Invert the registry: field_name -> list of type strings that require it.
-    # This lets us write "Required when type includes 'consumable' or 'seed'"
-    # when a field appears in multiple contracts.
     field_to_types: Dict[str, List[str]] = {}
     for type_str, contract_class in TYPE_FIELD_CONTRACTS.items():
         for field_name in contract_class.model_fields:
@@ -311,14 +280,11 @@ def build_llm_schema() -> Type[BaseModel]:
 
             annotation = field_info.annotation
 
-            # Wrap in Optional so the LLM can omit fields irrelevant to its chosen type.
-            # If the annotation is already Optional (has a None default), this is a no-op.
             if not (hasattr(annotation, "__origin__") and type(None) in getattr(annotation, "__args__", ())):
                 optional_annotation = Optional[annotation]
             else:
                 optional_annotation = annotation
 
-            # Build the "Required when type includes X" prefix from the inverted map.
             required_types = field_to_types.get(field_name, [type_str])
             if len(required_types) == 1:
                 requirement_note = f"Required when type includes '{required_types[0]}'."
@@ -326,7 +292,6 @@ def build_llm_schema() -> Type[BaseModel]:
                 quoted = ', '.join(f"'{t}'" for t in required_types)
                 requirement_note = f"Required when type includes any of: {quoted}."
 
-            # Append the original field description if present.
             original_desc = field_info.description or ""
             full_description = f"{requirement_note} {original_desc}".strip()
 
@@ -337,7 +302,7 @@ def build_llm_schema() -> Type[BaseModel]:
 
     return create_model(
         "ItemDefinition",
-        __base__=StrictBaseItem,
+        __base__=BaseItem,
         **fields
     )
 
@@ -350,5 +315,4 @@ ItemDefinition = build_llm_schema()
 class ItemDefinitionListContainer(BaseModel):
     """Container for LLM structured output. Pass this as the `structure` argument
     to your AI client's structured_output method."""
-    model_config = ConfigDict(extra="forbid")
     items: List[ItemDefinition] = Field(description="List of item definitions generated by the AI.")

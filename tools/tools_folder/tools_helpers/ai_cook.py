@@ -1,16 +1,16 @@
-# TODO: Refactor to use new pydantic models
-# 
 # ai_cook.py
 
-# This is a simple crafting table class that uses OpenAI's API to process items
-# and create new items based on a given process.
-# The current implementation is being used by an AI agent to manage crafting tasks.
+# This is a simple crafting table class that uses a "Simple AI" provider to process
+# and create new items based on a given preparation.
+# The current implementation is being used by an AI agent to manage cooking tasks.
 
-
-# Update this, creating a food item should inform of the ID it has 
 from typing import List, Dict, Any
-from inventory_items.item_pydantic_models import ItemDefinitionListContainer, validate_item_dict
+from inventory_items.item_pydantic_models import validate_item_dict
+from inventory_items.ai_schema_builder import build_llm_schema_for_types
 from ai_managers.ai_utils.ai_loader import AIConfiguration
+
+# Build once at import time — the cook only ever produces consumables.
+_COOK_SCHEMA = build_llm_schema_for_types(["consumable"])
 
 
 class cook:
@@ -19,7 +19,6 @@ class cook:
 
         config_model = config_manager.get_config("AI","cook_model")
         selected_config_client = config_manager.get_config("AI","cook_provider")
-
 
         self.client=AIConfiguration(provider=selected_config_client,model=config_model,mode="simple_ai").get_client()
 
@@ -40,9 +39,8 @@ class cook:
         """
         system=f"""You are a cooking AI, given a set of items and a cooking related process, you will return a single
         food item definition that would result from applying such cooking process into the given items. 
-        You should identify the main resulting item which are 'consumable' directly from the preparation process and the ingredients given. 
-        Your task is to create the item based on the items provided to you, no matter what the process says, if your ingredients are missing, your final output should reflect this. 
-        Return the response as a JSON object matching the ItemDefinitionListContainer structure. While staying grounded in the items given to you, 
+        You should identify the main resulting item which are 'consumable' directly from the preparation process. 
+        Return the response as a JSON object matching the LLMSchema_consumable structure. While staying grounded in the items given to you, 
         make detailed and evocative descriptions and effects for the item, and in effects, write text directed to whomever just consumed this item, 
         i.e 'Consuming the water of glass makes you feel refreshed.', 'Calm washes over your body as you drink the fresh glass of water.', 'The candy gives you an overpowering taste in the mouth, you feel energized, and somewhat sticky.', 
         you can make 2 to 3 effects for the item. 
@@ -68,17 +66,16 @@ class cook:
         Some other cases for negative stats are items that are salty, sour, bitter, spicy, etc., usually condiments, seasonings, for these, keep the negative stats as negative for your calculation.
         """
 
-
         process_prompt=f"""Using the items: {items}, and applying the process: {process}, design a single item that would result from it. 
         Do not return any tools or utensils, only food items, consumables. Create only the main plate or product that would result from such recipe."""
 
         print("\n--- Calling AI ---")
         print(f"Prompt: {process_prompt}")
 
-        response: ItemDefinitionListContainer | None = self.client.structured_output(
+        response = self.client.structured_output(
             system=system,
             user=process_prompt,
-            structure=ItemDefinitionListContainer
+            structure=_COOK_SCHEMA
         )
 
         if response is None:
@@ -90,8 +87,6 @@ class cook:
 
         processed_items_list: List[Dict[str, Any]] = []
 
-
-        # After response.items loop, replace the bare model_dump with:
         for item_definition in response.items:
             item_dict = item_definition.model_dump(exclude_none=True)
             result, error = validate_item_dict(item_dict)
@@ -100,7 +95,5 @@ class cook:
                 continue
             processed_items_list.append(item_dict)
 
-
         print("--- AI Call Successful ---")
         return processed_items_list
-

@@ -161,6 +161,8 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 
 * Define `consume_uses_left` for all consumable items in the item store (`inventory_items/items_provider/items_data`). All JSON files there should have a `consume_uses_left` key with a sensible value, and stats edit keys updated to reflect the new consumption system.
 
+* Refactor data constructors and the environment generation process, use the new pydantic definitions and improve the system in general
+
 * When double-clicking on the agent, send it a message like "you feel an unusual chill on your body" or "an itch on your back overcomes you for a second".
 
 * Flag any direct key modification of item data in the code with a `TODO: DIRECT KEY MODIFICATION` comment.
@@ -168,6 +170,8 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 * Add `excess` consumption to consumable item definitions — `excess_amount` and `excess_effect` (flavor text describing overconsumption).
 
 * Add sound settings (backend and GUI) for background music, sound effects, autonomous agent calls, and TTS — with volume and mute controls.
+
+* Wearables for the pet?
 
 #### Long term
 
