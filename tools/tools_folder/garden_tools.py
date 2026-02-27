@@ -30,6 +30,11 @@ from tools.tools_folder.tools_data.harvesting_data import (plant_types)
 # Import the new settings from the garden_settings module
 from tools.tools_folder.tools_data.garden_settings import GARDEN_SETTINGS
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.item_lookup_result import ItemLookupResult
 
 class Garden_Mananger(GenericJsonTool):
     """
@@ -48,7 +53,7 @@ class Garden_Mananger(GenericJsonTool):
                            and the current game tick.
         """
         self.json_filename = "garden_data.json"
-        self.state_manager = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         self._signal_callback=signal
         self.open_meteo = open_meteo
 
@@ -105,7 +110,7 @@ class Garden_Mananger(GenericJsonTool):
         
         for room in rooms_list:
             room_id_raw = room.get("id")
-            room_id = str(room_id_raw) # Crucial: Convert room_id to string for consistent key usage
+            room_id = str(room_id_raw) # TODO: WHY IS THS A STRING?
             room_name = room.get("name")
             room_types = room.get("room_types", [])
             plot_count = room.get("plot_number")
@@ -423,63 +428,36 @@ class Garden_Mananger(GenericJsonTool):
 
 
     def plant_seed(self, plot_id: str, item_id: int) -> str:
-        """
-        Allows an AI agent to plant a seed from their inventory in a specified plot
-        in the current garden room.
-        Args:
-            plot_id (str): The ID of the plot within the room (e.g., "plot1").
-            item_id (int): The ID of the seed item in the player's inventory.
-        Returns:
-            str: A message indicating success or failure.
-        """
-
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
-        # Use the logical tick counter from Garden_Mananger itself for planting
+        current_room_id = str(self.state_manager.get_current_room_id())
         current_logical_tick = self._garden_logical_tick_counter
-        
-        # Retrieve default initial water level from settings
         DEFAULT_INITIAL_WATER_LEVEL = self.settings["DEFAULT_INITIAL_WATER_LEVEL"]
 
-
         if current_room_id not in self._state:
-            return f"Error: You are not in a garden room. Cannot plant here."
+            return "Error: You are not in a garden room. Cannot plant here."
 
-        # Find the item by its ID
-        attempt_item = self.state_manager.inventory_service._find_item_info_by_id(item_id)
+        # Single lookup — must be a seed in inventory
+        seed_result = self.state_manager.find_item(
+            item_id,
+            required_type="seed",
+            required_location="inventory"
+        )
+        if not seed_result.success:
+            return seed_result.error
 
-        print(f"📌📌📌📌{attempt_item}, {type(attempt_item)}")
+        item_data = seed_result.item_data
+        item_name = item_data.get("name", "unknown item")
 
-        if not attempt_item:
-            return f"You don't see an item with ID '{item_id}' here or in your inventory."
-        
-        # Check if the item is in the current player's inventory
-        if attempt_item["location"] != "inventory":
-            # Correctly get name from item_data for error message
-            item_name = attempt_item.get('item_data', {}).get('name', 'unknown item')
-            return f"Item {item_id} ({item_name}) is not in your inventory, can't use it to plant."
-        
-        item_details = attempt_item.get("item_data", {}) # Get the nested item_data dictionary
-        
-        item_name = item_details.get('name', 'unknown item') # Access 'name' from item_details
-        item_types_list = item_details.get("type", []) # Get the list of types
-
-        if "seed" not in item_types_list:
-            return f"Item {item_id} ({item_name}) is not of 'seed' type (found types: {item_types_list}), cannot use it to plant."
-        
-        plant_type = item_details.get("plant_type") # Access 'plant_type' from item_details
+        # plant_type is a custom field, not a type tag — check manually
+        plant_type = item_data.get("plant_type")
         if not plant_type:
             return f"Error: Seed item {item_id} ({item_name}) does not specify a 'plant_type'."
-        
 
+        if plant_type not in self._plant_types:
+            return f"Error: Plant type '{plant_type}' is not recognized. Available types: {', '.join(self._plant_types.keys())}."
+
+        # Find the target plot
         garden_data = self._state[current_room_id]
-        plots = garden_data.get("plots", [])
-        
-        target_plot = None
-        for plot in plots:
-            if plot.get("plot_id") == plot_id:
-                target_plot = plot
-                break
-        
+        target_plot = next((p for p in garden_data.get("plots", []) if p.get("plot_id") == plot_id), None)
         if not target_plot:
             return f"Error: Plot '{plot_id}' not found in garden room '{current_room_id}'."
 
@@ -487,46 +465,39 @@ class Garden_Mananger(GenericJsonTool):
             target_plot["plants"] = []
 
         if len(target_plot["plants"]) > 0:
-            return f"Error: Plot '{plot_id}' in garden '{current_room_id}' is already occupied. Harvest first before planting a new seed."
+            return f"Error: Plot '{plot_id}' is already occupied. Harvest first before planting."
 
-        if plant_type not in self._plant_types:
-            return f"Error: Plant type '{plant_type}' specified by seed is not recognized. Available types: {', '.join(self._plant_types.keys())}."
-
-        new_plant_uid = self._generate_plant_uid()
-        
-        # Initial stage is calculated based on 0 elapsed ticks
+        # Build and place the new plant
         plant_type_info = self._plant_types[plant_type]
         initial_stage_index = self._get_current_stage_index(plant_type_info, 0)
         initial_stage_name = plant_type_info["stages"][initial_stage_index]["name"]
 
         new_plant = {
             "plant_type": plant_type,
-            "planted_logical_tick": current_logical_tick, # Store current logical tick for growth tracking
-            "_last_ticked_logical_tick": current_logical_tick, # To track depletion from this logical tick
-            "water_level": DEFAULT_INITIAL_WATER_LEVEL, # Initial water level from settings
-            "current_stage_index": initial_stage_index, # Set explicitly for immediate display
-            "current_stage_name": initial_stage_name,   # Set explicitly for immediate display
-            "water_history": [], # To record water states over time (0:low, 1:optimal, 2:high)
-            "_last_water_history_recorded_logical_tick": current_logical_tick, # Initialize history recording logical tick
-            "_plant_UID": new_plant_uid
+            "planted_logical_tick": current_logical_tick,
+            "_last_ticked_logical_tick": current_logical_tick,
+            "water_level": DEFAULT_INITIAL_WATER_LEVEL,
+            "current_stage_index": initial_stage_index,
+            "current_stage_name": initial_stage_name,
+            "water_history": [],
+            "_last_water_history_recorded_logical_tick": current_logical_tick,
+            "_plant_UID": self._generate_plant_uid()
         }
-        
         target_plot["plants"].append(new_plant)
-        # self._write_json(self._state) # Handled by the tick() function at the end.
 
-        # If successfully planted, remove the seed item from inventory
         self.state_manager.remove_item(item_id)
-
-        edit=-2.5
-        self.state_manager.adjust_stat("energy", edit)
-        self.state_manager.adjust_stat("hydration", edit)
-        self.state_manager.adjust_stat("fullness", edit)
-
-        stats_message=f"{edit} to energy, hydration, and fullness"
+        self.state_manager.adjust_stat("energy", -2.5)
+        self.state_manager.adjust_stat("hydration", -2.5)
+        self.state_manager.adjust_stat("fullness", -2.5)
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/seed.png", "popup_type": 2})
 
-        return f"Successfully planted {plant_type} with UID {new_plant_uid} in plot {plot_id} of garden {current_room_id}. It is currently in the '{initial_stage_name}' stage. Seed consumed. {stats_message}"
+        return (
+            f"Successfully planted {plant_type} with UID {new_plant['_plant_UID']} "
+            f"in plot {plot_id} of garden {current_room_id}. "
+            f"It is currently in the '{initial_stage_name}' stage. "
+            f"Seed consumed. -2.5 to energy, hydration, and fullness."
+        )
 
     def check_plant_state(self, plot_id: str) -> str:
         """

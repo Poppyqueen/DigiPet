@@ -3,11 +3,12 @@
 from inventory_items.items_provider.item_store import ItemStore
 import random
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
     from inventory_items.services.item_lookup_result import ItemLookupResult
+    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
 class DispenserTools:
     def __init__(self, state_manager, signal=None):
@@ -80,11 +81,9 @@ class DispenserTools:
         new_total = sum(new_contents.values())
 
         # Single authoritative write
-        result = self.state_manager.set_item_attribute(
+        self.state_manager.set_item_attribute(
             item_id, "contents", new_contents, path=["dispenser_state"]
         )
-        if result.startswith("Error") or "failed" in result.lower():
-            return result
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/candy.png", "popup_type": 2})
         return f"You turn the handle. Clatter! A {selected_candy} falls out. You have {new_total} candies left."
@@ -122,11 +121,9 @@ class DispenserTools:
             new_contents[candy] = new_contents.get(candy, 0) + qty
 
         # Single authoritative write
-        result = self.state_manager.set_item_attribute(
+        self.state_manager.set_item_attribute(
             dispenser_id, "contents", new_contents, path=["dispenser_state"]
         )
-        if result.startswith("Error") or "failed" in result.lower():
-            return result
 
         self._send_signal({"type": "show_message_popup", "message": "Dispenser refilled!"})
         return f"You pour the {bag_data.get('name')} into the dispenser. It looks full and colorful now!"

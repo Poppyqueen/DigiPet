@@ -2,6 +2,11 @@
 # services/stat_tracker.py
 import random
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
+
 class StatTracker:
     # Constants for stat ranges (or get from config/state_store if dynamic)
     MAX_STAT_VALUE = 200
@@ -163,9 +168,9 @@ class StatTracker:
                 print(removal_status)
             message += removal_status
         else:
-            item_status = self._inventory_service.set_item_attribute(item_id, "consume_uses_left", item_data.get("consume_uses_left", 1) - uses)
-            if item_status:
-                message += item_status
+            item_status : SetItemAttributeResult = self._inventory_service.set_item_attribute(item_id, "consume_uses_left", item_data.get("consume_uses_left", 1) - uses)
+            if item_status.success:
+                message += item_status.message
 
         selected_effect_text = ""
         if isinstance(effects_text_list, list) and all(isinstance(text, str) for text in effects_text_list):

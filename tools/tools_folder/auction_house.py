@@ -4,10 +4,17 @@ import random
 from inventory_items.items_provider.item_store import ItemStore
 from inventory_items.items_provider.items_scanner import FuzzyMatcher
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.item_lookup_result import ItemLookupResult
+
+
 class AuctionHouse:
     def __init__(self, state_manager):
         self.item_store = ItemStore()
-        self.state_manager = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
 
         self.price_ranges = {
             "food_n_drinks/hearty_meals.json": { "minimum": 30, "maximum": 75, "available_for_purchase": True },
@@ -334,23 +341,23 @@ class AuctionHouse:
         """
         if quantity <= 0:
             return "Quantity must be greater than 0."
-            
-        item_info = self.state_manager.inventory_service.get_item_details(item_id, True)
 
-        if not item_info:
-            return f"Item with id {item_id} not found."
+        # item_info = self.state_manager.inventory_service.get_item_details(item_id, True)
 
-        item_status = item_info.get("status")
-        if item_status != "found":
-            return f"Cannot sell item: status is '{item_status}'."
+        # if not item_info:
+        #     return f"Item with id {item_id} not found."
 
-        location_name = item_info.get("location")
-        if location_name != "inventory":
-            return f"Cannot sell item: it is located in '{location_name}', not in inventory."
+        # item_status = item_info.get("status")
+        # if item_status != "found":
+        #     return f"Cannot sell item: status is '{item_status}'."
 
-        item_data = item_info.get("details")
-        if not isinstance(item_data, dict):
-            return "Invalid item details."
+        # location_name = item_info.get("location")
+        # if location_name != "inventory":
+        #     return f"Cannot sell item: it is located in '{location_name}', not in inventory."
+
+        item_object : ItemLookupResult = self.state_manager.find_item(item_id=item_id, required_type=None, required_location="inventory")
+
+        item_data = item_object.item_data
 
         item_name = item_data.get("name")
         if not item_name:

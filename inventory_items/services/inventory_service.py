@@ -15,6 +15,7 @@ from typing import Literal
 
 # ── Place ItemLookupResult import at the top of inventory_service.py ────────
 from inventory_items.services.item_lookup_result import ItemLookupResult
+from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
 
 
@@ -161,10 +162,10 @@ class InventoryService:
             descriptions_list_copy.append(timed_description)
 
             # Don't touch found_item here — let set_item_attribute handle the write
-            message = self.set_item_attribute(item_id, "descriptions", descriptions_list_copy)
+            attribute_result : SetItemAttributeResult = self.set_item_attribute(item_id, "descriptions", descriptions_list_copy)
 
             item_name = found_item.get("name", "Unnamed Item")
-            return f"Added description for '{item_name}' (ID: {item_id}) in inventory. {message}"
+            return f"Added description for '{item_name}' (ID: {item_id}) in inventory. {attribute_result.message}"
         else:
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
 
@@ -1068,7 +1069,7 @@ class InventoryService:
     # ── Modified method signature ────────────────────────────────────────────
 
     def set_item_attribute(self, item_id: int, key: str, value, quantity: int = 1,
-                           path: list[str] | None = None) -> str:
+                           path: list[str] | None = None) -> SetItemAttributeResult:
         """
         Modifies a single attribute (key/value) on one or more units of an item
         stack, then recalculates stacking state.
@@ -1096,15 +1097,15 @@ class InventoryService:
                       Intermediate dicts are created automatically if absent.
 
         Returns:
-            A human-readable result string.
+            A SetItemAttributeResult object.
         """
         if not isinstance(item_id, int):
-            return f"Failed to set attribute: item_id must be an integer, got '{item_id}'."
+            return SetItemAttributeResult(success=False, message=f"Failed to set attribute: item_id must be an integer, got '{item_id}'.")
 
         # --- 1. Locate the item ---
         item_info = self._find_item_info_by_id(item_id)
         if not item_info:
-            return f"Failed to set attribute: item with ID {item_id} not found."
+            return SetItemAttributeResult(success=False, message=f"Failed to set attribute: item with ID {item_id} not found.")
 
         item_data     = item_info["item_data"]
         location      = item_info["location"]
@@ -1129,22 +1130,22 @@ class InventoryService:
             target_list = self._state_store.get_state_section("inventory", [])
         elif location == "room":
             if not self._room_manager:
-                return "Error: RoomManager not set; cannot modify room item."
+                return SetItemAttributeResult(success=False, message="Error: RoomManager not set; cannot modify room item.")
             room_data = self._room_manager._find_room_by_id(location_id)
             if not room_data or not isinstance(room_data.get("items"), list):
-                return f"Error: Room {location_id} not found or corrupted."
+                return SetItemAttributeResult(success=False, message=f"Error: Room {location_id} not found or corrupted.")
             target_list = room_data["items"]
         else:
-            return f"Error: Unknown item location '{location}'."
+            return SetItemAttributeResult(success=False, message=f"Error: Unknown item location '{location}'.")
 
         # --- 4. Non-stackable: just mutate and persist ---
         if not is_stackable:
             self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
-                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+                return SetItemAttributeResult(success=False, message=f"Set '{key}' on {item_display}, but failed to persist: {err}")
             path_str = ".".join(path + [key]) if path else key
-            return f"Set '{path_str}' = {value!r} on {item_display}."
+            return SetItemAttributeResult(success=True, message=f"Set '{path_str}' = {value!r} on {item_display}.")
 
         # --- Stackable path ---
         stacking_key_before = self._get_item_stacking_key(item_data)
@@ -1159,9 +1160,9 @@ class InventoryService:
             self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
-                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+                return SetItemAttributeResult(success=False, message=f"Set '{key}' on {item_display}, but failed to persist: {err}")
             path_str = ".".join(path + [key]) if path else key
-            return f"Set '{path_str}' = {value!r} on all {available} unit(s) of {item_display}."
+            return SetItemAttributeResult(success=True, message=f"Set '{path_str}' = {value!r} on all {available} unit(s) of {item_display}.")
 
         # --- Fingerprint changes: split logic ---
         remaining_in_source = available - actual_qty
@@ -1180,9 +1181,9 @@ class InventoryService:
             self._apply_nested_set(item_data, path, key, value)
             err = self.persist_item_changes(item_id)
             if err:
-                return f"Set '{key}' on {item_display}, but failed to persist: {err}"
+                return SetItemAttributeResult(success=False, message=f"Set '{key}' on {item_display}, but failed to persist: {err}")
             path_str = ".".join(path + [key]) if path else key
-            return f"Set '{path_str}' = {value!r} on {item_display} (ID kept, stack updated in place)."
+            return SetItemAttributeResult(success=True, message=f"Set '{path_str}' = {value!r} on {item_display} (ID kept, stack updated in place).")
 
         # --- Reduce or remove source stack ---
         if remaining_in_source > 0:
@@ -1230,7 +1231,7 @@ class InventoryService:
             f"Modified '{key}' on {actual_qty} unit(s) of {item_display} "
             f"(source stack {'reduced to ' + str(remaining_in_source) + ' unit(s)' if remaining_in_source > 0 else 'fully consumed'}). "
         )
-        return split_msg + " ".join(messages)
+        return SetItemAttributeResult(success=True, message=split_msg + " ".join(messages))
 
     def examine_consumable(self, item_id: int, internal=False): # TODO: Remove this?
         found_item_info = self._find_item_info_by_id(item_id)

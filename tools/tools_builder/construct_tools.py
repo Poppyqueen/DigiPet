@@ -23,13 +23,21 @@ from .tool_availability import (
     ItemToolMapper,
 )
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.item_lookup_result import ItemLookupResult
+    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
+
+
 
 class FunctionBuilder:
 
     def __init__(self, state_manager=None, signal=None, subdirectory=None,
                  memory_manager=None, config_manager=None, open_meteo=None):
 
-        self.state_manager = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         self._signal_callback = signal
         self.open_meteo = open_meteo
 
@@ -317,9 +325,10 @@ class FunctionBuilder:
         return mapper.get_all_items_tool_map()
 
     def get_item_info_with_tools(self, item_id) -> dict:
-        item_data, error = self.state_manager.inventory_service.get_validated_item_data(item_id)
-        if error:
-            return {"error": error}
+        item_result : ItemLookupResult = self.state_manager.find_item(item_id)
+        if not item_result.success:
+            return {"error": item_result.error}
+        item_data = item_result.item_data
         _, item_context = self._get_current_context()
         mapper = ItemToolMapper(self.tool_definitions, item_context)
         return {

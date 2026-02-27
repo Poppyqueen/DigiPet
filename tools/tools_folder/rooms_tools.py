@@ -21,6 +21,13 @@ import random
 
 from utils.loc_datetime import datetime
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.item_lookup_result import ItemLookupResult
+    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
+
 def check_one_in(number: int):
   """
   Checks if a random event with a 1 in (the given argument) chance occurs.
@@ -57,7 +64,7 @@ class room_kitchen:
         self._signal_callback=signal
 
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         self.cook = cook(config_manager)
         #print("Kitchen initialized.")
 
@@ -68,7 +75,7 @@ class room_kitchen:
         print("Drinking water...")
         # You can now access the state_manager if needed
         edit=10
-        self.state.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("hydration", edit)
         message=f"Drank some water from the kitchen faucet! Got {edit} hydration points."
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
@@ -87,7 +94,7 @@ class room_kitchen:
         and retrieves their detailed data for the AI process.
 
         Consumable items will have their consume_uses_left decremented by the specified amount;
-        if consume_uses_left reaches 0, the item is removed from inventory via self.state.remove_item.
+        if consume_uses_left reaches 0, the item is removed from inventory via self.state_manager.remove_item.
         Tool items are passed to the cook AI but are never consumed.
 
         Implements rollback logic for inventory changes on failure.
@@ -135,49 +142,34 @@ class room_kitchen:
                 continue
 
             # Look up item
-            item_check_result = self.state.get_item_details(item_id, internal=True)
-            status = item_check_result.get("status")
+            item_result = self.state_manager.find_item(item_id, required_location="inventory")
 
-            if status == "not_found":
-                validation_errors.append(f"Required item with ID {item_id} was not found.")
+            if not item_result.success:
+                validation_errors.append(item_result.error)
                 continue
 
-            if status == "error":
-                msg = item_check_result.get("message", "Unknown error.")
-                validation_errors.append(f"Error retrieving item ID {item_id}: {msg}")
-                continue
+            item_data = item_result.item_data
+            item_name = item_data.get("name", f"ID {item_id}")
+            item_type_list = item_data.get("type", [])
 
-            if status == "found":
-                item_data = item_check_result["details"]
-                item_location = item_check_result["location"]
-                item_name = item_data.get("name", f"ID {item_id}")
-                item_type_list = item_data.get("type", [])
-
-                if item_location != "inventory":
+            if "consumable" in item_type_list:
+                consume_uses_left = item_data.get("consume_uses_left")
+                if consume_uses_left is not None and amount > consume_uses_left:
                     validation_errors.append(
-                        f"Item '{item_name}' (ID: {item_id}) is not in your inventory "
-                        f"(found in '{item_location}')."
+                        f"Item '{item_name}' (ID: {item_id}) only has {consume_uses_left} use(s) left, "
+                        f"but {amount} were requested."
                     )
                     continue
+                valid_consumable_details.append((item_data, amount))
 
-                if "consumable" in item_type_list:
-                    consume_uses_left = item_data.get("consume_uses_left")
-                    if consume_uses_left is not None and amount > consume_uses_left:
-                        validation_errors.append(
-                            f"Item '{item_name}' (ID: {item_id}) only has {consume_uses_left} use(s) left, "
-                            f"but {amount} were requested."
-                        )
-                        continue
-                    valid_consumable_details.append((item_data, amount))
+            elif "tool" in item_type_list:
+                valid_tool_details.append(item_data)
 
-                elif "tool" in item_type_list:
-                    valid_tool_details.append(item_data)
-
-                else:
-                    validation_errors.append(
-                        f"Item '{item_name}' (ID: {item_id}) has type {item_type_list!r}; "
-                        f"only 'consumable' or 'tool' items can be used."
-                    )
+            else:
+                validation_errors.append(
+                    f"Item '{item_name}' (ID: {item_id}) has type {item_type_list!r}; "
+                    f"only 'consumable' or 'tool' items can be used."
+                )
 
         if validation_errors:
             print("Preparation failed due to validation errors:")
@@ -219,8 +211,8 @@ class room_kitchen:
 
         # --- 4. Create new items BEFORE consuming ingredients ---
         # If creation fails here, nothing has been consumed yet — no rollback needed.
-        current_room_id = self.state.get_current_room_id()
-        if self.state.is_inventory_full():
+        current_room_id = self.state_manager.get_current_room_id()
+        if self.state_manager.is_inventory_full():
             creation_location_type = "room"
             creation_location_id = current_room_id
         else:
@@ -232,7 +224,7 @@ class room_kitchen:
         print(f"Creating {len(list_generated_items_data)} new item(s) in {creation_location_type}...")
         for generated_item_data in list_generated_items_data:
             item_name = generated_item_data.get("name", "Unnamed Item")
-            new_item_ids = self.state.create_item(
+            new_item_ids = self.state_manager.create_item(
                 creation_location_type, creation_location_id, generated_item_data, internal=True
             )
 
@@ -283,18 +275,21 @@ class room_kitchen:
                     successfully_consumed.append((item_data, 0))
                 else:
                     # Decrement consume_uses_left
-                    if not self.state.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left):
+                    result : SetItemAttributeResult = self.state_manager.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left)
+                    if not result.success:
                         print(f"  Failed to decrement consume_uses_left for '{item_name}' (ID: {item_id}).")
                         self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                         return (
-                            f"Preparation failed: Could not update consume_uses_left for ingredient '{item_name}' "
+                            f"Preparation failed: {result.message}"
                             f"(ID: {item_id}). Rolled back changes."
                         )
                     print(f"  '{item_name}' (ID: {item_id}): consume_uses_left {consume_uses_left} → {new_consume_uses_left}.")
                     successfully_consumed.append((item_data, new_consume_uses_left))
             else:
                 # Item has no consume_uses_left field — remove it entirely (legacy / uncounted consumable)
-                if not self.state.remove_item(item_id, internal=True):
+
+                removal_success, removal_message = self.state_manager.remove_item(item_id, internal=True)
+                if not removal_success:
                     print(f"  Failed to remove ingredient '{item_name}' (ID: {item_id}).")
                     self._rollback_preparation(successfully_consumed, successfully_created_items_info)
                     return (
@@ -343,7 +338,7 @@ class room_kitchen:
             if new_consume_uses_left == 0 or new_consume_uses_left is None:
                 # Item was fully removed — re-create it in inventory
                 print(f"  Re-creating removed ingredient '{item_name}' (original ID: {item_id})...")
-                new_ids = self.state.create_item("inventory", None, item_data, internal=True)
+                new_ids = self.state_manager.create_item("inventory", None, item_data, internal=True)
                 if not new_ids:
                     print(f"  CRITICAL: Failed to re-create '{item_name}'. Item may be lost!")
                 else:
@@ -355,9 +350,10 @@ class room_kitchen:
                     f"  Restoring consume_uses_left for '{item_name}' (ID: {item_id}): "
                     f"{new_consume_uses_left} → {original_consume_uses_left}..."
                 )
-                if not self.state.set_item_attribute(
+                result : SetItemAttributeResult = self.state_manager.set_item_attribute(
                     int(item_id), "consume_uses_left", original_consume_uses_left
-                ):
+                )
+                if not result.success:
                     print(f"  CRITICAL: Failed to restore consume_uses_left for '{item_name}' (ID: {item_id})!")
                 else:
                     print(f"  Restored consume_uses_left for '{item_name}'.")
@@ -370,7 +366,9 @@ class room_kitchen:
                 print(f"  Internal error: created item info missing ID: {item_info}")
                 continue
             print(f"  Removing created item '{item_name}' (ID: {item_id})...")
-            if not self.state.remove_item(item_id, internal=True):
+
+            removal_success, removal_message = self.state_manager.remove_item(item_id, internal=True)
+            if not removal_success:
                 print(f"  CRITICAL: Failed to remove created item '{item_name}' (ID: {item_id}). Duplicate may exist!")
             else:
                 print(f"  Removed created item '{item_name}' (ID: {item_id}).")
@@ -382,7 +380,7 @@ class room_bathroom:
     def __init__(self, state_manager, signal=None):
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         #print("Bathroom initialized.")
 
     # Add the helper method
@@ -394,7 +392,7 @@ class room_bathroom:
         print("Drinking water...")
         # You can now access the state_manager if needed
         edit=10
-        self.state.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("hydration", edit)
         message=f"Drank some water from the faucet! Got {edit} hydration points."
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
@@ -405,7 +403,7 @@ class room_bathroom:
     def wash_hands(self):
         edit=2
         print("Washing hands...")
-        self.state.adjust_stat("hydration", edit) # Washing hands might not give hydration, maybe hygiene or something else?
+        self.state_manager.adjust_stat("hydration", edit) # Washing hands might not give hydration, maybe hygiene or something else?
         message=f"You wash your hands, you feel refreshed."
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"}) # Or a soap icon?
@@ -419,7 +417,7 @@ class room_bedroom:
         self.memory=memory
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager = state_manager
         #print("Bedroom initialized.")
 
     # Add the helper method
@@ -428,7 +426,7 @@ class room_bedroom:
     # Add instance methods here
     async def sleep(self, seconds):
         #print("Going to sleep in the bedroom...")
-        #message=self.state.sleep(seconds)
+        #message=self.state_manager.sleep(seconds)
         constant = 1
         # Using square root:
         energy_gain = constant * math.sqrt(seconds)
@@ -439,7 +437,7 @@ class room_bedroom:
         self._send_signal({"type": "start_sleep", "time_to_sleep": seconds})
         await asyncio.sleep(seconds)
         self._send_signal({"type": "end_sleep"})
-        self.state.adjust_stat("energy", energy_gain)
+        self.state_manager.adjust_stat("energy", energy_gain)
 
         # completely delegated to the state manager
         # --- Add signal call ---
@@ -461,7 +459,7 @@ class room_bedroom:
             found_item=random_object.load_and_get_random_item("found_items/underbed_found_data.json")
             #found_item=random_object.load_and_get_random_item("food_n_drinks/")
 
-            creation_message=self.state.create_item("inventory", None, found_item)
+            creation_message=self.state_manager.create_item("inventory", None, found_item)
             message=f"You found something under the bed! It is a {found_item["name"]}, it is now in your inventory."
             # --- Add signal call for finding something ---
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"}) # Example icon
@@ -474,7 +472,7 @@ class room_garden:
     def __init__(self, state_manager, signal=None, open_meteo=None):
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         self.open_meteo = open_meteo
         #print("Garden initialized.")
 
@@ -487,7 +485,7 @@ class room_garden:
 
     def lay_down(self):
         edit=5
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
         message=f"You lay down in the middle of the garden. The fresh ambience makes you feel revilatized, you recover {edit} energy points."
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/lying_icon.png"}) # Example icon
@@ -496,16 +494,16 @@ class room_garden:
 
     def dig_hole(self):
         edit=-15
-        self.state.adjust_stat("energy", edit)
-        self.state.adjust_stat("hydration", edit)
-        self.state.adjust_stat("fullness", edit)
+        self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("hydration", edit)
+        self.state_manager.adjust_stat("fullness", edit)
         message=f"You dig around and found nothing, all your stats have been lowered by {abs(edit)}. It at least was a good excercise." # Use abs for positive display
         # --- Add signal call for digging ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png"})
         # -----------------------------------
         if check_one_in(50):
             found_item=random_object.load_and_get_random_item("found_items/garden_found_items_data.json")
-            creation_message=self.state.create_item("inventory", None, found_item)
+            creation_message=self.state_manager.create_item("inventory", None, found_item)
             message=f"While digging on the garden you found something! It is a {found_item["name"]}! It's been added to your inventory. All your stats have been lowered by {abs(edit)} for digging around."
              # --- Add signal call for finding something while digging ---
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2}) # Example icon
@@ -518,7 +516,7 @@ class room_living_room:
     def __init__(self, state_manager, signal=None, open_meteo=None):
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
 
         self.open_meteo = open_meteo
 
@@ -533,20 +531,21 @@ class room_living_room:
         return message
     
     def take_a_seat(self, item_id:int):
-        item_details=self.state.get_item_details(item_id,internal=True)
-        if item_details["status"] == "found":
-            if "seat" in item_details["details"]["type"]:
-                print(f"Ok to sit on!")
-                edit=1
-                message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
-                if check_one_in(10):
-                    edit=5
-                    message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
-                string_desc= "\n".join(item_details["details"]["descriptions"])
-                self.state.adjust_stat("energy", edit)
-                return f"You take a sit on the {item_details["details"]["name"]}\n {string_desc} \n {message}"
-            return f"Item {item_id} {item_details["details"]["name"]} would not be a good place to sit on!"
-        return f"Item {item_id} not found."
+        item_object : ItemLookupResult = self.state_manager.find_item(item_id=item_id, required_type="seat", required_location="room")
+        item_details= item_object.item_data
+        if not item_object.success:
+            return item_object.error
+
+        print(f"Ok to sit on!")
+        edit=1
+        message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
+        if check_one_in(10):
+            edit=5
+            message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
+        self.state_manager.adjust_stat("energy", edit)
+        item_name = item_details.get("name", "")
+        item_desc = "\n".join(item_details.get("descriptions", []))
+        return f"You take a sit on the {item_name}\n {item_desc} \n {message}"
         
 
     def watch_tv(self):
@@ -571,7 +570,7 @@ class room_living_room:
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/sofa_icon.png"})
         # ------------------------
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
         return message
 
     def look_at_window(self):
@@ -591,7 +590,7 @@ class room_computer:
         self._signal_callback=signal
         self.wiki=wiki
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
 
         self.last_accessed_wiki=""
         self.last_wiki_query=""
@@ -618,7 +617,7 @@ class room_computer:
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         # --- Add signal call ---
         edit=-2
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
@@ -629,7 +628,7 @@ class room_computer:
     def search_wikipedia_articles(self, query):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         edit=-2
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
@@ -640,7 +639,7 @@ class room_computer:
     def get_wikipedia_article_content(self, title):
         "Delegated, returns a structured string with title and body for a random wikipedia article"
         edit=-5
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/computer_icon.png"})
         # ------------------------
@@ -648,16 +647,12 @@ class room_computer:
         self.last_accessed_wiki=article
         return article
     
-    
-    
-
-
 
 class room_white:
     def __init__(self, state_manager, signal=None): # <-- Removed the extra 'main_handler' argument
         self._signal_callback=signal
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
         #print("White room initialized.")
 
     # Add the helper method
@@ -665,7 +660,7 @@ class room_white:
 
     def meditate(self, thoughts):
         edit=10
-        self.state.adjust_stat("energy", edit)
+        self.state_manager.adjust_stat("energy", edit)
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/meditate_icon.png"})
         # ------------------------
@@ -693,21 +688,21 @@ class main_tools_handle:
         print("Main tools handler initialized.")
         self._signal_callback=signal # Store the main signal callback here
         # Store the state_manager reference
-        self.state = state_manager
+        self.state_manager : InventoryHouseManager = state_manager
 
         self.open_meteo = open_meteo
 
         # Instantiate the room classes and store them as attributes
         # Pass the state_manager AND the signal callback to the room instances
-        self.bathroom = room_bathroom(self.state, self._signal_callback)
-        self.bedroom = room_bedroom(self.state, self._signal_callback, self.memory)
-        self.living_room= room_living_room(self.state, self._signal_callback, self.open_meteo)
-        self.computer = room_computer(self.state, self._signal_callback, self.wiki)
-        self.garden = room_garden(self.state, self._signal_callback, self.open_meteo)
+        self.bathroom = room_bathroom(self.state_manager, self._signal_callback)
+        self.bedroom = room_bedroom(self.state_manager, self._signal_callback, self.memory)
+        self.living_room= room_living_room(self.state_manager, self._signal_callback, self.open_meteo)
+        self.computer = room_computer(self.state_manager, self._signal_callback, self.wiki)
+        self.garden = room_garden(self.state_manager, self._signal_callback, self.open_meteo)
         # --- Fix: Removed the extra 'self' argument here ---
-        self.white_room = room_white(self.state, self._signal_callback)
+        self.white_room = room_white(self.state_manager, self._signal_callback)
         # ---------------------------------------------------
-        self.kitchen = room_kitchen(self.state, self._signal_callback, config_manager)
+        self.kitchen = room_kitchen(self.state_manager, self._signal_callback, config_manager)
 
     # You already have _send_signal in main_tools_handle, but it's not currently used
     # by the room methods. The approach above adds it *to* the room instances.

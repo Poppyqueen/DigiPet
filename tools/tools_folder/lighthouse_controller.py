@@ -10,7 +10,7 @@ from tools.tools_folder.tools_helpers.lighthouse.models import ActionInternalRes
 
 import random
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
@@ -269,7 +269,7 @@ class LighthouseController:
         return "\n".join(parts)
 
     def lamp_refill_spirit_pan(self, spirit_pan_id, spirit_source_id) -> str:
-        source_result : ItemLookupResult = self.state_manager.find_item(spirit_source_id, required_type="spirit_source", required_location="inventory")
+        source_result : ItemLookupResult = self.state_manager.find_item(spirit_source_id, required_type="spirit_source", required_location="accessible")
         if not source_result.success:
             return source_result.error
 
@@ -289,16 +289,16 @@ class LighthouseController:
 
         parts = []
         new_spirit_content = denatured_alcohol_details["spirit_quantity"] - SPIRIT_CONSUME_RATE
-        parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", new_spirit_content))
+        parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", new_spirit_content).message)
         parts.append(f"Spirit source consumed {SPIRIT_CONSUME_RATE} units of spirit. {new_spirit_content:.0%} units remaining.")
 
         if new_spirit_content < 0:
-            parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", 0))
+            parts.append(self.state_manager.set_item_attribute(spirit_source_id, "spirit_quantity", 0).message)
             success, message = self.state_manager.remove_item(spirit_source_id, internal=True)
             parts.append("Spirit source has been consumed entirely!")
             parts.append(message)
 
-        parts.append(self.state_manager.set_item_attribute(spirit_pan_id, "filled", True))
+        parts.append(self.state_manager.set_item_attribute(spirit_pan_id, "filled", True).message)
 
         return "Spirit pan refilled.\n" + "\n".join(p for p in parts if p)
 
