@@ -145,6 +145,7 @@ class ToolRegistry:
             signal,
             open_meteo,
             is_toolset_available=self.toolset_checker,
+            base_path=subdirectory,
         )
         self._add_lighthouse_tools()
 

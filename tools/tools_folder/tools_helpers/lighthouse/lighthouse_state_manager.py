@@ -49,10 +49,10 @@ class LighthouseManager:
     - Coordinate with LanternRoomManager
     """
     
-    def __init__(self, state_manager, open_meteo_handle=None, is_toolset_available=None):
-        self.state_manager = state_manager
+    def __init__(self, open_meteo_handle=None, is_toolset_available=None, base_path: str = None):
         self.json_filename = "lighthouse_data.json"
-        self.base_path = state_manager.base_path
+        base_lighthouse_path = Path(base_path) / "Lighthouse_Data"
+        self.base_path = base_lighthouse_path
         self.filepath = Path(self.base_path) / self.json_filename
         self.is_toolset_available = is_toolset_available # New, method to check if a string matches a toolset or affordance block currently active based on the game state.
 

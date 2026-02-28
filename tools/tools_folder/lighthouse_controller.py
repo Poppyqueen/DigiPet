@@ -84,14 +84,14 @@ OIL_PUMP_RATE = .005 # of max 1.0
 SPIRIT_CONSUME_RATE = .05
 
 class LighthouseController:
-    def __init__(self, state_manager, signal, open_meteo_handle, is_toolset_available):
+    def __init__(self, state_manager, signal, open_meteo_handle, is_toolset_available, base_path: str = None):
         self.state_manager : InventoryHouseManager = state_manager
         self._signal_callback = signal
 
         self.item_store = ItemStore()
         self.is_toolset_available = is_toolset_available # New, method to check if a string matches a toolset or affordance block currently active based on the game state. 
 
-        self.lighthouse_manager = LighthouseManager(state_manager, open_meteo_handle, self.is_toolset_available)
+        self.lighthouse_manager = LighthouseManager(open_meteo_handle, self.is_toolset_available, base_path)
         self._send_signal = _send_signal
 
     # --- Private Helpers ---

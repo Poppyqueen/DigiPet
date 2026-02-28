@@ -15,6 +15,8 @@
 
 # We could add a tool or item? that allows us to expand the current garden size in plot numbers, costly but would allow for more plants
 
+# Refactor this, remove GenericJsonTool, treat IDs as ints, not strings
+
 from utils.generic_json_tool import GenericJsonTool
 import random
 import string

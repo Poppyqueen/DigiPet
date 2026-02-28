@@ -15,10 +15,11 @@ class ALifeController:
     def __init__(self, state_manager, signal, base_path: str):
         self.state_manager = state_manager
         self._signal_callback = signal
-        self.archive_dir = Path(base_path)
+        base_alife_path = Path(base_path) / "ALife_Data"
+        self.archive_dir = base_alife_path / "simulations"
         self.archive_dir.mkdir(parents=True, exist_ok=True)
 
-        self.manager = ALifeManager(base_path)
+        self.manager = ALifeManager(base_alife_path)
         self.simulation = ALifeSimulation()
 
         # Load last known state on startup
