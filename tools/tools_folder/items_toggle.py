@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 class ItemToggleTool:
     def __init__(self, state_manager, signal):
         self.state_manager : InventoryHouseManager = state_manager
-        self._signal_callback = signal
+        self._send_signal = signal
 
 
     def _toggle_item_power(self, item_id: str, turn_on: bool):
