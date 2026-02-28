@@ -1,5 +1,7 @@
 
 # services/pet_state_manager.py
+
+# TODO: kick out the currency stuff, move to the tools folder
 class PetStateManager:
     def __init__(self, state_store, signal_callback):
         self._state_store = state_store

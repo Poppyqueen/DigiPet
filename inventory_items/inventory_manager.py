@@ -51,12 +51,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         self.inventory_service = InventoryService(self._state_store, self._signal_callback)
         self.room_manager = RoomManager(self._state_store, self._signal_callback)
         self.stat_tracker = StatTracker(self._state_store, self._signal_callback)
-        #self.book_service = BookService(self._state_store, self._signal_callback)
         self.pet_state_manager = PetStateManager(self._state_store, self._signal_callback)
 
         # 4. Resolve explicit circular dependencies or cross-service references
         self.inventory_service.set_room_manager(self.room_manager)
-        self.room_manager.set_inventory_service(self.inventory_service)
+        self.room_manager.set_inventory_service(self.inventory_service) # TODO: Can we resolve this circular dependency?
+
         # self.stat_tracker.set_inventory_service(self.inventory_service) # StatTracker needs InventoryService for consume_item
         #self.book_service.set_inventory_service(self.inventory_service) # BookService needs InventoryService for create_book_item, etc.
 
@@ -94,7 +94,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
         return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
 
-    def list_inventories(self, formatted=False):
+    def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
         return self.inventory_service.list_inventories(formatted=formatted)
 
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
@@ -106,16 +106,16 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def get_all_rooms(self):
         return self.room_manager.get_all_rooms()
 
-    def get_current_emote(self, internal: bool = False) -> str | dict:
+    def get_current_emote(self, internal: bool = False) -> str | dict:# TODO: None of the methods that call this use the internal flag
         return self.pet_state_manager.get_current_emote(internal)
 
-    def get_possible_emotes(self, internal: bool = False) -> dict | str:
+    def get_possible_emotes(self, internal: bool = False) -> dict | str: # TODO: None of the methods that call this use the internal flag
         return self.pet_state_manager.get_possible_emotes(internal)
 
-    def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool:
+    def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool: # TODO: None of the methods that call this use the internal flag
         return self.pet_state_manager.set_current_emote(emote_name, internal)
 
-    def get_stats(self, internal: bool = False) -> str | dict:
+    def get_stats(self, internal: bool = False) -> str | dict: # TODO: Remove flag, and return standard object, change all interactions with it
         return self.stat_tracker.get_stats(internal)
 
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
@@ -127,13 +127,13 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def set_pet_color(self, color: tuple[int, int, int]):
         return self.pet_state_manager.set_pet_color(color)
 
-    def is_color_configured(self) -> bool:
+    def is_color_configured(self) -> bool: # TODO: Fix this, it causes issues on the configuration screen, it is a mess, remove it? keep the color in the configuration, not in the state
         return self.pet_state_manager.is_color_configured()
     
     def set_color_configured(self, configured: bool):
         return self.pet_state_manager.set_color_configured(configured)
 
-    def is_sound_configured(self) -> bool:
+    def is_sound_configured(self) -> bool: # TODO: Fix this, it causes issues on the configuration screen, it is a mess, remove it? keep the sound in the configuration, not in the state
         return self.pet_state_manager.is_sound_configured()
 
     def set_sound_configured(self, configured: bool):

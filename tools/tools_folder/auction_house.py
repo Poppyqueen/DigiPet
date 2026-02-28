@@ -1,5 +1,7 @@
 # auction_house.py - Case-Insensitive Version
 
+# TODO: Write a JSON state like the lighthouse or the ALife tools, do not use the state manager
+
 import random
 from inventory_items.items_provider.item_store import ItemStore
 from inventory_items.items_provider.items_scanner import FuzzyMatcher
@@ -305,7 +307,7 @@ class AuctionHouse:
         if not actual_name:
             return f"No item named '{item_name}' found in the auction house."
         
-        current_currency = self.state_manager.pet_state_manager.get_currency()
+        current_currency = self.state_manager.pet_state_manager.get_currency() # TODO: Write a state like the lighthouse or the ALife tools, do not use the state manager
 
         entry = self.currently_selling.get(actual_name)
         if not entry:
@@ -380,7 +382,7 @@ class AuctionHouse:
         else:
             return f"Failed to sell {actual_name}. Please try again later."
         
-    def get_currency(self):
+    def get_currency(self): # TODO: Write a state like the lighthouse or the ALife tools, do not use the state manager
         """Get the current currency balance of the user."""
         currency = self.state_manager.pet_state_manager.get_currency()
         return f"Your current currency balance is: {currency} total."
