@@ -12,3 +12,12 @@ To download voices run:
 
 python -m piper.download_voices en_US-libritts_r-medium --data-dir tts_providers/piper_voices/
 
+voices_map={
+    "aru_medium": "en_GB-aru-medium.onnx",
+    "libritts-r-medium": "en_US-libritts_r-medium.onnx",
+    "ryan_high": "en_US-ryan-high.onnx"
+}
+
+
+To download standard voices on MacOS or Linux:
+printf "%s\n" en_GB-aru-medium en_US-libritts_r-medium en_US-ryan-high | xargs -I {} python -m piper.download_voices {} --data-dir tts_providers/piper_voices/

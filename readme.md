@@ -159,6 +159,8 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 
 #### Short term
 
+* IMPORTANT: Update pyproject.toml to include the new OpenRouter dependencies
+
 * Define `consume_uses_left` for all consumable items in the item store (`inventory_items/items_provider/items_data`). All JSON files there should have a `consume_uses_left` key with a sensible value, and stats edit keys updated to reflect the new consumption system.
 
 * Refactor data constructors and the environment generation process, use the new pydantic definitions and improve the system in general
