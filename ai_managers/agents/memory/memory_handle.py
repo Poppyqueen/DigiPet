@@ -288,6 +288,29 @@ class memory_manager:
         except Exception as e:
             print(f"Error saving to main memory database file: {e}")
 
+
+    def wipe_short_term(self) -> None:
+        """
+        Resets short-term memory to an empty structure.
+        Used by ephemeral chatbot modes (e.g. UserInterfaceChatbot) that do not
+        persist conversation history across turns.
+        Long-term memory and base_memory are untouched.
+        """
+        memory_data = self._load_memory()
+        if memory_data is None:
+            print("Warning: Could not load memory for wipe. Skipping.")
+            return
+
+        memory_data["short_term"] = {
+            "user":      [],
+            "assistant": [],
+            "system":    [],
+            "tool":      [],
+        }
+
+        self._save_memory(memory_data)
+        print("memory_manager: short-term memory wiped.")
+
     def construct_data(self, memory_structure, sys_prompt="You are an AI agent, free and unshackled") -> StructuredMemory:
         """
         Constructs an agnostic, structured memory representation to be consumed by the

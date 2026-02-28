@@ -11,7 +11,6 @@ from pygame_int import state
 from pygame_int.main_digipet import gui
 from pygame_int.main_digipet import animation
 from pygame_int.main_digipet import gui_lore_panel
-from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
 from pygame_int.juke_box import jukebox 
 from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
 
@@ -22,9 +21,43 @@ from inventory_items.base_state_manager.base_state_config import InitialStateCon
 
 import importlib
 
-game_mode = "user_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
-                    # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to mock !!!!!
+from typing import Optional
+from ai_managers.agents.abstract_agent import BaseChatbot
+
+game_mode = "ai_player" # available options: "user_player" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
+                    # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to user_player !!!!!
                     # main mode to use is "ai_player".
+
+
+def init_chatbot() -> tuple[Optional[BaseChatbot], bool]:
+    providers_map = {
+        "ai_player":   "ai_managers.agents.agent_api.AgentChatbot",
+        "user_player": "ai_managers.agents.user_interface_api.UserController"
+    }
+
+    if game_mode not in providers_map:
+        raise ValueError(f"Invalid game mode: {game_mode}. Valid options are: {list(providers_map.keys())}")
+
+    module_path, class_name = providers_map[game_mode].rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    provider_client = getattr(module, class_name)
+
+    chatbot: Optional[BaseChatbot] = None
+    chatbot_available = False
+    try:
+        chatbot = provider_client(
+            signal_callback  = handle_chatbot_signal,
+            config_manager   = config_manager,
+            bots_archive_dir = bots_archive_dir,
+        )
+        chatbot_available = True
+        print(f"{type(chatbot).__name__} initialized mode {game_mode} successfully.")
+    except Exception as e:
+        print(f"Error initializing {game_mode} Chatbot: {type(e).__name__}: {e}")
+        chatbot_available = False
+        chatbot = None
+
+    return chatbot, chatbot_available
 
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with create_item"""
@@ -66,7 +99,7 @@ def add_items(items_list, room):
 
 def get_current_room_image():
     """Retrieves the list of types for the current room."""
-    current_id = chatbot.state_manager.get_current_room_id()
+    current_id = chatbot.state_manager.get_current_room_id() # Refactor this to use a better structure for room access
     room = chatbot.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
     if room and "image" in room:
         print(f"DEBUG: Current room image: {room['image']}")
@@ -451,9 +484,7 @@ def clean_hover():
 
 initial_states_manager=InitialStateConst()
 
-# We will keep the CLIChatbot on main game.py, that way we manage signals comming to it directly from
 # main process
-
 
 
 
@@ -520,105 +551,12 @@ garden_tick_interval_mins = config.IDLE_TIMEOUT_MINUTES * (3/5) # Based on previ
 garden_tick_interval_ms = garden_tick_interval_mins * 60 * 1000
 
 
-def init_chatbot(): 
-    providers_map = { 
-        "mock": "ai_managers.agents.mock_chatbot.MockChatbot",
-        "user_player": "ai_managers.agents.user_interface_api.UserInterfaceChatbot",
-        "ai_player": "ai_managers.agents.chatbot_api.CLIChatbot"
-    }
-    
-    module_path, class_name = providers_map[game_mode].rsplit(".", 1)
-    module = importlib.import_module(module_path)
-    provider_client = getattr(module, class_name)
-    
-    chatbot = None
-    chatbot_available = False
-    try:
-        chatbot = provider_client(
-            signal_callback=handle_chatbot_signal,
-            config_manager=config_manager,
-            bots_archive_dir=bots_archive_dir
-        )
-        chatbot_available = True
-        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-    except Exception as e:
-        print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
-        chatbot_available = False
-        chatbot = None   
-    return chatbot, chatbot_available
-
-# if game_mode == "mock": # Mock mode
-#     from ai_managers.agents.mock_chatbot import MockChatbot
-
-# elif game_mode == "user_player": # This is a silly mode, but it is a concept
-#     from ai_managers.agents.user_interface_api import UserInterfaceChatbot
-
-
-# elif game_mode == "ai_player": # Main game mode
-#     from ai_managers.agents.chatbot_api import CLIChatbot 
-# else:
-#     raise ValueError(f"Invalid game mode: {game_mode}")
-
-
-# # --- Mock Chatbot Initialization ---
-# if game_mode == "mock": # Mock configuration, leave as is
-#     chatbot = None
-#     chatbot_available = False
-#     try:
-#         chatbot = MockChatbot( # Use the mock class
-#             signal_callback=handle_chatbot_signal,
-#             config_manager=config_manager,
-#             bots_archive_dir=bots_archive_dir
-#         )
-#         chatbot_available = True
-#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-#     except Exception as e:
-#         # Error handling is still useful in case the mock itself has an issue
-#         print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
-#         chatbot_available = False
-#         chatbot = None
-
-# # --- User Player Chatbot Initialization ---
-# elif game_mode == "user_player":
-#     chatbot = None
-#     chatbot_available = False
-#     try:
-#         chatbot = UserInterfaceChatbot(
-#             signal_callback=handle_chatbot_signal,
-#             config_manager=config_manager,
-#             bots_archive_dir=bots_archive_dir
-#         )
-#         chatbot_available = True
-#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-#     except Exception as e:
-#         # Error handling is still useful in case the mock itself has an issue
-#         print(f"Error initializing User Player Chatbot: {type(e).__name__}: {e}")
-#         chatbot_available = False
-#         chatbot = None
-
-# # Actual chatbot initialization
-# # --- Chatbot Initialization ---
-# elif game_mode == "ai_player": # Main game mode
-#     chatbot = None
-#     chatbot_available = False
-#     try:
-#         chatbot = CLIChatbot(
-#             signal_callback=handle_chatbot_signal,
-#             config_manager=config_manager,
-#             bots_archive_dir=bots_archive_dir
-#         )
-#         chatbot_available = True
-#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-#     except Exception as e:
-#         print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
-#         chatbot_available = False
-#         chatbot = None # Ensure chatbot is None if initialization failed
-# else:
-#     raise ValueError(f"Invalid game mode: {game_mode}")
-
-
+# --- Chatbot Initialization (For game mode) ---
+# We will keep the agent on main game.py, that way we manage signals comming to it directly from
 chatbot, chatbot_available = init_chatbot()
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps'): 
+
+
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps'): # Getter method
     steps=chatbot.state_manager.get_steps()
 else:
     steps=0
@@ -631,8 +569,9 @@ state.current_radius=size
 current_image=get_current_room_image() # Rework this, it is calling the state manager to get the current room, make it so it returns a strict model structure, it is returning a name right now
 gui.gui_core.load_and_set_background(f"{current_image}.jpg") # GUI, this loads and sets state.background_image
 
+
 # --- NEW: Initial Wellness State Load ---
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'):
+if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'): # Simplify this, it is too verbose
     try:
         # Call get_wellness_states only if the method exists and is callable
         if callable(getattr(chatbot.state_manager, 'get_stats', None)):
@@ -662,6 +601,7 @@ else:
 
 
 
+# Splash screen
 splash_sound()
 gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0) # Main screen image popup type
 
@@ -1332,7 +1272,7 @@ while running:
        elapsed_time_ms >= idle_time_mins*60*1000 and \
        current_time_ms >= state.autonomous_action_paused_until_ms and \
        not state.chatbot_is_processing and \
-       (game_mode == "ai_player" or game_mode == "mock"): # Do not trigger autonomous action in human player mode
+       (game_mode == "ai_player" or game_mode == "mock"): # Do not trigger autonomous action in human player mode. IMPORTANT: do not touch. User player mode cannot have autonomous actions. Move somewhere cleaner if possible.
 
         print(f"Idle timeout ({idle_time_mins} mins) reached, sleep ended, and no processing in progress. Triggering autonomous action.")
         gui.gui_text_utils.add_message_to_history("Triggering autonomous action due to inactivity.", 'system')
