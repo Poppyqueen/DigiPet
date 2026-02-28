@@ -274,6 +274,264 @@ self._send_signal({"type": "player_inventory", "item_list": [...]})
 
 ---
 
+## 2b. Managing Tool State
+
+Some tools are stateless — they just read and write item data via `state_manager`. Others
+need to persist state of their own, either because the state belongs to the item itself
+(like a dispenser's inventory of candies) or because the tool manages an independent
+simulation system that exists outside the inventory entirely (like the lighthouse or the
+ALife lab).
+
+There are two established patterns. Choose the one that matches your tool's nature.
+
+---
+
+### Pattern 1 — Item-Embedded State
+
+**Use when:** The state describes the item itself. There's no simulation running
+independently — the item just has fields that change over time (fill level, contents,
+on/off state, etc.).
+
+**How it works:** The tool class is entirely stateless. All state lives inside the item's
+dict in the inventory system, persisted automatically by `set_item_attribute`. Multiple
+instances of the same item type each carry their own independent state naturally, since
+each is a separate dict in the store.
+
+#### Defining the initial state
+
+Embed the state fields directly in the item's JSON blueprint. They will be present on the
+item dict from the moment it is created.
+
+```json
+{
+    "name": "My Dispenser",
+    "type": ["furniture", "dispenser"],
+    "static": true,
+    "stackable": false,
+    "dispenser_state": {
+        "contents": {}
+    }
+}
+```
+
+There is no `__init__` work to do — the tool class constructor only stores `state_manager`
+and `signal`. No manager object, no file path, no load call.
+
+#### Reading state
+
+Call `find_item()` as usual, then read the sub-key from `item_data`:
+
+```python
+def examine_dispenser(self, item_id: int):
+    result = self.state_manager.find_item(item_id, required_type="dispenser", required_location="room")
+    if not result.success:
+        return result.error
+
+    item_data = result.item_data
+    dispenser_state = item_data.get("dispenser_state", {})
+    contents = dispenser_state.get("contents", {})
+    total = sum(contents.values())
+    return f"The dispenser has {total} candies left."
+```
+
+#### Writing state
+
+Always build a new dict (copy-on-write) and pass it to `set_item_attribute` with
+`path=` pointing at the parent sub-key. Never mutate `item_data` or any nested dict
+inside it directly.
+
+```python
+# Read current contents
+current_contents = item_data.get("dispenser_state", {}).get("contents", {})
+
+# Build modified copy
+new_contents = dict(current_contents)
+new_contents[selected_candy] -= 1
+if new_contents[selected_candy] <= 0:
+    del new_contents[selected_candy]
+
+# Single authoritative write
+self.state_manager.set_item_attribute(
+    item_id, "contents", new_contents, path=["dispenser_state"]
+)
+```
+
+The `path` parameter tells `set_item_attribute` to write at
+`item_data["dispenser_state"]["contents"]` rather than at the top level. Intermediate
+dicts are created automatically if absent. The stacking fingerprint comparison uses the
+top-level path segment (`"dispenser_state"` in this case), so nested writes on
+non-stacking keys are handled correctly.
+
+> **Why copy-on-write matters here too.** `item_data` is a live reference into the state
+> store. If you mutate a nested dict directly before calling `set_item_attribute`, you
+> corrupt the before-fingerprint that `set_item_attribute` uses to detect whether a stack
+> needs splitting. Always build a fresh dict from the current values, then pass it in.
+
+---
+
+### Pattern 2 — External System State
+
+**Use when:** The tool manages an independent simulation or system whose state exists
+completely outside the inventory. The system has its own lifecycle — it can be running,
+paused, resumed across sessions — and the item in the world is just a terminal to interact
+with it, not the container for its data.
+
+Examples: the ALife simulation lab, the lighthouse lamp system.
+
+**How it works:** A dedicated Manager class in `tools/tools_folder/tools_helpers/` owns a
+JSON file and handles all load/save. The Controller class in `tools/tools_folder/` wraps
+the manager, and is what the registry actually instantiates. The controller receives
+`base_path` from the registry at construction time and passes it down to the manager,
+which creates its own subdirectory inside it.
+
+#### The Manager class (persistence layer)
+
+The manager's only responsibilities are: know where the file is, load it on init, save
+it after every mutation. It holds the in-memory state dict and exposes methods to read
+and update it.
+
+```python
+# tools/tools_folder/tools_helpers/my_system_manager.py
+import json
+from pathlib import Path
+
+class MySystemManager:
+    def __init__(self, base_path: str):
+        self.filepath = Path(base_path) / "MySystem_Data" / "my_system_data.json"
+        self._state = self._load()
+
+    def _load(self) -> dict:
+        if not self.filepath.exists():
+            default = {"current_id": "", "records": {}}
+            self._save(default)
+            return default
+        try:
+            with open(self.filepath) as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            default = {"current_id": "", "records": {}}
+            self._save(default)
+            return default
+
+    def _save(self, state: dict = None):
+        data = state if state is not None else self._state
+        self.filepath.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.filepath, "w") as f:
+            json.dump(data, f, indent=2)
+
+    def get_pointer(self) -> dict:
+        return {"current_id": self._state.get("current_id", "")}
+
+    def set_pointer(self, record_id: str):
+        self._state["current_id"] = record_id
+        self._save()
+```
+
+Key rules for the manager:
+- Call `_save()` after every mutation — never batch writes speculatively.
+- Create the data directory in `_save()` using `mkdir(parents=True, exist_ok=True)` so
+  the first write always succeeds even if the directory doesn't exist yet.
+- On a corrupted or missing file, write and return a clean default rather than crashing.
+
+#### The Controller class (game boundary layer)
+
+The controller is what the registry instantiates. It receives `base_path` and passes it
+to the manager. It also holds a reference to the simulation/system object and coordinates
+between them: delegate the action to the system, then tell the manager to persist what
+changed.
+
+```python
+# tools/tools_folder/my_system_controller.py
+from tools.tools_folder.tools_helpers.my_system_manager import MySystemManager
+from tools.tools_folder.tools_helpers.my_simulation import MySimulation
+
+class MySystemController:
+    def __init__(self, state_manager, signal, base_path: str):
+        self.state_manager = state_manager
+        self._signal_callback = signal
+
+        self.manager = MySystemManager(base_path)
+        self.simulation = MySimulation()
+
+        # Active initialization — resume last known state or start fresh
+        pointer = self.manager.get_pointer()
+        if pointer["current_id"]:
+            self._resume(pointer["current_id"])
+        else:
+            self._create_new()
+
+    def do_action(self) -> str:
+        result = self.simulation.step()
+        if result.success:
+            self.manager.set_pointer(self.simulation.current_id)
+        return result.message
+```
+
+Active initialization is the key difference from Pattern 1. On every startup the
+controller reads the saved pointer, decides whether a previous state can be resumed, and
+either loads it or creates a fresh one. The game world always lands in a consistent state
+regardless of how it was last left.
+
+#### Two sub-variants
+
+Both ALife and Lighthouse follow this pattern, but differ in how they structure their
+persisted data:
+
+**Single-file snapshot** (Lighthouse): One JSON file holds the complete current state of
+the simulation as a flat snapshot. Every action results in a full overwrite of the file.
+On load, the state is deserialized field-by-field into typed objects (dataclasses). Derived
+state is never persisted — only source values (`PhysicalState`, `Controls`) go to JSON;
+everything else is recomputed on load.
+
+```
+Lighthouse_Data/
+    lighthouse_data.json    ← complete lamp + lantern room state, overwritten on every action
+```
+
+**Registry + archive files** (ALife): A small metadata JSON tracks a pointer (currently
+active simulation ID and tick) plus a registry of all known simulations. Each simulation
+run is archived as its own file when created. On load the controller reads the pointer,
+finds the corresponding archive file path in the registry, and loads that file into the
+simulation object.
+
+```
+ALife_Data/
+    alife_data.json             ← pointer + simulation registry (small, overwritten often)
+    simulations/
+        SIM_20240101_120000_1234567890.json   ← individual simulation archive
+        SIM_20240102_093000_9876543210.json
+        ...
+```
+
+The registry variant is the right choice when the system has multiple independent runs or
+sessions that the agent can switch between. The single-file variant is right when there is
+only ever one active state to track.
+
+#### When to save
+
+Both variants save after every mutation. For the single-file variant this means a full
+`_save_state()` call at the end of every action method — even if the action only changed
+one value. For the registry variant, `_save()` is called inside every mutating method on
+the manager, and archive files are written once at creation time and never modified again.
+
+The pattern is always: mutate in memory first, then save. Never try to write partial state
+or defer saves to a later flush.
+
+---
+
+### Choosing the right pattern
+
+| | Pattern 1 — Item-Embedded | Pattern 2 — External System |
+|---|---|---|
+| State lives in | Item dict, inventory system | JSON files in a dedicated data directory |
+| Tool class holds | `state_manager` only | Manager + simulation objects |
+| Persistence owner | Inventory system (automatic) | Dedicated Manager class |
+| Initialization | None — tool class is stateless | Active: load saved state, resume or create fresh |
+| Multiple instances | Each item has independent state naturally | Single system per tool type |
+| Good for | Item fill levels, on/off state, contents, counters | Simulations, multi-session systems, anything with its own lifecycle |
+
+---
+
 ## 3. Register the Tools (Detailed How-To inside `how_to/tools.md`)
 
 ### A. `tools/tools_builder/tool_registry.py`

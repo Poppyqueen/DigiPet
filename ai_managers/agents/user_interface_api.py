@@ -134,42 +134,6 @@ class UserInterfaceChatbot:
 
         print("UserInterfaceChatbot: Initialized.")
 
-    # --- API Methods (same as CLIChatbot/MockChatbot) ---
-    
-    def get_steps(self):
-        return self.state_manager.get_steps()
-
-    # def is_color_configured(self):
-    #     return self.state_manager.is_color_configured()
-
-    # def set_pet_color(self, color):
-    #     self.state_manager.set_pet_color(color)
-
-    # def set_color_configured(self, flag):
-    #     self.state_manager.set_color_configured(flag)
-
-    # def get_pet_color(self):
-    #     return self.state_manager.get_pet_color()
-
-    def get_wellness_states(self):
-        return self.state_manager.get_stats(internal=True)
-
-    def get_room_name(self, room_id):
-        return self.state_manager.get_room_name(room_id)
-
-    def add_message_out(self, message, role):
-        # No memory, but log it
-        self.text_capture.dump_text(f"[{role}] {message}")
-
-    def get_inventories(self):
-        inventories = self.state_manager.list_inventories(formatted=True)
-        room_items = inventories.get('room', [])
-        player_items = inventories.get('player', [])
-
-        self._signal_callback({"type": "room_inventory", "item_list": room_items})
-        self._signal_callback({"type": "player_inventory", "item_list": player_items})
-
-        return room_items, player_items
 
         # MODIFIED: Refactored to use TTS Provider
     def process_response_with_tts(self, final_ai_response):
@@ -188,7 +152,7 @@ class UserInterfaceChatbot:
                 self.tts_provider.stop() # Even if not available, ensure internal process is cleaned up
 
 
-    async def process_input(self, user_input, role='user'):
+    async def process_input(self, user_input, role='user'): # Main shared method for game.py to interact with this interface, TODO: Analyze how they differ from the chatbot_api
         """
         Main processing method - translates natural language to function calls.
         

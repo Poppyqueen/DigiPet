@@ -20,6 +20,8 @@ from utils.config_manager import ConfigManager
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 
+import importlib
+
 game_mode = "user_player" # available options: "user_player", "mock" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
                     # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to mock !!!!!
                     # main mode to use is "ai_player".
@@ -453,18 +455,6 @@ initial_states_manager=InitialStateConst()
 # main process
 
 
-if game_mode == "mock": # Mock mode
-    from ai_managers.agents.mock_chatbot import MockChatbot
-
-elif game_mode == "user_player": # This is a silly mode, but it is a concept
-    from ai_managers.agents.user_interface_api import UserInterfaceChatbot
-
-
-elif game_mode == "ai_player": # Main game mode
-    from ai_managers.agents.chatbot_api import CLIChatbot 
-else:
-    raise ValueError(f"Invalid game mode: {game_mode}")
-
 
 
 # --- Pygame Initialization ---
@@ -514,64 +504,37 @@ if config_manager.get_config('AI','pet_sound'):
 else:
     state.pet_sound = "mellow_friend.mp3" # Fallback
 
+# --- GUI Color Theme --- # TODO: Inside the config screen, this set color theme is called, alongside... setting the pet color and sound, repeated code, examine exactly why, what's going on. From what I understand, it is necesary to call it both here and inside the config screen. Make a sort of helper or think on a better way to do this.
 gui.gui_core.gui_construct_colors.set_color_theme()
 
+# --- Idle Time Config Load --- #
 idle_time_mins=config_manager.get_config('game_settings','idle_time_minutes')
 print("Bot will act every",idle_time_mins,"minutes of inactivity.")
-
 if not idle_time_mins:
     print("Idle time minutes not found in config, using default. Bot will act every",config.IDLE_TIMEOUT_MINUTES,"minutes of inactivity.")
     idle_time_mins=config.IDLE_TIMEOUT_MINUTES
 
 
+# --- Garden Tick Interval --- # TODO: Refactor ticks
 garden_tick_interval_mins = config.IDLE_TIMEOUT_MINUTES * (3/5) # Based on previous default values
-
 garden_tick_interval_ms = garden_tick_interval_mins * 60 * 1000
 
 
-
-if game_mode == "mock": # Mock configuration, leave as is
-    # --- Mock Chatbot Initialization ---
+def init_chatbot(): 
+    providers_map = { 
+        "mock": "ai_managers.agents.mock_chatbot.MockChatbot",
+        "user_player": "ai_managers.agents.user_interface_api.UserInterfaceChatbot",
+        "ai_player": "ai_managers.agents.chatbot_api.CLIChatbot"
+    }
+    
+    module_path, class_name = providers_map[game_mode].rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    provider_client = getattr(module, class_name)
+    
     chatbot = None
     chatbot_available = False
     try:
-        chatbot = MockChatbot( # Use the mock class
-            signal_callback=handle_chatbot_signal,
-            config_manager=config_manager,
-            bots_archive_dir=bots_archive_dir
-        )
-        chatbot_available = True
-        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-    except Exception as e:
-        # Error handling is still useful in case the mock itself has an issue
-        print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
-        chatbot_available = False
-        chatbot = None
-elif game_mode == "user_player":
-    # --- User Player Chatbot Initialization ---
-    chatbot = None
-    chatbot_available = False
-    try:
-        chatbot = UserInterfaceChatbot(
-            signal_callback=handle_chatbot_signal,
-            config_manager=config_manager,
-            bots_archive_dir=bots_archive_dir
-        )
-        chatbot_available = True
-        print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
-    except Exception as e:
-        # Error handling is still useful in case the mock itself has an issue
-        print(f"Error initializing User Player Chatbot: {type(e).__name__}: {e}")
-        chatbot_available = False
-        chatbot = None
-
-elif game_mode == "ai_player": # Main game mode
-    # Actual chatbot initialization
-    # --- Chatbot Initialization ---
-    chatbot = None
-    chatbot_available = False
-    try:
-        chatbot = CLIChatbot(
+        chatbot = provider_client(
             signal_callback=handle_chatbot_signal,
             config_manager=config_manager,
             bots_archive_dir=bots_archive_dir
@@ -581,54 +544,92 @@ elif game_mode == "ai_player": # Main game mode
     except Exception as e:
         print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
         chatbot_available = False
-        chatbot = None # Ensure chatbot is None if initialization failed
-else:
-    raise ValueError(f"Invalid game mode: {game_mode}")
+        chatbot = None   
+    return chatbot, chatbot_available
+
+# if game_mode == "mock": # Mock mode
+#     from ai_managers.agents.mock_chatbot import MockChatbot
+
+# elif game_mode == "user_player": # This is a silly mode, but it is a concept
+#     from ai_managers.agents.user_interface_api import UserInterfaceChatbot
 
 
+# elif game_mode == "ai_player": # Main game mode
+#     from ai_managers.agents.chatbot_api import CLIChatbot 
+# else:
+#     raise ValueError(f"Invalid game mode: {game_mode}")
+
+
+# # --- Mock Chatbot Initialization ---
+# if game_mode == "mock": # Mock configuration, leave as is
+#     chatbot = None
+#     chatbot_available = False
+#     try:
+#         chatbot = MockChatbot( # Use the mock class
+#             signal_callback=handle_chatbot_signal,
+#             config_manager=config_manager,
+#             bots_archive_dir=bots_archive_dir
+#         )
+#         chatbot_available = True
+#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+#     except Exception as e:
+#         # Error handling is still useful in case the mock itself has an issue
+#         print(f"Error initializing Mock Chatbot: {type(e).__name__}: {e}")
+#         chatbot_available = False
+#         chatbot = None
+
+# # --- User Player Chatbot Initialization ---
+# elif game_mode == "user_player":
+#     chatbot = None
+#     chatbot_available = False
+#     try:
+#         chatbot = UserInterfaceChatbot(
+#             signal_callback=handle_chatbot_signal,
+#             config_manager=config_manager,
+#             bots_archive_dir=bots_archive_dir
+#         )
+#         chatbot_available = True
+#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+#     except Exception as e:
+#         # Error handling is still useful in case the mock itself has an issue
+#         print(f"Error initializing User Player Chatbot: {type(e).__name__}: {e}")
+#         chatbot_available = False
+#         chatbot = None
+
+# # Actual chatbot initialization
+# # --- Chatbot Initialization ---
+# elif game_mode == "ai_player": # Main game mode
+#     chatbot = None
+#     chatbot_available = False
+#     try:
+#         chatbot = CLIChatbot(
+#             signal_callback=handle_chatbot_signal,
+#             config_manager=config_manager,
+#             bots_archive_dir=bots_archive_dir
+#         )
+#         chatbot_available = True
+#         print(f"{type(chatbot).__name__} initialized successfully with signal callback.")
+#     except Exception as e:
+#         print(f"Error initializing Chatbot: {type(e).__name__}: {e}")
+#         chatbot_available = False
+#         chatbot = None # Ensure chatbot is None if initialization failed
+# else:
+#     raise ValueError(f"Invalid game mode: {game_mode}")
+
+
+chatbot, chatbot_available = init_chatbot()
 if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps'): 
     steps=chatbot.state_manager.get_steps()
 else:
     steps=0
 
-
-
-current_image=get_current_room_image() 
-
-gui.gui_core.load_and_set_background(f"{current_image}.jpg")
-
-
-size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
+# Get current radius based on steps
+size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100) # Steps comes from state manager, remove the getter?
 state.current_radius=size
 
-
-
-# --- Initial Background Load ---
-# Determine starting location based on chatbot if available, otherwise use default
-starting_location_name = "bedroom" # Default
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_current_room_name'):
-     try:
-        # Call get_current_location only if the method exists and is callable
-        if callable(getattr(chatbot.state_manager, 'get_current_room_name', None)):
-             loc = chatbot.state_manager.get_current_room_name()
-             if loc: # Use chatbot location if it returned something
-                  starting_location_name = loc
-                  print("found starting location!")
-                  print(f"Getting initial location from chatbot: {starting_location_name}")
-             else: # Fallback if chatbot returned None or empty string
-                  print("Chatbot get_current_location returned empty. Using default 'bedroom'.")
-                  starting_location_name = "bedroom"
-        else:
-             print("Chatbot instance does not have a callable 'get_current_location' method.")
-             starting_location_name = "bedroom" # Fallback
-     except Exception as e:
-        print(f"Error getting initial location from chatbot: {e}")
-        starting_location_name = "bedroom" # Fallback
-else:
-    print("Chatbot instance not available or does not have 'get_current_location'. Using default 'bedroom'.")
-
-
-
+# Get current room image
+current_image=get_current_room_image() # Rework this, it is calling the state manager to get the current room, make it so it returns a strict model structure, it is returning a name right now
+gui.gui_core.load_and_set_background(f"{current_image}.jpg") # GUI, this loads and sets state.background_image
 
 # --- NEW: Initial Wellness State Load ---
 if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'):

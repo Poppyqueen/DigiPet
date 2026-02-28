@@ -172,12 +172,14 @@ class CLIChatbot:
             print(f"Chatbot attempted to signal, but no callback registered: {signal_data}")
 
 
-    def clear_screen(self):
+    def clear_screen(self): # Not needed for pygame
         """Clear the terminal screen."""
         os.system('cls' if os.name == 'nt' else 'clear')
 
 
-    async def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str=None, depth: int = 0) -> str:
+    async def _get_ai_response_sequence(self, current_mem_structure: dict, current_full_prompt: str=None, depth: int = 0) -> str: # This is using AI response to get a response from a provider in a normalized format, handles the lifetime of a chain of actions which includes managing memory, stats, recursion depth, and function calls, recursive, process_input calls it to get a response
+        # TODO: Think if we want the user interface to use this exact same method, which handles a full chain of actions, allowing it to be used for both the user interface and the AI response
+        # The main difference would be in the memory, it should be wiped after each chain ends. Analyze how user interface works right now. 
         """
         Recursively gets responses from the AI, handling function calls until a text response is received.
 
@@ -283,7 +285,7 @@ class CLIChatbot:
             return f"Error generating response: {e}" # Return error message
 
     # MODIFIED: Refactored to use TTS Provider
-    def process_response_with_tts(self, final_ai_response):
+    def process_response_with_tts(self, final_ai_response): #  Internal, should be shared with other interfaces?, it is not
         """
         Processes the AI response, including TTS if enabled, stopping
         any existing TTS process first using the active TTS provider.
@@ -298,7 +300,7 @@ class CLIChatbot:
             if self.tts_provider:
                 self.tts_provider.stop() # Even if not available, ensure internal process is cleaned up
 
-    async def _check_wellness_and_consequences(self):
+    async def _check_wellness_and_consequences(self): # Internal, should be shared with other interfaces?, it is not
         """
         Monitors the AI agent's wellness stats (fullness, hydration, energy).
         Decreases stats, checks against predefined thresholds, applies specific
@@ -387,7 +389,7 @@ class CLIChatbot:
             print("AI agent passed out due to critically low wellness levels.")
 
 
-    async def process_input(self, message, role="user"):
+    async def process_input(self, message, role="user"): # Main method, is being called by game.py to interact with the chatbot
         """Process user input and generate AI response."""
         joined_random_entity = ""
 
@@ -431,7 +433,7 @@ class CLIChatbot:
         return final_ai_response # Return the final text response
 
     
-    def run(self):
+    def run(self): # Not used
         """loop for the chatbot as a CLI"""
         try:
             while self.running:
