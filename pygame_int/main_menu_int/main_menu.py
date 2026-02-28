@@ -20,7 +20,7 @@ initial_states_manager=InitialStateConst()
 def extract_color(config_manager, config_name):
 
     default_color = [255, 255, 255]
-    color=config_manager.examine_config(config_name,'game_settings','pet_color')
+    color=config_manager.examine_config(config_name,'AI','pet_color')
     if not color:
         color=default_color
         print(f"No color found for config '{config_name}', It probably hasn't been configured yet. Using default color: {color}")
@@ -135,8 +135,16 @@ def run_config_main_menu_ui(screen, font, config_manager):
                 if make_new_button.rect.collidepoint(mouse_pos):
                     result = make_new_button.handle_event(event, mouse_pos)
                     if result == "create_new":
-                        run_config_creation_ui(screen, font, config_manager, initial_states_manager.states_configs)
+                        result = run_config_creation_ui(screen, font, config_manager, initial_states_manager.states_configs)
+                        print("Ran config creation UI")
+                        if result == "config_created":
+                            print("Config created")
+                            # Can we return an load the agent here instead of rebuilding the list?
+                            return True
+                        else:
+                            print("Config not created")
                         # Rebuild the list in case new configs were added
+
                         scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
                         scroll_offset_y = 0
                     continue  #

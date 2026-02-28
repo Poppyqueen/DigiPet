@@ -228,8 +228,6 @@ class InitialStateConst():
                 "hydration": 200.0,
                 "energy": 200.0
             },
-            "is_color_configured": False,
-            "pet_theme_color": [100, 255, 100],
             "steps": 0
         }
 

@@ -139,17 +139,17 @@ class UserInterfaceChatbot:
     def get_steps(self):
         return self.state_manager.get_steps()
 
-    def is_color_configured(self):
-        return self.state_manager.is_color_configured()
+    # def is_color_configured(self):
+    #     return self.state_manager.is_color_configured()
 
-    def set_pet_color(self, color):
-        self.state_manager.set_pet_color(color)
+    # def set_pet_color(self, color):
+    #     self.state_manager.set_pet_color(color)
 
-    def set_color_configured(self, flag):
-        self.state_manager.set_color_configured(flag)
+    # def set_color_configured(self, flag):
+    #     self.state_manager.set_color_configured(flag)
 
-    def get_pet_color(self):
-        return self.state_manager.get_pet_color()
+    # def get_pet_color(self):
+    #     return self.state_manager.get_pet_color()
 
     def get_wellness_states(self):
         return self.state_manager.get_stats(internal=True)

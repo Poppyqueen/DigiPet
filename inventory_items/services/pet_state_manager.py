@@ -13,52 +13,6 @@ class PetStateManager:
                 self._signal_callback(signal_data)
             except Exception as e:
                 print(f"Error sending signal: {e}")
-
-    # --- Pet Theme Color Getters and Setters ---
-    def get_pet_color(self) -> tuple[int, int, int] | None:
-        color_list = self._state_store.get_state_section("pet_theme_color")
-        if isinstance(color_list, (list, tuple)) and len(color_list) == 3:
-            return tuple(max(0, min(255, int(c))) for c in color_list)
-        print("Warning: get_pet_color returning default due to unexpected state format.")
-        return (100, 255, 100)
-
-    def set_pet_color(self, color: tuple[int, int, int]):
-        if not (isinstance(color, (list, tuple)) and len(color) == 3 and
-                all(isinstance(c, (int, float)) and 0 <= c <= 255 for c in color)):
-            print(f"Error: Attempted to set invalid pet color format: {color}. Ignoring.")
-            return
-
-        self._state_store.update_state_section("pet_theme_color", [int(c) for c in color])
-
-    def is_color_configured(self) -> bool:
-        return self._state_store.get_state_section("is_color_configured", False)
-
-    def set_color_configured(self, configured: bool):
-        if not isinstance(configured, bool):
-            print(f"Error: Attempted to set 'is_color_configured' with non-boolean value: {configured}. Ignoring.")
-            return
-        self._state_store.update_state_section("is_color_configured", configured)
-
-    # --- Pet Sound Getters and Setters ---
-    def get_pet_sound(self) -> str | None:
-        return self._state_store.get_state_section("pet_sound", "")
-
-    def set_pet_sound(self, sound: str):
-        if not isinstance(sound, str):
-            print(f"Error: Attempted to set invalid pet sound format: {sound}. Ignoring.")
-            return
-        self._state_store.update_state_section("pet_sound", sound)
-
-    def is_sound_configured(self) -> bool:
-        return self._state_store.get_state_section("is_sound_configured", False)
-
-    def set_sound_configured(self, configured: bool):
-        if not isinstance(configured, bool):
-            print(f"Error: Attempted to set 'is_sound_configured' with non-boolean value: {configured}. Ignoring.")
-            return
-        print(f"Setting 'is_sound_configured' to {configured}")
-        self._state_store.update_state_section("is_sound_configured", configured)
-
     # --- Emote Management ---
     def get_current_emote(self, internal: bool = False) -> str | dict:
         current_emote = self._state_store.get_state_section("current_emote", "unknown")

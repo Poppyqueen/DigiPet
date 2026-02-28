@@ -121,30 +121,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
-    def get_pet_color(self) -> tuple[int, int, int] | None:
-        return self.pet_state_manager.get_pet_color()
-
-    def set_pet_color(self, color: tuple[int, int, int]):
-        return self.pet_state_manager.set_pet_color(color)
-
-    def is_color_configured(self) -> bool: # TODO: Fix this, it causes issues on the configuration screen, it is a mess, remove it? keep the color in the configuration, not in the state
-        return self.pet_state_manager.is_color_configured()
-    
-    def set_color_configured(self, configured: bool):
-        return self.pet_state_manager.set_color_configured(configured)
-
-    def is_sound_configured(self) -> bool: # TODO: Fix this, it causes issues on the configuration screen, it is a mess, remove it? keep the sound in the configuration, not in the state
-        return self.pet_state_manager.is_sound_configured()
-
-    def set_sound_configured(self, configured: bool):
-        return self.pet_state_manager.set_sound_configured(configured)
-
-    def get_pet_sound(self) -> str:
-        return self.pet_state_manager.get_pet_sound()
-    
-    def set_pet_sound(self, sound: str):
-        return self.pet_state_manager.set_pet_sound(sound)
-
     def get_steps(self) -> int:
         return self.pet_state_manager.get_steps()
 

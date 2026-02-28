@@ -488,19 +488,45 @@ except pygame.error:
     font = pygame.font.SysFont("Arial", 20) # Fallback font
     line_height = font.get_linesize() # Get line height from fallback font
 
+# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
+gui.gui_core.init_gui_elements(font, line_height, 200)
+
 
 
 bots_archive_dir=f"data_archive/{game_mode}/"
 config_manager = ConfigManager(bots_archive_dir)
 
-
-# Initialize the GUI module. This also calculates and stores button/panel rects internally in gui.py.
-gui.gui_core.init_gui_elements(font, line_height, 200)
-
-
 # Main Process #
 
 run_config_main_menu_ui(screen, font, config_manager)
+
+# gui.gui_core.gui_construct_colors.set_color_theme()  # This needs to be called before the sound gui is called in run_config_creation_ui,run_sound_selection_ui but after run_color_selection_ui because it needs state.pet_color
+
+
+# Ensure state.pet_color is initialized to the default before potential load/selection
+if config_manager.get_config('AI','pet_color'):
+    state.pet_color=config_manager.get_config('AI','pet_color')
+else:
+    state.pet_color=config.GREEN
+
+if config_manager.get_config('AI','pet_sound'):
+    state.pet_sound=config_manager.get_config('AI','pet_sound')
+else:
+    state.pet_sound = "mellow_friend.mp3" # Fallback
+
+gui.gui_core.gui_construct_colors.set_color_theme()
+
+idle_time_mins=config_manager.get_config('game_settings','idle_time_minutes')
+print("Bot will act every",idle_time_mins,"minutes of inactivity.")
+
+if not idle_time_mins:
+    print("Idle time minutes not found in config, using default. Bot will act every",config.IDLE_TIMEOUT_MINUTES,"minutes of inactivity.")
+    idle_time_mins=config.IDLE_TIMEOUT_MINUTES
+
+
+garden_tick_interval_mins = config.IDLE_TIMEOUT_MINUTES * (3/5) # Based on previous default values
+
+garden_tick_interval_ms = garden_tick_interval_mins * 60 * 1000
 
 
 
@@ -565,20 +591,9 @@ if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_steps')
 else:
     steps=0
 
-idle_time_mins=config_manager.get_config('game_settings','idle_time_minutes')
-print("Bot will act every",idle_time_mins,"minutes of inactivity.")
-
-if not idle_time_mins:
-    print("Idle time minutes not found in config, using default. Bot will act every",config.IDLE_TIMEOUT_MINUTES,"minutes of inactivity.")
-    idle_time_mins=config.IDLE_TIMEOUT_MINUTES
 
 
-garden_tick_interval_mins = config.IDLE_TIMEOUT_MINUTES * (3/5) # Based on previous default values
-
-garden_tick_interval_ms = garden_tick_interval_mins * 60 * 1000
-
-
-current_image=get_current_room_image()
+current_image=get_current_room_image() 
 
 gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 
@@ -586,102 +601,6 @@ gui.gui_core.load_and_set_background(f"{current_image}.jpg")
 size=calculate_sized_by_steps(steps, config.CIRCLE_RADIUS, 100)
 state.current_radius=size
 
-
-# Ensure state.pet_color is initialized to the default before potential load/selection
-state.pet_color = config.GREEN # Or use the default from state.py (which is already green)
-
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_color_configured') and callable(chatbot.state_manager.is_color_configured):
-    if not chatbot.state_manager.is_color_configured():
-        # --- Run Color Selection UI ---
-        print("Color not configured. Starting color selection UI...")
-        # Call the blocking UI function
-        selected_color = gui_color_selector.run_color_selection_ui(screen, font) # Pass screen and font.  #### We want to clone this behavior, right after it for a "sound alarm" selector
-
-
-        if selected_color is not None:
-            # Color was selected, save it via the chatbot
-            print(f"Color selected: {selected_color}. Saving configuration...")
-            chatbot.state_manager.set_pet_color(selected_color)
-            chatbot.state_manager.set_color_configured(True)
-            # Update runtime state with the selected color
-            state.pet_color = selected_color
-            print("Color configuration saved and applied.")
-        else:
-            # User quit during color selection
-            print("User quit during color selection. Exiting game.")
-            running = False # Set main game loop flag to False
-
-    else:
-        # --- Load Configured Color ---
-        print("Color already configured. Loading saved color...")
-        # Load the saved color from the chatbot's state manager
-        loaded_color = chatbot.state_manager.get_pet_color()
-        if loaded_color: # Check if get_pet_color returned a valid color
-            state.pet_color = loaded_color # Update runtime state
-            print(f"Loaded pet color: {state.pet_color}")
-        else:
-             # This case should be rare if validation works, but good to handle
-             print("Error loading pet color from config. Using default green.")
-             state.pet_color = config.GREEN # Fallback to default green
-else:
-    # Chatbot unavailable, color configuration is skipped. Use default color.
-    print("Chatbot not available. Skipping color configuration/load. Using default green.")
-    state.pet_color = config.GREEN
-
-
-# TODO: This is a hack, re-do it. Tangled mess.
-print("Pet color set to:", state.pet_color)
-config_manager.set_config('game_settings','pet_color',state.pet_color)
-config_manager.save_config_to_current()
-#
-
-
-
-gui.gui_core.gui_construct_colors.set_color_theme() 
-
-
-# =============================================================================
-# NEW: Autonomous Action Sound Selection Logic
-# =============================================================================
-
-SOUNDS_DIR = "style/sounds/autonomous_action/" 
-
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'is_sound_configured') and callable(chatbot.state_manager.is_sound_configured):
-    
-    # Check if sound is NOT configured yet
-    if not chatbot.state_manager.is_sound_configured():
-        print("Sound alarm not configured. Starting sound selection UI...")
-        
-        # --- Run Sound Selection UI ---
-        selected_sound_filename = gui_sound_selector.run_sound_selection_ui(screen, font, SOUNDS_DIR)
-
-        if selected_sound_filename is not None:
-            # Sound was selected and confirmed
-            print(f"Sound selected: {selected_sound_filename}. Saving configuration...")
-            if hasattr(chatbot.state_manager, 'set_pet_sound'):
-                chatbot.state_manager.set_pet_sound(selected_sound_filename)
-            
-            # Mark as configured
-            chatbot.state_manager.set_sound_configured(True)
-            
-            # Update runtime state
-            state.pet_sound = selected_sound_filename
-            print(f"Sound selected: {selected_sound_filename}. Saving configuration...")
-            print("Sound configuration saved and applied.")
-        else:
-            # User pressed 'Back' or quit
-            print("User quit during sound selection. Exiting game.")
-            running = False # Set main game loop flag to False
-    else:
-        # --- Load Configured Sound ---
-        print("Sound already configured. Loading saved sound...")
-        if hasattr(chatbot.state_manager, 'get_pet_sound'):
-            loaded_sound = chatbot.state_manager.get_pet_sound()
-            if loaded_sound:
-                state.pet_sound = loaded_sound
-                print(f"Loaded pet sound: {state.pet_sound}")
-            else:
-                state.pet_sound = "mellow_friend.mp3" # Fallback
 
 
 # --- Initial Background Load ---
@@ -747,12 +666,8 @@ gui.gui_popups.show_image_popup("style/images/house_splash_v2.png", 5000, 1000, 
 
 
 current_gui_rects=gui.gui_core.get_gui_rects()
-
-
 state.panel_visible = True
 state.panel_width = 200
-
-
 history_display_area = current_gui_rects['history_display_area']
 
 # --- Initial Inventory Load ---

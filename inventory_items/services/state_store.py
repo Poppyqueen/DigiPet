@@ -381,26 +381,6 @@ class StateStore(GenericJsonTool):
             print(f"Validation Warning: 'is_color_configured' missing or not boolean ({type(is_color_configured_val).__name__}). Setting to default (False).")
             self._state["is_color_configured"] = False
             needs_save = True
-
-        pet_theme_color_val = self._state.get("pet_theme_color")
-        is_valid_color_format = (
-            isinstance(pet_theme_color_val, (list, tuple)) and
-            len(pet_theme_color_val) == 3 and
-            all(isinstance(c, (int, float)) for c in pet_theme_color_val)
-        )
-        if not is_valid_color_format:
-            default_color = self._default_state.get("pet_theme_color", [100, 255, 100])
-            print(f"Validation Warning: 'pet_theme_color' missing or invalid format ({pet_theme_color_val}). Setting to default {default_color}.")
-            self._state["pet_theme_color"] = list(default_color)
-            needs_save = True
-        else:
-            clamped_color = [
-                max(0, min(255, int(c))) for c in pet_theme_color_val
-            ]
-            if clamped_color != pet_theme_color_val:
-                print(f"Validation Warning: 'pet_theme_color' values ({pet_theme_color_val}) outside 0-255 range or not integers. Clamping to {clamped_color}.")
-                self._state["pet_theme_color"] = clamped_color
-                needs_save = True
         
         # New: Validate Sound State
         is_sound_configured_val = self._state.get("is_sound_configured")

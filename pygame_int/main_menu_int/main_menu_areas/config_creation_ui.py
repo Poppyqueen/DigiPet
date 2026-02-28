@@ -1,6 +1,8 @@
 # main_menu_areas/config_creation_ui.py
 from pygame_int import gui_config
 from pygame_int import config
+from pygame_int import state
+
 import pygame
 
 
@@ -20,10 +22,14 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
 
 import sys
 
+from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
+
+
 text_inputs = {}
 dropdowns = {}
 active_element = None
 
+SOUNDS_DIR = "style/sounds/autonomous_action/" 
 
 
 
@@ -409,9 +415,31 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
                             config_manager.set_config("game_settings", "idle_time_minutes", form_data["idle_time_minutes"]["value"])
 
+                            # Run color selection before final save
+                            response_color = gui_color_selector.run_color_selection_ui(screen, font)
+                            select_color = (100, 255, 100)  # default green
+                            if response_color is not None:
+                                select_color = response_color
+
+                            config_manager.set_config("AI", "pet_color", select_color)
+
+                            state.pet_color = select_color
+                            gui.gui_core.gui_construct_colors.set_color_theme()
+                            
+                            # Add sound selection too later
+                            selected_sound_filename = gui_sound_selector.run_sound_selection_ui(screen, font, SOUNDS_DIR)
+                            print(f"Selected sound filename: {selected_sound_filename}")
+                            if selected_sound_filename is not None:
+                                config_manager.set_config("AI", "pet_sound", selected_sound_filename)
+                            else:
+                                config_manager.set_config("AI", "pet_sound", "mellow_friend.mp3")  # default sound
+
                             config_manager.save_config_to_archive(config_name)
+                            config_manager.load_config_from_archive(config_name)
                             gui.gui_popups.clear_all_popups()
                             running = False
+                            print("Ran config creation UI and saved config")
+                            return "config_created"
                 
                 elif back_button.rect.collidepoint(mouse_pos):
                     if back_button.handle_event(event, mouse_pos) == "go_back":
