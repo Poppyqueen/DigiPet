@@ -184,6 +184,7 @@ class ItemRemovalResult(BaseModel):
         return cls(success=False, message=error, error=error)
 
 
+ROOM_BASE_KEYS = {"id", "name", "image", "music", "room_types", "descriptions", "items"}
 
 class RoomDataResult(BaseModel):
     id: int
@@ -192,6 +193,7 @@ class RoomDataResult(BaseModel):
     music: str
     description: str
     room_types: list[str]
+    extra_data: dict = {}
 
     @classmethod
     def from_room_dict(cls, room: dict) -> RoomDataResult:
@@ -208,8 +210,8 @@ class RoomDataResult(BaseModel):
             music=room.get("music", ""),
             description=" ".join(descriptions),
             room_types=room.get("room_types", []),
+            extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},
         )
-
 
 # Expand on this
 class SetItemAttributeResult(BaseModel):

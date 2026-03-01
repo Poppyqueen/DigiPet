@@ -839,7 +839,7 @@ class InventoryService:
         item_id: int,
         required_type: str | None = None,
         required_location: Literal["inventory", "room", "accessible"] | None = None,
-    ) -> "ItemLookupResult":
+    ) -> ItemLookupResult:
         """
         Unified item lookup with optional filters.
 

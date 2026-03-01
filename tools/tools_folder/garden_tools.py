@@ -48,11 +48,11 @@ class GardenController:
 
         # Pull room definitions once so GardenManager can initialise plots.
         # TODO: Get a public method for this
-        room_defs = self.state_manager._state_store.get_state_section("rooms", [])
+        rooms_data = self.state_manager.get_all_rooms_data()
 
         self.garden_manager = GardenManager(
             open_meteo=open_meteo,
-            room_definitions=room_defs,
+            room_definitions=rooms_data,
             base_path=self.state_manager.base_path,
         )
 
@@ -90,11 +90,7 @@ class GardenController:
         return room_data, ""
 
     def _room_name(self, room_id) -> str:
-        rooms = self.state_manager._state_store.get_state_section("rooms", []) # TODO: Get a public method for this
-        return next(
-            (r.get("name", str(room_id)) for r in rooms if str(r.get("id")) == str(room_id)),
-            str(room_id),
-        )
+        return self.state_manager.get_room_data(room_id).name
 
     # -----------------------------------------------------------------------
     # Game loop

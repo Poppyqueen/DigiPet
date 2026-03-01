@@ -83,7 +83,15 @@ class GardenManager:
             return {}
         try:
             with self._filepath.open("r") as f:
-                return json.load(f)
+                raw = json.load(f)
+            # Coerce room_id keys back to int, leave internal keys alone
+            coerced = {}
+            for k, v in raw.items():
+                try:
+                    coerced[int(k)] = v
+                except (ValueError, TypeError):
+                    coerced[k] = v  # preserve non-room keys like "_last_rain_applied_timestamp"
+            return coerced
         except (json.JSONDecodeError, OSError) as exc:
             print(f"GardenManager: failed to load state ({exc}). Starting fresh.")
             return {}
@@ -100,42 +108,34 @@ class GardenManager:
     # Plot initialisation
     # -----------------------------------------------------------------------
 
-    def _initialize_plots(self, room_definitions: list[dict]) -> None:
-        """
-        Ensure every garden room from the room definitions has a matching
-        entry in the persisted state.  Existing plant data is preserved.
-        """
-        for room in room_definitions:
-            room_id    = room.get("id")
-            room_name  = room.get("name", str(room_id))
-            room_types = room.get("room_types", [])
-            plot_count = room.get("plot_number")
 
+    def _initialize_plots(self, room_definitions: list[RoomDataResult]) -> None:
+        for room in room_definitions:
             if not (
-                isinstance(room_types, list)
-                and "planting_garden" in room_types
-                and isinstance(plot_count, int)
-                and plot_count > 0
+                "planting_garden" in room.room_types
+                and isinstance(room.extra_data.get("plot_number"), int)
+                and room.extra_data.get("plot_number") > 0
             ):
                 continue
 
-            room_key = str(room_id)
+            plot_number = room.extra_data["plot_number"]
+            room_key = room.id
 
             if room_key not in self._state:
-                self._state[room_key] = {"room_id": room_id, "plots": []}
-                print(f"GardenManager: added garden '{room_name}' (id={room_id}).")
+                self._state[room_key] = {"room_id": room.id, "plots": []}
+                print(f"GardenManager: added garden '{room.name}' (id={room.id}).")
 
             garden   = self._state[room_key]
             existing = garden.get("plots", [])
 
-            if len(existing) != plot_count:
+            if len(existing) != plot_number:
                 new_plots = []
-                for i in range(plot_count):
-                    pid = f"plot{i + 1}"
+                for i in range(plot_number):
+                    pid   = f"plot{i + 1}"
                     found = next((p for p in existing if p.get("plot_id") == pid), None)
                     new_plots.append(found if found else {"plot_id": pid, "plants": []})
                 garden["plots"] = new_plots
-                print(f"GardenManager: '{room_name}' re-initialized to {plot_count} plots.")
+                print(f"GardenManager: '{room.name}' re-initialized to {plot_number} plots.")
             else:
                 for plot in existing:
                     if not isinstance(plot.get("plants"), list):
@@ -148,7 +148,7 @@ class GardenManager:
     # -----------------------------------------------------------------------
 
     def _get_garden(self, room_id) -> dict | None:
-        return self._state.get(str(room_id))
+        return self._state.get(room_id)
 
     def _get_plot(self, room_id, plot_id: str) -> tuple[dict | None, int]:
         """Returns (plot_dict, index) or (None, -1)."""

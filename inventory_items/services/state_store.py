@@ -375,26 +375,6 @@ class StateStore(GenericJsonTool):
             self._state["next_room_id"] = max_existing_room_id + 1
             needs_save = True
 
-        # --- NEW: Validate Pet Theme Color State ---
-        is_color_configured_val = self._state.get("is_color_configured")
-        if not isinstance(is_color_configured_val, bool):
-            print(f"Validation Warning: 'is_color_configured' missing or not boolean ({type(is_color_configured_val).__name__}). Setting to default (False).")
-            self._state["is_color_configured"] = False
-            needs_save = True
-        
-        # New: Validate Sound State
-        is_sound_configured_val = self._state.get("is_sound_configured")
-        if not isinstance(is_sound_configured_val, bool):
-            print(f"Validation Warning: 'is_sound_configured' missing or not boolean ({type(is_sound_configured_val).__name__}). Setting to default (False).")
-            self._state["is_sound_configured"] = False
-            needs_save = True
-
-        pet_sound_val = self._state.get("pet_sound")
-        if not isinstance(pet_sound_val, str):
-            print(f"Validation Warning: 'pet_sound' missing or not string ({type(pet_sound_val).__name__}). Setting to default ('').")
-            self._state["pet_sound"] = ""
-            needs_save = True
-
         # --- NEW: Validate Steps State ---
         steps_value = self._state.get("steps")
         default_steps_value = 0
@@ -407,27 +387,6 @@ class StateStore(GenericJsonTool):
             print(f"Validation Warning: 'steps' value ({steps_value}) is negative. Resetting to default ({default_steps_value}).")
             self._state["steps"] = default_steps_value
             needs_save = True
-
-        # --- NEW: Validate current_sim ID State ---
-        id_value = self._state.get("id_value")
-        default_id_value = ""
-
-        if not isinstance(id_value, str):
-            print(f"Validation Warning: 'id_value' missing or not an string ({type(id_value).__name__}). Setting to default ({default_id_value}).")
-            self._state["id_value"] = default_id_value
-            needs_save = True
-
-        sim_current_step = self._state.get("sim_current_step")
-        default_sim_current_step = 0
-        if not isinstance(sim_current_step, int):
-            print(f"Validation Warning: 'sim_current_step' missing or not an integer ({type(sim_current_step).__name__}). Setting to default ({default_sim_current_step}).")
-            self._state["sim_current_step"] = default_sim_current_step
-            needs_save = True
-        elif sim_current_step < 0:
-            print(f"Validation Warning: 'sim_current_step' value ({sim_current_step}) is negative. Resetting to default ({default_sim_current_step}).")
-            self._state["sim_current_step"] = default_sim_current_step
-            needs_save = True
-
 
         # -- new validate currency state --
         currency_value = self._state.get("currency")

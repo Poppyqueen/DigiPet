@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
+    from inventory_items.services.return_objects import ItemLookupResult
 
 # TODO: Add popup signals to all methods
 # TODO: Add keys more in depth for items like the oiler, kerosene containers, hand_fire_source, etc.
