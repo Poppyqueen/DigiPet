@@ -869,7 +869,7 @@ class InventoryService:
                 )
 
         # 2. Find the item anywhere in state (inventory + all rooms)
-        raw = self._find_item_info_by_id(item_id)
+        raw = copy.deepcopy(self._find_item_info_by_id(item_id))
         if raw is None:
             return ItemLookupResult.fail(f"Item {item_id} not found.")
 

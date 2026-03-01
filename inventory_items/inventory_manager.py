@@ -159,7 +159,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         quantity: int = 1,
         path: list[str] | None = None
 
-    )-> SetItemAttributeResult:
+    )-> SetItemAttributeResult: # Fix this object
         return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
 
     def remove_item(self, 
