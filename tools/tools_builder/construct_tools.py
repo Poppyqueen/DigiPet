@@ -15,6 +15,8 @@
 
 import inspect
 from utils.loc_datetime import datetime
+from utils.time_manager import get_time_tag_from_now
+
 
 from .tool_registry import ToolRegistry
 from .tool_availability import (
@@ -73,17 +75,13 @@ class FunctionBuilder:
     def _get_current_context(self):
         """Returns (room_types, ItemContext) for the current state."""
         current_room_types = self.get_current_room_types()
-        items_in_room  = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or []
+        items_in_room  = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or [] # TODO: Get a public method for this
         inventory_items = self.state_manager.get_inventory_items(internal=True) or []
         item_context = ItemContext(inventory_items, items_in_room)
         return current_room_types, item_context
 
     def get_current_room_types(self):
-        current_id = self.state_manager.get_current_room_id()
-        room = self.state_manager.room_manager._find_room_by_id(current_id)
-        if room and "room_types" in room:
-            return room["room_types"]
-        return []
+        return self.state_manager.get_current_room_data().room_types
 
     # -----------------------------------------------------------------------
     # Power toggle — dynamic tools generated per-item
@@ -214,7 +212,11 @@ class FunctionBuilder:
                 print(f"Unexpected error in {name}: {e}")
                 return f"Error executing '{name}'. Details: {e}"
         else:
-            room_name = self.state_manager.get_current_room_name()
+            try:
+                current_room_data = self.state_manager.get_current_room_data()
+            except ValueError:
+                return "Error: Could not find current room."
+            room_name = current_room_data.name
             print(f"Warning: Unknown function '{name}' in room '{room_name}'")
             return f"Error: '{name}' is not available in {room_name} with your current inventory."
 
@@ -231,13 +233,13 @@ class FunctionBuilder:
             flag: "display" → uses display_information key
                   "agent"   → uses agent_information key
         """
-        current_room_id = self.state_manager.get_current_room_id()
-        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
-        if not full_room:
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
             return {"title": "Unknown Room", "body": "Could not retrieve room information."}
 
-        room_name = full_room.get("name", "Unknown Room")
-        room_description = self.state_manager.get_current_room_description()
+        room_name = current_room_data.name
+        room_description = current_room_data.description
 
         function_id = "agent_information" if flag == "agent" else "display_information"
         body_parts = [] if flag == "agent" else ([room_description] if room_description else [])
@@ -268,22 +270,25 @@ class FunctionBuilder:
 
     def construct_context(self) -> str:
         """Build the full context string injected into the LLM system prompt."""
-        current_room_id = self.state_manager.get_current_room_id()
-        full_room = self.state_manager.room_manager._find_room_by_id(current_room_id)
-        if not full_room:
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
             return "Error: Could not find current room."
 
-        room_description = self.state_manager.get_current_room_description()
         current_room_types = self.get_current_room_types()
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        room_description = current_room_data.description
+        room_name = current_room_data.name
+        
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
             "This source at any point seen, is the most up to date grounded state.",
             "#############",
             "Current State:",
-            f"Current time: {now}",
-            f"Currently, you are in: {self.state_manager.get_current_room_name()}\nRoom Description: {room_description}\n",
+            f"Current time: {now}, {get_time_tag_from_now()}",
+            f"Currently, you are in: {room_name}\nRoom Description: {room_description}\n",
             "\n#############\n",
             self.state_manager.get_current_emote(),
             "\n#############\n",
@@ -293,7 +298,7 @@ class FunctionBuilder:
             self.state_manager.get_inventory_items(),
             "\n#############\n",
             "Available items in the room: ",
-            self.state_manager.inventory_service.list_items_in_current_room(),
+            self.state_manager.inventory_service.list_items_in_current_room(), # TODO: Get a public method for this
             "\n#############\n",
             "Current stats:",
             self.state_manager.get_stats(),
@@ -302,13 +307,13 @@ class FunctionBuilder:
             self.get_current_tools_info("agent")["body"],
         ]
 
-        if "garden" in current_room_types or "outdoors_view" in current_room_types:
-            try:
-                weather_info = self.open_meteo.get_full_weather()
-                context += ["#############", "Current outdoor weather:", weather_info]
-            except Exception as e:
-                print(f"Warning: Could not fetch weather: {e}")
-                context += ["#############", "Could not retrieve outdoor weather."]
+        # if "garden" in current_room_types or "outdoors_view" in current_room_types: # This is handled by get_current_tools_info
+        #     try:
+        #         weather_info = self.open_meteo.get_full_weather()
+        #         context += ["#############", "Current outdoor weather:", weather_info]
+        #     except Exception as e:
+        #         print(f"Warning: Could not fetch weather: {e}")
+        #         context += ["#############", "Could not retrieve outdoor weather."]
 
         context.append("#############")
         context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")

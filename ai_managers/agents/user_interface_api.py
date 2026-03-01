@@ -19,7 +19,8 @@ from ai_managers.agents.abstract_agent import BaseChatbot
 _USER_INTERFACE_SYS_PROMPT = """You are a command interpreter for a text adventure / life-sim game.
 
 Your job is to faithfully execute the player's intent using the available tools, then
-respond with a short, immersive, second-person narrative (1-3 sentences, Zork-style).
+respond with a short, immersive, second-person narrative (1-3 sentences, Zork-style). 
+Narrate from the initial state to the final result.
 
 Rules:
 - Prefer function calls over explanations. Act first, narrate after.

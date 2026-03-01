@@ -13,6 +13,7 @@ from inventory_items.services.pet_state_manager import PetStateManager
 
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
+from inventory_items.services.room_data_result import RoomDataResult
 
 from typing import Literal
 
@@ -66,60 +67,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # These methods will now simply delegate to the appropriate service.
     # This makes InventoryHouseManager a thin orchestrator.
 
-    def add_item_description(self, item_id: int, new_description: str) -> str: # this is a tool move to tools folder
-        return self.inventory_service.add_item_description(item_id, new_description)
 
     def get_room_name(self, room_id: int) -> str:
         return self.room_manager.get_room_name(room_id)
 
-    def get_current_room_id(self):
-        return self.room_manager.get_current_room_id()
-
-    def get_current_room_name(self):
-        return self.room_manager.get_current_room_name()
-
-    def set_current_room(self, room_id: int | float | str):
-        room_id = int(room_id)
-        return self.room_manager.set_current_room(room_id)
-
-    def get_current_room_description(self):
-        return self.room_manager.get_current_room_description()
-
-    def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
-        return self.inventory_service.list_items_in_current_room(internal)
-
-    def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
-        return self.inventory_service.get_inventory_items(internal)
-
-    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
-        return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
-
-    def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
-        return self.inventory_service.list_inventories(formatted=formatted)
-
-    def drop_item(self, item_id: int, quantity_to_drop: int = 1):
-        return self.inventory_service.drop_item(item_id, quantity_to_drop)
-
-    def trash_item(self, item_id: int, confirm: bool) -> str: # TODO: Move to a tooling system model, however, it is not used in game
-        return self.inventory_service.trash_item(item_id, confirm)
-
-    def get_all_rooms(self):
-        return self.room_manager.get_all_rooms()
-
-    def get_current_emote(self, internal: bool = False) -> str | dict:# TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.get_current_emote(internal)
-
-    def get_possible_emotes(self, internal: bool = False) -> dict | str: # TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.get_possible_emotes(internal)
-
-    def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool: # TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.set_current_emote(emote_name, internal)
-
     def get_stats(self, internal: bool = False) -> str | dict: # TODO: Remove flag, and return standard object, change all interactions with it
         return self.stat_tracker.get_stats(internal)
-
-    def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float:
-        return self.stat_tracker.adjust_stat(stat_name, amount)
 
     def get_steps(self) -> int:
         return self.pet_state_manager.get_steps()
@@ -136,8 +89,58 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         print("State saved successfully.")
 
 
+    # Needs changes:
+
+
+    # Remove internal flag
+    def get_current_emote(self, internal: bool = False) -> str | dict:# TODO: None of the methods that call this use the internal flag
+        return self.pet_state_manager.get_current_emote(internal)
+
+    def get_possible_emotes(self, internal: bool = False) -> dict | str: # TODO: None of the methods that call this use the internal flag
+        return self.pet_state_manager.get_possible_emotes(internal)
+
+    def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool: # TODO: None of the methods that call this use the internal flag
+        return self.pet_state_manager.set_current_emote(emote_name, internal)
+
+    def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
+        return self.inventory_service.list_items_in_current_room(internal)
+
+    # What are the differences between these two?
+    def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
+        return self.inventory_service.get_inventory_items(internal)
+
+    def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
+        return self.inventory_service.list_inventories(formatted=formatted) 
+        
+
+    # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
+    # Not used as API methods
+
+    def trash_item(self, item_id: int, confirm: bool) -> str: # TODO: Move to a tooling system model, however, it is not used in game
+        return self.inventory_service.trash_item(item_id, confirm) # OLD NOT USED
+
+
+    def drop_item(self, item_id: int, quantity_to_drop: int = 1):
+        return self.inventory_service.drop_item(item_id, quantity_to_drop)
+
+    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
+        return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
+
+    def set_current_room(self, room_id: int | float | str):
+        room_id = int(room_id)
+        return self.room_manager.set_current_room(room_id)
+
+    def get_all_rooms(self): # not sending signals, that's fine, just documenting
+        return self.room_manager.get_all_rooms()
+
+    def add_item_description(self, item_id: int, new_description: str) -> str: 
+        return self.inventory_service.add_item_description(item_id, new_description)
+
 
     # Public Methods verified for tools and services use.
+
+    def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float: # Maybe create return item for this?
+        return self.stat_tracker.adjust_stat(stat_name, amount)
 
     def find_item(
         self,
@@ -167,3 +170,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         fallback_to_room: bool = True,
     ):
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)
+
+
+    def get_current_room_data(self) -> RoomDataResult:
+        return self.room_manager.get_current_room_data()

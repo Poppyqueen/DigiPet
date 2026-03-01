@@ -12,11 +12,11 @@ from tools.tools_folder.tools_helpers.bluesky.svg_manager import SVGManager
 ##logging.basicConfig(level=#logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 BLUESKY_LIMIT_POST_LENGTH = 300  # Example limit for Bluesky posts in Graphemes
 class bluesky_bot:
-    def __init__(self, state, signal, images_lab):
+    def __init__(self, state_manager, signal, images_lab):
         self._signal_callback = signal
         self.images_lab = images_lab
         self.alt_text = alt_text
-        self.state = state
+        self.state_manager = state_manager
 
         self.svg_manager=SVGManager()
 
@@ -503,7 +503,12 @@ class bluesky_bot:
         #logging.info(f"Attempting to send post: '{processed_message}' (Image: {image_post})")
         
         metadata=self.images_lab._int_get_arch()
-        current_room_name=self.state.get_current_room_name()
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a room. o.O"
+        
+        current_room_name=current_room_data.name
         try:
             if image_post:
                 img_data, alt = self.svg_manager._prepare_image_data(current_room_name,metadata,image_name)

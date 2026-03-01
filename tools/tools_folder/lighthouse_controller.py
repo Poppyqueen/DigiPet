@@ -426,8 +426,13 @@ class LighthouseController:
 
     def accessible_room_light_check(self) -> str:
         # TODO: Change name and descriptive texts, register along with other rooms where it would be applicable.
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a room. o.O"
+
         messages = [
-            f"You are in the {self.state_manager.get_current_room_name()}. From here you catch a glimpse of the lamp's light output state.\n",
+            f"You are in the {current_room_data.name}. From here you catch a glimpse of the lamp's light output state.\n",
             self.lighthouse_manager.lamp.get_light_state()
         ]
         return "\n".join(messages)

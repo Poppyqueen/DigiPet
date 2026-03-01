@@ -99,13 +99,12 @@ def add_items(items_list, room):
 
 def get_current_room_image():
     """Retrieves the list of types for the current room."""
-    current_id = chatbot.state_manager.get_current_room_id() # Refactor this to use a better structure for room access
-    room = chatbot.state_manager.room_manager._find_room_by_id(current_id) # Assuming _find_room_by_id is accessible or use a public getter
-    if room and "image" in room:
-        print(f"DEBUG: Current room image: {room['image']}")
-        return room["image"]
-    print("DEBUG: No room types found or room not found.")
-    return "" # Return empty list if no types found
+    try:
+        current_room_data = chatbot.state_manager.get_current_room_data()
+    except ValueError:
+        return "Error: Could not find current room."
+    return current_room_data.image
+
 
 
 # Initial popup, splash screen.
@@ -204,9 +203,8 @@ def handle_chatbot_signal(signal_data):
                 print(f"Signal type 'change_background' received with path: {image_path}, posting event.")
                 pygame.event.post(pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_path=image_path))
 
-                current_room = chatbot.state_manager.room_manager._find_room_by_id(chatbot.state_manager.get_current_room_id())
-
-                loc_music = current_room.get("music")
+                current_room = chatbot.state_manager.get_current_room_data()
+                loc_music = current_room.music
 
                 music_player.play_new_song(f"style/sounds/music/rooms/{loc_music}.mp3")
             else:
@@ -1103,11 +1101,11 @@ while running:
                                             # Call the add_items function with the package data
                                             # The add_items function has its own lock check,
                                             # but we already checked is_currently_asleep above.
-                                            current_room_id=chatbot.state_manager.get_current_room_id()
+                                            current_room_data = chatbot.state_manager.get_current_room_data()
                                             #print(f"Debug calling add items with {package_info["package"]}")
-                                            add_items(package_info["package"], current_room_id )
+                                            add_items(package_info["package"], current_room_data.id )
                                             
-                                            room_name=chatbot.state_manager.get_room_name(current_room_id)
+                                            room_name=current_room_data.name
                                             message=f"Items placed in: {room_name}"
                                             color=(0,255,120)
                                             gui.gui_popups.show_popup_message(message)
@@ -1328,8 +1326,8 @@ while running:
             if pygame.mixer.get_init():
                 print("Initial popup phase has ended. Jukebox is None. Attempting to initialize jukebox.") # Debug
                 try:
-                    current_room = chatbot.state_manager.room_manager._find_room_by_id(chatbot.state_manager.get_current_room_id())
-                    loc_music = current_room.get("music")
+                    current_room_data = chatbot.state_manager.get_current_room_data()
+                    loc_music = current_room_data.music
                     music_player = jukebox(f"style/sounds/music/rooms/{loc_music}.mp3") # Initialize ONLY ONCE
                 except Exception as e:
                     print(f"Error initializing jukebox: {e}")

@@ -1,6 +1,7 @@
 
 # services/room_manager.py
-from utils.time_manager import get_time_tag_from_now
+#from utils.time_manager import get_time_tag_from_now
+from inventory_items.services.room_data_result import RoomDataResult
 
 class RoomManager:
     def __init__(self, state_store, signal_callback):
@@ -60,29 +61,14 @@ class RoomManager:
             return room.get("name", "Unknown Room")
         return "Unknown Room"
 
-    def get_current_room_types(self):
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        current_room = self._find_room_by_id(current_room_id)
-        if current_room:
-            return current_room.get("room_types", [])
-        else:
-            return []
 
     def get_current_room_id(self):
         return self._state_store.get_state_section("current_room_id", -1)
 
-    def get_current_room_name(self):
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        current_room = self._find_room_by_id(current_room_id)
-        if current_room:
-            return current_room.get("name", "Unnamed Room")
-        else:
-            return f"Error: Current room ID '{current_room_id}' is invalid or room not found."
-
     def set_current_room(self, room_id: int):
         if not isinstance(room_id, int):
             return f"Failed to move: Room ID must be an integer, received '{room_id}' ({type(room_id).__name__})."
-        time_tag = get_time_tag_from_now()
+        #time_tag = get_time_tag_from_now()
         target_room = self._find_room_by_id(room_id)
 
         if target_room:
@@ -97,15 +83,8 @@ class RoomManager:
                     c_name = current_room_data.get("image", "unnamed_image")
                     self._send_signal({"type": "change_background", "image_path": f"{c_name}"})
 
-                room_descriptions_by_time = target_room.get("descriptions", {})
-                descriptions = room_descriptions_by_time.get(time_tag, []) if time_tag else []
-                if not isinstance(descriptions, list) or not all(isinstance(d, str) for d in descriptions):
-                    descriptions = []
-                desc_str = "(No description available.)"
-                if descriptions:
-                    desc_str = ", ".join(descriptions)
-                if not desc_str:
-                    desc_str = "(No description available.)"
+                room_data = RoomDataResult.from_room_dict(target_room)
+                room_descriptions_by_time = room_data.description
 
                 # Uses InventoryService for combined list
                 if self._inventory_service:
@@ -115,29 +94,9 @@ class RoomManager:
                     print("Warning: InventoryService not set in RoomManager, cannot send room_inventory signal.")
 
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pointer_icon.png"})
-                return f"You move to the {self._format_room_for_display(target_room)}. Tools pool has changed. {desc_str}"
+                return f"You move to the {self._format_room_for_display(target_room)}. Tools pool has changed. {room_descriptions_by_time}"
         else:
-            return f"There is no room with ID '{room_id}'. The existing rooms are: {self.get_all_rooms()}"
-
-    def get_current_room_description(self):
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        room_data = self._find_room_by_id(current_room_id)
-        time_tag = get_time_tag_from_now()
-
-        if room_data:
-            room_display = self._format_room_for_display(room_data)
-            room_descriptions_by_time = room_data.get("descriptions", {})
-            descriptions = room_descriptions_by_time.get(time_tag, []) if time_tag else []
-
-            if isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
-                if descriptions:
-                    return f"Description for {room_display} ({time_tag}):\n" + "\n".join(descriptions)
-                else:
-                    return f"The {room_display} has no specific description for '{time_tag}'."
-            else:
-                return f"Error: Descriptions for {room_display} are corrupted for time tag '{time_tag}'."
-        else:
-            return f"Error: Could not find description for current room (ID: {current_room_id}). State might be corrupted."
+            return f"There is no room with ID '{room_id}'."
 
     def get_all_rooms(self):
         rooms_list = self._state_store.get_state_section("rooms")
@@ -153,3 +112,11 @@ class RoomManager:
                 return "No rooms are currently defined."
         else:
             return "Error: Could not access room list. State might be corrupted."
+
+
+    def get_current_room_data(self) -> RoomDataResult:
+        room_id = self.get_current_room_id()
+        room = self._find_room_by_id(room_id)
+        if room is None:
+            raise ValueError(f"Current room id={room_id} not found. State may be corrupted.")
+        return RoomDataResult.from_room_dict(room)

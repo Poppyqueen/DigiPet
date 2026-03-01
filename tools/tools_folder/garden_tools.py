@@ -105,14 +105,13 @@ class Garden_Mananger(GenericJsonTool):
         It will add new gardens if they don't exist or adjust plot counts if changed.
         Existing plant data in plots will be preserved where possible.
         """
-        rooms_list = self.state_manager._state_store.get_state_section("rooms", [])
+        rooms_list = self.state_manager._state_store.get_state_section("rooms", []) # TODO: Make or use a public method for this
         # Make a copy to modify safely, then assign back to self._state.
         # This preserves non-garden specific keys like "_last_rain_applied_timestamp" and "_garden_logical_tick_counter".
         updated_gardens_in_state = self._state.copy() 
         
         for room in rooms_list:
-            room_id_raw = room.get("id")
-            room_id = str(room_id_raw) # TODO: WHY IS THS A STRING?
+            room_id = room.get("id")
             room_name = room.get("name")
             room_types = room.get("room_types", [])
             plot_count = room.get("plot_number")
@@ -124,7 +123,7 @@ class Garden_Mananger(GenericJsonTool):
                 # If this garden room is new to our state, add its basic structure
                 if room_id not in updated_gardens_in_state:
                     updated_gardens_in_state[room_id] = {
-                        "room_id": room_id_raw, # Store original type if needed, but use string 'room_id' as key
+                        "room_id": room_id, # Store original type if needed, but use string 'room_id' as key
                         "plots": []
                     }
                     print(f"Garden '{room_name}' (ID: {room_id}) added to garden manager state.")
@@ -430,12 +429,17 @@ class Garden_Mananger(GenericJsonTool):
 
 
     def plant_seed(self, plot_id: str, item_id: int) -> str:
-        current_room_id = str(self.state_manager.get_current_room_id())
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a garden room. No garden summary available for this location."
+        
+        current_room_id = current_room_data.id
         current_logical_tick = self._garden_logical_tick_counter
         DEFAULT_INITIAL_WATER_LEVEL = self.settings["DEFAULT_INITIAL_WATER_LEVEL"]
 
         if current_room_id not in self._state:
-            return "Error: You are not in a garden room. Cannot plant here."
+            return "You are not in a garden room. No garden summary available for this location."
 
         # Single lookup — must be a seed in inventory
         seed_result = self.state_manager.find_item(
@@ -510,7 +514,12 @@ class Garden_Mananger(GenericJsonTool):
         Returns:
             str: A description of the plant's current state or an error message.
         """
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a garden room. No garden summary available for this location."
+        
+        current_room_id = current_room_data.id
         current_logical_tick = self._garden_logical_tick_counter # Use logical tick for display
 
         if current_room_id not in self._state:
@@ -589,17 +598,14 @@ class Garden_Mananger(GenericJsonTool):
         Returns:
             str: A message indicating the harvest result or an error.
         """
-
-        # Remove these lines, as current_inventory_length will be calculated in the loop
-        # current_inventory = self.state_manager._state.get("inventory", [])
-        # current_inventory_length = len(current_inventory)
         
-        max_inventory = self.state_manager.MAX_INVENTORY_SLOTS 
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a garden room. No garden summary available for this location."
+        
+        current_room_id = current_room_data.id
         current_logical_tick = self._garden_logical_tick_counter # Use logical tick
-
-        if current_room_id not in self._state:
-            return f"Error: You are not in a garden room. Cannot harvest here."
 
         garden_data = self._state[current_room_id]
         plots = garden_data.get("plots", [])
@@ -834,11 +840,14 @@ class Garden_Mananger(GenericJsonTool):
         Provides a summary of the garden in the current room.
         """
 
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "Error: Could not find current room."
+        
+        current_room_id = current_room_data.id
         current_logical_tick = self._garden_logical_tick_counter # Use logical tick for summary
 
-        if current_room_id not in self._state:
-            return "You are not in a garden room. No garden summary available for this location."
 
         garden_data = self._state[current_room_id]
         
@@ -898,7 +907,15 @@ class Garden_Mananger(GenericJsonTool):
         Returns:
             str: A message indicating the result of the watering action.
         """
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a garden room. No garden summary available for this location."
+        
+        current_room_id = current_room_data.id
+
+        if "planting_garden" not in current_room_data.types:
+            return f"You are not in a planting garden room. Cannot water plots here."
 
         if current_room_id not in self._state:
             return f"Error: You are not in a garden room. Cannot water plots here."
@@ -968,10 +985,15 @@ class Garden_Mananger(GenericJsonTool):
         Returns:
             str: A message indicating the success or failure of the removal.
         """
-        current_room_id = str(self.state_manager.get_current_room_id()) # Convert to string
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            return "You are not in a garden room. No garden summary available for this location."
+        
+        current_room_id = current_room_data.id
 
-        if current_room_id not in self._state:
-            return f"Error: You are not in a garden room. Cannot remove plants here."
+        if "planting_garden" not in current_room_data.types:
+            return f"You are not in a planting garden room. Cannot remove plants here."
 
         garden_data = self._state[current_room_id]
         plots = garden_data.get("plots", [])
