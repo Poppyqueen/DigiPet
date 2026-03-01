@@ -122,10 +122,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
     # Not used as API methods
 
-    def trash_item(self, item_id: int, confirm: bool) -> str: # TODO: Move to a tooling system model, however, it is not used in game
-        return self.inventory_service.trash_item(item_id, confirm) # OLD NOT USED
-
-
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
         return self.inventory_service.drop_item(item_id, quantity_to_drop)
 

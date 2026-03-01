@@ -697,51 +697,6 @@ class InventoryService:
             message="\n".join(summary_parts),
         )
 
-
-    def trash_item(self, item_id: int, confirm: bool, quantity_to_trash: int = 1) -> str:
-        if confirm:
-            if not isinstance(item_id, int):
-                return f"Failed to trash: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
-
-            item_info = self._find_item_info_by_id(item_id)
-            if not item_info:
-                return f"Failed to trash item: Item with ID '{item_id}' not found anywhere."
-
-            item_data = item_info["item_data"]
-            item_display = self._format_item_for_display(item_data)
-            location = item_info["location"]
-
-            if location != "inventory":
-                if location == "room" and self._room_manager:
-                    room_name = self._room_manager.get_room_name(item_info['location_id'])
-                    return f"Failed to trash {item_display}: It is not in your inventory, it is in the {room_name}."
-                else:
-                    return f"Failed to trash {item_display}: It is not in your inventory."
-            
-            # If the item is static (e.g., a non-movable piece of furniture that somehow ended up in inventory),
-            # prevent it from being trashed. This is a failsafe.
-            # if item_data.get("static", False):
-            #     return f"You cannot trash the {item_display}. It is a static item."
-
-            # Determine actual quantity to trash
-            available_quantity = item_data.get("quantity", 1)
-            if quantity_to_trash <= 0 or quantity_to_trash > available_quantity:
-                actual_quantity_to_trash = available_quantity # Trash the whole stack/item by default
-            else:
-                actual_quantity_to_trash = quantity_to_trash
-
-            removal_result = self.remove_item(item_id, quantity_to_remove=actual_quantity_to_trash)
-            
-            if removal_result.success: # True indicates success
-                self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trashcan_icon.png"})
-                return f"You trashed {actual_quantity_to_trash} unit(s) of {item_display}. {removal_result.message}"
-            else:
-                print(f"Warning: trash_item called remove_item for {item_display} (ID:{item_id}) but it failed: {removal_result.message}")
-                return f"Failed to trash {item_display}: {removal_result.message}"
-        else:
-            return f"Destruction of item {item_id} cancelled."
-
-
     def remove_item(
         self,
         item_id: int,
