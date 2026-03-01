@@ -159,6 +159,7 @@ class FunctionBuilder:
 
 
         print(f"DEBUG: function_map has {len(self.function_map)} functions")
+        print(f"DEBUG: function_map keys: {list(self.function_map.keys())}")
 
     def construct_tools(self) -> list:
         """Return the list of tool definitions visible to the LLM."""

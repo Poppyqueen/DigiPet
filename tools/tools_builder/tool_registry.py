@@ -14,7 +14,7 @@
 
 import os
 from tools.tools_folder.alife_controller import ALifeController
-from tools.tools_folder.garden_tools import Garden_Mananger
+from tools.tools_folder.garden_tools import GardenController
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.thinking_tool import emit_inner_thought
 from tools.tools_folder.images_lab import ImagesLab
@@ -104,7 +104,7 @@ class ToolRegistry:
         # Phase 1 — services with no availability dependency
         # =================================================================
         self.room_tools     = main_tools_handle(state_manager, signal, memory_manager, config_manager, open_meteo)
-        self.garden_manager = Garden_Mananger(state_manager, signal, open_meteo)
+        self.garden_manager = GardenController(state_manager, signal, open_meteo)
         self.images_lab     = ImagesLab(subdirectory)
         self.dispenser_tools = DispenserTools(state_manager, signal)
         self.auction_house  = AuctionHouse(state_manager)
