@@ -57,12 +57,7 @@ class RoomManager:
             return f"{room_name} (ID:INVALID)"
         return f"{room_name} (ID:{room_id:06d})"
 
-    # --- Public Room Management Methods ---
-    def get_room_name(self, room_id: int) -> str:
-        room = self._find_room_by_id(room_id)
-        if room:
-            return room.get("name", "Unknown Room")
-        return "Unknown Room"
+
 
 
     def get_current_room_id(self):
@@ -116,10 +111,29 @@ class RoomManager:
         else:
             return "Error: Could not access room list. State might be corrupted."
 
-
-    def get_current_room_data(self) -> RoomDataResult:
-        room_id = self.get_current_room_id()
+    def get_room_data(self, room_id: int) -> RoomDataResult:
+        """
+        Returns a RoomDataResult for any room by ID.
+        Raises ValueError if the room is not found.
+        """
         room = self._find_room_by_id(room_id)
         if room is None:
-            raise ValueError(f"Current room id={room_id} not found. State may be corrupted.")
+            raise ValueError(f"Room id={room_id} not found. State may be corrupted.")
         return RoomDataResult.from_room_dict(room)
+
+    def get_current_room_data(self) -> RoomDataResult:
+        """Returns a RoomDataResult for the current room."""
+        return self.get_room_data(self.get_current_room_id())
+
+    def get_all_rooms_data(self) -> list[RoomDataResult]:
+        """
+        Returns a RoomDataResult for every room in state.
+        Callers that need to filter by room_types, plot_number, etc.
+        should do so on the returned list.
+        """
+        rooms = self._state_store.get_state_section("rooms", [])
+        return [
+            RoomDataResult.from_room_dict(room)
+            for room in rooms
+            if isinstance(room, dict)
+        ]

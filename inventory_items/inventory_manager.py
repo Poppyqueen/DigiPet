@@ -76,9 +76,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # This makes InventoryHouseManager a thin orchestrator.
 
 
-    def get_room_name(self, room_id: int) -> str:
-        return self.room_manager.get_room_name(room_id)
-
     def get_stats(self, internal: bool = False) -> str | dict: # TODO: Remove flag, and return standard object, change all interactions with it
         return self.stat_tracker.get_stats(internal)
 
@@ -147,6 +144,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     ) -> str | int | float: # Maybe create return item for this?
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
+    ### 
     def find_item(self,
         item_id: int,
         required_type: str | None = None,
@@ -163,7 +161,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     )-> SetItemAttributeResult:
         return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
-    ###
 
     def remove_item(self, 
         item_id: int, 
@@ -180,7 +177,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     )-> ItemCreationResult:
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)
 
+    ### 
+    def get_room_data(self, room_id: int) -> RoomDataResult:
+        return self.room_manager.get_room_data(room_id)
 
-    def get_current_room_data(self
-    ) -> RoomDataResult:
+    def get_current_room_data(self) -> RoomDataResult:
         return self.room_manager.get_current_room_data()
+
+    def get_all_rooms_data(self) -> list[RoomDataResult]:
+        return self.room_manager.get_all_rooms_data()

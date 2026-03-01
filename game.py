@@ -78,7 +78,8 @@ def add_items(items_list, room):
             chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
             # test
             # chatbot.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=items_list)
-            room_name=chatbot.state_manager.get_room_name(room)
+            room_data = chatbot.state_manager.get_room_data(room)
+            room_name=room_data.name
             # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
             chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
 
