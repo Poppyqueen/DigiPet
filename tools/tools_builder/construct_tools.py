@@ -29,8 +29,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
-    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
 
 
@@ -330,7 +328,7 @@ class FunctionBuilder:
         return mapper.get_all_items_tool_map()
 
     def get_item_info_with_tools(self, item_id) -> dict:
-        item_result : ItemLookupResult = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id)
         if not item_result.success:
             return {"error": item_result.error}
         item_data = item_result.item_data

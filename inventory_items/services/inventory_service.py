@@ -13,12 +13,13 @@ import copy
 
 from typing import Literal
 
-# ── Place ItemLookupResult import at the top of inventory_service.py ────────
-from inventory_items.services.item_lookup_result import ItemLookupResult
-from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
-from inventory_items.services.item_creation_result import ItemCreationResult
-from inventory_items.services.item_removal_result import ItemRemovalResult
+from inventory_items.services.return_objects import (
+    ItemLookupResult,
+    ItemCreationResult,
+    ItemRemovalResult,
+    SetItemAttributeResult
+)
 
 
 

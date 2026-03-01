@@ -3,8 +3,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
-    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
 class ItemToggleTool:
     def __init__(self, state_manager, signal):
@@ -13,7 +11,7 @@ class ItemToggleTool:
 
 
     def _toggle_item_power(self, item_id: str, turn_on: bool):
-        item_result : ItemLookupResult = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id)
         if not item_result.success:
             return item_result.error
         item_data = item_result.item_data
@@ -30,7 +28,7 @@ class ItemToggleTool:
     
     def toggle_item_power_auto(self, item_id) -> str: 
         """Toggle power for any item — determines on/off from current state."""
-        item_result : ItemLookupResult = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id)
         if not item_result.success:
             return item_result.error
         item_data = item_result.item_data

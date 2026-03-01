@@ -129,17 +129,14 @@ class OpenRouterClient(AbstractLLMClient):
         settings = {
             "model": model,
             "messages": l_messages,
-            # "tools": self._process_functions_list(tools),
-            # "tool_choice": tool_choice,
-            #"tool_choice": "none"
         }
         if tools and tool_choice != "none":
             settings["tools"] = self._process_functions_list(tools)
-            settings["tool_choice"] = tool_choice
+            #settings["tool_choice"] = tool_choice
         else:
             l_messages.append({
                 "role": "system",
-                "content": "Last turn for round, please do not use any tools and wait for the next autonomous action."
+                "content": "Max recursion depth reached! This is the last turn for this round, please do not use any more tool calls and wait for the next autonomous action with a text response."
             })
 
         settings.update(kwargs)

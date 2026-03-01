@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
-    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
 
 class DispenserTools:
     def __init__(self, state_manager, signal=None):
@@ -28,7 +26,7 @@ class DispenserTools:
         """
         Examines the dispenser and returns its status.
         """
-        dispenser_result : ItemLookupResult = self.state_manager.find_item(item_id, required_type="dispenser", required_location="room")
+        dispenser_result = self.state_manager.find_item(item_id, required_type="dispenser", required_location="room")
         if not dispenser_result.success:
             return dispenser_result.error
 
@@ -48,7 +46,7 @@ class DispenserTools:
         """
         Dispenses a single candy from the dispenser if it has any left.
         """
-        dispenser_result : ItemLookupResult = self.state_manager.find_item(item_id, required_type="dispenser", required_location="room")
+        dispenser_result  = self.state_manager.find_item(item_id, required_type="dispenser", required_location="room")
         if not dispenser_result.success:
             return dispenser_result.error
 
@@ -94,11 +92,11 @@ class DispenserTools:
         """
         Refills the dispenser using a Candy Refill Bag from inventory.
         """
-        dispenser_result : ItemLookupResult = self.state_manager.find_item(dispenser_id, required_type="dispenser", required_location="room")
+        dispenser_result  = self.state_manager.find_item(dispenser_id, required_type="dispenser", required_location="room")
         if not dispenser_result.success:
             return dispenser_result.error
 
-        candy_bag_result : ItemLookupResult = self.state_manager.find_item(bag_id, required_type="candy_bag", required_location="inventory")
+        candy_bag_result  = self.state_manager.find_item(bag_id, required_type="candy_bag", required_location="inventory")
         if not candy_bag_result.success:
             return candy_bag_result.error
 

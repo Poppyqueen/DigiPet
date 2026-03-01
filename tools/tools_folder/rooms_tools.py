@@ -25,9 +25,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
-    from inventory_items.services.set_item_attribute_result import SetItemAttributeResult
-    from inventory_items.services.item_removal_result import ItemRemovalResult
+
 
 def check_one_in(number: int):
   """

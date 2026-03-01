@@ -13,7 +13,15 @@ from inventory_items.services.pet_state_manager import PetStateManager
 
 
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
-from inventory_items.services.room_data_result import RoomDataResult
+
+# Results
+from inventory_items.services.return_objects import (
+    RoomDataResult,
+    ItemLookupResult,
+    ItemCreationResult,
+    ItemRemovalResult,
+    SetItemAttributeResult
+)
 
 from typing import Literal
 
@@ -90,8 +98,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
 
     # Needs changes:
-
-
     # Remove internal flag
     def get_current_emote(self, internal: bool = False) -> str | dict:# TODO: None of the methods that call this use the internal flag
         return self.pet_state_manager.get_current_emote(internal)
@@ -139,38 +145,46 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     # Public Methods verified for tools and services use.
 
-    def adjust_stat(self, stat_name: str, amount: int|float) -> str | int | float: # Maybe create return item for this?
+    def adjust_stat(self,
+        stat_name: str, 
+        amount: int|float
+    ) -> str | int | float: # Maybe create return item for this?
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
-    def find_item(
-        self,
+    def find_item(self,
         item_id: int,
         required_type: str | None = None,
         required_location: Literal["inventory", "room", "accessible"] | None = None,
-    ):
+    )-> ItemLookupResult:
         return self.inventory_service.find_item(item_id=item_id,required_type=required_type,required_location=required_location)
 
     def set_item_attribute(self,
-    item_id: int, key: str, value, quantity: int = 1,
-                           path: list[str] | None = None
+        item_id: int, 
+        key: str, 
+        value,
+        quantity: int = 1,
+        path: list[str] | None = None
 
-    ):
+    )-> SetItemAttributeResult:
         return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
     ###
 
-    def remove_item(self, item_id: int, quantity: int = 1):
+    def remove_item(self, 
+        item_id: int, 
+        quantity: int = 1
+    )-> ItemRemovalResult:
         return self.inventory_service.remove_item(item_id, quantity)
 
-    def create_item( 
-        self,
+    def create_item( self,
         target_location: str,
         target_location_id: int | None,
         item_creation_data: dict | list[dict],
         quantity: int = 1,
         fallback_to_room: bool = True,
-    ):
+    )-> ItemCreationResult:
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)
 
 
-    def get_current_room_data(self) -> RoomDataResult:
+    def get_current_room_data(self
+    ) -> RoomDataResult:
         return self.room_manager.get_current_room_data()

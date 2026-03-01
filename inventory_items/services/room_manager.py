@@ -1,7 +1,10 @@
 
 # services/room_manager.py
 #from utils.time_manager import get_time_tag_from_now
-from inventory_items.services.room_data_result import RoomDataResult
+
+from inventory_items.services.return_objects import (
+    RoomDataResult
+)
 
 class RoomManager:
     def __init__(self, state_store, signal_callback):
