@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.loc_datetime import datetime
 import time
 
-from tools.tools_folder.simulation import ALifeSimulation
+from tools.tools_folder.tools_helpers.alife_simulation import ALifeSimulation
 from tools.tools_folder.tools_helpers.alife_manager import ALifeManager
 
 class ALifeController:
