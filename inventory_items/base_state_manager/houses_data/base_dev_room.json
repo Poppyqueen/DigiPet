@@ -3,8 +3,7 @@
         "name": "garden",
         "image": "garden",
         "room_types": [
-            "garden",
-            "planting_garden"
+            "garden"
         ],
         "music": "garden",
         "plot_number": 3,
