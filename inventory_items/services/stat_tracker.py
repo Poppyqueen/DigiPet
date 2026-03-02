@@ -57,6 +57,25 @@ class StatTracker:
                     f"Energy: {cleaned_stats.get('energy', 'N/A'):.1f}/{self.MAX_STAT_VALUE}")
 
     def adjust_stat(self, stat_name: str, amount: int|float) -> str:
+        """
+        Adjusts a single stat by the given amount.
+
+        Parameters
+        ----------
+        stat_name : str
+            The name of the stat to adjust (e.g., "fullness", "hydration", "energy").
+            Case-insensitive and whitespace-stripped.
+        amount : int | float
+            The amount to adjust the stat by. Positive values increase the stat,
+            negative values decrease it.
+
+        Returns
+        -------
+        str
+            A message describing the result of the operation.
+            Returns an error message if the stat does not exist, the amount is invalid,
+            or the stats data is corrupted.
+        """
         stat_name = stat_name.lower().strip()
         stats_data = self._state_store.get_state_section("stats")
 

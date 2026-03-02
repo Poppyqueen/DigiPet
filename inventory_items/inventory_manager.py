@@ -90,7 +90,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.pet_state_manager.add_steps(amount)
 
     def save_state(self) -> None:
-        """Delegates to the StateStore to save the current state."""
+        """Delegates to the StateStore to save the current state.""" # Only used for shutdown
         self._state_store.save_state()
         print("State saved successfully.")
 
@@ -108,7 +108,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
 
     # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
-    # Not used as API methods
+    # Not used as API methods but moved to base tools with direct access...
 
     # Moved to base tools, not supposed to be state API methods
     # def drop_item(self, item_id: int, quantity_to_drop: int = 1):
@@ -128,12 +128,32 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         room_id = int(room_id)
         return self.room_manager.set_current_room(room_id)
 
-    # Public Methods verified for tools and services use.
 
+
+    # Public Methods verified for tools and services use.
     def adjust_stat(self,
         stat_name: str, 
         amount: int|float
-    ) -> str | int | float: # Maybe create return item for this?
+    ) -> str: # Maybe create return model for this?
+        """
+        Adjusts a single stat by the given amount.
+
+        Parameters
+        ----------
+        stat_name : str
+            The name of the stat to adjust (e.g., "fullness", "hydration", "energy").
+            Case-insensitive and whitespace-stripped.
+        amount : int | float
+            The amount to adjust the stat by. Positive values increase the stat,
+            negative values decrease it.
+
+        Returns
+        -------
+        str
+            A message describing the result of the operation.
+            Returns an error message if the stat does not exist, the amount is invalid,
+            or the stats data is corrupted. Needs a return model.
+        """
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
     ### 
@@ -142,6 +162,25 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         required_type: str | None = None,
         required_location: Literal["inventory", "room", "accessible"] | None = None,
     )-> ItemLookupResult:
+        """
+        Unified item lookup with optional filters.
+
+        Parameters
+        ----------
+        item_id           : The integer ID of the item to find.
+        required_type     : If given, the item's type list must include this string.
+        required_location : Controls where the item is allowed to be:
+                            None           → anywhere in the whole state
+                            "inventory"    → must be in the player's inventory
+                            "room"         → must be in any room
+                            "accessible"   → must be in inventory OR the current room
+
+        Returns
+        -------
+        ItemLookupResult
+            Always returns this model.
+            Check result.success before using result.item_data.
+        """
         return self.inventory_service.find_item(item_id=item_id,required_type=required_type,required_location=required_location)
 
     def set_item_attribute(self,
@@ -152,12 +191,57 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         path: list[str] | None = None
 
     )-> SetItemAttributeResult: # Fix this object
+        """
+        Modifies a single attribute (key/value) on one or more units of an item
+        stack, then recalculates stacking state.
+
+        If *path* is provided the write is applied at a nested location inside
+        the item dict.  For example::
+
+            set_item_attribute(id, "contents", new_dict, path=["dispenser_state"])
+
+        writes ``item_data["dispenser_state"]["contents"] = new_dict`` instead
+        of touching the top-level key directly.
+
+        The stacking-fingerprint logic only considers the *top-level* key when
+        path is None; when path is provided the fingerprint comparison uses the
+        top-level segment (path[0]) so that nested writes on non-stacking keys
+        remain fast-pathed correctly.
+
+        Args:
+            item_id:  The ID of the item (or stack) to modify.
+            key:      The attribute key to set (at the leaf of *path*).
+            value:    The new value for that attribute.
+            quantity: How many units of the stack to affect.  Defaults to 1.
+                      Pass 0 or a value >= available quantity to affect the whole stack.
+            path:     Optional list of dict keys to traverse before setting *key*.
+                      Intermediate dicts are created automatically if absent.
+
+        Returns:
+            A SetItemAttributeResult object.
+        """
         return self.inventory_service.set_item_attribute(item_id=item_id,key=key,value=value,quantity=quantity, path=path)
 
     def remove_item(self, 
         item_id: int, 
         quantity: int = 1
     )-> ItemRemovalResult:
+        """
+        Removes one or more units of an item from wherever it currently is.
+
+        Parameters
+        ----------
+        item_id  : The integer ID of the item to remove.
+        quantity : How many units to remove. Pass 0 to remove the entire stack.
+                Defaults to 1.
+
+        Returns
+        -------
+        ItemRemovalResult
+            Always returns this model — never a raw string or tuple.
+            Check result.success before acting on failure.
+            result.message is always safe to append to a parts list.
+        """
         return self.inventory_service.remove_item(item_id, quantity)
 
     def create_item( self,
@@ -167,16 +251,48 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         quantity: int = 1,
         fallback_to_room: bool = True,
     )-> ItemCreationResult:
+        """
+        Creates one or more items in the specified location.
+
+        Parameters
+        ----------
+        target_location     : "inventory" or "room"
+        target_location_id  : Room ID when target_location="room", else None
+        item_creation_data  : A single item dict or a list of item dicts (templates)
+        quantity            : How many of each template to create. Defaults to 1.
+        fallback_to_room    : If True and inventory is full, place in current room instead.
+
+        Returns
+        -------
+        ItemCreationResult
+            Always returns this model — never a raw string or list.
+            Check result.success before using result.created_ids.
+            result.message is always safe to append to a parts list.
+        """
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)
 
     ### 
     def get_room_data(self, room_id: int) -> RoomDataResult:
+        """
+        Returns a RoomDataResult for any room by ID.
+        Raises ValueError if the room is not found.
+        """
         return self.room_manager.get_room_data(room_id)
 
     def get_current_room_data(self) -> RoomDataResult:
+        """
+        Returns a RoomDataResult for every room in state.
+        Callers that need to filter by room_types, plot_number, etc.
+        should do so on the returned list.
+        """
         return self.room_manager.get_current_room_data()
 
     def get_all_rooms_data(self) -> list[RoomDataResult]:
+        """
+        Returns a RoomDataResult for every room in state.
+        Callers that need to filter by room_types, plot_number, etc.
+        should do so on the returned list.
+        """
         return self.room_manager.get_all_rooms_data()
 
     # New method
@@ -185,22 +301,5 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         """
         Returns a fully-typed snapshot of the player inventory and current
         room items.
-
-        Replaces:
-          - list_inventories(formatted=True / False)
-          - get_inventory_items(internal=True / False)
-          - list_items_in_current_room(internal=True / False)
-
-        All items are validated. Pre-computed views cover every caller need:
-
-          game.py GUI init       → result.room_display_strings
-                                   result.inventory_display_strings
-          Signal feeding         → result.room_display_strings
-                                   result.inventory_display_strings
-          AI agent tool strings  → result.inventory_summary
-                                   result.room_summary
-          Tool / logic raw data  → result.inventory_items  (list[InventoryItemEntry])
-                                   result.room_items        (list[InventoryItemEntry])
-          Raw dict access        → entry.item_data on any InventoryItemEntry
         """
         return self.inventory_service.get_inventory_state()
