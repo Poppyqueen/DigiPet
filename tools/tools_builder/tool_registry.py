@@ -225,7 +225,7 @@ class ToolRegistry:
                     "pick_up_item":                 self.base_tools.pick_up_item,
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
                     "drop_item":                    self.base_tools.drop_item,
-                    "add_item_description":         state_manager.add_item_description,
+                    "add_item_description":         self.base_tools.add_item_description,
                     "emit_inner_thought":           emit_inner_thought
                 },
                 "definitions": base_tools,

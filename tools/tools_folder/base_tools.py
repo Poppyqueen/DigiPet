@@ -25,6 +25,22 @@ class BaseTools:
         summary = f"Available rooms: {', '.join(f'{r.name} (ID:{r.id:06d})' for r in rooms)}"
         return summary
 
+
+    def add_item_description(self, item_id: int, new_description: str) -> str: 
+        item_search = self.state_manager.find_item(item_id)
+        if not item_search.success:
+            return item_search.error_message
+        item_data_copy = item_search.item_data # This is a deep copy, so we can modify it directly without corrupting state
+        new_descs = item_data_copy["descriptions"] + [new_description]
+
+        item_edit = self.state_manager.set_item_attribute(item_id, "descriptions", new_descs)
+        
+        if not item_edit.success:
+            return item_edit.error_message
+        message = f"Added description to item {item_id}: {new_description}, {item_edit.message}"
+        return message
+
+
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
         return self.state_manager.inventory_service.drop_item(item_id, quantity_to_drop) # Bypassing facade, not sure what to do about it
 

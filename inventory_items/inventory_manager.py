@@ -94,9 +94,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # def get_all_rooms(self): # not sending signals, that's fine, just documenting
     #     return self.room_manager.get_all_rooms()
 
-    # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
-    def add_item_description(self, item_id: int, new_description: str) -> str: 
-        return self.inventory_service.add_item_description(item_id, new_description)
+    # # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
+
+    # To edit item descriptions use  set_item_attribute if you ever need to them, example in base tools
+    # def add_item_description(self, item_id: int, new_description: str) -> str: 
+    #     return self.inventory_service.add_item_description(item_id, new_description)
+
 
     def set_current_room(self, room_id: int | float | str):
         room_id = int(room_id)

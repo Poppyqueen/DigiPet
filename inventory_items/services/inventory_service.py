@@ -153,32 +153,7 @@ class InventoryService:
         
         return f"{item_name} (ID:{item_id:06d})"
 
-    # --- Public Inventory Methods ---
-
-    def add_item_description(self, item_id: int, new_description: str) -> str:
-        if not isinstance(item_id, int):
-            return f"Failed to add description: Item ID must be an integer, received '{item_id}' ({type(item_id).__name__})."
-        if not isinstance(new_description, str) or not new_description.strip():
-            return "Failed to add description: New description must be a non-empty string."
-
-        item_object : ItemLookupResult = self.find_item(item_id=item_id, required_type=None, required_location="inventory")
-
-        if item_object.success:
-            timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-            timed_description = f"{timestamp} {new_description.strip()}"
-
-            descriptions_list_copy = copy.deepcopy(item_object.item_data.get("descriptions"))
-            if not isinstance(descriptions_list_copy, list):
-                descriptions_list_copy = []
-            descriptions_list_copy.append(timed_description)
-
-            # Don't touch found_item here — let set_item_attribute handle the write
-            attribute_result : SetItemAttributeResult = self.set_item_attribute(item_id, "descriptions", descriptions_list_copy)
-
-            item_name = item_object.item_data.get("name", "Unnamed Item")
-            return f"Added description for '{item_name}' (ID: {item_id}) in inventory. {attribute_result.message}"
-        else:
-            return f"Failed to add description: Item with ID {item_id} not found in your inventory."
+    # --- Public Inventory Methods --- # Ourdated comments
 
     def _inventory_can_accept(self, item_data: dict, current_list: list | None = None) -> bool:
         """
