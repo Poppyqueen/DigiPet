@@ -7,7 +7,6 @@ from inventory_items.services.state_store import StateStore
 # Import the new service classes (will be created in subsequent steps)
 from inventory_items.services.inventory_service import InventoryService
 from inventory_items.services.room_manager import RoomManager
-#from inventory_items.services.book_service import BookService # This has been moved to the tools folder
 from inventory_items.services.stat_tracker import StatTracker # This will replace the old stats_component
 from inventory_items.services.pet_state_manager import PetStateManager
 
@@ -97,29 +96,24 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # To edit item descriptions use  set_item_attribute if you ever need to them, example in base tools
 
 
-    def set_current_room(self, room_id: int | float | str): # Used by agent, could be API as well, no tool is using it yet
-        room_id = int(room_id)
-        return self.room_manager.set_current_room(room_id)
+    def save_state(self) -> None:
+        """Delegates to the StateStore to save the current state.""" # Only used for shutdown
+        self._state_store.save_state()
+        print("State saved successfully.")
 
 
-    # --- Facade Methods (Public API of InventoryHouseManager) ---
+
+    # --- Facade Methods ---
     # These methods will now simply delegate to the appropriate service.
     # This makes InventoryHouseManager a thin orchestrator.
 
 
     def get_steps(self) -> int:
-        return self.pet_state_manager.get_steps()
+        return self.pet_state_manager.get_steps() # Only called by game.py, twice, expecting an int
 
-    def set_steps(self, count: int):
-        return self.pet_state_manager.set_steps(count)
-
-    def add_steps(self, amount: int):
+    def add_steps(self, amount: int) -> None: # Only called by agent interfaces, they do not expect a return value
         return self.pet_state_manager.add_steps(amount)
 
-    def save_state(self) -> None:
-        """Delegates to the StateStore to save the current state.""" # Only used for shutdown
-        self._state_store.save_state()
-        print("State saved successfully.")
 
 
     # Needs changes:
@@ -129,12 +123,16 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def get_current_emote(self) -> str:
         return self.pet_state_manager.get_current_emote()
 
-    def get_possible_emotes(self) -> str: 
-        return self.pet_state_manager.get_possible_emotes()
+    def get_possible_emotes(self) -> str:  # This is called in construct tools each time we construct agent context, could return an object instead, just update construct_context in construct_tools if you do.
+        return self.pet_state_manager.get_possible_emotes() 
+        
+    def set_current_room(self, room_id: int | float | str): # Used by agent, could be API as well, no tool is using it yet
+        room_id = int(room_id)
+        return self.room_manager.set_current_room(room_id) # this is returning a narrative string, if you want to make a tool that uses this, please create an object and update tool registry, make a base tool that calls the API method with your structured object, update the registry in tools_registry.py
 
 
     # ============================================================= #
-    # Public Methods verified for tools to use.
+    # Public Methods verified for tools to use. (Public API of InventoryHouseManager)
     # ============================================================= #
 
     def get_stats(self) -> StatsResult: 

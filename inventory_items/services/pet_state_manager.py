@@ -80,21 +80,12 @@ class PetStateManager:
             return 0
         return steps_value
 
-    def set_steps(self, count: int):
-        if not isinstance(count, int):
-            print(f"Error: Attempted to set 'steps' with non-integer value: {count}. Ignoring.")
-            return
-        if count < 0:
-            print(f"Error: Attempted to set 'steps' with negative value: {count}. Clamping to 0.")
-            count = 0
-        self._state_store.update_state_section("steps", count)
-
     def add_steps(self, amount: int):
         if not isinstance(amount, int):
             print(f"Error: Attempted to add non-integer amount to 'steps': {amount}. Ignoring.")
             return
         if amount < 0:
-            print(f"Error: Attempted to add negative amount ({amount}) to 'steps'. Please use set_steps if reducing. Ignoring.")
+            print(f"Error: Attempted to add negative amount ({amount}) to 'steps'. Ignoring.")
             return
         current_steps = self.get_steps()
         self._state_store.update_state_section("steps", current_steps + amount)
