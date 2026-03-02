@@ -24,7 +24,8 @@ import importlib
 from typing import Optional
 from ai_managers.agents.abstract_agent import BaseChatbot
 
-game_mode = "user_player" # available options: "user_player" or "ai_player". Mock for testing, ai_player for an agent player, user_player for a human player.
+game_mode = "user_player" # available options: "user_player" or "ai_player".
+                    # ai_player for an agent player, user_player for a human player.
                     # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to user_player !!!!!
                     # main mode to use is "ai_player".
 
@@ -57,7 +58,7 @@ def init_chatbot() -> tuple[BaseChatbot, bool]:
         chatbot_available = False
         chatbot = None
 
-    return chatbot , chatbot_available
+    return chatbot, chatbot_available
 
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with create_item"""
@@ -72,29 +73,21 @@ def add_items(items_list, room):
         return
 
     gui.gui_text_utils.add_message_to_history(f"Adding items to room...", "system")
-    try:
-        if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'create_item') and callable(chatbot.state_manager.create_item):
-            
-            chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
-            # test
-            # chatbot.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=items_list)
-            room_data = chatbot.state_manager.get_room_data(room)
-            room_name=room_data.name
-            # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
-            chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
 
-            # Append the text into GUI chat window
-            gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
+    item_creation_result = chatbot.state_manager.create_item(target_location="room", target_location_id=room, item_creation_data=items_list) # Adds items to the specified room and triggers signals to update the GUI
+    if not item_creation_result.success:
+        error = item_creation_result.error
+        print(f"Error adding items: {error}")
+        gui.gui_text_utils.add_message_to_history(f"Error adding items: {error}", "system")
+        return
 
-        else:
-            error_message = "Chatbot not available or does not support adding items."
-            print(error_message)
-            gui.gui_text_utils.add_message_to_history(error_message, 'error')
+    room_data = chatbot.state_manager.get_room_data(room)
+    room_name=room_data.name
+    # add message to AI memory chain, does not call the AI yet, but it adds informatio to its memory
+    chatbot.memory.save_to_memory(string_to_save=f"A package of helpful items has been delivered for you in the room {room_name}.", memory_type="short_term", tag="user")
 
-    except Exception as e:
-        error_message = f"System Error preparing add items instruction: {type(e).__name__}: {e}"
-        print(error_message)
-        gui.gui_text_utils.add_message_to_history(error_message, 'error')
+    # Append the text into GUI chat window
+    gui.gui_text_utils.add_message_to_history(f"Items added successfully!", "system")
 
 
 
@@ -163,28 +156,9 @@ def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=con
 # We'll need a helper function to trigger the lore update
 def trigger_lore_panel_update():
     """Fetches current room info and posts an event to update the lore panel."""
-    global chatbot_available, chatbot
-    if chatbot_available and chatbot and hasattr(chatbot, 'functions_builder') and \
-       hasattr(chatbot.functions_builder, 'get_current_tools_info') and \
-       callable(chatbot.functions_builder.get_current_tools_info):
-        
-        current_room_info = chatbot.functions_builder.get_current_tools_info()
-        
-        # Ensure room_data is a dictionary, even if functions_builder returns None or non-dict
-        if not isinstance(current_room_info, dict):
-            current_room_info = {} # Fallback to empty dict
-            print("Warning: get_current_tools_info did not return a dictionary. Lore panel may show default text.")
-
-        print(f"Triggering lore panel update with room data: {current_room_info.get('name', 'N/A')}")
-        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
-    else:
-        print("Chatbot or its functions_builder.get_current_tools_info is not available for lore update.")
-        # Post a default empty lore update if chatbot isn't ready
-        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data={
-            'name': 'System Lore',
-            'description': 'The lore system is not yet initialized or the chatbot is unavailable.'
-        }))
-
+    current_room_info = chatbot.functions_builder.get_current_tools_info()
+    print(f"Triggering lore panel update with room data: {current_room_info.get('name', 'N/A')}")
+    pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
 
 
 # --- Callback function to receive signals from the chatbot ---

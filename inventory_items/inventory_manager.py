@@ -107,38 +107,26 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.pet_state_manager.set_current_emote(emote_name, internal)
 
 
-
-    # Deprecated methods
-    # def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
-    #     return self.inventory_service.list_items_in_current_room(internal)
-
-    # What are the differences between these two?
-    # def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
-    #     return self.inventory_service.get_inventory_items(internal)
-
-    # def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
-    #     return self.inventory_service.list_inventories(formatted=formatted) 
-        
-
     # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
     # Not used as API methods
 
-    def drop_item(self, item_id: int, quantity_to_drop: int = 1):
-        return self.inventory_service.drop_item(item_id, quantity_to_drop)
+    # Moved to base tools, not supposed to be state API methods
+    # def drop_item(self, item_id: int, quantity_to_drop: int = 1):
+    #     return self.inventory_service.drop_item(item_id, quantity_to_drop)
 
-    def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
-        return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
+    # def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
+    #     return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
+
+    # def get_all_rooms(self): # not sending signals, that's fine, just documenting
+    #     return self.room_manager.get_all_rooms()
+
+    # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
+    def add_item_description(self, item_id: int, new_description: str) -> str: 
+        return self.inventory_service.add_item_description(item_id, new_description)
 
     def set_current_room(self, room_id: int | float | str):
         room_id = int(room_id)
         return self.room_manager.set_current_room(room_id)
-
-    def get_all_rooms(self): # not sending signals, that's fine, just documenting
-        return self.room_manager.get_all_rooms()
-
-    def add_item_description(self, item_id: int, new_description: str) -> str: 
-        return self.inventory_service.add_item_description(item_id, new_description)
-
 
     # Public Methods verified for tools and services use.
 

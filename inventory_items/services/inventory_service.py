@@ -180,54 +180,6 @@ class InventoryService:
         else:
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
 
-    # def list_items_in_current_room(self, internal=False):
-    #     current_room_id = self._state_store.get_state_section("current_room_id")
-    #     room_data = None
-    #     if self._room_manager:
-    #         room_data = self._room_manager._find_room_by_id(current_room_id)
-    #     else:
-    #         print("Warning: RoomManager not set in InventoryService, cannot list room items.")
-    #         return "Error: Room information not available."
-
-    #     if room_data:
-    #         room_display = self._room_manager._format_room_for_display(room_data)
-    #         room_items = room_data.get("items", [])
-    #         if isinstance(room_items, list):
-    #             valid_items = [item for item in room_items if self._is_valid_item_data(item, check_id=True)[0]]
-    #             items_display = [self._format_item_for_display(item) for item in valid_items]
-    #             if items_display:
-    #                 if internal:
-    #                     return room_items
-    #                 return f"Items in the {room_display}: {', '.join(items_display)}"
-    #             else:
-    #                 if internal:
-    #                     return []
-    #                 else:
-    #                     return f"There are no items in the {room_display}."
-    #         else:
-    #             return f"Error: Item list for {room_display} is corrupted."
-    #     else:
-    #         return f"Error: Could not access item list for current room (ID: {current_room_id}). State might be corrupted."
-
-    # def get_inventory_items(self, internal=False):
-    #     inventory_list = self._state_store.get_state_section("inventory")
-    #     if isinstance(inventory_list, list):
-    #         valid_items = [item for item in inventory_list if self._is_valid_item_data(item, check_id=True)[0]]
-    #         items_display = [self._format_item_for_display(item) for item in valid_items]
-    #         if items_display:
-    #             if internal:
-    #                 return inventory_list
-    #             return f"Items in your inventory: {', '.join(items_display)}"
-    #         else:
-    #             if internal:
-    #                 return []
-    #             return "Your inventory is empty."
-    #     else:
-    #         return "Error: Could not access inventory. State might be corrupted."
-
-
-
-
     def _inventory_can_accept(self, item_data: dict, current_list: list | None = None) -> bool:
         """
         Returns True if this item can be placed in inventory —

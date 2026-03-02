@@ -221,10 +221,10 @@ class ToolRegistry:
                     "list_items_in_inventory":      self.base_tools.list_items_in_inventory,
                     "set_current_emote":            state_manager.set_current_emote,
                     "move_to_room":                 state_manager.set_current_room,
-                    "list_all_rooms":               state_manager.get_all_rooms,
-                    "pick_up_item":                 state_manager.pickup_item,
+                    "list_all_rooms":               self.base_tools.get_all_rooms,
+                    "pick_up_item":                 self.base_tools.pick_up_item,
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
-                    "drop_item":                    state_manager.drop_item,
+                    "drop_item":                    self.base_tools.drop_item,
                     "add_item_description":         state_manager.add_item_description,
                     "emit_inner_thought":           emit_inner_thought
                 },

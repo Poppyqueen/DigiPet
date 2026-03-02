@@ -96,20 +96,6 @@ class RoomManager:
         else:
             return f"There is no room with ID '{room_id}'."
 
-    def get_all_rooms(self):
-        rooms_list = self._state_store.get_state_section("rooms")
-        if isinstance(rooms_list, list):
-            valid_rooms = [
-                room for room in rooms_list
-                if isinstance(room, dict) and isinstance(room.get('id'), int) and isinstance(room.get('name'), str)
-            ]
-            room_display = [self._format_room_for_display(room) for room in valid_rooms]
-            if room_display:
-                return f"Available rooms: {', '.join(room_display)}"
-            else:
-                return "No rooms are currently defined."
-        else:
-            return "Error: Could not access room list. State might be corrupted."
 
     def get_room_data(self, room_id: int) -> RoomDataResult:
         """

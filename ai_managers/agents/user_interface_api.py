@@ -65,8 +65,9 @@ class UserController(BaseChatbot):
         This is called fresh on every recursive step of the chain so the room
         list is always up to date.
         """
-        available_rooms = self.state_manager.get_all_rooms()
-        return f"{_USER_INTERFACE_SYS_PROMPT}\nAvailable rooms: {available_rooms}"
+        rooms = self.state_manager.get_all_rooms_data()
+        summary = f"Available rooms: {', '.join(f'{r.name} (ID:{r.id:06d})' for r in rooms)}"
+        return f"{_USER_INTERFACE_SYS_PROMPT}\nAvailable rooms: {summary}"
 
     # ------------------------------------------------------------------
     # Post-chain memory hook — wipe short-term (ephemeral session)
