@@ -43,8 +43,7 @@
         "name": "DevRoom",
         "image": "lab_room",
         "room_types": [
-            "accessible_light_viewing_room",
-            "ALIFE_research"
+            "kitchen"
         ],
         "plot_number": 3,
         "music": "white_room",

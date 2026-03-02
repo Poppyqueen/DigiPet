@@ -29,14 +29,6 @@ lighthouse_items = [
 ]
 item_types.extend(lighthouse_items)
 
-room_types = [
-    "planting_garden", "library", "bedroom", "living_room", "bathroom",
-    "garden", "white_room", "kitchen", "ALIFE_research", "computer_room", "outdoors_view"
-]  # This is affecting room generator
-
-lighthouse_room_types = ["lantern_room", "lighthouse_gallery"]
-room_types.extend(lighthouse_room_types)
-
 
 #ignore_fingerprint_keys = ["id", "quantity", "static", "stats_edit", "effects"] # This is what I had before
 ignore_fingerprint_keys = ["id", "quantity", "static"]

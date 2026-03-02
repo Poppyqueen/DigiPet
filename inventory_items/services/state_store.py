@@ -1,4 +1,3 @@
-
 # services/state_store.py
 import json
 import copy # For deep copying default state
@@ -11,6 +10,7 @@ except ImportError:
     import sys; sys.exit(1)
 
 from inventory_items.item_pydantic_models import validate_item_dict
+from inventory_items.room_pydantic_models import validate_room_dict
 
 class StateStore(GenericJsonTool):
     ITEM_ID_START_COUNTER = 1 # Re-define constants here or pass from config
@@ -234,84 +234,43 @@ class StateStore(GenericJsonTool):
         # --- Validate Rooms ---
         room_ids_seen = set()
         valid_rooms = []
-        # Need a helper for _is_valid_item_data if this is to remain in StateStore,
-        # or move the specific validation here. For now, assuming a helper that will be provided.
-        # This is a bit tricky as _is_valid_item_data has item_types which is domain specific.
-        # Best approach: _post_init_state_validation in StateStore does *structural* validation.
-        # Domain-specific validation (e.g., specific item types) happens in their respective services.
-        # For this example, let's keep it here, assuming ALLOWED_ITEM_TYPES is somehow accessible or
-        # define a simplified item validation for structural checks only.
-        # For a proper refactor, _is_valid_item_data would be in InventoryService.
 
-
-        rooms_list_to_validate = self._state.get("rooms", [])
-
-        rooms_list_to_validate = self._state.get("rooms", [])
-        for room in rooms_list_to_validate:
+        for room in self._state.get("rooms", []):
             if not isinstance(room, dict):
                 print(f"Validation Warning: Found non-dict entry in rooms list: {room}. Removing.")
                 needs_save = True
                 continue
-            required_room_keys = ["id", "name", "descriptions", "items", "image", "room_types"]
-            if not all(key in room for key in required_room_keys):
-                print(f"Validation Warning: Room missing required keys ({required_room_keys}): ID {room.get('id', 'unknown')}. Removing.")
-                needs_save = True
-                continue
-            if not isinstance(room.get("image"), str):
-                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string image name. Removing")
-                needs_save =True
-                continue
-            if not isinstance(room.get("music"), str) and room.get("music") is not None: # Allow music to be None
-                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string music name. Removing")
-                needs_save =True
-                continue
-            if not isinstance(room.get("room_types"), list) or not all(isinstance(d, str) for d in room.get("room_types", [])):
-                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-string room_type. Removing")
-                needs_save = True
-                continue
-            if not isinstance(room.get("id"), int):
-                print(f"Validation Warning: Room '{room.get('name', 'Unnamed Room')}' has non-integer ID: {room.get('id')}. Removing.")
-                needs_save = True
-                continue
-            if room["id"] in room_ids_seen:
-                print(f"Validation Warning: Duplicate room ID found: {room['id']}. Removing this instance.")
-                needs_save = True
-                continue
-            if not isinstance(room.get("name"), str) or not room.get("name", "").strip():
-                print(f"Validation Warning: Room ID {room['id']} has invalid or empty name. Setting to 'Unnamed Room'.")
-                room["name"] = "Unnamed Room"
-                needs_save = True
-            if not isinstance(room.get("descriptions"), dict): # Now expects a dict for descriptions
-                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid descriptions (not dictionary). Correcting to empty dict.")
-                room["descriptions"] = {}
-                needs_save = True
-            if not isinstance(room.get("items"), list):
-                print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'items' (not list). Correcting to empty list.")
-                room["items"] = []
-                needs_save = True
 
-            # Specific validation for "planting_garden" room_type
-            if "planting_garden" in room.get("room_types", []):
-                if not isinstance(room.get("plot_number"), int):
-                    print(f"Validation Warning: Room '{room['name']}' (ID:{room['id']}) has invalid 'plot_number' (not int). Correcting to base number.")
-                    room["plot_number"] = 3
+            # Duplicate ID check must happen before validate_room_dict since
+            # uniqueness is a state-level constraint, not a per-room one.
+            room_id = room.get("id")
+            if isinstance(room_id, int) and room_id in room_ids_seen:
+                print(f"Validation Warning: Duplicate room ID {room_id}. Removing this instance.")
+                needs_save = True
+                continue
+
+            # Validate room structure and type-specific contracts via pydantic.
+            result, error = validate_room_dict(room, check_id=True)
+            if result is None:
+                print(f"Validation Warning: Room (ID:{room.get('id', 'unknown')}) failed validation — {error}. Removing.")
+                needs_save = True
+                continue
+
+            # Validate items inside the room — unchanged from before.
+            original_item_count = len(room.get("items", []))
+            valid_room_items = []
+            for item in room.get("items", []):
+                item_result, item_error = validate_item_dict(item, check_id=True)
+                if item_result is None:
+                    print(f"Validation Warning: Item in room ID {room_id} — {item_error}. Removing.")
                     needs_save = True
-
-            original_item_count_in_room = len(room.get("items", []))
-            valid_room_items_list = []
-            if isinstance(room.get("items"), list):
-                for item in room["items"]:
-                    result, error = validate_item_dict(item, check_id=True)
-                    if result is None:  # invalid
-                        print(f"... {error}. Removing.")
-                        needs_save = True
-                        continue
-                    valid_room_items_list.append(item)
-            room["items"] = valid_room_items_list
-            if len(room["items"]) < original_item_count_in_room:
+                    continue
+                valid_room_items.append(item)
+            room["items"] = valid_room_items
+            if len(room["items"]) < original_item_count:
                 needs_save = True
 
-            room_ids_seen.add(room["id"])
+            room_ids_seen.add(room_id)
             valid_rooms.append(room)
 
         self._state["rooms"] = valid_rooms
