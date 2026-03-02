@@ -1,4 +1,5 @@
 # services/pet_state_manager.py
+from inventory_items.services.return_objects import GetCurrencyResult, AdjustCurrencyResult
 
 # TODO: kick out the currency stuff, move to the tools folder... maybe not?
 class PetStateManager:
@@ -100,12 +101,12 @@ class PetStateManager:
 
 
     # --- Currency Getters and Setters ---
-    def get_currency(self) -> int:
+    def get_currency(self) -> GetCurrencyResult:
         currency_value = self._state_store.get_state_section("currency")
         if not isinstance(currency_value, int) or currency_value < 0:
             print(f"Warning: get_currency found invalid state value ({currency_value}). Returning default 0.")
-            return 0
-        return currency_value
+            return GetCurrencyResult.fail(error="Invalid currency value found in state.", currency=0)
+        return GetCurrencyResult.ok(currency=currency_value, message="Currency retrieved successfully.")
 
     def set_currency(self, amount: int):
         if not isinstance(amount, int):
@@ -116,16 +117,20 @@ class PetStateManager:
             amount = 0
         self._state_store.update_state_section("currency", amount)
 
-    def adjust_currency(self, amount: int):
+    def adjust_currency(self, amount: int) -> AdjustCurrencyResult:
         """
         Adjusts the current currency positively or negatively
         """
         if not isinstance(amount, int):
-            print(f"Error: Attempted to adjust 'currency' with non-integer amount: {amount}. Ignoring.")
-            return
-        current_currency = self.get_currency()
+            error = f"Error: Attempted to adjust 'currency' with non-integer amount: {amount}. Ignoring."
+            print(error)
+            return AdjustCurrencyResult.fail(error=error, currency=self.get_currency().currency)
+        current_currency = self.get_currency().currency
         new_currency = current_currency + amount
         if new_currency < 0:
             print(f"Warning: Adjustment would set 'currency' below 0. Clamping to 0.")
             new_currency = 0
+            self._state_store.update_state_section("currency", new_currency)
+            return AdjustCurrencyResult.ok(currency=new_currency, message="Currency adjusted and reached 0.")
         self._state_store.update_state_section("currency", new_currency)
+        return AdjustCurrencyResult.ok(currency=new_currency, message=f"Currency adjusted, new balance: {new_currency}")

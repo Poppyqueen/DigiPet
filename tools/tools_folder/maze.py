@@ -1,3 +1,9 @@
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+
 import json
 import random
 from typing import Dict, List, Tuple, Optional
@@ -52,7 +58,7 @@ class MazeEnvironment:
     Tools provide ONLY immediate observations and move validation.
     """
     
-    def __init__(self, state_manager, signal):
+    def __init__(self, state_manager: InventoryHouseManager, signal):
         self.width = 0
         self.height = 0
         self.nodes = {}
@@ -335,10 +341,10 @@ class MazeEnvironment:
             # })
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trumpet.png", "popup_type": 2})
             reward = self.calculate_reward()
-            self.state_manager.pet_state_manager.adjust_currency(reward)
+            reward_result = self.state_manager.adjust_currency(reward)
             reset_width = random.randint(3, 10)
             reset_height = random.randint(3, 10)
-            reward_message = f"Congratulations! You made it to the goal! You earned {reward} currency!... Resetting and randomizing maze with values {reset_width}x{reset_height}..."
+            reward_message = f"Congratulations! You made it to the goal! You earned {reward} currency!... Current total: {reward_result.currency}. Resetting and randomizing maze with values {reset_width}x{reset_height}..."
             self._generate_maze(reset_width, reset_height)
             self.agent_position = self.start
 

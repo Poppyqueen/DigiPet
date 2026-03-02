@@ -400,7 +400,7 @@ class SetItemAttributeResult(BaseModel):
     error: str | None = None
 
     @model_validator(mode="after")
-    def _check_consistency(self) -> "SetItemAttributeResult":
+    def _check_consistency(self) -> SetItemAttributeResult:
         if self.success:
             assert self.error is None, "Successful result must not have an error."
         else:
@@ -408,11 +408,77 @@ class SetItemAttributeResult(BaseModel):
         return self
 
     @classmethod
-    def ok(cls, message: str) -> "SetItemAttributeResult":
+    def ok(cls, message: str) -> SetItemAttributeResult:
         """Build a successful result."""
         return cls(success=True, message=message, error=None)
 
     @classmethod
-    def fail(cls, error: str) -> "SetItemAttributeResult":
+    def fail(cls, error: str) -> SetItemAttributeResult:
         """Build a failed result. message mirrors error for easy appending."""
         return cls(success=False, message=error, error=error)
+
+
+class AdjustCurrencyResult(BaseModel):
+    """
+    Model for the result of a adjust_currency operation.
+    Returns the new currency value.
+    Success value a bool
+    Error value a str
+    Message value a str - Always populated
+    """
+    
+    success: bool
+    message: str
+    error: str | None = None
+    currency: int
+    
+    @model_validator(mode="after")
+    def _check_consistency(self) -> AdjustCurrencyResult:
+        if self.success:
+            assert self.error is None, "Successful result must not have an error."
+        else:
+            assert self.error is not None, "Failed result must have an error message."
+        return self
+    
+    @classmethod
+    def ok(cls, message: str, currency: int) -> AdjustCurrencyResult:
+        """Build a successful result."""
+        return cls(success=True, message=message, error=None, currency=currency)
+    
+    @classmethod
+    def fail(cls, error: str, currency: int) -> AdjustCurrencyResult:
+        """Build a failed result. message mirrors error for easy appending."""
+        return cls(success=False, message=error, error=error, currency=currency)
+
+
+class GetCurrencyResult(BaseModel):
+    """
+    Model for the result of a get_currency operation.
+    Returns the current currency value.
+    Success value a bool
+    Error value a str
+    Message value a str - Always populated
+    """
+    
+    success: bool
+    message: str
+    error: str | None = None
+    currency: int
+    
+    @model_validator(mode="after")
+    def _check_consistency(self) -> GetCurrencyResult:
+        if self.success:
+            assert self.error is None, "Successful result must not have an error."
+        else:
+            assert self.error is not None, "Failed result must have an error message."
+        return self
+    
+    @classmethod
+    def ok(cls, message: str, currency: int) -> GetCurrencyResult:
+        """Build a successful result."""
+        return cls(success=True, message=message, error=None, currency=currency)
+    
+    @classmethod
+    def fail(cls, error: str, currency: int) -> GetCurrencyResult:
+        """Build a failed result. message mirrors error for easy appending."""
+        return cls(success=False, message=error, error=error, currency=currency)

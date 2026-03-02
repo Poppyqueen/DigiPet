@@ -22,6 +22,8 @@ from inventory_items.services.return_objects import (
     ItemRemovalResult,
     SetItemAttributeResult,
     InventoryStateResult,
+    AdjustCurrencyResult,
+    GetCurrencyResult,
 )
 
 from typing import Literal
@@ -72,6 +74,35 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
         print(f"InventoryHouseManager initialized. Current room ID: {self._state_store.get_state_section('current_room_id')}")
 
+
+
+    # Moved to base tools
+    # def set_current_emote(self, emote_name: str) -> str: 
+    #     return self.pet_state_manager.set_current_emote(emote_name)
+
+
+    # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
+    # Not used as API methods but moved to base tools with direct access...
+
+    # Moved to base tools, not supposed to be state API methods
+    # def drop_item(self, item_id: int, quantity_to_drop: int = 1):
+    #     return self.inventory_service.drop_item(item_id, quantity_to_drop)
+
+    # def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
+    #     return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
+
+    # def get_all_rooms(self): # not sending signals, that's fine, just documenting
+    #     return self.room_manager.get_all_rooms()
+
+    # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
+    def add_item_description(self, item_id: int, new_description: str) -> str: 
+        return self.inventory_service.add_item_description(item_id, new_description)
+
+    def set_current_room(self, room_id: int | float | str):
+        room_id = int(room_id)
+        return self.room_manager.set_current_room(room_id)
+
+
     # --- Facade Methods (Public API of InventoryHouseManager) ---
     # These methods will now simply delegate to the appropriate service.
     # This makes InventoryHouseManager a thin orchestrator.
@@ -104,35 +135,11 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def get_possible_emotes(self) -> str: 
         return self.pet_state_manager.get_possible_emotes()
 
-    # Moved to base tools
-    # def set_current_emote(self, emote_name: str) -> str: 
-    #     return self.pet_state_manager.set_current_emote(emote_name)
 
-
-    # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
-    # Not used as API methods but moved to base tools with direct access...
-
-    # Moved to base tools, not supposed to be state API methods
-    # def drop_item(self, item_id: int, quantity_to_drop: int = 1):
-    #     return self.inventory_service.drop_item(item_id, quantity_to_drop)
-
-    # def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
-    #     return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
-
-    # def get_all_rooms(self): # not sending signals, that's fine, just documenting
-    #     return self.room_manager.get_all_rooms()
-
-    # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
-    def add_item_description(self, item_id: int, new_description: str) -> str: 
-        return self.inventory_service.add_item_description(item_id, new_description)
-
-    def set_current_room(self, room_id: int | float | str):
-        room_id = int(room_id)
-        return self.room_manager.set_current_room(room_id)
-
-
-
+    # ============================================================= #
     # Public Methods verified for tools and services use.
+    # ============================================================= #
+
     def adjust_stat(self,
         stat_name: str, 
         amount: int|float
@@ -192,7 +199,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         quantity: int = 1,
         path: list[str] | None = None
 
-    )-> SetItemAttributeResult: # Fix this object
+    )-> SetItemAttributeResult:
         """
         Modifies a single attribute (key/value) on one or more units of an item
         stack, then recalculates stacking state.
@@ -297,7 +304,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         """
         return self.room_manager.get_all_rooms_data()
 
-    # New method
 
     def get_inventory_state(self) -> InventoryStateResult:
         """
@@ -305,3 +311,15 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         room items.
         """
         return self.inventory_service.get_inventory_state()
+
+
+    # Added methods for currency
+
+    # Make response objects for these two, used in auction house and maze
+    def get_currency(self)-> GetCurrencyResult: 
+        return self.pet_state_manager.get_currency()
+
+    def adjust_currency(self, 
+        amount: int 
+    )-> AdjustCurrencyResult:
+        return self.pet_state_manager.adjust_currency(amount)

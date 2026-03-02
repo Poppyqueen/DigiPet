@@ -333,7 +333,7 @@ class AuctionHouse:
             if not item_lookup_result.success:
                 return message
         
-        self.state_manager.pet_state_manager.adjust_currency(-total_cost)
+        self.state_manager.adjust_currency(-total_cost)
 
         if quantity == 1:
             return f"Successfully bought {actual_name} for {item_price}. {'\n'.join(messages)}"
@@ -372,18 +372,18 @@ class AuctionHouse:
         
         if sold_price_per_item is not None:
             total_earned = sold_price_per_item * quantity
-            self.state_manager.pet_state_manager.adjust_currency(total_earned)
+            self.state_manager.adjust_currency(total_earned)
             
-            message = self.state_manager.remove_item(item_id, quantity=quantity)
+            return_object = self.state_manager.remove_item(item_id, quantity=quantity)
             
             if quantity == 1:
-                return f"Successfully sold {actual_name} for {sold_price_per_item} currency. You earned currency! {message}"
+                return f"Successfully sold {actual_name} for {sold_price_per_item} currency. You earned currency! {return_object.message}"
             else:
-                return f"Successfully sold {quantity}x {actual_name} for {total_earned} currency total ({sold_price_per_item} each). You earned currency! {message}"
+                return f"Successfully sold {quantity}x {actual_name} for {total_earned} currency total ({sold_price_per_item} each). You earned currency! {return_object.message}"
         else:
             return f"Failed to sell {actual_name}. Please try again later."
         
-    def get_currency(self): # TODO: Write a state like the lighthouse or the ALife tools, do not use the state manager
+    def get_currency(self):
         """Get the current currency balance of the user."""
-        currency = self.state_manager.pet_state_manager.get_currency()
-        return f"Your current currency balance is: {currency} total."
+        currency_data = self.state_manager.get_currency()
+        return f"Your current currency balance is: {currency_data.currency} total."

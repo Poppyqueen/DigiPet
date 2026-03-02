@@ -2,10 +2,8 @@
     "initial_room": "DevRoom",
     "garden": [
         "Folding director's chair",
-        "Fresnel lens",
         "Window curtains",
         "Soft cleaning cloth",
-        "IOV Burner",
         "Modern Laptop"
     ],
     "DevRoom": [
@@ -22,15 +20,9 @@
         "Milk (1L carton)",
         "Bag of Banana Gum[x5]",
         "Candy Dispenser",
-        "broken seed test",
-        "Ground Cinnamon Tin[x5]",
-        "Black Notebook[x4]",
-        "IOV Pressure system",
-        "IOV Spirit Pan",
-        "Denatured alcohol barrel"
+        "Ground Cinnamon Tin[x5]"
     ],
     "inventory": [
-        "The Keeper's Guide",
-        "Lettuce Seeds"
+        "lettuce head[x10]"
     ]
 }
