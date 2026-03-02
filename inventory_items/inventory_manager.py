@@ -97,14 +97,16 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     # Needs changes:
     # Remove internal flag
-    def get_current_emote(self, internal: bool = False) -> str | dict:# TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.get_current_emote(internal)
+    # TODO: Return a standard object instead of a string? 
+    def get_current_emote(self) -> str:
+        return self.pet_state_manager.get_current_emote()
 
-    def get_possible_emotes(self, internal: bool = False) -> dict | str: # TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.get_possible_emotes(internal)
+    def get_possible_emotes(self) -> str: 
+        return self.pet_state_manager.get_possible_emotes()
 
-    def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool: # TODO: None of the methods that call this use the internal flag
-        return self.pet_state_manager.set_current_emote(emote_name, internal)
+    # Moved to base tools
+    # def set_current_emote(self, emote_name: str) -> str: 
+    #     return self.pet_state_manager.set_current_emote(emote_name)
 
 
     # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager

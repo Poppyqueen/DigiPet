@@ -219,7 +219,7 @@ class ToolRegistry:
                 "functions": {
                     "list_items_in_current_room":   self.base_tools.list_items_in_current_room,
                     "list_items_in_inventory":      self.base_tools.list_items_in_inventory,
-                    "set_current_emote":            state_manager.set_current_emote,
+                    "set_current_emote":            self.base_tools.set_current_emote,
                     "move_to_room":                 state_manager.set_current_room,
                     "list_all_rooms":               self.base_tools.get_all_rooms,
                     "pick_up_item":                 self.base_tools.pick_up_item,

@@ -1,4 +1,5 @@
-# Add other base tools here
+# Base tools,
+# Unique case for tools, some are bypassing the facade, do not do this in general tools
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -29,3 +30,6 @@ class BaseTools:
 
     def pick_up_item(self, item_id: int, quantity_to_pickup: int = 1):
         return self.state_manager.inventory_service.pickup_item(item_id, quantity_to_pickup) # Bypassing facade, not sure what to do about it
+
+    def set_current_emote(self, emote_name: str) -> str:
+        return self.state_manager.pet_state_manager.set_current_emote(emote_name)
