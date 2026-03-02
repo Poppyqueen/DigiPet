@@ -10,6 +10,9 @@
 
 # the state manager has access to inventory and wellness stats access
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import asyncio
 import math
 
@@ -21,7 +24,6 @@ import random
 
 from utils.loc_datetime import datetime
 
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing

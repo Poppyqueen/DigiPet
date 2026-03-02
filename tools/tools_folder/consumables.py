@@ -3,12 +3,13 @@
 # Follows the same pattern as BookTools: state_manager injected directly,
 # all state access through the public facade, no private member access.
 
-import random
-
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager
+    from inventory_items.inventory_manager import InventoryHouseManager #
+
+import random
 
 
 class ConsumablesTools:

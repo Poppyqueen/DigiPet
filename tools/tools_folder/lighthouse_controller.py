@@ -1,5 +1,7 @@
 # lighthouse_controller.py
 #*   **Lighthouse** A detailed IOV lamp and lantern room simulation. The agent acts as a lighthouse keeper, managing an incandescent oil vapor lamp system with physical pressure, fuel, temperature, and optics simulation. Features ambient perception — the agent passively receives state information (pressure levels, lamp status, lens condition) based on which room it occupies, without needing explicit observation actions.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from tools.tools_folder.tools_helpers.lighthouse.lighthouse_state_manager import LighthouseManager
 
@@ -10,7 +12,6 @@ from tools.tools_folder.tools_helpers.lighthouse.models import ActionInternalRes
 
 import random
 
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing

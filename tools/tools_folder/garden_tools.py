@@ -22,7 +22,7 @@ from tools.tools_folder.tools_helpers.garden_helpers.garden_manager import Garde
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager
-    from inventory_items.services.item_lookup_result import ItemLookupResult
+    from inventory_items.services.return_objects import ItemLookupResult
 
 
 # ---------------------------------------------------------------------------

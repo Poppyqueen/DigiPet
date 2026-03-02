@@ -1,16 +1,17 @@
 # auction_house.py - Case-Insensitive Version
 
 # TODO: Write a JSON state like the lighthouse or the ALife tools, do not use the state manager
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager #just for typing
+    from inventory_items.services.return_objects import ItemLookupResult
 
 import random
 from inventory_items.items_provider.item_store import ItemStore
 from inventory_items.items_provider.items_scanner import FuzzyMatcher
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-    from inventory_items.services.item_lookup_result import ItemLookupResult
 
 
 class AuctionHouse:

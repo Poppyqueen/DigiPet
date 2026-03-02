@@ -1,12 +1,12 @@
 # dispenser_tools.py
-
-from inventory_items.items_provider.item_store import ItemStore
-import random
-
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+
+from inventory_items.items_provider.item_store import ItemStore
+import random
 
 class DispenserTools:
     def __init__(self, state_manager, signal=None):

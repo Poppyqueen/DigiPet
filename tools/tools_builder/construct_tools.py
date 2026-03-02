@@ -13,6 +13,12 @@
 #   - The tool_definitions dict
 #   - Availability logic (ToolAvailabilityChecker, ItemContext, etc.)
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager #just for typing
+
 import inspect
 from utils.loc_datetime import datetime
 from utils.time_manager import get_time_tag_from_now
@@ -24,12 +30,6 @@ from .tool_availability import (
     ToolAvailabilityChecker,
     ItemToolMapper,
 )
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
-
 
 
 class FunctionBuilder:
