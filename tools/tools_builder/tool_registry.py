@@ -13,6 +13,10 @@
 #   Phase 4: Services that NEED the toolset_checker (lighthouse, etc.)
 
 import os
+
+from tools.tools_folder.base_tools import BaseTools
+
+
 from tools.tools_folder.alife_controller import ALifeController
 from tools.tools_folder.garden_tools import GardenController
 from tools.tools_folder.rooms_tools import main_tools_handle
@@ -103,6 +107,7 @@ class ToolRegistry:
         # =================================================================
         # Phase 1 — services with no availability dependency
         # =================================================================
+        self.base_tools     = BaseTools(state_manager)
         self.room_tools     = main_tools_handle(state_manager, signal, memory_manager, config_manager, open_meteo)
         self.garden_manager = GardenController(state_manager, signal, open_meteo)
         self.images_lab     = ImagesLab(subdirectory)
@@ -212,7 +217,8 @@ class ToolRegistry:
             # ----------------------------------------------------------------
             "base_functions": {
                 "functions": {
-                    "list_items_in_current_room":   state_manager.list_items_in_current_room,
+                    "list_items_in_current_room":   self.base_tools.list_items_in_current_room,
+                    "list_items_in_inventory":      self.base_tools.list_items_in_inventory,
                     "set_current_emote":            state_manager.set_current_emote,
                     "move_to_room":                 state_manager.set_current_room,
                     "list_all_rooms":               state_manager.get_all_rooms,
@@ -220,8 +226,7 @@ class ToolRegistry:
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
                     "drop_item":                    state_manager.drop_item,
                     "add_item_description":         state_manager.add_item_description,
-                    "emit_inner_thought":           emit_inner_thought,
-                    "list_items_in_inventory":      state_manager.get_inventory_items,
+                    "emit_inner_thought":           emit_inner_thought
                 },
                 "definitions": base_tools,
                 "use_level": "always_available",

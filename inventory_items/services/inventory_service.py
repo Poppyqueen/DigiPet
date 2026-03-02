@@ -18,7 +18,9 @@ from inventory_items.services.return_objects import (
     ItemLookupResult,
     ItemCreationResult,
     ItemRemovalResult,
-    SetItemAttributeResult
+    SetItemAttributeResult,
+    InventoryItemEntry,
+    InventoryStateResult,
 )
 
 
@@ -85,6 +87,19 @@ class InventoryService:
                 self._signal_callback(signal_data)
             except Exception as e:
                 print(f"Error sending signal: {e}")
+
+
+    def _emit_inventory_signals(self) -> None:
+        """
+        Fires room_inventory and player_inventory signals with current
+        display strings. Call this after any mutation to keep the GUI in sync.
+
+        Replaces the repeated list_inventories(formatted=True) + two signal
+        pattern that previously appeared in every mutating method.
+        """
+        state = self.get_inventory_state()
+        self._send_signal({"type": "room_inventory",   "item_list": state.room_display_strings})
+        self._send_signal({"type": "player_inventory", "item_list": state.inventory_display_strings})
 
     # --- Helper Methods (Internal to InventoryService) ---
     def _find_item_info_by_id(self, item_id):
@@ -165,50 +180,50 @@ class InventoryService:
         else:
             return f"Failed to add description: Item with ID {item_id} not found in your inventory."
 
-    def list_items_in_current_room(self, internal=False):
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        room_data = None
-        if self._room_manager:
-            room_data = self._room_manager._find_room_by_id(current_room_id)
-        else:
-            print("Warning: RoomManager not set in InventoryService, cannot list room items.")
-            return "Error: Room information not available."
+    # def list_items_in_current_room(self, internal=False):
+    #     current_room_id = self._state_store.get_state_section("current_room_id")
+    #     room_data = None
+    #     if self._room_manager:
+    #         room_data = self._room_manager._find_room_by_id(current_room_id)
+    #     else:
+    #         print("Warning: RoomManager not set in InventoryService, cannot list room items.")
+    #         return "Error: Room information not available."
 
-        if room_data:
-            room_display = self._room_manager._format_room_for_display(room_data)
-            room_items = room_data.get("items", [])
-            if isinstance(room_items, list):
-                valid_items = [item for item in room_items if self._is_valid_item_data(item, check_id=True)[0]]
-                items_display = [self._format_item_for_display(item) for item in valid_items]
-                if items_display:
-                    if internal:
-                        return room_items
-                    return f"Items in the {room_display}: {', '.join(items_display)}"
-                else:
-                    if internal:
-                        return []
-                    else:
-                        return f"There are no items in the {room_display}."
-            else:
-                return f"Error: Item list for {room_display} is corrupted."
-        else:
-            return f"Error: Could not access item list for current room (ID: {current_room_id}). State might be corrupted."
+    #     if room_data:
+    #         room_display = self._room_manager._format_room_for_display(room_data)
+    #         room_items = room_data.get("items", [])
+    #         if isinstance(room_items, list):
+    #             valid_items = [item for item in room_items if self._is_valid_item_data(item, check_id=True)[0]]
+    #             items_display = [self._format_item_for_display(item) for item in valid_items]
+    #             if items_display:
+    #                 if internal:
+    #                     return room_items
+    #                 return f"Items in the {room_display}: {', '.join(items_display)}"
+    #             else:
+    #                 if internal:
+    #                     return []
+    #                 else:
+    #                     return f"There are no items in the {room_display}."
+    #         else:
+    #             return f"Error: Item list for {room_display} is corrupted."
+    #     else:
+    #         return f"Error: Could not access item list for current room (ID: {current_room_id}). State might be corrupted."
 
-    def get_inventory_items(self, internal=False):
-        inventory_list = self._state_store.get_state_section("inventory")
-        if isinstance(inventory_list, list):
-            valid_items = [item for item in inventory_list if self._is_valid_item_data(item, check_id=True)[0]]
-            items_display = [self._format_item_for_display(item) for item in valid_items]
-            if items_display:
-                if internal:
-                    return inventory_list
-                return f"Items in your inventory: {', '.join(items_display)}"
-            else:
-                if internal:
-                    return []
-                return "Your inventory is empty."
-        else:
-            return "Error: Could not access inventory. State might be corrupted."
+    # def get_inventory_items(self, internal=False):
+    #     inventory_list = self._state_store.get_state_section("inventory")
+    #     if isinstance(inventory_list, list):
+    #         valid_items = [item for item in inventory_list if self._is_valid_item_data(item, check_id=True)[0]]
+    #         items_display = [self._format_item_for_display(item) for item in valid_items]
+    #         if items_display:
+    #             if internal:
+    #                 return inventory_list
+    #             return f"Items in your inventory: {', '.join(items_display)}"
+    #         else:
+    #             if internal:
+    #                 return []
+    #             return "Your inventory is empty."
+    #     else:
+    #         return "Error: Could not access inventory. State might be corrupted."
 
 
 
@@ -321,40 +336,12 @@ class InventoryService:
             self._state_store.update_state_section("rooms", rooms_list)
             self._state_store.update_state_section("inventory", inventory_list)
 
-            list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-            self._send_signal({"type": "room_inventory", "item_list": list_room_items_names})
-            self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
+            self._emit_inventory_signals()
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_up_icon.png"})
             return " ".join(messages)
         else:
             return f"Failed to pick up {item_display}. " + " ".join(messages)
 ####
-    def list_inventories(self, formatted=False):
-        current_room_id = self._state_store.get_state_section("current_room_id")
-        room_data = None
-        if self._room_manager:
-            room_data = self._room_manager._find_room_by_id(current_room_id)
-
-        list_room_items_names = []
-        if room_data and isinstance(room_data.get("items"), list):
-            for item in room_data["items"]:
-                if formatted:
-                    name=self._format_item_for_display(item)
-                    #print(f"DEBUG FORMAT ITEMS {name}")
-                else:
-                    name = item.get("name")
-                if name:
-                    list_room_items_names.append(name)
-                    
-
-        inventory_list = self._state_store.get_state_section("inventory", [])
-        list_inventory_item_names = []
-        if isinstance(inventory_list, list):
-            for item in inventory_list:
-                name = self._format_item_for_display(item)
-                if name:
-                    list_inventory_item_names.append(name)
-        return list_room_items_names, list_inventory_item_names
 
 
     def drop_item(self, item_id: int, quantity_to_drop: int = 1):
@@ -445,9 +432,7 @@ class InventoryService:
                 self._state_store.update_state_section("inventory", inventory_list)
                 self._state_store.update_state_section("rooms", rooms_list)
 
-                list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-                self._send_signal({f"type": "room_inventory", "item_list": list_room_items_names})
-                self._send_signal({f"type": "player_inventory", "item_list": list_inventory_item_names})
+                self._emit_inventory_signals()
                 self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/hand_down_icon.png"})
                 return f"You dropped items. " + " ".join(messages)
             else:
@@ -666,9 +651,7 @@ class InventoryService:
             self._state_store.update_state_section("rooms", rooms_list)
 
         if overall_successful_creation_count > 0:
-            list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-            self._send_signal({"type": "room_inventory",   "item_list": list_room_items_names})
-            self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
+            self._emit_inventory_signals()
 
         # --- Build result ---
         if overall_successful_creation_count == 0:
@@ -797,9 +780,7 @@ class InventoryService:
             )
 
         # --- Signals ---
-        list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-        self._send_signal({"type": "room_inventory",   "item_list": list_room_items_names})
-        self._send_signal({"type": "player_inventory", "item_list": list_inventory_item_names})
+        self._emit_inventory_signals()
 
         return ItemRemovalResult.ok(message)
 
@@ -1120,12 +1101,103 @@ class InventoryService:
             rooms_list = self._state_store.get_state_section("rooms", [])
             self._state_store.update_state_section("rooms", rooms_list)
 
-        list_room_items_names, list_inventory_item_names = self.list_inventories(formatted=True)
-        self._send_signal({"type": "room_inventory",    "item_list": list_room_items_names})
-        self._send_signal({"type": "player_inventory",  "item_list": list_inventory_item_names})
+        self._emit_inventory_signals()
 
         split_msg = (
             f"Modified '{key}' on {actual_qty} unit(s) of {item_display} "
             f"(source stack {'reduced to ' + str(remaining_in_source) + ' unit(s)' if remaining_in_source > 0 else 'fully consumed'}). "
         )
         return SetItemAttributeResult(success=True, message=split_msg + " ".join(messages))
+
+
+
+    def get_inventory_state(self) -> InventoryStateResult:
+        """
+        Returns a fully-typed snapshot of the current inventory and room items.
+
+        Replaces the combined behaviour of:
+          - list_inventories(formatted=True / False)
+          - get_inventory_items(internal=True / False)
+          - list_items_in_current_room(internal=True / False)
+
+        All items are validated before inclusion — invalid raw dicts are
+        silently dropped. Every caller gets one consistent object with
+        pre-computed views for their specific need:
+
+          GUI / signals      → result.inventory_display_strings
+                               result.room_display_strings
+          AI agent strings   → result.inventory_summary
+                               result.room_summary
+          Tool / logic use   → result.inventory_items  (list[InventoryItemEntry])
+                               result.room_items        (list[InventoryItemEntry])
+          Raw dict access    → entry.item_data on any entry
+
+        Returns
+        -------
+        InventoryStateResult
+            Always returns this model — never raises. If the room cannot be
+            found, room_items will be empty and room_name will be "Unknown Room".
+        """
+        # --- 1. Resolve current room ---
+        current_room_id: int = self._state_store.get_state_section("current_room_id", -1)
+
+        room_data = None
+        if self._room_manager:
+            room_data = self._room_manager._find_room_by_id(current_room_id)
+
+        room_name: str = room_data.get("name", "Unknown Room") if room_data else "Unknown Room"
+        room_display: str = (
+            self._room_manager._format_room_for_display(room_data)
+            if (self._room_manager and room_data)
+            else f"{room_name} (ID:{current_room_id:06d})"
+        )
+
+        # --- 2. Build room item entries ---
+        room_item_entries: list[InventoryItemEntry] = []
+
+        if room_data and isinstance(room_data.get("items"), list):
+            for raw_item in room_data["items"]:
+                is_valid, _ = self._is_valid_item_data(raw_item, check_id=True)
+                if not is_valid:
+                    continue
+                room_item_entries.append(
+                    InventoryItemEntry(
+                        item_id=raw_item["id"],
+                        name=raw_item.get("name", "Unnamed Item"),
+                        display_string=self._format_item_for_display(raw_item),
+                        item_data=raw_item,
+                        location="room",
+                        location_id=current_room_id,
+                        location_name=room_name,
+                    )
+                )
+
+        # --- 3. Build inventory item entries ---
+        inventory_raw: list = self._state_store.get_state_section("inventory", [])
+        inventory_item_entries: list[InventoryItemEntry] = []
+
+        if isinstance(inventory_raw, list):
+            for raw_item in inventory_raw:
+                is_valid, _ = self._is_valid_item_data(raw_item, check_id=True)
+                if not is_valid:
+                    continue
+                inventory_item_entries.append(
+                    InventoryItemEntry(
+                        item_id=raw_item["id"],
+                        name=raw_item.get("name", "Unnamed Item"),
+                        display_string=self._format_item_for_display(raw_item),
+                        item_data=raw_item,
+                        location="inventory",
+                        location_id=None,
+                        location_name=None,
+                    )
+                )
+
+        # --- 4. Construct and return ---
+        return InventoryStateResult.build(
+            inventory_items=inventory_item_entries,
+            room_items=room_item_entries,
+            room_id=current_room_id,
+            room_name=room_name,
+            room_display=room_display,
+        )

@@ -86,8 +86,8 @@ class RoomManager:
 
                 # Uses InventoryService for combined list
                 if self._inventory_service:
-                    list_room_items_names, _ = self._inventory_service.list_inventories(formatted=True)
-                    self._send_signal({"type": "room_inventory", "item_list": list_room_items_names})
+                    state = self._inventory_service.get_inventory_state()
+                    self._send_signal({"type": "room_inventory", "item_list": state.room_display_strings})
                 else:
                     print("Warning: InventoryService not set in RoomManager, cannot send room_inventory signal.")
 

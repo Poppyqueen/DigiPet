@@ -1,9 +1,173 @@
+# return_objects.py
+
 from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel, model_validator
 
 from utils.time_manager import get_time_tag_from_now
+# ============================================================
+# ADD TO: inventory_items/services/return_objects.py
+# Place after the existing ItemLookupResult class definition.
+# ============================================================
 
+
+
+class InventoryItemEntry(BaseModel):
+    """
+    A single validated, located item as returned by inventory state queries.
+
+    This is NOT an operation result — it carries no success/error semantics.
+    Every instance in a list is guaranteed to have passed validation.
+    Location context is embedded so callers never need to know which list
+    an entry came from.
+
+    Fields
+    ------
+    item_id         : Integer ID of the item.
+    name            : Display name of the item.
+    display_string  : Pre-formatted string ready for GUI, signals, and agent
+                      responses. Example: "Apple (ID:000042) x3"
+    item_data       : Full validated raw item dict. Use this for tool logic,
+                      AI agent reasoning, or any attribute access.
+    location        : "inventory" or "room".
+    location_id     : Room ID when location == "room", else None.
+    location_name   : Room name when location == "room", else None.
+    """
+
+    item_id: int
+    name: str
+    display_string: str
+    item_data: dict
+    location: Literal["inventory", "room"]
+    location_id: int | None = None
+    location_name: str | None = None
+
+    model_config = {"arbitrary_types_allowed": True}
+
+    @model_validator(mode="after")
+    def _check_room_fields_consistent(self) -> "InventoryItemEntry":
+        if self.location == "room":
+            assert self.location_id is not None, (
+                "InventoryItemEntry with location='room' must have location_id."
+            )
+        if self.location == "inventory":
+            assert self.location_id is None, (
+                "InventoryItemEntry with location='inventory' must not have location_id."
+            )
+        return self
+
+
+class InventoryStateResult(BaseModel):
+    """
+    The single return type for full inventory state queries.
+
+    Captures both the player inventory and the current room's item list in
+    one fetch. All items have been validated — invalid raw dicts are silently
+    dropped during construction.
+
+    Pre-computed derived views mean callers never need to re-format data:
+
+    - For GUI / signals      → inventory_display_strings, room_display_strings
+    - For AI agent strings   → inventory_summary, room_summary
+    - For tool / logic use   → inventory_items, room_items (typed entries)
+    - For raw dict access    → entry.item_data on any InventoryItemEntry
+
+    Fields
+    ------
+    inventory_items             : Validated inventory entries.
+    room_items                  : Validated room entries for the current room.
+    room_id                     : ID of the current room at query time.
+    room_name                   : Name of the current room at query time.
+    inventory_display_strings   : Pre-formatted display strings for each
+                                  inventory item. Ready for prepare_inventory_item_data().
+    room_display_strings        : Pre-formatted display strings for each
+                                  room item. Ready for prepare_inventory_item_data().
+    inventory_summary           : Human-readable sentence for agent/tool responses.
+                                  E.g. "Items in your inventory: Apple (ID:000042)"
+                                  or "Your inventory is empty."
+    room_summary                : Human-readable sentence for agent/tool responses.
+                                  E.g. "Items in the Kitchen (ID:000001): Knife (ID:000007)"
+                                  or "There are no items in the Kitchen (ID:000001)."
+    """
+
+    inventory_items: list[InventoryItemEntry] = []
+    room_items: list[InventoryItemEntry] = []
+    room_id: int
+    room_name: str
+
+    # Derived views — always populated, computed by the service before construction.
+    inventory_display_strings: list[str] = []
+    room_display_strings: list[str] = []
+    inventory_summary: str = ""
+    room_summary: str = ""
+
+    model_config = {"arbitrary_types_allowed": True}
+
+    @model_validator(mode="after")
+    def _check_derived_views_consistent(self) -> "InventoryStateResult":
+        assert len(self.inventory_display_strings) == len(self.inventory_items), (
+            "inventory_display_strings length must match inventory_items length."
+        )
+        assert len(self.room_display_strings) == len(self.room_items), (
+            "room_display_strings length must match room_items length."
+        )
+        assert self.inventory_summary != "", (
+            "inventory_summary must always be populated (use empty message, not empty string)."
+        )
+        assert self.room_summary != "", (
+            "room_summary must always be populated (use empty message, not empty string)."
+        )
+        return self
+
+    # ------------------------------------------------------------------
+    # Convenience constructors
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def build(
+        cls,
+        inventory_items: list[InventoryItemEntry],
+        room_items: list[InventoryItemEntry],
+        room_id: int,
+        room_name: str,
+        room_display: str,  # formatted "Room Name (ID:000001)" string
+    ) -> "InventoryStateResult":
+        """
+        Preferred constructor. Derives all display strings and summaries
+        from the item lists automatically.
+
+        Parameters
+        ----------
+        inventory_items : Validated InventoryItemEntry list for inventory.
+        room_items      : Validated InventoryItemEntry list for current room.
+        room_id         : Current room ID.
+        room_name       : Current room name (plain, for the model field).
+        room_display    : Formatted room string e.g. "Kitchen (ID:000001)"
+                          used inside the room_summary sentence.
+        """
+        inv_display_strings = [entry.display_string for entry in inventory_items]
+        room_display_strings = [entry.display_string for entry in room_items]
+
+        if inv_display_strings:
+            inventory_summary = f"Items in your inventory: {', '.join(inv_display_strings)}"
+        else:
+            inventory_summary = "Your inventory is empty."
+
+        if room_display_strings:
+            room_summary = f"Items in the {room_display}: {', '.join(room_display_strings)}"
+        else:
+            room_summary = f"There are no items in the {room_display}."
+
+        return cls(
+            inventory_items=inventory_items,
+            room_items=room_items,
+            room_id=room_id,
+            room_name=room_name,
+            inventory_display_strings=inv_display_strings,
+            room_display_strings=room_display_strings,
+            inventory_summary=inventory_summary,
+            room_summary=room_summary,
+        )
 
 class ItemLookupResult(BaseModel):
     """

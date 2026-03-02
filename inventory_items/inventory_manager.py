@@ -20,7 +20,8 @@ from inventory_items.services.return_objects import (
     ItemLookupResult,
     ItemCreationResult,
     ItemRemovalResult,
-    SetItemAttributeResult
+    SetItemAttributeResult,
+    InventoryStateResult,
 )
 
 from typing import Literal
@@ -105,15 +106,18 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     def set_current_emote(self, emote_name: str, internal: bool = False) -> str | bool: # TODO: None of the methods that call this use the internal flag
         return self.pet_state_manager.set_current_emote(emote_name, internal)
 
-    def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
-        return self.inventory_service.list_items_in_current_room(internal)
+
+
+    # Deprecated methods
+    # def list_items_in_current_room(self, internal=False): # TODO: Remove internal flag, and return standard object
+    #     return self.inventory_service.list_items_in_current_room(internal)
 
     # What are the differences between these two?
-    def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
-        return self.inventory_service.get_inventory_items(internal)
+    # def get_inventory_items(self, internal=False): # TODO: Remove internal flag, and return standard object
+    #     return self.inventory_service.get_inventory_items(internal)
 
-    def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
-        return self.inventory_service.list_inventories(formatted=formatted) 
+    # def list_inventories(self, formatted=False): # TODO: Remove flag, and return standard object, change all interactions with it
+    #     return self.inventory_service.list_inventories(formatted=formatted) 
         
 
     # AI agent using these methods as tools, maybe move them? or something they are sending signals to the room manager
@@ -186,3 +190,29 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     def get_all_rooms_data(self) -> list[RoomDataResult]:
         return self.room_manager.get_all_rooms_data()
+
+    # New method
+
+    def get_inventory_state(self) -> InventoryStateResult:
+        """
+        Returns a fully-typed snapshot of the player inventory and current
+        room items.
+
+        Replaces:
+          - list_inventories(formatted=True / False)
+          - get_inventory_items(internal=True / False)
+          - list_items_in_current_room(internal=True / False)
+
+        All items are validated. Pre-computed views cover every caller need:
+
+          game.py GUI init       → result.room_display_strings
+                                   result.inventory_display_strings
+          Signal feeding         → result.room_display_strings
+                                   result.inventory_display_strings
+          AI agent tool strings  → result.inventory_summary
+                                   result.room_summary
+          Tool / logic raw data  → result.inventory_items  (list[InventoryItemEntry])
+                                   result.room_items        (list[InventoryItemEntry])
+          Raw dict access        → entry.item_data on any InventoryItemEntry
+        """
+        return self.inventory_service.get_inventory_state()

@@ -73,8 +73,11 @@ class FunctionBuilder:
     def _get_current_context(self):
         """Returns (room_types, ItemContext) for the current state."""
         current_room_types = self.get_current_room_types()
-        items_in_room  = self.state_manager.inventory_service.list_items_in_current_room(internal=True) or [] # TODO: Get a public method for this
-        inventory_items = self.state_manager.get_inventory_items(internal=True) or []
+        current_items_state = self.state_manager.get_inventory_state()
+
+        items_in_room = [entry.item_data for entry in current_items_state.room_items]
+        inventory_items = [entry.item_data for entry in current_items_state.inventory_items]
+        
         item_context = ItemContext(inventory_items, items_in_room)
         return current_room_types, item_context
 
@@ -272,14 +275,19 @@ class FunctionBuilder:
         try:
             current_room_data = self.state_manager.get_current_room_data()
         except ValueError:
-            return "Error: Could not find current room."
+            return "Error: Could not find current room?????"
 
-        current_room_types = self.get_current_room_types()
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         room_description = current_room_data.description
         room_name = current_room_data.name
+
+        inventory_state = self.state_manager.get_inventory_state()
+
+        inv_string = inventory_state.inventory_summary
+        room_string = inventory_state.room_summary
+
         
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
@@ -294,10 +302,10 @@ class FunctionBuilder:
             self.state_manager.get_possible_emotes(),
             "\n#############\n",
             "In your inventory the current items are:",
-            self.state_manager.get_inventory_items(),
+            inv_string,
             "\n#############\n",
             "Available items in the room: ",
-            self.state_manager.inventory_service.list_items_in_current_room(), # TODO: Get a public method for this
+            room_string,
             "\n#############\n",
             "Current stats:",
             self.state_manager.get_stats(),
@@ -306,13 +314,6 @@ class FunctionBuilder:
             self.get_current_tools_info("agent")["body"],
         ]
 
-        # if "garden" in current_room_types or "outdoors_view" in current_room_types: # This is handled by get_current_tools_info
-        #     try:
-        #         weather_info = self.open_meteo.get_full_weather()
-        #         context += ["#############", "Current outdoor weather:", weather_info]
-        #     except Exception as e:
-        #         print(f"Warning: Could not fetch weather: {e}")
-        #         context += ["#############", "Could not retrieve outdoor weather."]
 
         context.append("#############")
         context.append("END OF MAIN SOURCE OF UNIVERSAL TRUTH")

@@ -29,7 +29,7 @@ game_mode = "user_player" # available options: "user_player" or "ai_player". Moc
                     # main mode to use is "ai_player".
 
 
-def init_chatbot() -> tuple[Optional[BaseChatbot], bool]:
+def init_chatbot() -> tuple[BaseChatbot, bool]:
     providers_map = {
         "ai_player":   "ai_managers.agents.agent_api.AgentChatbot",
         "user_player": "ai_managers.agents.user_interface_api.UserController"
@@ -42,7 +42,7 @@ def init_chatbot() -> tuple[Optional[BaseChatbot], bool]:
     module = importlib.import_module(module_path)
     provider_client = getattr(module, class_name)
 
-    chatbot: Optional[BaseChatbot] = None
+    chatbot: BaseChatbot = None
     chatbot_available = False
     try:
         chatbot = provider_client(
@@ -57,7 +57,7 @@ def init_chatbot() -> tuple[Optional[BaseChatbot], bool]:
         chatbot_available = False
         chatbot = None
 
-    return chatbot, chatbot_available
+    return chatbot , chatbot_available
 
 def add_items(items_list, room):
     """Adds items to the room with a chatbot function connected to its environment with create_item"""
@@ -610,40 +610,12 @@ state.panel_visible = True
 state.panel_width = 200
 history_display_area = current_gui_rects['history_display_area']
 
-# --- Initial Inventory Load ---
-try:
-    if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'list_inventories') and callable(getattr(chatbot.state_manager, 'list_inventories', None)):
-         print("Attempting to get initial inventories from chatbot...")
-         list_room_items_names_raw, list_inventory_item_names_raw = chatbot.state_manager.list_inventories(formatted=True)
 
-         # MODIFIED: Check and pre-calculate initial data
-         if isinstance(list_room_items_names_raw, list) and isinstance(list_inventory_item_names_raw, list):
-             # Ensure gui is initialized before preparing data
-             # Assuming gui.init_gui is called earlier in setup
-             if gui.gui_core._font is None: # Check if gui initialization was successful
-                  print("GUI font not initialized. Cannot prepare inventory data. Initial inventories will be empty.")
-                  state.room_inventory_list = []
-                  state.player_inventory_list = []
-             else:
-                 state.room_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_room_items_names_raw]
-                 state.player_inventory_list = [gui.gui_inventory.prepare_inventory_item_data(item) for item in list_inventory_item_names_raw]
-                 print(f"Loaded and prepared initial inventories. Room: {len(state.room_inventory_list)} items, Player: {len(state.player_inventory_list)} items.")
-         else:
-             print("Chatbot get_inventories returned non-list data. Initial inventories will be empty.")
-             state.room_inventory_list = []
-             state.player_inventory_list = []
-
-    else:
-        print("Chatbot not available or does not have get_inventories method. Initial inventories will be empty.")
-        state.room_inventory_list = [] # Ensure lists are initialized even if chatbot fails
-        state.player_inventory_list = [] # Ensure lists are initialized even if chatbot fails
-
-
-except Exception as e:
-    print(f"Error getting initial inventories from chatbot: {e}. Initial inventories will be empty.")
-    state.room_inventory_list = [] # Ensure lists are initialized on error
-    state.player_inventory_list = [] # Ensure lists are initialized on error
-
+inventory_state = chatbot.state_manager.get_inventory_state()
+state.room_inventory_list = [
+    gui.gui_inventory.prepare_inventory_item_data(item) for item in inventory_state.room_display_strings]
+state.player_inventory_list = [
+    gui.gui_inventory.prepare_inventory_item_data(item) for item in inventory_state.inventory_display_strings]
 
 # Get the calculated rects from gui.py after initialization if needed in game.py
 # Note: We *can* get them here, but we don't strictly *need* them for click detection
@@ -669,7 +641,7 @@ clock = pygame.time.Clock()
 
 # Initialize music_player to None. It will be initialized later
 # when the initial popup phase is over.
-music_player = None
+music_player: Optional[jukebox] = None
 
 state.last_activity_time = pygame.time.get_ticks()
 print(f"Initial last_activity_time set to {state.last_activity_time} ms.")
