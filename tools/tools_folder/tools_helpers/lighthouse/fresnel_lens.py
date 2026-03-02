@@ -644,7 +644,7 @@ class LanternRoom:
             LanternTables.CLOCKWORK_LEVELS
         )
         
-        msg = f"You wind the clockwork. It is now {level}. {self.physics.clockwork_tension:.0%} of the clockwork is wound."
+        msg = f"You wind the clockwork. {self.physics.clockwork_tension:.0%} of the clockwork is wound." # Do not include the description, it is not needed.
         return msg, events
     
     def place_sheet(self) -> Tuple[str, List[LanternEvent]]:
