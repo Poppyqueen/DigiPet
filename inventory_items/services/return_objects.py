@@ -377,20 +377,42 @@ class RoomDataResult(BaseModel):
             extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},
         )
 
-# Expand on this
 class SetItemAttributeResult(BaseModel):
     """
     The single return type for all set_item_attribute operations.
 
-    On success:  success=True,  message is None.
-    On failure:  success=False, message describes why.
+    On success:  success=True,  error is None.
+    On failure:  success=False, error describes why.
+
+    message is ALWAYS populated — mirrors error on failure, describes
+    what was changed on success. Safe to append to a parts list without
+    checking success first.
 
     Fields
     ------
-    success         : Whether the lookup passed all requested filters.
-    message         : Human-readable failure reason. None on success.
+    success  : Whether the attribute was set successfully.
+    message  : Human-readable summary. Always populated.
+    error    : Failure reason. None on success.
     """
 
     success: bool
-    message: str 
+    message: str
+    error: str | None = None
 
+    @model_validator(mode="after")
+    def _check_consistency(self) -> "SetItemAttributeResult":
+        if self.success:
+            assert self.error is None, "Successful result must not have an error."
+        else:
+            assert self.error is not None, "Failed result must have an error message."
+        return self
+
+    @classmethod
+    def ok(cls, message: str) -> "SetItemAttributeResult":
+        """Build a successful result."""
+        return cls(success=True, message=message, error=None)
+
+    @classmethod
+    def fail(cls, error: str) -> "SetItemAttributeResult":
+        """Build a failed result. message mirrors error for easy appending."""
+        return cls(success=False, message=error, error=error)

@@ -96,8 +96,8 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
 
     # Needs changes:
-    # Remove internal flag
     # TODO: Return a standard object instead of a string? 
+    # These are called for AI agent context
     def get_current_emote(self) -> str:
         return self.pet_state_manager.get_current_emote()
 
@@ -172,7 +172,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         item_id           : The integer ID of the item to find.
         required_type     : If given, the item's type list must include this string.
         required_location : Controls where the item is allowed to be:
-                            None           → anywhere in the whole state
+                            None           → anywhere in the whole state 
                             "inventory"    → must be in the player's inventory
                             "room"         → must be in any room
                             "accessible"   → must be in inventory OR the current room
