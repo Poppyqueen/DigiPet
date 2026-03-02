@@ -331,7 +331,11 @@ class BaseChatbot(ABC):
         for stat in stats_to_monitor:
             self.state_manager.adjust_stat(stat, -1)
 
-        stats_data = self.state_manager.get_stats(True)
+        stats_response = self.state_manager.get_stats()
+        stats_data = stats_response.stats
+        if stats_response.error:
+            print(f"Error????: {stats_response.error}")
+            return
         low_stat_detected = False
 
         if stats_data is not None:

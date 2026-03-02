@@ -482,3 +482,36 @@ class GetCurrencyResult(BaseModel):
     def fail(cls, error: str, currency: int) -> GetCurrencyResult:
         """Build a failed result. message mirrors error for easy appending."""
         return cls(success=False, message=error, error=error, currency=currency)
+
+
+class StatsResult(BaseModel):
+    """
+    Model for the result of a get_stats operation.
+    Returns the current stats.
+    Success value a bool
+    Error value a str
+    Message value a str - Always populated
+    """
+    
+    success: bool
+    message: str
+    error: str | None = None
+    stats: dict
+    
+    @model_validator(mode="after")
+    def _check_consistency(self) -> StatsResult:
+        if self.success:
+            assert self.error is None, "Successful result must not have an error."
+        else:
+            assert self.error is not None, "Failed result must have an error message."
+        return self
+    
+    @classmethod
+    def ok(cls, message: str, stats: dict) -> StatsResult:
+        """Build a successful result."""
+        return cls(success=True, message=message, error=None, stats=stats)
+    
+    @classmethod
+    def fail(cls, error: str, stats: dict) -> StatsResult:
+        """Build a failed result. message mirrors error for easy appending."""
+        return cls(success=False, message=error, error=error, stats=stats)

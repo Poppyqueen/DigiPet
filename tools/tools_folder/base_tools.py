@@ -1,4 +1,4 @@
-# Base tools,
+# Base tools, agent tooling for its own state.
 # Unique case for tools, some are bypassing the facade, do not do this in general tools
 from __future__ import annotations
 from typing import TYPE_CHECKING

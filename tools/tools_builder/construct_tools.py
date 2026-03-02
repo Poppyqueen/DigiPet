@@ -308,7 +308,7 @@ class FunctionBuilder:
             room_string,
             "\n#############\n",
             "Current stats:",
-            self.state_manager.get_stats(),
+            self.state_manager.get_stats().message,
             "\n#############\n",
             "Current perception information:",
             self.get_current_tools_info("agent")["body"],

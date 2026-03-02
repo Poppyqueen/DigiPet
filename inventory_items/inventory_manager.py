@@ -24,6 +24,7 @@ from inventory_items.services.return_objects import (
     InventoryStateResult,
     AdjustCurrencyResult,
     GetCurrencyResult,
+    StatsResult
 )
 
 from typing import Literal
@@ -91,17 +92,12 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # def pickup_item(self, item_id: int, quantity_to_pickup: int = 1):
     #     return self.inventory_service.pickup_item(item_id, quantity_to_pickup)
 
-    # def get_all_rooms(self): # not sending signals, that's fine, just documenting
-    #     return self.room_manager.get_all_rooms()
-
     # # Moved methods above to base tools, however, the ones bellow I decided to keep here, someone might want to use them in the API for their own tools? It hasn't happened yet.
 
     # To edit item descriptions use  set_item_attribute if you ever need to them, example in base tools
-    # def add_item_description(self, item_id: int, new_description: str) -> str: 
-    #     return self.inventory_service.add_item_description(item_id, new_description)
 
 
-    def set_current_room(self, room_id: int | float | str):
+    def set_current_room(self, room_id: int | float | str): # Used by agent, could be API as well, no tool is using it yet
         room_id = int(room_id)
         return self.room_manager.set_current_room(room_id)
 
@@ -110,9 +106,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # These methods will now simply delegate to the appropriate service.
     # This makes InventoryHouseManager a thin orchestrator.
 
-
-    def get_stats(self, internal: bool = False) -> str | dict: # TODO: Remove flag, and return standard object, change all interactions with it
-        return self.stat_tracker.get_stats(internal)
 
     def get_steps(self) -> int:
         return self.pet_state_manager.get_steps()
@@ -132,6 +125,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # Needs changes:
     # TODO: Return a standard object instead of a string? 
     # These are called for AI agent context
+    # Some tools might want to use them for something fun, none of them do, but imagine a lamp that changes color based on the emotion of the pet
     def get_current_emote(self) -> str:
         return self.pet_state_manager.get_current_emote()
 
@@ -140,13 +134,16 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
 
     # ============================================================= #
-    # Public Methods verified for tools and services use.
+    # Public Methods verified for tools to use.
     # ============================================================= #
+
+    def get_stats(self) -> StatsResult: 
+        return self.stat_tracker.get_stats()
 
     def adjust_stat(self,
         stat_name: str, 
         amount: int|float
-    ) -> str: # Maybe create return model for this?
+    ) -> StatsResult: 
         """
         Adjusts a single stat by the given amount.
 
@@ -164,7 +161,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         str
             A message describing the result of the operation.
             Returns an error message if the stat does not exist, the amount is invalid,
-            or the stats data is corrupted. Needs a return model.
+            or the stats data is corrupted.
         """
         return self.stat_tracker.adjust_stat(stat_name, amount)
 
@@ -284,7 +281,9 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.inventory_service.create_item(target_location, target_location_id, item_creation_data, quantity, fallback_to_room)
 
     ### 
-    def get_room_data(self, room_id: int) -> RoomDataResult:
+    def get_room_data(self, 
+        room_id: int
+    ) -> RoomDataResult:
         """
         Returns a RoomDataResult for any room by ID.
         Raises ValueError if the room is not found.
@@ -318,7 +317,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     # Added methods for currency
 
-    # Make response objects for these two, used in auction house and maze
+    # All currency is shared by different tools, kinda dystopian if you think about it.
     def get_currency(self)-> GetCurrencyResult: 
         return self.pet_state_manager.get_currency()
 

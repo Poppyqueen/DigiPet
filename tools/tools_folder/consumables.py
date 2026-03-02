@@ -71,9 +71,11 @@ class ConsumablesTools:
                 for stat, amount in stats_edit.items()
             ]
             message_parts.append(f"Your stats changed: {', '.join(changes_strings)}.")
-            current_stats_msg = self.state_manager.get_stats(internal=False)
-            if not current_stats_msg.startswith("Error:"):
-                message_parts.append(current_stats_msg.replace("Current Stats: ", ""))
+            stats_response = self.state_manager.get_stats()
+            if stats_response.success:
+                message_parts.append(stats_response.message)
+            else:
+                message_parts.append(f"Error: {stats_response.error}")
 
         effects_text_list = item_data.get("effects", [])
         if isinstance(effects_text_list, list) and all(isinstance(t, str) for t in effects_text_list):

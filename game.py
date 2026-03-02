@@ -543,35 +543,18 @@ current_image=get_current_room_image() # Rework this, it is calling the state ma
 gui.gui_core.load_and_set_background(f"{current_image}.jpg") # GUI, this loads and sets state.background_image
 
 
-# --- NEW: Initial Wellness State Load ---
-if chatbot_available and chatbot and hasattr(chatbot.state_manager, 'get_stats'): # Simplify this, it is too verbose
-    try:
-        # Call get_wellness_states only if the method exists and is callable
-        if callable(getattr(chatbot.state_manager, 'get_stats', None)):
-             stats_data = chatbot.state_manager.get_stats(True)
-             if isinstance(stats_data, dict):
-                  # Check if the expected keys are present and values are numbers
-                  all_keys_present = all(key in stats_data for key in state.pet_stats.keys())
-                  all_values_numeric = all(isinstance(value, (int, float)) for value in stats_data.values())
+stats_response = chatbot.state_manager.get_stats()
+stats_data = stats_response.stats
+# Check if the expected keys are present and values are numbers
+all_keys_present = all(key in stats_data for key in state.pet_stats.keys())
+all_values_numeric = all(isinstance(value, (int, float)) for value in stats_data.values())
 
-                  if all_keys_present and all_values_numeric:
-                       # Update state.pet_stats with loaded values, clamping defensively
-                       for stat_name, value in stats_data.items():
-                           state.pet_stats[stat_name.lower()] = max(0.0, min(200.0, value))
-                       print(f"Getting initial wellness states from chatbot: {state.pet_stats}")
-                  else:
-                       print(f"Chatbot get_stats returned unexpected data format: {stats_data}. Using default state.")
-             elif stats_data is None:
-                  print("Chatbot get_stats returned None. Using default state.")
-             else:
-                  print(f"Chatbot get_stats returned non-dict data: {stats_data}. Using default state.")
-        else:
-             print("Chatbot instance does not have a callable 'get_stats' method. Using default state.")
-    except Exception as e:
-        print(f"Error getting initial wellness states from chatbot: {e}. Using default state.")
-else:
-    print("Chatbot instance not available or does not have 'get_stats'. Using default state.")
+if all_keys_present and all_values_numeric:
+    # Update state.pet_stats with loaded values, clamping defensively
+    for stat_name, value in stats_data.items():
+        state.pet_stats[stat_name.lower()] = max(0.0, min(200.0, value))
 
+print(f"Initial stats load process... {state.pet_stats}")
 
 
 # Splash screen
