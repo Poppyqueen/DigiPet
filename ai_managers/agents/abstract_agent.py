@@ -154,7 +154,7 @@ class BaseChatbot(ABC):
         self.last_response: Optional[str] = None
         self.running: bool = True
 
-        print(f"[{type(self).__name__}] Base initialisation complete.")
+        print(f"[{type(self).__name__}] Base initialization complete.")
 
     # ------------------------------------------------------------------
     # TTS  (private helper, called once from __init__)

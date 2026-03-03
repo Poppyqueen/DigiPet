@@ -1,0 +1,1 @@
+Note, the contents of this folder `old_docs` are outdated and should not be used by new readers (go to `how_to/main/` for the updated docs). These are kept for reference purposes only.

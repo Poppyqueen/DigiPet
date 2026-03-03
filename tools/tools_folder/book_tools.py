@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager
 
+from inventory_items.item_pydantic_models import validate_item_dict
 
 class BookTools:
     def __init__(self, state_manager, signal_callback):
@@ -68,7 +69,10 @@ class BookTools:
             "chapters": [],
             "is_locked": False,
         }
-        result = self.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=book_data)
+        validated_book_data, error = validate_item_dict(book_data)
+        if error:
+            return f"Error validating book data: {error}"
+        result = self.state_manager.create_item(target_location="inventory", target_location_id=None, item_creation_data=validated_book_data)
         self._send_signal({
             "type": "show_icon_popup",
             "icon_path": "style/images/action_icons/book_icon.png",

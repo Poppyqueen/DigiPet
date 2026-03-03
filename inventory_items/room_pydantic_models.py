@@ -74,7 +74,7 @@ class BaseRoom(BaseModel):
         description=(
             "Time-of-day keyed description strings. Keys are time tags "
             "(e.g. 'morning', 'noon', 'late night'). Values are lists of "
-            "strings the runtime selects from at random. "
+            "strings the runtime selects from. "
             "See RoomTimeDescriptions for the expected key vocabulary."
         )
     )

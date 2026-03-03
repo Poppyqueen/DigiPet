@@ -46,7 +46,7 @@ class GardenController:
         self.state_manager: InventoryHouseManager = state_manager
         self._signal_callback = signal
 
-        # Pull room definitions once so GardenManager can initialise plots.
+        # Pull room definitions once so GardenManager can initialize plots.
         # TODO: Get a public method for this
         rooms_data = self.state_manager.get_all_rooms_data()
 

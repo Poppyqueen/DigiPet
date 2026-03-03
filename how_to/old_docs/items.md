@@ -4,7 +4,7 @@
 
 Let's divide the concept of items into two categories. There are item definitions/structures,
 and there are items in the game state. This guide contains information on how to create
-definitions for items (which we think of as 'blueprints'), and how instantiating them
+definitions/structures for items (which we think of as 'blueprints'), and how instantiating them
 in the project works.
 
 Item definitions/structures, or 'blueprints', are JSON definitions inside
@@ -12,15 +12,14 @@ Item definitions/structures, or 'blueprints', are JSON definitions inside
 `inventory_items/items_provider/item_store.py` that walks the files in this directory
 to populate a store of item definitions for usage across the DigiPet project.
 
-All items require certain keys on their blueprints depending on their types, while always
-including the base keys described below.
+All items require certain keys on their blueprints depending on their types, while always including the base keys described below.
 
 ---
 
 ## How to instantiate an item?
 
 `tools/tools_folder/tools_data/harvesting_data.py` shows the usage of `ItemStore`. It
-involves initialising the store with the path to the items directory, then querying by
+involves initializing the store with the path to the items directory, then querying by
 name to get a blueprint you can pass to `create_item`.
 
 ```python
@@ -29,9 +28,19 @@ from inventory_items.items_provider.item_store import ItemStore
 cc = ItemStore("inventory_items/items_provider/items_data")
 
 carrot_blueprint = cc.get_item("carrot")
+
+# You can validate a blueprint with:
+from inventory_items.item_pydantic_models import validate_item_dict
+validated_item, error = validate_item_dict(carrot_blueprint)
+if error:
+    print(error)
+else:
+    print("Blueprint is valid")
+# Note it returns a tuple, (TODO: change validation to return a model), currently it's (Item, error), if there is an error it will eat the item and it will be None
+
 # Pass the blueprint to the inventory manager to instantiate it in the game:
-# state_manager.create_item("room", room_id, carrot_blueprint)
-# state_manager.create_item("inventory", None, carrot_blueprint)
+state_manager.create_item("room", room_id, carrot_blueprint)
+state_manager.create_item("inventory", None, carrot_blueprint)
 ```
 
 ---

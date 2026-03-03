@@ -105,7 +105,7 @@ class GardenManager:
             print(f"GardenManager: failed to save state: {exc}")
 
     # -----------------------------------------------------------------------
-    # Plot initialisation
+    # Plot initialization
     # -----------------------------------------------------------------------
 
 
