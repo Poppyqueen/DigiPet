@@ -79,6 +79,10 @@ def _init_pygame() -> tuple[pygame.Surface, pygame.font.Font]:
         font = pygame.font.SysFont("Arial", 20)
 
     line_height = font.get_linesize()
+    # NOTE: init_gui_elements and update_gui_rects in gui_core.py are nearly
+    # identical (~200 lines duplicated).  The fix is to have init_gui_elements
+    # set _font and _line_height, then immediately call update_gui_rects().
+    # That refactor lives in gui_core.py — tracked in ARCHITECTURE.md.
     gui.gui_core.init_gui_elements(font, line_height, 200)
 
     return screen, font

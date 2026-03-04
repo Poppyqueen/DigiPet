@@ -1,139 +1,183 @@
 # gui_inventory.py
+#
+# What changed from the original
+# --------------------------------
+# All gui_core._* private accesses replaced with public getters:
+#   gui_core._font                          → gui_core.get_font()
+#   gui_core._line_height                   → gui_core.get_line_height()
+#   gui_core._inventory_item_draw_width     → gui_core.get_inventory_item_draw_width()
+#   gui_core._inventory_item_start_x_offset → gui_core.get_inventory_item_start_x_offset()
+#   gui_core._inventory_panel_rect          → gui_core.get_panel_rects()["inventory_panel"]
+#   gui_core._room_title_rect               → gui_core.get_panel_rects()["room_title"]
+#   gui_core._player_title_rect             → gui_core.get_panel_rects()["player_title"]
+#   gui_core._room_list_area_rect           → gui_core.get_panel_rects()["room_list_area"]
+#   gui_core._player_list_area_rect         → gui_core.get_panel_rects()["player_list_area"]
+#
+# No logic changes.
 
 import pygame
 from pygame_int import config
 from pygame_int import state
-from pygame_int.main_digipet import gui_core # For _font, _line_height, rects, etc.
-from pygame_int.main_digipet import gui_text_utils # For wrap_text
+from pygame_int.main_digipet import gui_core
+from pygame_int.main_digipet import gui_text_utils
 
-# --- Inventory Item Data Preparation ---
-def prepare_inventory_item_data(item_string):
+
+# ---------------------------------------------------------------------------
+# Item data preparation
+# ---------------------------------------------------------------------------
+
+def prepare_inventory_item_data(item_string: str) -> dict:
     """
-    Pre-calculates wrapped lines and total height for a single inventory item string.
-    Returns a dictionary: {'text': original, 'wrapped_lines': [...], 'total_height': H}
-    Uses gui_core._font, gui_core._line_height, gui_core._inventory_item_draw_width.
-    Calls gui_text_utils.wrap_text.
-    Uses config.INVENTORY_PANEL_ITEM_SPACING.
+    Pre-calculate wrapped lines and pixel height for a single inventory item.
+
+    Returns a dict: {'text', 'wrapped_lines', 'total_height'}
     """
-    if gui_core._font is None or gui_core._line_height == 0 or gui_core._inventory_item_draw_width <= 0:
-        print("Warning: gui_core not fully initialized when preparing inventory item data.")
-        return {'text': item_string, 'wrapped_lines': [item_string], 'total_height': (gui_core._line_height or 20) + config.INVENTORY_PANEL_ITEM_SPACING}
+    font        = gui_core.get_font()
+    line_height = gui_core.get_line_height()
+    draw_width  = gui_core.get_inventory_item_draw_width()
+
+    if font is None or line_height == 0 or draw_width <= 0:
+        print("[gui_inventory] gui_core not fully initialised when preparing item data.")
+        return {
+            'text':          item_string,
+            'wrapped_lines': [item_string],
+            'total_height':  (line_height or 20) + config.INVENTORY_PANEL_ITEM_SPACING,
+        }
 
     try:
-        wrapped_lines = gui_text_utils.wrap_text(item_string, gui_core._inventory_item_draw_width, "")
-        item_total_height = len(wrapped_lines) * gui_core._line_height + config.INVENTORY_PANEL_ITEM_SPACING
-        return {
-            'text': item_string,
-            'wrapped_lines': wrapped_lines,
-            'total_height': item_total_height
-        }
+        wrapped     = gui_text_utils.wrap_text(item_string, draw_width, "")
+        total_h     = len(wrapped) * line_height + config.INVENTORY_PANEL_ITEM_SPACING
+        return {'text': item_string, 'wrapped_lines': wrapped, 'total_height': total_h}
     except pygame.error as e:
-        print(f"Pygame error during inventory item data preparation for '{item_string}': {e}")
-        return {'text': item_string, 'wrapped_lines': [item_string], 'total_height': gui_core._line_height + config.INVENTORY_PANEL_ITEM_SPACING}
+        print(f"[gui_inventory] Pygame error preparing item '{item_string}': {e}")
+        return {
+            'text':          item_string,
+            'wrapped_lines': [item_string],
+            'total_height':  line_height + config.INVENTORY_PANEL_ITEM_SPACING,
+        }
 
-# --- List Height Calculation ---
-def calculate_list_height(item_list):
+
+# ---------------------------------------------------------------------------
+# List height query
+# ---------------------------------------------------------------------------
+
+def calculate_list_height(item_list: list) -> int:
+    """Return the total pixel height needed to display a list of prepared items."""
+    line_height = gui_core.get_line_height()
+    fallback    = (line_height or 20) + config.INVENTORY_PANEL_ITEM_SPACING
+    return sum(item.get('total_height', fallback) for item in item_list)
+
+
+# ---------------------------------------------------------------------------
+# Item list drawing
+# ---------------------------------------------------------------------------
+
+def draw_item_list(
+    surface: pygame.Surface,
+    item_list: list,
+    draw_rect: pygame.Rect,
+    scroll_y: int,
+    item_color,
+) -> None:
     """
-    Calculates the total pixel height needed to display a list of inventory item data.
-    Sums the pre-calculated total_height for each item.
-    Uses gui_core._line_height.
-    Uses config.INVENTORY_PANEL_ITEM_SPACING.
+    Draw a scrollable list of prepared inventory items within draw_rect.
     """
-    if gui_core._line_height == 0:
-         return sum(item_dict.get('total_height', 20 + config.INVENTORY_PANEL_ITEM_SPACING) for item_dict in item_list) # Fallback with estimated line height
+    font        = gui_core.get_font()
+    line_height = gui_core.get_line_height()
+    x_offset    = gui_core.get_inventory_item_start_x_offset()
 
-    total_height = 0
-    for item_dict in item_list:
-         total_height += item_dict.get('total_height', gui_core._line_height + config.INVENTORY_PANEL_ITEM_SPACING)
-    return total_height
-
-# --- Item List Drawing ---
-def draw_item_list(surface, item_list, draw_rect, scroll_y, item_color):
-    """
-    Draws a list of inventory item data (pre-calculated wrapped lines/heights)
-    onto a surface within the specified rectangle. Handles vertical scrolling.
-    Uses gui_core._font, gui_core._line_height, gui_core._inventory_item_start_x_offset.
-    Uses config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING.
-    """
-    if gui_core._font is None or gui_core._line_height == 0:
-         return
-
-    clip_rect = draw_rect.copy()
-    original_clip = surface.get_clip() 
-    surface.set_clip(clip_rect)
-
-    current_draw_y_absolute = draw_rect.top + config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING - scroll_y
-
-    for item_dict in item_list:
-        wrapped_lines = item_dict.get('wrapped_lines', [item_dict.get('text', 'Error')]) 
-        item_total_height = item_dict.get('total_height', gui_core._line_height + config.INVENTORY_PANEL_ITEM_SPACING)
-
-        if current_draw_y_absolute + item_total_height < clip_rect.top:
-             current_draw_y_absolute += item_total_height
-             continue 
-
-        if current_draw_y_absolute > clip_rect.bottom:
-             break 
-
-        for i, line in enumerate(wrapped_lines):
-            line_draw_y_absolute = current_draw_y_absolute + i * gui_core._line_height
-            if line_draw_y_absolute + gui_core._line_height > clip_rect.top and line_draw_y_absolute < clip_rect.bottom:
-                 try:
-                     line_surface = gui_core._font.render(line, True, item_color)
-                     surface.blit(line_surface,
-                                  (draw_rect.left + gui_core._inventory_item_start_x_offset, line_draw_y_absolute))
-                 except pygame.error as e:
-                      print(f"Pygame error rendering inventory item line '{line}': {e}")
-                 except Exception as e:
-                      print(f"Unexpected error rendering inventory item line '{line}': {e}")
-        current_draw_y_absolute += item_total_height
-        if current_draw_y_absolute > clip_rect.bottom:
-             break
-    surface.set_clip(original_clip)
-
-# --- Inventory Panel Drawing ---
-def draw_inventory_panel(screen):
-    """
-    Draws the full-screen modal inventory panel with room and player lists.
-    This should only be called when state.inventory_panel_visible is True.
-    Uses gui_core variables for font and rects.
-    Uses config for colors and padding.
-    Calls local draw_item_list.
-    Accesses state for inventory lists and scroll positions.
-    """
-    if gui_core._font is None or gui_core._inventory_panel_rect is None:
-        print("Error: draw_inventory_panel called before gui_core components are initialized.")
+    if font is None or line_height == 0:
         return
 
-    
-    inventory_overlay_surface = pygame.Surface((gui_core._inventory_panel_rect.width, gui_core._inventory_panel_rect.height), pygame.SRCALPHA)
-    inventory_overlay_surface.fill(config.INVENTORY_PANEL_BG_COLOR)
-    screen.blit(inventory_overlay_surface, (gui_core._inventory_panel_rect.left, gui_core._inventory_panel_rect.top))
+    original_clip = surface.get_clip()
+    surface.set_clip(draw_rect.copy())
+
+    draw_y = draw_rect.top + config.INVENTORY_PANEL_ITEM_VERTICAL_PADDING - scroll_y
+
+    for item in item_list:
+        wrapped    = item.get('wrapped_lines', [item.get('text', 'Error')])
+        item_h     = item.get('total_height', line_height + config.INVENTORY_PANEL_ITEM_SPACING)
+
+        if draw_y + item_h < draw_rect.top:
+            draw_y += item_h
+            continue
+        if draw_y > draw_rect.bottom:
+            break
+
+        for i, line in enumerate(wrapped):
+            line_y = draw_y + i * line_height
+            if line_y + line_height > draw_rect.top and line_y < draw_rect.bottom:
+                try:
+                    line_surf = font.render(line, True, item_color)
+                    surface.blit(line_surf, (draw_rect.left + x_offset, line_y))
+                except (pygame.error, Exception) as e:
+                    print(f"[gui_inventory] Error rendering item line '{line}': {e}")
+
+        draw_y += item_h
+        if draw_y > draw_rect.bottom:
+            break
+
+    surface.set_clip(original_clip)
+
+
+# ---------------------------------------------------------------------------
+# Panel drawing
+# ---------------------------------------------------------------------------
+
+def draw_inventory_panel(screen: pygame.Surface) -> None:
+    """
+    Draw the full-screen modal inventory panel.
+    Only call when state.inventory_panel_visible is True.
+    """
+    font        = gui_core.get_font()
+    panel_rects = gui_core.get_panel_rects()
+
+    if font is None or not panel_rects:
+        print("[gui_inventory] draw_inventory_panel called before gui_core is initialised.")
+        return
+
+    panel_rect        = panel_rects["inventory_panel"]
+    room_title_rect   = panel_rects["room_title"]
+    player_title_rect = panel_rects["player_title"]
+    room_list_rect    = panel_rects["room_list_area"]
+    player_list_rect  = panel_rects["player_list_area"]
+
+    # --- Background overlay ---
+    overlay = pygame.Surface((panel_rect.width, panel_rect.height), pygame.SRCALPHA)
+    overlay.fill(config.INVENTORY_PANEL_BG_COLOR)
+    screen.blit(overlay, (panel_rect.left, panel_rect.top))
 
     if config.INVENTORY_PANEL_BORDER_COLOR:
-         pygame.draw.rect(screen, config.INVENTORY_PANEL_BORDER_COLOR, gui_core._inventory_panel_rect, 1)
+        pygame.draw.rect(screen, config.INVENTORY_PANEL_BORDER_COLOR, panel_rect, 1)
 
+    # --- Column titles ---
     try:
-        room_title_surface = gui_core._font.render("Room Inventory", True, config.INVENTORY_PANEL_TITLE_COLOR)
-        room_title_x = gui_core._room_title_rect.left + (gui_core._room_title_rect.width - room_title_surface.get_width()) // 2
-        room_title_y = gui_core._room_title_rect.top + (gui_core._room_title_rect.height - room_title_surface.get_height()) // 2
-        screen.blit(room_title_surface, (room_title_x, room_title_y))
+        room_surf = font.render("Room Inventory", True, config.INVENTORY_PANEL_TITLE_COLOR)
+        screen.blit(room_surf, room_surf.get_rect(center=room_title_rect.center))
 
-        player_title_surface = gui_core._font.render("Pet Inventory", True, config.INVENTORY_PANEL_TITLE_COLOR)
-        player_title_x = gui_core._player_title_rect.left + (gui_core._player_title_rect.width - player_title_surface.get_width()) // 2
-        player_title_y = gui_core._player_title_rect.top + (gui_core._player_title_rect.height - player_title_surface.get_height()) // 2
-        screen.blit(player_title_surface, (player_title_x, player_title_y))
+        player_surf = font.render("Pet Inventory", True, config.INVENTORY_PANEL_TITLE_COLOR)
+        screen.blit(player_surf, player_surf.get_rect(center=player_title_rect.center))
     except pygame.error as e:
-        print(f"Pygame error rendering inventory titles: {e}")
+        print(f"[gui_inventory] Error rendering titles: {e}")
 
-    divider_x = gui_core._inventory_panel_rect.left + gui_core._inventory_panel_rect.width // 2
+    # --- Divider ---
+    divider_x = panel_rect.left + panel_rect.width // 2
     pygame.draw.line(
         screen,
         config.INVENTORY_PANEL_DIVIDER_COLOR,
-        (divider_x, gui_core._inventory_panel_rect.top + config.INVENTORY_PANEL_PADDING),
-        (divider_x, gui_core._inventory_panel_rect.bottom - config.INVENTORY_PANEL_PADDING),
-        config.INVENTORY_PANEL_DIVIDER_WIDTH
+        (divider_x, panel_rect.top  + config.INVENTORY_PANEL_PADDING),
+        (divider_x, panel_rect.bottom - config.INVENTORY_PANEL_PADDING),
+        config.INVENTORY_PANEL_DIVIDER_WIDTH,
     )
 
-    draw_item_list(screen, state.room_inventory_list, gui_core._room_list_area_rect, state.room_inventory_scroll_y, config.INVENTORY_PANEL_ITEM_COLOR)
-    draw_item_list(screen, state.player_inventory_list, gui_core._player_list_area_rect, state.player_inventory_scroll_y, config.INVENTORY_PANEL_ITEM_COLOR)
+    # --- Lists ---
+    draw_item_list(
+        screen, state.room_inventory_list,
+        room_list_rect, state.room_inventory_scroll_y,
+        config.INVENTORY_PANEL_ITEM_COLOR,
+    )
+    draw_item_list(
+        screen, state.player_inventory_list,
+        player_list_rect, state.player_inventory_scroll_y,
+        config.INVENTORY_PANEL_ITEM_COLOR,
+    )

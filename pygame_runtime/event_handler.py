@@ -308,6 +308,7 @@ def _handle_mouse_button(
         and lore_toggle_button_rect.collidepoint(event.pos)
         and event.button == 1
     ):
+        
         if not state.lore_panel_visible:
             state.lore_panel_visible  = True
             state.lore_panel_scroll_y = 0
@@ -341,12 +342,13 @@ def _handle_mouse_button(
         return True
 
     # Panel toggle
-    all_buttons     = gui.gui_core.get_button_rects()
-    panel_toggle    = all_buttons.get("panel_toggle")
+    all_buttons  = gui.gui_core.get_button_rects()
+    panel_toggle = all_buttons.get("panel_toggle")
     if panel_toggle and panel_toggle.collidepoint(event.pos) and event.button == 1:
         state.panel_visible = not state.panel_visible
         if state.panel_visible:
             state.panel_width = config.DEFAULT_PANEL_WIDTH
+        gui.gui_core.mark_layout_dirty()
         gui.gui_core.update_gui_rects(state.panel_width)
         return True
 
@@ -393,7 +395,7 @@ def _handle_care_package_click(event, *, chatbot, add_items_fn) -> bool:
 
         if identifier == "scroll_right":
             total    = len(config.CARE_PACKAGES)
-            per_page = gui.gui_core._buttons_per_page
+            per_page = gui.gui_core.get_buttons_per_page()
             if state.package_button_visible_start_index + per_page < total:
                 state.package_button_visible_start_index += 1
             return True
@@ -505,6 +507,7 @@ def _handle_keyboard(
 
         if key == pygame.K_c:
             state.panel_visible = not state.panel_visible
+            gui.gui_core.mark_layout_dirty()
             return True
 
         if key == pygame.K_m and music_player:
@@ -543,7 +546,13 @@ def handle_input_events(
 
     Returns True if the event was consumed.
     """
-    # Always let the GUI module pre-process the event (tooltips etc.).
+    # Always let the GUI module pre-process the event.
+    # IMPORTANT: handle_gui_event does more than it sounds — it owns:
+    #   1. Lore panel scroll + close (modal, highest priority)
+    #   2. gui_clock.handle_clock_click() — a real side effect, not just pre-processing
+    #   3. Input box focus/unfocus (cursor_active state)
+    # These are GUI-internal concerns that live in gui.py by design, but callers
+    # should know this is not a passive observer — it mutates state.
     gui.handle_gui_event(event)
 
     # Fetch latest button/panel rects.
@@ -607,6 +616,44 @@ def handle_input_events(
         )
 
     return False
+
+
+# ---------------------------------------------------------------------------
+# Per-frame state updates  (logic that belongs in the update phase, not draw)
+# ---------------------------------------------------------------------------
+
+def update_scroll_clamp() -> None:
+    """
+    Clamp chat-history scroll so it never goes out of bounds.
+
+    Called once per frame by the game loop BEFORE draw_gui(), so the
+    renderer always receives a valid scroll_y and never has to mutate state.
+
+    Previously this lived inside draw_gui() — a side effect hidden inside
+    a rendering function.  It lives here because clamping is logic, not
+    presentation.
+    """
+    history_area = gui.gui_core.get_gui_rects().get("history_display_area")
+    if history_area and history_area.height > 0:
+        total_h    = gui.gui_text_utils.calculate_total_history_height(state.chat_history)
+        max_scroll = max(0, total_h - history_area.height)
+        state.scroll_y = max(0, min(state.scroll_y, max_scroll))
+
+
+def update_cursor_lock(is_input_locked: bool) -> None:
+    """
+    Hide the cursor whenever input is locked (bot processing or sleeping).
+
+    Called once per frame by the game loop BEFORE draw_gui(), so the
+    renderer reads a consistent cursor_visible value without mutating it.
+
+    Previously this lived inside draw_gui() — a side effect hidden inside
+    a rendering function.  It lives here because cursor visibility is
+    driven by game logic (lock state), not by rendering.
+    """
+    if is_input_locked:
+        state.cursor_visible = False
+        state.cursor_active  = False
 
 
 # ---------------------------------------------------------------------------

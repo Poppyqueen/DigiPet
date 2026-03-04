@@ -27,7 +27,7 @@ from pygame_int.juke_box import jukebox
 
 from pygame_runtime.signal_handler import make_signal_handler
 from pygame_runtime.initializer    import initialize
-from pygame_runtime.event_handler  import handle_custom_events, handle_input_events
+from pygame_runtime.event_handler  import handle_custom_events, handle_input_events, update_scroll_clamp, update_cursor_lock
 from pygame_runtime.workers        import start_chatbot_request, start_garden_tick_request
 
 
@@ -35,7 +35,7 @@ from pygame_runtime.workers        import start_chatbot_request, start_garden_ti
 # Configuration
 # ---------------------------------------------------------------------------
 
-GAME_MODE = "ai_player"
+GAME_MODE = "user_player"
 # Options: "ai_player"   — autonomous AI agent controls the pet
 #          "user_player" — human types commands directly
 #
@@ -225,8 +225,12 @@ def main() -> None:
         _trigger_autonomous_action(current_time_ms)
         _trigger_garden_tick(current_time_ms)
 
-        # --- Draw ---
+        # --- Update phase (logic that must run before rendering) ---
         is_input_locked = state.agent_sleeping or state.chatbot_is_processing
+        update_scroll_clamp()            # Keeps state.scroll_y in bounds — not draw_gui's job
+        update_cursor_lock(is_input_locked)  # Hides cursor when locked — not draw_gui's job
+
+        # --- Draw ---
         gui.draw_gui(screen=ctx.screen, current_time_ms=current_time_ms, is_input_locked=is_input_locked)
 
         # --- Init jukebox once splash clears ---

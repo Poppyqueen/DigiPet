@@ -107,7 +107,7 @@ thinking_start_time = 0 # Timestamp (ms) when the thinking animation started.
 # Variables controlling visibility and state of UI elements like popups and modals.
 
 panel_width = 0 # Width of the side panel in pixels.
-panel_visible = False # Boolean to control the visibility of the side panel.
+panel_visible = True # Boolean to control the visibility of the side panel.
 
 active_popups = [] # List to hold active PopupMessage objects currently displayed.
 

@@ -1,4 +1,11 @@
 # deep_memory.py
+# re-work this, it is an idea, but 
+# it needs love 
+
+# A quick update is working on what the AI is getting as a context to write the memories and the prompt it is using 
+# we could add the memory it generated for before this deep memory (the memory manager normal summarization), and use that as grounding for the deep memory AI analyzer
+# frame the situation as a narrative where it identifies the recurring characters objects and places and identifies their qualities and where in the memory they come from
+# maybe update the main memory manager to have structured models and clearer objects to work with 
 
 from typing import List
 import json
