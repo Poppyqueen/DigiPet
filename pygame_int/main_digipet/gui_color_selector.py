@@ -5,9 +5,6 @@ from pygame_int import gui_config # For INPUT_BOX_HEIGHT, GRID_COLS, etc.
 from pygame_int.main_digipet.colors_config import _color_selection_options # For the list of colors
 # gui_core might not be needed if font is passed as an argument and no other core elements are directly accessed.
 
-active_input_box = None # 0 for R, 1 for G, 2 for B
-rgb_input_values = ["", "", ""] # Store input text for R, G, B
-
 def run_color_selection_ui(screen, font):
     """
     Runs a blocking UI loop to allow the user to select a pet theme color.
@@ -18,10 +15,11 @@ def run_color_selection_ui(screen, font):
     Uses gui_config for constants.
     Uses _color_selection_options from colors_config.
     """
-    global active_input_box, rgb_input_values # Use global variables
-
     print("Entering color selection UI (Dynamic Grid Layout + RGB Input)...")
     clock = pygame.time.Clock()
+
+    active_input_box  = None   # 0 for R, 1 for G, 2 for B
+    rgb_input_values  = ["", "", ""]
 
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -271,9 +269,4 @@ def run_color_selection_ui(screen, font):
         pygame.display.flip()
 
     print("Exiting color selection UI.")
-
-    # Reset active input box and input values on exit
-    active_input_box = None
-    rgb_input_values = ["", "", ""]
-
     return selected_color

@@ -1,14 +1,18 @@
 # animation.py
 
-from pygame_int import config # Needed for animation constants and event types
-from pygame_int import state # Needed for accessing/modifying animation state variables and sleep state
+import math
+import random
 
 import pygame
-import math # Needed for sine/cosine calculations
-from pygame_int.main_digipet import gui # Needed to add system messages to history (e.g., input locked)
 
-import random
-# --- Helper functions to clear specific animation states and variables ---
+from pygame_int import config
+from pygame_int import state
+from pygame_int.main_digipet import gui
+
+
+# ---------------------------------------------------------------------------
+# Clear helpers — reset all state vars for one animation
+# ---------------------------------------------------------------------------
 
 def _clear_sleep_state():
     state.sleep_state = 0
@@ -17,351 +21,251 @@ def _clear_sleep_state():
     state.sleep_twitch_active = False
     state.sleep_twitch_start_time = 0
     state.next_twitch_time = 0
-    # state.pet_radius = state.current_radius # Safety reset
+
 def _clear_sad_state():
     state.sad_state = 0
     state.original_radius_before_sad = None
     state.target_sad_radius = None
-    # Note: pet_radius reset happens in the main clear_lower_priority_animations or calculate_circle_offset base case
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_happy_state():
     state.happy_state = 0
     state.original_radius_before_happy = None
     state.target_happy_radius = None
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_angry_state():
     state.angry_state = 0
     state.original_radius_before_angry = None
     state.target_angry_radius = None
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_excited_state():
     state.excited_state = 0
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_thinking_state():
     state.is_thinking = False
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_curious_state():
     state.is_curious = False
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
-def _clear_confused_state(): # <-- NEW HELPER FUNCTION
+def _clear_confused_state():
     state.confused_state = 0
     state.confused_start_time = 0
     state.confused_phase_start_time = 0
     state.confused_corner_index = 0
     state.original_radius_before_confused = None
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
 
 def _clear_shake_state():
     state.is_shaking = False
-    # state.pet_radius = state.current_radius # Can add here for safety if needed
-# --- Animation Priority Order (Highest to Lowest) ---
-# Each tuple is (animation_name, lambda_check_if_active, function_to_clear_state)
+
+
+# ---------------------------------------------------------------------------
+# Animation priority registry
+# Each entry: (name, is_active_fn, clear_fn)
+# Order = highest to lowest priority. Base movement is the implicit fallback.
+# ---------------------------------------------------------------------------
 
 ANIMATION_PRIORITY = [
-    ('sleep',     lambda: state.sleep_state != 0,     _clear_sleep_state), # <--- NEW HIGHEST PRIORITY
-    ('sad',       lambda: state.sad_state != 0,       _clear_sad_state),
-    ('happy',     lambda: state.happy_state != 0,     _clear_happy_state),
-    ('angry',     lambda: state.angry_state != 0,     _clear_angry_state),
-    ('excited',   lambda: state.excited_state != 0,   _clear_excited_state),
-    ('thinking',  lambda: state.is_thinking,          _clear_thinking_state),
-    ('curious',   lambda: state.is_curious,           _clear_curious_state),
-    ('confused',  lambda: state.confused_state != 0,  _clear_confused_state),
-    ('shake',     lambda: state.is_shaking,           _clear_shake_state),
+    ('sleep',    lambda: state.sleep_state != 0,    _clear_sleep_state),
+    ('sad',      lambda: state.sad_state != 0,      _clear_sad_state),
+    ('happy',    lambda: state.happy_state != 0,    _clear_happy_state),
+    ('angry',    lambda: state.angry_state != 0,    _clear_angry_state),
+    ('excited',  lambda: state.excited_state != 0,  _clear_excited_state),
+    ('thinking', lambda: state.is_thinking,         _clear_thinking_state),
+    ('curious',  lambda: state.is_curious,          _clear_curious_state),
+    ('confused', lambda: state.confused_state != 0, _clear_confused_state),
+    ('shake',    lambda: state.is_shaking,          _clear_shake_state),
 ]
-# Base movement is lower priority than 'shake' and is the default when none above are active.
 
-# --- Helper function to check if any higher priority animation is active ---
-# This function remains the same as provided before.
-def is_higher_priority_animation_active(current_animation_name):
-    """Checks if any animation with higher priority than the current one is active."""
-    found_current = False
-    # Only need name and the check function from the list
+
+def is_higher_priority_animation_active(current_animation_name: str) -> bool:
+    """Return True if any animation ranked above *current_animation_name* is active."""
     for name, is_active_check, _ in ANIMATION_PRIORITY:
         if name == current_animation_name:
-            found_current = True
-            continue # Found current, check subsequent (lower priority) items are not higher
-
-        # If we haven't found the current animation yet, this one is higher priority
-        if not found_current and is_active_check():
+            return False
+        if is_active_check():
             return True
+    return False
 
-    return False # No higher priority animation is currently active
-
-# --- Helper function to clear lower priority animations ---
-# This function needs a small adjustment to only call the single clear function
-def clear_lower_priority_animations(current_animation_name):
-    """Clears animation states and cleanup vars that have lower priority than the current one."""
+def clear_lower_priority_animations(current_animation_name: str) -> None:
+    """Clear all animations ranked below *current_animation_name* and reset radius."""
     found_current = False
-    # Get name, check (though not used here), and the clear function from the list
     for name, _, clear_state_func in ANIMATION_PRIORITY:
         if name == current_animation_name:
             found_current = True
-            continue # Found current, now clear subsequent (lower priority) items
-
-        # If we have found the current animation, clear this one (it's lower priority)
+            continue
         if found_current:
             clear_state_func()
-            # print(f"Cleared lower priority animation: {name}") # Optional debug print
-
-    # Ensure the radius is reset to the current default if it was changed by a lower priority one just cleared
-    # The individual clear functions handle pet_radius = state.current_radius, but a final defensive reset is fine.
     state.pet_radius = state.current_radius
-# --- Function to start the circle shake animation ---
+
+
+# ---------------------------------------------------------------------------
+# Animation starters
+# ---------------------------------------------------------------------------
+
 def start_circle_shake():
-    """Starts the general circle shake animation if no other animation is active or asleep."""
+    """Start the general shake animation if no higher-priority animation is active."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual shake command.") # Already printed in core loop
         gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger shake while bot is resting.", 'system')
         return
 
-    # Only general shake if no other specific animation is active
     if not is_higher_priority_animation_active('shake') and not state.is_shaking:
         state.is_shaking = True
         state.shake_start_time = pygame.time.get_ticks()
-        print("Circle shake started (general).")
-        # No lower priorities to clear explicitly for general shake
-    else:
-        pass # print("Shake signal received, but another animation is active or already shaking. Ignoring general shake.")
+        print("Circle shake started.")
 
 # --- Function to start the sleep animation sequence ---
 
 def start_sleep_animation():
-    """Starts the sleep sequence: Falling asleep -> Deep Sleep (Loop)."""
-    # Sleep forces itself regardless of input lock (it CAUSES the input lock logic usually)
+    """Start the sleep sequence: Falling asleep → Deep Sleep (loop)."""
     current_time_ms = pygame.time.get_ticks()
-    
-    # Only start if not already sleeping
     if state.sleep_state == 0:
-        state.sleep_state = 1 # Phase 1: Falling Asleep
+        state.sleep_state = 1
         state.sleep_phase_start_time = current_time_ms
-        
-        # Clear EVERYTHING else, as sleep is top priority
-        clear_lower_priority_animations('sleep') 
-        
+        clear_lower_priority_animations('sleep')
         state.original_radius_before_sleep = state.pet_radius
 
 def wake_up_pet():
-    """Triggers the waking up sequence."""
+    """Trigger the waking-up sequence."""
     current_time_ms = pygame.time.get_ticks()
-    if state.sleep_state == 2: # Only wake if in deep sleep
-        state.sleep_state = 3 # Phase 3: Waking Up
+    if state.sleep_state == 2:
+        state.sleep_state = 3
         state.sleep_phase_start_time = current_time_ms
-    elif state.sleep_state == 0:
-        pass # Already awake
-    else:
-        # If falling asleep (1), force wake immediately
+    elif state.sleep_state == 1:
+        # Force wake even if still falling asleep
         state.sleep_state = 3
         state.sleep_phase_start_time = current_time_ms
 
-# --- Function to start the sad animation sequence ---
-# --- Function to start the sad animation sequence ---
+
 def start_sad_animation():
-    """Starts the sad animation sequence (dropping, shaking down, rising)."""
+    """Start the sad animation (drop → shake → rise)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual sad command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger sad while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger sad while bot is resting.", 'system')
         return
 
-    # Only start if not already in a sad sequence AND no higher priority is active (Sad is highest here)
-    # The is_higher_priority_animation_active check is technically redundant here as sad is highest,
-    # but leaving it for consistency and future re-ordering robustness.
     if state.sad_state == 0 and not is_higher_priority_animation_active('sad'):
-        state.sad_state = 1 # Start dropping
-        state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 1
-        clear_lower_priority_animations('sad') # Clear all other non-sad states
-
-        # --- NEW SIZE LOGIC FOR SAD ---
-        # Store the original radius BEFORE starting the animation
+        state.sad_state = 1
+        state.sad_phase_start_time = current_time_ms
+        clear_lower_priority_animations('sad')
         state.original_radius_before_sad = state.pet_radius
-        # Calculate and store the *target* radius for the sad animation
-        state.target_sad_radius = state.original_radius_before_sad * (1 + config.SAD_SIZE_CHANGE_PERCENTAGE) # Note: SAD_SIZE_CHANGE_PERCENTAGE is likely negative
-        # ----------------------------
+        state.target_sad_radius = state.original_radius_before_sad * (1 + config.SAD_SIZE_CHANGE_PERCENTAGE)
+        print("Sad animation started.")
 
-        print("Sad animation started (dropping).")
-    else:
-        pass # print(f"Sad animation signal received, but already in sad state {state.sad_state}. Ignoring.")
 
-# --- Function to start the happy animation sequence ---
 def start_happy_animation():
-    """Starts the happy animation sequence (dipping, shaking happily, bouncing up)."""
+    """Start the happy animation (dip → shake → bounce up)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual happy command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger happy while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger happy while bot is resting.", 'system')
         return
 
-    # Only start if not already in a happy sequence AND no higher priority is active
     if state.happy_state == 0 and not is_higher_priority_animation_active('happy'):
-        state.happy_state = 1 # Start dipping
-        state.happy_phase_start_time = current_time_ms # Reset phase timer for phase 1
-        clear_lower_priority_animations('happy') # Clear all other non-happy/non-sad states
-
-        # --- NEW SIZE LOGIC FOR HAPPY ---
-        # Store the original radius BEFORE starting the animation
+        state.happy_state = 1
+        state.happy_phase_start_time = current_time_ms
+        clear_lower_priority_animations('happy')
         state.original_radius_before_happy = state.pet_radius
-        # Calculate and store the *target* radius for the happy animation
-        state.target_happy_radius = state.original_radius_before_happy * (1 + config.HAPPY_SIZE_CHANGE_PERCENTAGE) # <-- New state variable needed
-        # -------------------------------
+        state.target_happy_radius = state.original_radius_before_happy * (1 + config.HAPPY_SIZE_CHANGE_PERCENTAGE)
+        print("Happy animation started.")
 
-        print("Happy animation started (dipping).")
-    else:
-        pass # print(f"Happy animation signal received, but already in happy state {state.happy_state} or higher priority active. Ignoring.")
 
-# --- Function to start the angry animation sequence ---
 def start_angry_animation():
-    """Starts the angry animation sequence (e.g., Tense down -> Vibrate intensely -> Settle up)."""
+    """Start the angry animation (tense down → vibrate → settle up)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual angry command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger angry while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger angry while bot is resting.", 'system')
         return
 
-    # Only start if not already in an angry sequence AND no higher priority is active
     if state.angry_state == 0 and not is_higher_priority_animation_active('angry'):
-        state.angry_state = 1 # Start tense down
-        state.angry_phase_start_time = pygame.time.get_ticks()
-        clear_lower_priority_animations('angry') # Clear states lower than angry
-
-        # Store the original radius BEFORE starting the animation
+        state.angry_state = 1
+        state.angry_phase_start_time = current_time_ms
+        clear_lower_priority_animations('angry')
         state.original_radius_before_angry = state.pet_radius
-        # Calculate and store the *target* maximum radius for the grow phase
-        state.target_angry_radius = state.original_radius_before_angry * (1 + config.ANGRY_SIZE_INCREASE_PERCENTAGE) # <-- New state variable needed
+        state.target_angry_radius = state.original_radius_before_angry * (1 + config.ANGRY_SIZE_INCREASE_PERCENTAGE)
+        print("Angry animation started.")
 
-        print("Angry animation started (tense down).")
-    else:
-        pass # print(f"Angry animation signal received, but already in angry state {state.angry_state} or higher priority active. Ignoring.")
 
-# --- Function to start the excited animation sequence ---
 def start_excited_animation():
-    """Starts the excited animation sequence (e.g., Quick bounce up -> Jiggle rapidly -> Settle)."""
+    """Start the excited animation (bounce up → jiggle → settle)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual excited command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger excited while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger excited while bot is resting.", 'system')
         return
 
-    # Only start if not already in an excited sequence AND no higher priority is active
     if state.excited_state == 0 and not is_higher_priority_animation_active('excited'):
-        state.excited_state = 1 # Start quick bounce up
-        state.excited_phase_start_time = pygame.time.get_ticks()
-        clear_lower_priority_animations('excited') # Clear states lower than excited
-        print("Excited animation started (bounce up).")
-    else:
-        pass # print(f"Excited animation signal received, but already in excited state {state.excited_state} or higher priority active. Ignoring.")
+        state.excited_state = 1
+        state.excited_phase_start_time = current_time_ms
+        clear_lower_priority_animations('excited')
+        print("Excited animation started.")
 
-# --- Function to start the thinking animation (U-shape) ---
+
 def start_thinking_animation():
-    """Starts the thinking animation (U-shape path movement)."""
+    """Start the thinking animation (U-shape path movement)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual thinking command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger thinking while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger thinking while bot is resting.", 'system')
         return
 
-    # Only start if not already thinking AND no higher priority is active
     if not state.is_thinking and not is_higher_priority_animation_active('thinking'):
         state.is_thinking = True
-        # --- Initialize State for U-Shape Animation ---
-        state.thinking_current_segment_index = 1 # Start with the first segment (P0 -> P1)
-        state.thinking_segment_start_time = current_time_ms # Record start time for the first segment
-        state.thinking_total_segments = config.THINKING_U_CYCLES * 10 # 10 segments per back-and-forth cycle
+        state.thinking_current_segment_index = 1
+        state.thinking_segment_start_time = current_time_ms
+        state.thinking_total_segments = config.THINKING_U_CYCLES * 10  # 10 segments per cycle
 
-        # Define points for easy lookup based on segment index (using a tuple of tuples)
-        # P0=(0,0), P1=(0,P1_Y), P2=(P2_X, P2_Y), P3=(P3_X, P3_Y)
         p0 = (0, 0)
         p1 = (0, config.THINKING_POINT_P1_Y)
         p2 = (config.THINKING_POINT_P2_X, config.THINKING_POINT_P2_Y)
         p3 = (config.THINKING_POINT_P3_X, config.THINKING_POINT_P3_Y)
 
-        # List of (start_point, end_point) tuples for each segment
-        # One full back-and-forth cycle (10 segments):
-        # P0->P1 (Down), P1->P2 (DL), P2->P3 (R), P3->P1 (UL), P1->P0 (Up) - First U (L-R)
-        # P0->P1 (Down), P1->P3 (DR), P3->P2 (L), P2->P1 (UR), P1->P0 (Up) - Second U (R-L)
+        # One cycle = 10 segments: L-R U then R-L U
         state.thinking_segments_path = [
-            (p0, p1), (p1, p2), (p2, p3), (p3, p1), (p1, p0), # L-R U path
-            (p0, p1), (p1, p3), (p3, p2), (p2, p1), (p1, p0)  # R-L U path
+            (p0, p1), (p1, p2), (p2, p3), (p3, p1), (p1, p0),  # L-R
+            (p0, p1), (p1, p3), (p3, p2), (p2, p1), (p1, p0),  # R-L
         ]
-        # We will loop through this list based on the current segment index and total cycles.
-        # Example: Segment 1 is state.thinking_segments_path[0], Segment 10 is state.thinking_segments_path[9]
-        # Segment 11 would use state.thinking_segments_path[0] again, and so on.
 
-        # --- End State Initialization ---
+        clear_lower_priority_animations('thinking')
+        print("Thinking animation started.")
 
-        clear_lower_priority_animations('thinking') # Clear states lower than thinking
-        print("Thinking animation started (U-shape).")
-    else:
-        pass # print("Thinking animation signal received, but already thinking or higher priority active. Ignoring.")
 
-# --- Function to start the curious animation ---
 def start_curious_animation():
-    """Starts the curious animation (horizontal sway and size pulse)."""
+    """Start the curious animation (horizontal sway + size pulse)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        gui.add_message_to_history("System: Cannot manually trigger curious while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger curious while bot is resting.", 'system')
         return
 
-    # Only start if not already curious AND no higher priority is active
     if not state.is_curious and not is_higher_priority_animation_active('curious'):
         state.is_curious = True
-        state.curious_start_time = pygame.time.get_ticks()
-        clear_lower_priority_animations('curious') # Clear states lower than curious
-
-        # Store the original radius BEFORE starting the animation for size pulsing
+        state.curious_start_time = current_time_ms
+        clear_lower_priority_animations('curious')
         state.original_radius_before_curious = state.pet_radius
+        print("Curious animation started.")
 
-        print("Curious animation started (sway and size pulse).")
-    else:
-        pass # print("Curious animation signal received, but already curious or higher priority active. Ignoring.")
-# --- Function to start the confused animation ---
+
 def start_confused_animation():
-    """Starts the confused animation (e.g., subtle wobble)."""
+    """Start the confused animation (corner-to-center wobble + size pulse)."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        # print("Input locked - bot is asleep. Ignoring manual confused command.") # Already printed in core loop
-        gui.add_message_to_history("System: Cannot manually trigger confused while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger confused while bot is resting.", 'system')
         return
 
-    # --- FIX: Use state.confused_state != 0 for the check ---
-    # Only start if not already confused AND no higher priority is active
     if state.confused_state == 0 and not is_higher_priority_animation_active('confused'):
-        # --- FIX: Initialize state.confused_state to 1 to start the first phase ---
         state.confused_state = 1
-        state.confused_start_time = current_time_ms # Reset overall animation timer
-        state.confused_phase_start_time = current_time_ms # Reset phase timer for phase 1
-        state.confused_corner_index = 0 # Reset corner index (will be incremented for states 3, 5, 7)
-        clear_lower_priority_animations('confused') # Clear states lower than confused
-
-        # --- FIX: Store the original radius BEFORE starting the animation for size pulsing ---
+        state.confused_start_time = current_time_ms
+        state.confused_phase_start_time = current_time_ms
+        state.confused_corner_index = 0
+        clear_lower_priority_animations('confused')
         state.original_radius_before_confused = state.pet_radius
-
         print("Confused animation started.")
-    else:
-        pass # print(f"Confused animation signal received, but already in confused state {state.confused_state} or higher priority active. Ignoring.")
 
-# --- Function to update animation state based on timers ---
-# --- Function to update animation state based on timers ---
-def update_animation_state(current_time_ms):
-    """Updates the state variables for ongoing animations based on elapsed time.
-       This function ONLY handles state transitions (e.g., phase 1 to phase 2).
-       Returns True if any specific animation (non-base movement) is currently active, False otherwise."""
+# ---------------------------------------------------------------------------
+# Per-frame state update and offset calculation
+# ---------------------------------------------------------------------------
 
-    # Priority Order (Highest to Lowest): Sad > Happy > Angry > Excited > Thinking > Curious > Confused > General Shake > Base
-
-    # Handle animation state transitions in order of priority
-    # Once a transition happens for a high-priority animation, lower ones are implicitly not checked for transition *this frame*.
-    # However, lower priority animations might finish *on their own* if their timer runs out.
-    # The clear_lower_priority_animations is handled when a *new* animation starts.
-    # Here, we just check if existing animations should transition phases or end.
-
-    # Flag to track if any specific animation is active *after* potential transitions
+def update_animation_state(current_time_ms: int) -> bool:
+    """
+    Advance animation phase timers and handle phase transitions.
+    Returns True if any specific animation is active (i.e. not base movement).
+    """
     is_any_specific_animation_active = False
 
 
@@ -381,7 +285,6 @@ def update_animation_state(current_time_ms):
                 config.SLEEP_TWITCH_MIN_INTERVAL_MS, 
                 config.SLEEP_TWITCH_MAX_INTERVAL_MS
             )
-            # print("Sleep state: Deep sleep loop started.")
 
     elif state.sleep_state == 2: # Deep Sleep Loop (Sway + Random Twitch)
         is_any_specific_animation_active = True
@@ -398,13 +301,11 @@ def update_animation_state(current_time_ms):
                     config.SLEEP_TWITCH_MIN_INTERVAL_MS, 
                     config.SLEEP_TWITCH_MAX_INTERVAL_MS
                 )
-                # print("Twitch ended.")
         else:
             # Check if it's time to twitch
             if current_time_ms >= state.next_twitch_time:
                 state.sleep_twitch_active = True
                 state.sleep_twitch_start_time = current_time_ms
-                # print("Twitch started (Dreaming).")
 
     elif state.sleep_state == 3: # Waking Up
         is_any_specific_animation_active = True
@@ -425,7 +326,6 @@ def update_animation_state(current_time_ms):
                 state.sad_state = 2 # Transition to shaking down phase
                 state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 2 start
                 state.shake_start_time = current_time_ms # Start shake timer for state 2's specific shake
-                #print("Sad state: Dropping complete, starting shake down.")
 
         elif state.sad_state == 2: # Shaking down
             is_any_specific_animation_active = True
@@ -433,7 +333,6 @@ def update_animation_state(current_time_ms):
             if elapsed_shake_time >= config.SAD_SHAKE_DURATION_MS: # Check against state 2's shake duration
                 state.sad_state = 3 # Transition to rising phase
                 state.sad_phase_start_time = current_time_ms # Reset phase timer for phase 3 start
-                #print("Sad state: Shaking down complete, starting rise.")
 
         elif state.sad_state == 3: # Moving up
             is_any_specific_animation_active = True
@@ -445,7 +344,6 @@ def update_animation_state(current_time_ms):
                 state.target_sad_radius = None # <-- Reset
                 state.pet_radius = state.current_radius # Ensure radius is reset
                 # ----------------------------------
-                #print("Sad state: Rising complete, returning to idle.")
 
 
     # --- Handle Happy Animation State (Second Highest Priority) ---
@@ -458,7 +356,6 @@ def update_animation_state(current_time_ms):
                 state.happy_state = 2 # Transition to shaking happy phase
                 state.happy_phase_start_time = current_time_ms # Reset phase timer for phase 2 start
                 state.shake_start_time = current_time_ms # Start shake timer for state 2's specific shake
-                #print("Happy state: Dipping complete, starting happy shake.")
 
         elif state.happy_state == 2: # Shaking happily
             is_any_specific_animation_active = True
@@ -466,7 +363,6 @@ def update_animation_state(current_time_ms):
             if elapsed_shake_time >= config.HAPPY_SHAKE_DURATION_MS: # Check against state 2's shake duration
                 state.happy_state = 3 # Transition to rising phase
                 state.happy_phase_start_time = current_time_ms # Reset phase timer for phase 3 start
-                #print("Happy state: Shaking happy complete, starting bounce up.")
 
         elif state.happy_state == 3: # Bouncing up
             is_any_specific_animation_active = True
@@ -478,7 +374,6 @@ def update_animation_state(current_time_ms):
                 state.target_happy_radius = None # <-- Reset
                 state.pet_radius = state.current_radius # Ensure radius is reset
                 # ------------------------------------
-                #print("Happy state: Rising complete, returning to idle.")
 
     # --- Handle Angry Animation State (Third Highest Priority) ---
     # Check if Sad and Happy are not active before processing Angry transitions
@@ -510,7 +405,6 @@ def update_animation_state(current_time_ms):
                 state.original_radius_before_angry = None # <-- Reset
                 state.target_angry_radius = None # <-- Reset
                 state.pet_radius = state.current_radius # Ensure radius is reset
-                #print("Angry state: Settle complete, returning to idle.")
 
 
     # --- Handle Excited Animation State (Fourth Highest Priority) ---
@@ -523,7 +417,6 @@ def update_animation_state(current_time_ms):
                 state.excited_state = 2 # Transition to jiggle phase
                 state.excited_phase_start_time = current_time_ms # Reset phase timer for phase 2 start
                 state.shake_start_time = current_time_ms # Start shake timer for state 2's specific jiggle
-                #print("Excited state: Bounce complete, starting jiggle.")
 
         elif state.excited_state == 2: # Jiggle rapidly
             is_any_specific_animation_active = True
@@ -531,7 +424,6 @@ def update_animation_state(current_time_ms):
             if elapsed_jiggle_time >= config.EXCITED_JIGGLE_DURATION_MS:
                 state.excited_state = 3 # Transition to settle phase
                 state.excited_phase_start_time = current_time_ms # Reset phase timer for phase 3 start
-                #print("Excited state: Jiggle complete, starting settle.")
 
         elif state.excited_state == 3: # Settle
             is_any_specific_animation_active = True
@@ -539,7 +431,6 @@ def update_animation_state(current_time_ms):
             if elapsed_phase_time >= config.EXCITED_SETTLE_DURATION_MS:
                 state.excited_state = 0 # Transition back to idle state
                 state.pet_radius = state.current_radius # Ensure radius is reset if it was changed by Excited (currently not, but good practice)
-                #print("Excited state: Settle complete, returning to idle.")
 
 
     # --- Handle Thinking Animation State (Fifth Highest Priority) ---
@@ -582,7 +473,6 @@ def update_animation_state(current_time_ms):
             # Clean up stored radius values when animation finishes
             state.original_radius_before_curious = None # <-- Reset
             state.pet_radius = state.current_radius # Ensure radius is reset
-            #print("Curious animation ended.")
     # The is_any_specific_animation_active flag is updated here if Confused is active.
     if state.confused_state > 0:
         is_any_specific_animation_active = True
@@ -600,51 +490,33 @@ def update_animation_state(current_time_ms):
             state.confused_state += 1
             state.confused_phase_start_time = current_time_ms # Reset phase timer
 
-            if state.confused_state > 8: # Finished all 8 phases
-                state.confused_state = 0 # Transition back to idle state
-                # --- CLEANUP STATE FOR CONFUSED ---
-                state.confused_start_time = 0 # Reset overall animation timer
-                state.confused_phase_start_time = 0 # Reset phase timer
-                state.confused_corner_index = 0 # Reset corner index
-                state.original_radius_before_confused = None # Reset stored radius
-                state.pet_radius = state.current_radius # Ensure radius is reset
-                # ----------------------------------
-                #print("Confused animation ended.")
-            elif state.confused_state % 2 != 0: # Transitioning to an odd state (3, 5, 7) - implies starting a new corner move
-                 state.confused_corner_index += 1 # Move to the next target corner for the *next* 'into corner' phase
-                 # The index will be 1 after state 2, 2 after state 4, 3 after state 6.
-                 # After state 8, we transition to state 0, the index is reset in the cleanup.
-                 #print(f"Confused state: Transitioned to phase {state.confused_state}, targeting corner index {state.confused_corner_index}.")
-            # else: # Transitioning to an even state (2, 4, 6, 8) - staying at the same corner index conceptually
-                 #print(f"Confused state: Transitioned to phase {state.confused_state}.")
+            if state.confused_state > 8:
+                state.confused_state = 0
+                state.confused_start_time = 0
+                state.confused_phase_start_time = 0
+                state.confused_corner_index = 0
+                state.original_radius_before_confused = None
+                state.pet_radius = state.current_radius
+            elif state.confused_state % 2 != 0:
+                state.confused_corner_index += 1
 
+    if (state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0
+            and state.excited_state == 0 and not state.is_thinking and not state.is_curious
+            and state.confused_state == 0 and state.is_shaking and state.sleep_state == 0):
+        is_any_specific_animation_active = True
+        elapsed_shake_time = current_time_ms - state.shake_start_time
+        if elapsed_shake_time >= config.SHAKE_DURATION_MS:
+            state.is_shaking = False
+            state.pet_radius = state.current_radius
 
-    # --- Handle General Shake (Eighth Highest Priority) ---
-    # Check if all higher priorities are not active before processing General Shake end
-
-    if state.sad_state == 0 and state.happy_state == 0 and state.angry_state == 0 and state.excited_state == 0 and not state.is_thinking and not state.is_curious and state.confused_state == 0 and state.is_shaking and state.sleep_state == 0: # <-- Updated check for Confused
-         is_any_specific_animation_active = True
-         elapsed_shake_time = current_time_ms - state.shake_start_time
-         if elapsed_shake_time >= config.SHAKE_DURATION_MS:
-             state.is_shaking = False # General shake duration is over
-             state.pet_radius = state.current_radius # Ensure radius is reset if it was changed by Shake (currently not, but good practice)
-             #print("General shake ended.")
-
-
-    # The return value should indicate if *any* specific animation (non-base movement) is running.
-    # This determines if base movement should be applied in calculate_circle_offset.
-    # The flag tracked above is more reliable than re-checking states *after* they might have just transitioned to 0/False
     return is_any_specific_animation_active
 
-# --- Function to calculate the animation offset ---
-# --- Function to calculate the animation offset ---
 
-# --- Function to calculate the animation offset ---
-def calculate_circle_offset(current_time_ms):
-    """Calculates the current pixel offset (x, y) and size based on animation state."""
+def calculate_circle_offset(current_time_ms: int) -> tuple:
+    """Return the current (offset_x, offset_y) for the pet circle based on animation state."""
     offset_x = 0
     offset_y = 0
-    time_in_seconds = current_time_ms / 1000.0 
+    time_in_seconds = current_time_ms / 1000.0
 
     # --- Sleep Animation (Highest Priority) ---
     if state.sleep_state == 1: # Falling Asleep
@@ -1045,7 +917,6 @@ def calculate_circle_offset(current_time_ms):
             print("Warning: Thinking state active but segment state invalid.")
 
         # Size remains default/base
-        # state.pet_radius = state.current_radius # This should be handled when animation ends
 
      # --- Calculate offsets and size based on Curious Animation State (Sixth Highest Priority) ---
     # These checks implicitly mean higher priorities are state 0/False
@@ -1179,35 +1050,15 @@ def calculate_circle_offset(current_time_ms):
     return (offset_x, offset_y)
 
 
-# Note: The 'neutral' state is implicitly the absence of any specific animation,
-# resulting in the base movement calculated in the final 'elif' block of
-# calculate_circle_offset.
-
-# Add a placeholder function for 'neutral' if you want to be able to
-# explicitly trigger a return to base movement, though stopping other
-# animations is often handled by simply setting their state back to 0/False.
-
 def start_neutral_animation():
-    """Clears all specific animation states to return to neutral base movement."""
+    """Clear all active animations and return to neutral base movement."""
     current_time_ms = pygame.time.get_ticks()
     if current_time_ms < state.autonomous_action_paused_until_ms:
-        gui.add_message_to_history("System: Cannot manually trigger neutral while bot is resting.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Cannot manually trigger neutral while bot is resting.", 'system')
         return
 
-    # Check if we are already in a neutral state (no specific animation active)
-    # Call update_animation_state to process any final frame transitions before checking
-    is_currently_any_specific_animation_active = update_animation_state(current_time_ms)
-
-    if not is_currently_any_specific_animation_active:
-        # Already neutral, do nothing
-        pass # print("Already in neutral state.")
-    else:
-        # Clear all active specific animations using the refactored helper
-        # Passing a name that isn't in the list (like 'Base') effectively clears *all* entries in the list
+    if update_animation_state(current_time_ms):
         clear_lower_priority_animations('Base_Placeholder_To_Clear_All')
-
-        # Explicitly set radius back to default just in case
         state.pet_radius = state.current_radius
-
         print("Returned to neutral state.")
-        gui.add_message_to_history("System: Returned to neutral state.", 'system')
+        gui.gui_text_utils.add_message_to_history("System: Returned to neutral state.", 'system')

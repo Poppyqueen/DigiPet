@@ -1,15 +1,4 @@
 # gui_lore_panel.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._* private accesses replaced with public getters:
-#   gui_core._font                          → gui_core.get_font()
-#   gui_core._line_height                   → gui_core.get_line_height()
-#   gui_core._lore_panel_text_draw_width    → gui_core.get_lore_panel_text_draw_width()
-#   gui_core._lore_panel_text_start_x_offset→ gui_core.get_lore_panel_text_start_x_offset()
-#   gui_core._lore_panel_rect               → gui_core.get_lore_panel_rects()["lore_panel"]
-#
-# No logic changes.
 
 import pygame
 from pygame_int import config
@@ -147,9 +136,9 @@ def draw_lore_panel(screen: pygame.Surface) -> None:
     body_total_height  = state.lore_panel_content.get('body_total_height', 0)
 
     max_scroll = max(0, body_total_height - body_area_rect.height)
-    state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_scroll))
+    scroll_y   = max(0, min(state.lore_panel_scroll_y, max_scroll))
 
-    draw_y = body_area_rect.top + config.LORE_PANEL_PADDING - state.lore_panel_scroll_y
+    draw_y = body_area_rect.top + config.LORE_PANEL_PADDING - scroll_y
 
     original_clip = screen.get_clip()
     screen.set_clip(body_area_rect)

@@ -1,16 +1,4 @@
 # gui_clock.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._* private accesses replaced with public getters:
-#   gui_core._current_time_clock_rect   → gui_core.get_clock_rects()["current_time"]
-#   gui_core._sleep_duration_clock_rect → gui_core.get_clock_rects()["sleep_duration"]
-#   gui_core._font                      → gui_core.get_font()
-#   gui_core._panel_rect.width          → state.panel_width
-#     (gui_clock used _panel_rect only to pass its width to update_gui_rects.
-#      state.panel_width is the authoritative source — no getter needed.)
-#
-# No logic changes.
 
 import pygame
 from pygame_int import state
@@ -24,6 +12,27 @@ COLLAPSE_HEIGHT_THRESHOLD = 20
 
 
 # ---------------------------------------------------------------------------
+# Sleep countdown update  (call from the game loop's update phase, not draw)
+# ---------------------------------------------------------------------------
+
+def update_sleep_countdown() -> None:
+    """
+    Decrement state.time_to_sleep by 1 each second.
+    Call once per frame from the update phase, not from a draw function.
+    """
+    if not state.agent_sleeping or state.time_to_sleep is None:
+        return
+
+    current_time = pygame.time.get_ticks()
+    if not hasattr(state, 'sleep_countdown_last_tick'):
+        state.sleep_countdown_last_tick = current_time
+
+    if current_time - state.sleep_countdown_last_tick >= 1000:
+        state.time_to_sleep             -= 1
+        state.sleep_countdown_last_tick  = current_time
+
+
+# ---------------------------------------------------------------------------
 # Click handling
 # ---------------------------------------------------------------------------
 
@@ -33,9 +42,6 @@ def handle_clock_click(mouse_pos) -> bool:
     Marks layout dirty and triggers an immediate recalculation.
     Returns True if a clock was clicked.
     """
-    if not hasattr(state, 'clock_expanded'):
-        state.clock_expanded = True
-
     clock_rects = gui_core.get_clock_rects()
     ct_rect     = clock_rects.get("current_time")
     sd_rect     = clock_rects.get("sleep_duration")
@@ -76,9 +82,9 @@ def draw_current_time(screen: pygame.Surface) -> None:
         fg = state.game_theme_colors.get("original_pet_color", (255, 255, 255))
         bg = state.game_theme_colors.get("contrast_color",     (0,   0,   0))
 
-        text_surf   = font.render(time_str, True, fg)
-        btn_width   = text_surf.get_width() + 20
-        btn_rect    = pygame.Rect(0, 0, btn_width, container.height)
+        text_surf = font.render(time_str, True, fg)
+        btn_width = text_surf.get_width() + 20
+        btn_rect  = pygame.Rect(0, 0, btn_width, container.height)
         btn_rect.right   = container.right
         btn_rect.centery = container.centery
 
@@ -105,14 +111,6 @@ def draw_sleep_duration(screen: pygame.Surface) -> None:
         print("[gui_clock] No time_to_sleep set — skipping sleep duration draw.")
         return
 
-    # Countdown: decrement by 1 each second.
-    current_time = pygame.time.get_ticks()
-    if not hasattr(draw_sleep_duration, "last_tick"):
-        draw_sleep_duration.last_tick = current_time
-    if current_time - draw_sleep_duration.last_tick >= 1000:
-        state.time_to_sleep           -= 1
-        draw_sleep_duration.last_tick  = current_time
-
     font        = gui_core.get_font()
     clock_rects = gui_core.get_clock_rects()
     container   = clock_rects.get("sleep_duration")
@@ -121,8 +119,7 @@ def draw_sleep_duration(screen: pygame.Surface) -> None:
         return
 
     try:
-        is_collapsed = container.height < COLLAPSE_HEIGHT_THRESHOLD
-        if is_collapsed:
+        if container.height < COLLAPSE_HEIGHT_THRESHOLD:
             return
 
         sleep_str = f"Sleep: {str(timedelta(seconds=int(state.time_to_sleep)))}"

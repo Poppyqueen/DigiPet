@@ -4,26 +4,8 @@
 # ----------------
 # 1. Store the font and layout geometry used by all gui_* submodules.
 # 2. Calculate (and cache) every pygame.Rect the GUI needs.
-# 3. Expose those rects through public getters — no underscore access from outside.
-#
-# What changed from the original
-# --------------------------------
-# - init_gui_elements() now only handles one-time setup (font, overlay, icons)
-#   then delegates ALL rect calculation to update_gui_rects().
-#   Previously ~200 lines of rect code were duplicated between the two functions.
-#
-# - update_gui_rects() is now guarded by a dirty flag (_layout_dirty).
-#   draw_gui() calls it every frame, but it does real work only when layout
-#   has actually changed (panel toggle, window resize, etc.).
-#   Call mark_layout_dirty() whenever a structural change happens.
-#
-# - Public getters added:
-#     get_font()             — replaces direct gui_core._font access
-#     get_line_height()      — replaces direct gui_core._line_height access
-#     get_buttons_per_page() — replaces direct gui_core._buttons_per_page access
-#
-# - All existing getters (get_button_rects, get_panel_rects, get_gui_rects,
-#   get_lore_panel_rects) are unchanged.
+# 3. Expose state through public getters — no private underscore access from outside.
+#    Call mark_layout_dirty() whenever a structural change occurs (panel toggle, resize, etc.)
 
 import pygame
 import os
@@ -46,7 +28,7 @@ _line_height = 0
 # update_gui_rects() resets it to False after recalculating.
 _layout_dirty = True
 
-overlay_surface = None  # SRCALPHA surface for the time-of-day colour filter
+_overlay_surface = None  # SRCALPHA surface for the time-of-day colour filter
 
 # --- Panel rects ---
 _panel_rect           = None
@@ -213,6 +195,11 @@ def get_lore_panel_rects() -> dict:
     }
 
 
+def get_overlay_surface() -> pygame.Surface:
+    """Return the SRCALPHA overlay surface used for the time-of-day colour filter."""
+    return _overlay_surface
+
+
 # ---------------------------------------------------------------------------
 # Dirty-flag helper
 # Call this whenever a structural change makes layout recalculation necessary.
@@ -243,7 +230,7 @@ def init_gui_elements(font: pygame.font.Font, line_height: int, initial_panel_wi
     need to happen once.  All rect geometry is delegated to update_gui_rects()
     so there is a single source of truth for every rect formula.
     """
-    global _font, _line_height, overlay_surface, _layout_dirty
+    global _font, _line_height, _overlay_surface, _layout_dirty
 
     _font        = font
     _line_height = line_height
@@ -252,7 +239,7 @@ def init_gui_elements(font: pygame.font.Font, line_height: int, initial_panel_wi
     display = pygame.display.get_surface()
     sw = display.get_width()  if display else config.WIDTH
     sh = display.get_height() if display else config.HEIGHT
-    overlay_surface = pygame.Surface((sw, sh), pygame.SRCALPHA)
+    _overlay_surface = pygame.Surface((sw, sh), pygame.SRCALPHA)
 
     # Load stat icon images — done once, stored in _stat_icons.
     _load_stat_icons()

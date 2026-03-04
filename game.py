@@ -35,7 +35,7 @@ from pygame_runtime.workers        import start_chatbot_request, start_garden_ti
 # Configuration
 # ---------------------------------------------------------------------------
 
-GAME_MODE = "user_player"
+GAME_MODE = "ai_player"
 # Options: "ai_player"   — autonomous AI agent controls the pet
 #          "user_player" — human types commands directly
 #

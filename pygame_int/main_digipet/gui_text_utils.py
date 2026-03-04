@@ -1,14 +1,4 @@
 # gui_text_utils.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._font / _line_height / _text_width_limit accesses replaced
-# with public getters:
-#   gui_core._font              → gui_core.get_font()
-#   gui_core._line_height       → gui_core.get_line_height()
-#   gui_core._text_width_limit  → gui_core.get_text_width_limit()
-#
-# No logic changes.
 
 import pygame
 from pygame_int import config

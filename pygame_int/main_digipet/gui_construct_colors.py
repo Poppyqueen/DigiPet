@@ -2,21 +2,18 @@ import colorsys
 from pygame_int import config
 from pygame_int import state
 
-def set_color_theme():
-    """
-    Based on the initial pet color this function creates a color theme for the game.
 
-    The theme includes:
-        A dictionary of various colors:
-            - Original pet color
-            - Original color adjusted to target brightness (no alpha)
-            - Overlay color with alpha (for drawing the filter)
-            - New contrast color (desaturated with tint)
-            - Inverted color (for system messages)
-            - Black or white (for user messages)
-            - Error color (red unless the pet color is red, if so, use green)
-            - Dynamic package colors (hydration, fullness, misc, ingredient, combo, cheat)
-            - NEW: Key Information/Interactive color
+def build_color_theme(pet_color: tuple) -> dict:
+    """
+    Build and return a colour-theme dictionary for the given pet colour.
+
+    Callers should store the result:
+        state.game_theme_colors = build_color_theme(state.pet_color)
+
+    Returns a dict with keys:
+        original_pet_color, adjusted_brightness_color, overlay_color_with_alpha,
+        contrast_color, system_messages, user_message_color, error_color,
+        package_colors, key_information_color
     """
 
     # --- Configuration ---
@@ -28,8 +25,7 @@ def set_color_theme():
     
     # Convert RGB to HSV for brightness adjustment
     # Normalize RGB to 0-1 range for colorsys
-    #print(f"--- Original Pet Color: {state.pet_color} ---")
-    r, g, b = [x / 255.0 for x in state.pet_color]
+    r, g, b = [x / 255.0 for x in pet_color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
     #print(f"Original RGB (normalized): ({r:.2f}, {g:.2f}, {b:.2f})")
     #print(f"Original HSV (normalized): H={h:.2f}, S={s:.2f}, V={v:.2f}")
@@ -41,8 +37,6 @@ def set_color_theme():
     
     # Convert back to RGB and denormalize to 0-255 range for Pygame
     adjusted_r, adjusted_g, adjusted_b = [int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v_adjusted)]
-    
-    state.pets_theme_color = (adjusted_r, adjusted_g, adjusted_b)
     overlay_color_with_alpha = (adjusted_r, adjusted_g, adjusted_b, alpha_value)
 
     # --- Generate Better Contrast Color & Determine Dynamic Color Targets ---
@@ -196,15 +190,19 @@ def set_color_theme():
     #print(f"  Calculated Key Information/Interactive Color: {key_information_color}")
 
 
-    # Store the generated theme colors in a dictionary
-    state.game_theme_colors = {
-        "original_pet_color": state.pet_color,
+    return {
+        "original_pet_color":       pet_color,
         "adjusted_brightness_color": (adjusted_r, adjusted_g, adjusted_b),
-        "overlay_color_with_alpha": overlay_color_with_alpha,
-        "contrast_color": contrast_color,
-        "system_messages": inverted_color,
-        "user_message_color": user_message_color,
-        "error_color": error_color,
-        "package_colors": dynamic_package_colors,
-        "key_information_color": key_information_color, # NEW: Key information/interactive color
+        "overlay_color_with_alpha":  overlay_color_with_alpha,
+        "contrast_color":            contrast_color,
+        "system_messages":           inverted_color,
+        "user_message_color":        user_message_color,
+        "error_color":               error_color,
+        "package_colors":            dynamic_package_colors,
+        "key_information_color":     key_information_color,
     }
+
+
+def set_color_theme() -> None:
+    """Convenience wrapper: build the theme from state.pet_color and store it in state."""
+    state.game_theme_colors = build_color_theme(state.pet_color)

@@ -1,12 +1,4 @@
 # gui_stat_icons.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._* private accesses replaced with public getters:
-#   gui_core._stat_icons  → gui_core.get_stat_icons()
-#   gui_core._font        → gui_core.get_font()
-#
-# No logic changes.
 
 import pygame
 from pygame_int import config
@@ -57,8 +49,8 @@ def draw_stat_icons(screen: pygame.Surface) -> None:
     """
     Draw all stat icons.  If a stat is hovered (state.hover_stat) draw its
     current value beside the icon.
+    Call update_stat_icon_rects() at init and on layout changes — not here.
     """
-    update_stat_icon_rects()
 
     font      = gui_core.get_font()
     icons     = gui_core.get_stat_icons()

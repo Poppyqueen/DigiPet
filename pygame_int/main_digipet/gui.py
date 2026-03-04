@@ -81,13 +81,13 @@ def draw_filter_overlay(screen: pygame.Surface) -> None:
     dynamic_alpha = int(base_alpha * multiplier)
     clamped_alpha = min(150, max(30, dynamic_alpha))
 
-    gui_core.overlay_surface.fill((0, 0, 0, 0))
+    gui_core.get_overlay_surface().fill((0, 0, 0, 0))
     pygame.draw.rect(
-        gui_core.overlay_surface,
+        gui_core.get_overlay_surface(),
         (*base_rgb, clamped_alpha),
         (0, 0, config.WIDTH, config.HEIGHT),
     )
-    screen.blit(gui_core.overlay_surface, (0, 0))
+    screen.blit(gui_core.get_overlay_surface(), (0, 0))
 
 
 # ---------------------------------------------------------------------------
@@ -100,10 +100,22 @@ def handle_gui_event(event) -> None:
 
     Priority chain
     --------------
-    1. Lore panel  — modal: consumes all clicks when open
+    1. Lore panel  — modal: consumes all scroll/click events when open
     2. Clock        — gui_clock.handle_clock_click() mutates clock state
     3. Input box    — focus / unfocus (cursor_active)
     """
+    # Handle lore panel scroll via MOUSEWHEEL (Pygame 2+)
+    if event.type == pygame.MOUSEWHEEL and state.lore_panel_visible:
+        lore_rects    = gui_core.get_lore_panel_rects()
+        lore_body_area = lore_rects.get("lore_body_area")
+        if lore_body_area:
+            scroll_delta = -event.y * config.LORE_PANEL_SCROLL_SPEED
+            state.lore_panel_scroll_y += scroll_delta
+            content_h  = gui_lore_panel.calculate_lore_body_height(state.lore_panel_content)
+            max_scroll = max(0, content_h - lore_body_area.height)
+            state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_scroll))
+        return
+
     if event.type != pygame.MOUSEBUTTONDOWN:
         return
 
@@ -113,17 +125,8 @@ def handle_gui_event(event) -> None:
 
     # --- Priority 1: Lore panel (modal) ---
     if state.lore_panel_visible:
-        lore_rects         = gui_core.get_lore_panel_rects()
-        lore_body_area     = lore_rects.get("lore_body_area")
-        lore_close_button  = lore_rects.get("lore_close_button")
-
-        if event.button in (4, 5) and lore_body_area and lore_body_area.collidepoint(mouse_pos):
-            scroll_delta = config.LORE_PANEL_SCROLL_SPEED * (-1 if event.button == 4 else 1)
-            state.lore_panel_scroll_y += scroll_delta
-            content_h     = gui_lore_panel.calculate_lore_body_height(state.lore_panel_content)
-            max_scroll    = max(0, content_h - lore_body_area.height)
-            state.lore_panel_scroll_y = max(0, min(state.lore_panel_scroll_y, max_scroll))
-            return
+        lore_rects        = gui_core.get_lore_panel_rects()
+        lore_close_button = lore_rects.get("lore_close_button")
 
         if event.button == 1 and lore_close_button and lore_close_button.collidepoint(mouse_pos):
             print("[gui] Lore panel closed.")
@@ -217,28 +220,25 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
 
         # -- Chat history --
         if history_display_area and history_display_area.height > 0:
-            total_h    = gui_text_utils.calculate_total_history_height(state.chat_history)
-            max_scroll = max(0, total_h - history_display_area.height)
-            state.scroll_y = max(0, min(state.scroll_y, max_scroll))  # clamp (legacy; also done in update phase)
-
-            content_top_y  = history_display_area.bottom - total_h + state.scroll_y - config.PADDING
-            original_clip  = screen.get_clip()
+            total_h       = gui_text_utils.calculate_total_history_height(state.chat_history)
+            content_top_y = history_display_area.bottom - total_h + state.scroll_y - config.PADDING
+            original_clip = screen.get_clip()
             screen.set_clip(history_display_area.copy())
 
             msg_y = content_top_y
             for msg in state.chat_history:
-                msg_h      = msg.get("total_height", 0)
-                msg_bottom = msg_y + msg_h
-                if msg_bottom < history_display_area.top or msg_y > history_display_area.bottom:
+                msg_h = msg.get("total_height", 0)
+                if msg_y + msg_h < history_display_area.top:
                     msg_y += msg_h
                     continue
+                if msg_y > history_display_area.bottom:
+                    break
                 line_y = msg_y
                 for line_surface in msg.get("rendered_surfaces", []):
                     if line_surface is None:
                         line_y += line_height
                         continue
-                    line_bottom = line_y + line_height
-                    if not (line_bottom < history_display_area.top or line_y > history_display_area.bottom):
+                    if history_display_area.top <= line_y + line_height and line_y < history_display_area.bottom:
                         screen.blit(line_surface, (history_display_area.left + config.HISTORY_HORIZONTAL_PADDING, line_y))
                     line_y += line_height
                 msg_y += msg_h
@@ -266,24 +266,33 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
                     ))
                 except pygame.error as exc:
                     print(f"[gui] Error rendering locked input text: {exc}")
-                state.cursor_visible = False  # legacy mutation; also handled in update phase
             else:
-                text_color = state.game_theme_colors["user_message_color"]
-                display_text = state.input_text
-                width_limit  = draw_area.width
+                text_color  = state.game_theme_colors["user_message_color"]
+                width_limit = draw_area.width
 
-                # Clip text from left if it overflows
-                clipped = display_text
+                # Binary-search clip from the left so the visible end of the text
+                # always fits within width_limit — O(log n) instead of O(n).
+                full_text   = state.input_text
+                lo, hi      = 0, len(full_text)
+                while lo < hi:
+                    mid = (lo + hi) // 2
+                    try:
+                        if font.size(full_text[mid:])[0] <= width_limit:
+                            hi = mid
+                        else:
+                            lo = mid + 1
+                    except pygame.error:
+                        lo = mid + 1
+                clipped = full_text[lo:]
+
                 try:
-                    while font.size(clipped)[0] > width_limit and len(clipped) > 0:
-                        clipped = clipped[1:]
-                    surf = font.render(clipped, True, text_color)
+                    surf   = font.render(clipped, True, text_color)
                     text_x = draw_area.left
                     text_y = draw_area.top + (draw_area.height - surf.get_height()) // 2
                     screen.blit(surf, (text_x, text_y))
 
                     if state.cursor_visible:
-                        cursor_x = text_x + font.size(clipped)[0]
+                        cursor_x = text_x + surf.get_width()
                         cursor_x = max(draw_area.left, min(cursor_x, draw_area.right - 1))
                         pygame.draw.line(
                             screen, state.game_theme_colors["user_message_color"],
@@ -302,6 +311,7 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
     gui_care_package.draw_package_buttons(screen, is_input_locked)
     gui_popups.draw_popups(screen)
     gui_popups.draw_active_image_popups(screen)
+    gui_clock.update_sleep_countdown()
     gui_clock.draw_current_time(screen)
     gui_clock.draw_sleep_duration(screen)
 
@@ -316,16 +326,16 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
         pygame.draw.circle(screen, state.game_theme_colors["contrast_color"], inv_toggle.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2)
         pygame.draw.circle(screen, border_color,                               inv_toggle.center, config.INVENTORY_TOGGLE_BUTTON_SIZE // 2, 2)
 
-        # ---- Panel toggle button (drawn here, inside the inv_toggle block in original) ----
-        panel_toggle = button_rects.get("panel_toggle")
-        if panel_toggle:
-            pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_toggle)
-            arrow = ">" if state.panel_visible else "<"
-            try:
-                arrow_surf = font.render(arrow, True, state.game_theme_colors["contrast_color"])
-                screen.blit(arrow_surf, arrow_surf.get_rect(center=panel_toggle.center))
-            except pygame.error as exc:
-                print(f"[gui] Error rendering panel toggle arrow: {exc}")
+    # ---- Panel toggle button ----
+    panel_toggle = button_rects.get("panel_toggle")
+    if panel_toggle:
+        pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], panel_toggle)
+        arrow = ">" if state.panel_visible else "<"
+        try:
+            arrow_surf = font.render(arrow, True, state.game_theme_colors["contrast_color"])
+            screen.blit(arrow_surf, arrow_surf.get_rect(center=panel_toggle.center))
+        except pygame.error as exc:
+            print(f"[gui] Error rendering panel toggle arrow: {exc}")
 
     # ---- Lore toggle button ----
     lore_toggle = button_rects.get("lore_toggle")

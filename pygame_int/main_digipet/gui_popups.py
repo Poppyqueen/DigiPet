@@ -1,19 +1,4 @@
 # gui_popups.py
-#
-# What changed from the original
-# --------------------------------
-# gui_core._font                    → gui_core.get_font()
-# gui_core._current_time_clock_rect ) These were accessed inside ImagePopup.__init__
-# gui_core._sleep_duration_clock_rect) to calculate popup positioning.
-#
-# The constructor no longer reaches into gui_core at all.  Instead,
-# show_image_popup() calculates the clock-height offset from
-# gui_core.get_clock_rects() at call time and passes it as a plain int
-# (clock_height_offset) to the constructor.  That way:
-#   - ImagePopup is a pure data/render object with no gui_core coupling.
-#   - The offset is computed once, when the popup is created.
-#
-# No logic changes anywhere else.
 
 import pygame
 import random

@@ -1,24 +1,17 @@
 # gui_care_package.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._* private accesses replaced with public getters:
-#   gui_core._left_scroll_button_rect  → gui_core.get_care_package_rects()["left_scroll"]
-#   gui_core._right_scroll_button_rect → gui_core.get_care_package_rects()["right_scroll"]
-#   gui_core._care_package_area_rect   → gui_core.get_care_package_rects()["area"]
-#   gui_core._buttons_per_page         → gui_core.get_buttons_per_page()
-#   gui_core._font                     → gui_core.get_font()
-#
-# Pattern: both draw_package_buttons() and get_package_button_click_regions()
-# call gui_core.get_care_package_rects() once at the top and unpack from the
-# dict, so there is only one getter call per function instead of one per rect.
-#
-# No logic changes.
 
 import pygame
 from pygame_int import config
 from pygame_int import state
 from pygame_int.main_digipet import gui_core
+
+
+def _get_btn_rect(i: int, visible_start: int, left_rect, area_rect) -> "pygame.Rect":
+    """Return the pygame.Rect for care-package button at index *i*."""
+    spacing_x = config.PACKAGE_BUTTON_SPACING_X
+    start_x   = left_rect.right + spacing_x
+    btn_x     = start_x + (i - visible_start) * (config.PACKAGE_BUTTON_WIDTH + spacing_x)
+    return pygame.Rect(btn_x, area_rect.top, config.PACKAGE_BUTTON_WIDTH, config.PACKAGE_BUTTON_HEIGHT)
 
 
 # ---------------------------------------------------------------------------
@@ -68,20 +61,12 @@ def draw_package_buttons(screen: pygame.Surface, is_input_locked: bool) -> None:
     pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], right_rect, 2)
 
     # --- Package buttons ---
-    btn_w     = config.PACKAGE_BUTTON_WIDTH
-    btn_h     = config.PACKAGE_BUTTON_HEIGHT
-    spacing_x = config.PACKAGE_BUTTON_SPACING_X
-    start_x   = left_rect.right + spacing_x
-    btn_y     = area_rect.top
-
     for i in range(int(visible_start), int(visible_end)):
         package_info = config.CARE_PACKAGES[i]
         color_name   = package_info["color"]
         base_color   = state.game_theme_colors["package_colors"][color_name]
         btn_color    = config.PACKAGE_BUTTON_COLOR_DISABLED(base_color) if is_input_locked else base_color
-
-        btn_x    = start_x + (i - visible_start) * (btn_w + spacing_x)
-        btn_rect = pygame.Rect(btn_x, btn_y, btn_w, btn_h)
+        btn_rect     = _get_btn_rect(i, visible_start, left_rect, area_rect)
 
         pygame.draw.rect(screen, btn_color, btn_rect)
         pygame.draw.rect(screen, state.game_theme_colors["original_pet_color"], btn_rect, 2)
@@ -207,15 +192,8 @@ def get_package_button_click_regions() -> list:
     per_page       = max(1, gui_core.get_buttons_per_page())
     visible_end    = min(visible_start + per_page, total_packages)
 
-    btn_w     = config.PACKAGE_BUTTON_WIDTH
-    btn_h     = config.PACKAGE_BUTTON_HEIGHT
-    spacing_x = config.PACKAGE_BUTTON_SPACING_X
-    start_x   = left_rect.right + spacing_x
-    btn_y     = area_rect.top
-
     for i in range(int(visible_start), int(visible_end)):
-        btn_x = start_x + (i - visible_start) * (btn_w + spacing_x)
-        regions.append((f"package_{i}", pygame.Rect(btn_x, btn_y, btn_w, btn_h)))
+        regions.append((f"package_{i}", _get_btn_rect(i, visible_start, left_rect, area_rect)))
 
     return regions
 

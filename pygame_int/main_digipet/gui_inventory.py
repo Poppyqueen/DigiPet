@@ -1,19 +1,4 @@
 # gui_inventory.py
-#
-# What changed from the original
-# --------------------------------
-# All gui_core._* private accesses replaced with public getters:
-#   gui_core._font                          → gui_core.get_font()
-#   gui_core._line_height                   → gui_core.get_line_height()
-#   gui_core._inventory_item_draw_width     → gui_core.get_inventory_item_draw_width()
-#   gui_core._inventory_item_start_x_offset → gui_core.get_inventory_item_start_x_offset()
-#   gui_core._inventory_panel_rect          → gui_core.get_panel_rects()["inventory_panel"]
-#   gui_core._room_title_rect               → gui_core.get_panel_rects()["room_title"]
-#   gui_core._player_title_rect             → gui_core.get_panel_rects()["player_title"]
-#   gui_core._room_list_area_rect           → gui_core.get_panel_rects()["room_list_area"]
-#   gui_core._player_list_area_rect         → gui_core.get_panel_rects()["player_list_area"]
-#
-# No logic changes.
 
 import pygame
 from pygame_int import config
