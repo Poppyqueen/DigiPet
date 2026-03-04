@@ -13,7 +13,9 @@
             "toggle_item_power"
         ],
         "stackable": false,
-        "power_toggle": false
+        "power_toggle": false,
+        "tv_type": "standard",
+        "current_channel": null
     },
     {
         "name": "1970s Wood-Panel Entertainment Console",
@@ -370,7 +372,9 @@
             "toggle_item_power"
         ],
         "stackable": false,
-        "power_toggle": false
+        "power_toggle": false,
+        "tv_type": "standard",
+        "current_channel": null
     },
     {
         "name": "Modern Wall-Mounted Smart TV",

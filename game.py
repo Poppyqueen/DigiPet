@@ -24,7 +24,7 @@ import importlib
 from typing import Optional
 from ai_managers.agents.abstract_agent import BaseChatbot
 
-game_mode = "user_player" # available options: "user_player" or "ai_player".
+game_mode = "ai_player" # available options: "user_player" or "ai_player".
                     # ai_player for an agent player, user_player for a human player.
                     # !!!! The current AI environment crafter system (Make Home) is live and using an AI model even if this is set to user_player !!!!!
                     # main mode to use is "ai_player".
@@ -155,11 +155,15 @@ def calculate_sized_by_steps(current_steps, start_size, end_size, step_limit=con
 
 # We'll need a helper function to trigger the lore update
 def trigger_lore_panel_update():
-    """Fetches current room info and posts an event to update the lore panel."""
-    current_room_info = chatbot.functions_builder.get_current_tools_info()
-    print(f"Triggering lore panel update with room data: {current_room_info.get('name', 'N/A')}")
-    pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=current_room_info))
-
+    def _post(room_data):
+        pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data))
+    
+    def _stream():
+        chatbot.functions_builder.get_current_tools_info_streaming(_post)
+    
+    thread = threading.Thread(target=_stream)
+    thread.daemon = True
+    thread.start()
 
 # --- Callback function to receive signals from the chatbot ---
 # This callback is already designed to run potentially in the chatbot's
@@ -405,6 +409,7 @@ def garden_tick_worker(chatbot_instance): # TODO: Abstract the ticks, so we can 
     try:
         chatbot_instance.functions_builder.registry.garden_manager.tick()
         chatbot_instance.functions_builder.registry.lighthouse.lighthouse_tick() # TODO: Move this from, preferably after abstraction of the tick function.
+        chatbot_instance.functions_builder.registry.tv_controller.tv_tick() # For the love of god, do something about this.
         print("Garden tick processed successfully.")
         print("Lighthouse tick processed successfully.")
 

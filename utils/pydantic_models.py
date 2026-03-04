@@ -1,10 +1,8 @@
 # pydantic_models.py
-from typing import List
-from pydantic import BaseModel
+from __future__ import annotations
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union, Dict, Any, Literal, Annotated
-
 # TODO: Memory structures, probably move them to the memory manager at some point
 
 class characteristic_structure(BaseModel):

@@ -149,6 +149,11 @@ class ToggableFields(BaseModel):
     model_config = ConfigDict(extra="allow")
     power_toggle: Optional[bool] = Field(default=None, description="Current power state. True = on, False = off.")
 
+class TVFields(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    tv_type: str = Field(description="The type of TV, e.g. 'bar' or 'kitchen'.")
+    current_channel: Optional[str] = Field(default=None, description="The currently airing channel, from the TV_TYPE_CHANNELS. Initialize to null and let the tool handle it..")
+
 # Lighthouse items
 
 class LighthouseSpiritPanFields(BaseModel):

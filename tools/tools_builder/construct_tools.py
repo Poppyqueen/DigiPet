@@ -1,4 +1,5 @@
 # construct_tools.py
+# more aptly named context builder, or construct_context, there is a method called that, but it is the idea that is the main thing here.
 # FunctionBuilder — runtime mechanics only.
 #
 # Responsibilities:
@@ -206,6 +207,42 @@ class FunctionBuilder:
 
         return {"title": room_name, "body": body_content}
 
+
+    def get_current_tools_info_streaming(self, post_event_fn):
+        """
+        Calls post_event_fn immediately with room info,
+        then appends each tool's display_information as it arrives.
+        """
+        try:
+            current_room_data = self.state_manager.get_current_room_data()
+        except ValueError:
+            post_event_fn({"title": "Unknown Room", "body": "Could not retrieve room information."})
+            return
+
+        room_name = current_room_data.name
+        room_description = current_room_data.description
+        body_parts = [room_description] if room_description else []
+
+        post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
+
+        current_room_types, item_context = self._get_current_context()
+        checker = ToolAvailabilityChecker(item_context, current_room_types)
+
+        for tool_key, tool_config in self.tool_definitions.items():
+            info_fn = tool_config.get("display_information")
+            if not info_fn or not checker.is_tool_available(tool_config):
+                continue
+            try:
+                info = info_fn()
+                if info:
+                    display_name = tool_key.replace("_", " ").title()
+                    body_parts.append(f"\n--- {display_name} Details ---\n{info}")
+            except Exception as e:
+                display_name = tool_key.replace("_", " ").title()
+                body_parts.append(f"\n--- {display_name} Details ---\n(Error: {e})")
+            
+            post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
+        
     def construct_context(self) -> str:
         """Build the full context string injected into the LLM system prompt."""
         try:

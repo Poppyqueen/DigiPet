@@ -934,12 +934,58 @@ living_room_tools= [
         "parameters": {
             "type": "object",
             "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to watch."
+                }
             },
             "required": [
+                "tv_id"
             ],
             "additionalProperties": False
         }
     },    
+    {
+        "type": "function",
+        "name": "browse_channels",
+        "description": "Browse through the available channels on the TV.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to browse channels on."
+                }
+            },
+            "required": [
+                "tv_id"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "change_channel",
+        "description": "Change the channel on the TV.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to change channels on."
+                },
+                "channel_name": {
+                    "type": "string",
+                    "description": "The name of the channel to change to."
+                }
+            },
+            "required": [
+                "tv_id",
+                "channel_name"
+            ],
+            "additionalProperties": False
+        }
+    },
     {
         "type": "function",
         "name": "look_at_window",

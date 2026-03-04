@@ -31,6 +31,8 @@ from tools.tools_folder.items_toggle import ItemToggleTool
 from tools.tools_folder.book_tools import BookTools
 from tools.tools_folder.consumables import ConsumablesTools
 
+from tools.tools_folder.tv_controller import TVController
+
 
 from .my_tools import (
     base_tools,
@@ -117,6 +119,8 @@ class ToolRegistry:
         self.A_Life         = ALifeController(state_manager=state_manager, signal=signal, base_path=subdirectory)
         self.book_tools     = BookTools(state_manager, signal)
         self.consumables_tools = ConsumablesTools(state_manager, signal)
+
+        self.tv_controller     = TVController(state_manager, signal, config_manager)
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
@@ -385,11 +389,15 @@ class ToolRegistry:
 
             "tv": {
                 "functions": {
-                    "watch_tv": self.room_tools.living_room.watch_tv,
+                    "watch_tv": self.tv_controller.watch_tv,
+                    "browse_channels": self.tv_controller.browse_channels,
+                    "change_channel": self.tv_controller.change_channel,
                 },
                 "definitions": living_room_tools,
                 "item_types": ["tv"],
                 "use_level": "dual_use",
+                "display_information": self.tv_controller.get_current_accessible_tv, # this... needs an ID of an item, it can't be called like this
+                "agent_information": self.tv_controller.get_current_accessible_tv, # this... needs an ID of an item, it can't be called like this
                 #"room_types": ["living_room"] # Left in for reference
             },
 

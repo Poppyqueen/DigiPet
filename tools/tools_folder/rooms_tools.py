@@ -504,17 +504,17 @@ class room_living_room:
         item_desc = "\n".join(item_details.get("descriptions", []))
         return f"You take a seat on the {item_name}\n{item_desc}\n{message}"
 
-    def watch_tv(self):
-        """
-        Returns an excerpt of a random TV show based on the current time
-        delegated to a TV manager
-        """
-        tv_show=tv_handle.get_tv_program()
-        self.last_show_watched=tv_show
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/tv_icon.png"})
-        # ------------------------
-        return tv_show
+    # def watch_tv(self): # OLD TV METHOD
+    #     """
+    #     Returns an excerpt of a random TV show based on the current time
+    #     delegated to a TV manager
+    #     """
+    #     tv_show=tv_handle.get_tv_program()
+    #     self.last_show_watched=tv_show
+    #     # --- Add signal call ---
+    #     self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/tv_icon.png"})
+    #     # ------------------------
+    #     return tv_show
 
     def sit_on_couch(self):
         edit=1
