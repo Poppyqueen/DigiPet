@@ -54,5 +54,6 @@ py-modules = [
     "tts_providers",
     "utils",
     "world_data",
-    "game"
+    "game",
+    "pygame_runtime"
 ]
