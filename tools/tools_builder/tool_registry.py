@@ -396,9 +396,8 @@ class ToolRegistry:
                 "definitions": living_room_tools,
                 "item_types": ["tv"],
                 "use_level": "dual_use",
-                "display_information": self.tv_controller.get_current_accessible_tv, # this... needs an ID of an item, it can't be called like this
-                "agent_information": self.tv_controller.get_current_accessible_tv, # this... needs an ID of an item, it can't be called like this
-                #"room_types": ["living_room"] # Left in for reference
+                "display_information": self.tv_controller.get_current_accessible_tv_gui, # non-blocking
+                "agent_information": self.tv_controller.get_current_accessible_tv_agent, # blocking
             },
 
             "auction": {

@@ -80,6 +80,38 @@ class TVController:
                 tvs.append(item)
         return tvs
 
+    def _get_accessible_tv_data(self, blocking: bool) -> str:
+        """
+        Returns the current accessible TV.
+        """
+        inventory: InventoryStateResult = self.state_manager.get_inventory_state()
+
+        current_inventory = inventory.inventory_items
+        current_room_items = inventory.room_items
+
+        check_all = current_inventory + current_room_items
+        tvs = self._filter_tvs(check_all)
+
+        if not tvs:
+            return "No TVs found."
+
+        display_string = "TVs around you:\n"
+
+        for tv in tvs:
+            data = tv.item_data
+            tv_id = tv.item_id
+            tv_name = tv.name
+            tv_type = data.get("tv_type")
+            current_chan = data.get("current_channel")
+
+            display_string += f"  {tv_name} (ID: {tv_id})\n"
+            result = self.tv_manager.get_current_section(tv_type, data.get("current_channel") or self.tv_manager.get_first_channel_name(tv_type), blocking=blocking)
+            program_info = self._format_on_screen(data.get("current_channel") or "", *result) if result else ""
+            display_string += f"Currently playing: {program_info}\n"
+            display_string += "=" * 30 + "\n"
+
+        return display_string        
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -169,34 +201,17 @@ class TVController:
         """
         self.tv_manager.tick()
 
-    def get_current_accessible_tv(self) -> str:
+    #... Perception and GUI methods
+
+    def get_current_accessible_tv_agent(self) -> str:
         """
-        Returns the current accessible TV.
+        Returns the current accessible TV for agent perception. (blocking)
         """
-        inventory: InventoryStateResult = self.state_manager.get_inventory_state()
+        return self._get_accessible_tv_data(blocking=True)
 
-        current_inventory = inventory.inventory_items
-        current_room_items = inventory.room_items
 
-        check_all = current_inventory + current_room_items
-        tvs = self._filter_tvs(check_all)
-
-        if not tvs:
-            return "No TVs found."
-
-        display_string = "TVs around you:\n"
-
-        for tv in tvs:
-            data = tv.item_data
-            tv_id = tv.item_id
-            tv_name = tv.name
-            tv_type = data.get("tv_type")
-            current_chan = data.get("current_channel")
-
-            display_string += f"  {tv_name} (ID: {tv_id})\n"
-            result = self.tv_manager.get_current_section(tv_type, data.get("current_channel") or self.tv_manager.get_first_channel_name(tv_type), blocking=False)
-            program_info = self._format_on_screen(data.get("current_channel") or "", *result) if result else ""
-            display_string += f"Currently playing: {program_info}\n"
-            display_string += "=" * 30 + "\n"
-
-        return display_string
+    def get_current_accessible_tv_gui(self) -> str:
+        """
+        Returns the current accessible TV for GUI. (non-blocking)
+        """
+        return self._get_accessible_tv_data(blocking=False)
