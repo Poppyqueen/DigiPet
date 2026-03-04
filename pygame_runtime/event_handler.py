@@ -23,7 +23,7 @@ import pygame
 from pygame_int import config, state
 from pygame_int.main_digipet import animation, gui, gui_lore_panel
 
-from pygame_runtime.workers import start_chatbot_request
+from pygame_runtime.workers import start_chatbot_request, start_lore_panel_refresh
 
 
 # ---------------------------------------------------------------------------
@@ -308,10 +308,12 @@ def _handle_mouse_button(
         and lore_toggle_button_rect.collidepoint(event.pos)
         and event.button == 1
     ):
-        
         if not state.lore_panel_visible:
             state.lore_panel_visible  = True
             state.lore_panel_scroll_y = 0
+            # Fetch fresh content in the background — same call the signal
+            # handler makes on every agent signal.
+            start_lore_panel_refresh(chatbot=chatbot)
         return True
 
     if state.lore_panel_visible:

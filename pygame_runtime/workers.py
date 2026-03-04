@@ -165,3 +165,44 @@ def start_garden_tick_request(*, chatbot, chatbot_available: bool) -> bool:
     )
     thread.start()
     return True
+
+
+# ---------------------------------------------------------------------------
+# Lore panel refresh worker
+# ---------------------------------------------------------------------------
+
+def _lore_refresh_worker(chatbot_instance) -> None:
+    """
+    Streams fresh tool info and posts UPDATE_LORE_DISPLAY_EVENT.
+
+    Uses the streaming variant (get_current_tools_info_streaming) so the
+    lore panel content arrives incrementally rather than waiting for a full
+    round-trip.  Designed to run in a daemon thread.
+    """
+    def _post(room_data):
+        pygame.event.post(
+            pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data)
+        )
+
+    try:
+        chatbot_instance.functions_builder.get_current_tools_info_streaming(_post)
+    except Exception as exc:
+        print(f"[_lore_refresh_worker] Error: {type(exc).__name__}: {exc}")
+
+
+def start_lore_panel_refresh(*, chatbot) -> None:
+    """
+    Spawn a background thread to refresh the lore panel content.
+
+    Called when the user opens the lore panel so the content is always
+    up to date.  Fire-and-forget: no gate checks needed since this is
+    a read-only data fetch that doesn't affect the chatbot's state.
+    """
+    if not chatbot:
+        return
+    thread = threading.Thread(
+        target=_lore_refresh_worker,
+        args=(chatbot,),
+        daemon=True,
+    )
+    thread.start()
