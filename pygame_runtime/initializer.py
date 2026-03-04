@@ -55,7 +55,22 @@ class GameContext:
     garden_tick_interval_ms: float
     game_mode:           str
 
-
+def _init_jukebox_silent(chatbot: BaseChatbot) -> Optional[jukebox]:
+    """
+    Initialise the jukebox immediately so sound effects work from frame one,
+    but pause music until the splash clears.
+    """
+    if not pygame.mixer.get_init():
+        return None
+    try:
+        room_data    = chatbot.state_manager.get_current_room_data()
+        player       = jukebox(f"style/sounds/music/rooms/{room_data.music}.mp3")
+        player.stop()   # silence music — splash hasn't cleared yet
+        print("[init] Jukebox ready (music paused until splash clears).")
+        return player
+    except Exception as exc:
+        print(f"[init] Jukebox init failed: {exc}")
+        return None
 # ---------------------------------------------------------------------------
 # Sub-steps (called in order by initialize())
 # ---------------------------------------------------------------------------
@@ -253,7 +268,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
         config_manager       = config_manager,
         chatbot              = chatbot,
         chatbot_available    = chatbot_available,
-        music_player_ref     = [None],   # filled once the splash clears
+        music_player_ref     = [_init_jukebox_silent(chatbot)],
         bots_archive_dir     = bots_archive_dir,
         idle_time_mins       = idle_time_mins,
         garden_tick_interval_ms = garden_tick_interval_ms,

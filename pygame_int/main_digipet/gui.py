@@ -311,7 +311,7 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
     gui_care_package.draw_package_buttons(screen, is_input_locked)
     gui_popups.draw_popups(screen)
     gui_popups.draw_active_image_popups(screen)
-    gui_clock.update_sleep_countdown()
+    # gui_clock.update_sleep_countdown() # Moved to game.py
     gui_clock.draw_current_time(screen)
     gui_clock.draw_sleep_duration(screen)
 

@@ -113,6 +113,11 @@ def _on_emote_changed(signal_data: dict, music_player, **_kwargs) -> None:
     emote_name = signal_data.get("emote_name")
     sound_path = signal_data.get("sound_path")
 
+    print("DEBUG EMOTE SIGNAL RECEIVED")
+    print("DEBUG EMOTE SIGNAL: ", signal_data)
+    print("DEBUG EMOTE SOUND PATH: ", sound_path)
+    print("DEBUG EMOTE MUSIC PLAYER: ", music_player)
+
     emote_map = {
         "sad":      animation.start_sad_animation,
         "happy":    animation.start_happy_animation,
@@ -130,6 +135,8 @@ def _on_emote_changed(signal_data: dict, music_player, **_kwargs) -> None:
         print(f"[signal] emote_changed — unhandled emote: {emote_name}")
 
     if sound_path and music_player:
+        print("ATTEMPTING TO PLAY SOUND WITH play_sound_effect")
+        print("DEBUG EMOTE SOUND PATH: ", sound_path)
         music_player.play_sound_effect(sound_path)
 
 

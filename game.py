@@ -35,7 +35,7 @@ from pygame_runtime.workers        import start_chatbot_request, start_garden_ti
 # Configuration
 # ---------------------------------------------------------------------------
 
-GAME_MODE = "ai_player"
+GAME_MODE = "user_player"
 # Options: "ai_player"   — autonomous AI agent controls the pet
 #          "user_player" — human types commands directly
 #
@@ -83,24 +83,25 @@ def add_items(items_list: list, room_id: str) -> None:
     gui.gui_text_utils.add_message_to_history("Items added successfully!", "system")
 
 
-def _maybe_init_music_player() -> None:
+def _maybe_start_music_after_splash() -> None:
     """
-    Called once per frame until the splash popup clears.
-    Initialises the jukebox and stores it in ctx.music_player_ref[0].
+    Called once per frame during the splash phase.
+    Once the splash clears, start playing music on the already-initialised player.
     """
-    if ctx.music_player_ref[0] is not None:
-        return  # Already initialised.
-    if not gui.gui_popups.is_any_image_popup_currently_active():
-        state.is_initial_popup_phase = False
-        if pygame.mixer.get_init():
-            try:
-                room_data = ctx.chatbot.state_manager.get_current_room_data()
-                ctx.music_player_ref[0] = jukebox(
-                    f"style/sounds/music/rooms/{room_data.music}.mp3"
-                )
-                print("[game] Jukebox initialised.")
-            except Exception as exc:
-                print(f"[game] Jukebox init failed: {exc}")
+    if gui.gui_popups.is_any_image_popup_currently_active():
+        return  # Splash still showing — do nothing.
+
+    state.is_initial_popup_phase = False
+    music_player = ctx.music_player_ref[0]
+    if music_player:
+        try:
+            room_data = ctx.chatbot.state_manager.get_current_room_data()
+            music_player.play_new_song(
+                f"style/sounds/music/rooms/{room_data.music}.mp3"
+            )
+            print("[game] Music started after splash cleared.")
+        except Exception as exc:
+            print(f"[game] Could not start music after splash: {exc}")
 
 
 def _trigger_autonomous_action(current_time_ms: int) -> None:
@@ -166,6 +167,7 @@ def main() -> None:
 
     # Wire the chatbot reference into the signal handler.
     chatbot_ref[0]      = ctx.chatbot
+    music_player_ref[0] = ctx.music_player_ref[0]
     # music_player_ref is ctx.music_player_ref (same list object).
 
     running_ref = [True]
@@ -229,13 +231,14 @@ def main() -> None:
         is_input_locked = state.agent_sleeping or state.chatbot_is_processing
         update_scroll_clamp()            # Keeps state.scroll_y in bounds — not draw_gui's job
         update_cursor_lock(is_input_locked)  # Hides cursor when locked — not draw_gui's job
+        gui.gui_clock.update_sleep_countdown()   
 
         # --- Draw ---
         gui.draw_gui(screen=ctx.screen, current_time_ms=current_time_ms, is_input_locked=is_input_locked)
 
         # --- Init jukebox once splash clears ---
         if state.is_initial_popup_phase:
-            _maybe_init_music_player()
+            _maybe_start_music_after_splash()
 
         pygame.display.flip()
 
