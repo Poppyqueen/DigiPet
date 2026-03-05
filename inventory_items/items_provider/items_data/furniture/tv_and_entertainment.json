@@ -95,7 +95,8 @@
             "toggle_item_power"
         ],
         "stackable": false,
-        "power_toggle": false
+        "power_toggle": false,
+        "current_channel": null
     },
     {
         "name": "Home Theater Projector with Retractable Screen",
@@ -111,7 +112,9 @@
             "toggle_item_power"
         ],
         "stackable": false,
-        "power_toggle": false
+        "power_toggle": false,
+        "tv_type": "bad tv",
+        "current_channel": null
     },
     {
         "name": "Upright Arcade Cabinet",

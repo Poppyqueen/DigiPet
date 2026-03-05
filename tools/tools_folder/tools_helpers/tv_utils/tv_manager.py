@@ -30,6 +30,7 @@ class ChannelState:
     """
     name: str
     description: str
+    ai_extra_prompt: str = ""
     sections: list[str] | None = None
     index: int | None = None
     none_ticks: int = 0
@@ -104,7 +105,7 @@ class TVManager:
         {
             "bar": {
                 "Channel 1 - Sports Live": {
-                    "name": "...", "description": "...",
+                    "name": "...", "description": "...", "ai_extra_prompt": "...",
                     "sections": [...] | null,
                     "index": int | null,
                     "none_ticks": int,
@@ -137,6 +138,7 @@ class TVManager:
                 channel_name: {
                     "name": ch.name,
                     "description": ch.description,
+                    "ai_extra_prompt": ch.ai_extra_prompt,
                     "sections": ch.sections,
                     "index": ch.index,
                     "none_ticks": ch.none_ticks,
@@ -161,6 +163,7 @@ class TVManager:
                     registry.channels[channel_name] = ChannelState(
                         name=ch["name"],
                         description=ch["description"],
+                        ai_extra_prompt=ch["ai_extra_prompt"],
                         sections=ch["sections"],
                         index=ch["index"],
                         none_ticks=ch["none_ticks"],
@@ -184,6 +187,7 @@ class TVManager:
                 registry.channels[bp["name"]] = ChannelState(
                     name=bp["name"],
                     description=bp["description"],
+                    ai_extra_prompt=bp.get("extra_prompt", ""),  
                 )
             self._registry[tv_type] = registry
         return self._registry[tv_type]
@@ -202,7 +206,7 @@ class TVManager:
         """
         if not channel.has_content():
             none_ticks = channel.none_ticks
-            program = self.content.generate_program(tv_type, channel.name, channel.description, blocking=blocking)
+            program = self.content.generate_program(tv_type, channel.name, channel.description, channel.ai_extra_prompt, blocking=blocking)
 
             if program is None:
                 # Two cases:

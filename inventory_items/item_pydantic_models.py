@@ -1,7 +1,10 @@
 # item_pydantic_models.py
-from typing import List, Optional, Union, Dict, Any, Literal, Annotated, Type
+from typing import List, Optional, Union, Dict, Any, Literal, Annotated, Type, get_args
 from pydantic import BaseModel, Field, ConfigDict, PositiveInt, model_validator, create_model
 from pydantic.functional_validators import AfterValidator
+
+from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
+
 
 # TODO: Register lighthouse items that require mixins
 # =============================================================================
@@ -36,7 +39,11 @@ ignore_fingerprint_keys = ["id", "quantity", "static"]
 
 # TODO: Check if any of the item types have particular keys that need mixins definitions, I think not, but I'm not sure.
 
+# Build a Literal type from the dict keys at import time
+_tv_type_keys = tuple(TV_TYPE_CHANNELS.keys())
+TVType = Literal[_tv_type_keys]  # type: ignore[valid-type]
 
+tv_type_names = ", ".join(_tv_type_keys)
 # =============================================================================
 # PLANT VALIDATOR
 # ValidPlantType is an Annotated str that raises a clear error for unknown plants.
@@ -149,11 +156,12 @@ class ToggableFields(BaseModel):
     model_config = ConfigDict(extra="allow")
     power_toggle: Optional[bool] = Field(default=None, description="Current power state. True = on, False = off.")
 
+
+
 class TVFields(BaseModel):
     model_config = ConfigDict(extra="allow")
-    tv_type: str = Field(description="The type of TV, e.g. 'bar' or 'kitchen'.")
-    current_channel: Optional[str] = Field(default=None, description="The currently airing channel, from the TV_TYPE_CHANNELS. Initialize to null and let the tool handle it..")
-
+    tv_type: Optional[TVType] = Field(default=None, description=f"The type of TV, any from: {tv_type_names}. Default is null.")
+    current_channel: Optional[str] = Field(default=None, description=f"The currently airing channel, any from: {tv_type_names}. Initialize to null and let the tool handle it.")
 # Lighthouse items
 
 class LighthouseSpiritPanFields(BaseModel):
@@ -183,6 +191,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[BaseModel]] = {
     "iov_spirit_pan":  LighthouseSpiritPanFields,
     "spirit_source": LighthouseSpiritSourceFields,
     "toggle_item_power": ToggableFields,
+    "tv":          TVFields,
 }
 
 

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 from utils.time_manager import get_time_tag_from_now
 from tools.tools_folder.tools_helpers.tv_utils.tv_models import TVProgram
+from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 
 if TYPE_CHECKING:
     from utils.config_manager import ConfigManager
@@ -35,31 +36,11 @@ class TVContent:
           blocking=False: returns None immediately without waiting.
                           Used by fire-and-forget callers like
                           get_current_accessible_tv.
-
         generate_program() only returns a TVProgram when THIS call
         is the one that actually ran the AI. In all other cases it
         returns None — the caller must re-check channel state.
     """
 
-    TV_TYPE_CHANNELS: dict[str, list[dict]] = {
-        "standard": [
-            {"name": "Channel 1 - News", "description": "Local and world news coverage"},
-            {"name": "Channel 2 - Sports", "description": "Live sports and highlights"},
-            {"name": "Channel 3 - Drama", "description": "Prime time drama series"},
-            {"name": "Channel 4 - Comedy", "description": "Sitcoms and stand-up specials"},
-            {"name": "Channel 5 - Nature", "description": "Wildlife and nature documentaries"},
-        ],
-        "bar": [
-            {"name": "Channel 1 - Sports Live", "description": "Live match broadcasts"},
-            {"name": "Channel 2 - Sports Highlights", "description": "Post-match replays and analysis"},
-            {"name": "Channel 3 - Music Videos", "description": "Top hits and music shows"},
-        ],
-        "kitchen": [
-            {"name": "Channel 1 - Cooking", "description": "Recipe shows and chef competitions"},
-            {"name": "Channel 2 - Home & Living", "description": "Home improvement and lifestyle"},
-            {"name": "Channel 3 - Talk Shows", "description": "Daytime talk and interviews"},
-        ],
-    }
 
     def __init__(self, config_manager: ConfigManager):
         config_model = config_manager.get_config("AI", "cook_model")
@@ -75,8 +56,7 @@ class TVContent:
         self._locks_mutex = threading.Lock()  # Protects both dicts above
 
     def get_channel_blueprints(self, tv_type: str) -> list[dict]:
-        """Return the hardcoded channel list for a tv_type."""
-        return self.TV_TYPE_CHANNELS.get(tv_type, self.TV_TYPE_CHANNELS["standard"])
+        return TV_TYPE_CHANNELS.get(tv_type) or next(iter(TV_TYPE_CHANNELS.values()), [])
 
     def _get_lock(self, tv_type: str, channel_name: str) -> threading.Lock:
         """Get or create the lock for a specific (tv_type, channel_name) pair."""
@@ -98,6 +78,7 @@ class TVContent:
         tv_type: str,
         channel_name: str,
         channel_description: str,
+        channel_ai_extra_prompt: str,
         blocking: bool = True,
     ) -> TVProgram | None:
         """
@@ -160,12 +141,19 @@ class TVContent:
                 f"- Type: {tv_type}\n"
                 f"- Name: {channel_name}\n"
                 f"- Description: {channel_description}\n"
+                f"- Extra Prompt: {channel_ai_extra_prompt}\n"
                 f"- Current World Time: {time_tag}\n\n"
                 f"TASK:\n"
                 f"Write a script for the program currently airing. It must have 3-6 sections. "
                 f"Each section should represent a continuous flow of the broadcast.\n\n"
                 f"Generate the script for {channel_name} now:"
             )
+
+
+            print(f"DEBUG TV CONTENT")
+            print(f"[TVContent] Generating '{channel_name}'...")
+            print(f"System Prompt: {system_prompt}")
+            print(f"User Prompt: {user_prompt}")
 
             program: TVProgram = self.client.structured_output(
                 system=system_prompt,
@@ -174,8 +162,9 @@ class TVContent:
             )
 
             # # --- SIMULATION ---
-            # print(f"[TVContent] Generating '{channel_name}'... sleeping 55s")
-            # time.sleep(55)
+            # sleep_time = 5
+            # print(f"[TVContent] Generating '{channel_name}'... sleeping {sleep_time}s")
+            # time.sleep(sleep_time)
             # print(f"[TVContent] Done generating '{channel_name}'")
             # program = TVProgram(
             #     name="Test Program",
