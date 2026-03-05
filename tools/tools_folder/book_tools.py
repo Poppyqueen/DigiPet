@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager
 
-from inventory_items.item_pydantic_models import validate_item_dict
+from inventory_items.items_validation.item_pydantic_models import validate_item_dict
 
 class BookTools:
     def __init__(self, state_manager, signal_callback):

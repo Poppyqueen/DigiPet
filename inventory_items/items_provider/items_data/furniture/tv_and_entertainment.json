@@ -14,8 +14,10 @@
         ],
         "stackable": false,
         "power_toggle": false,
-        "tv_type": "standard",
-        "current_channel": null
+        "tv_state": {
+            "tv_type": "bad tv",
+            "current_channel": null
+        }
     },
     {
         "name": "1970s Wood-Panel Entertainment Console",

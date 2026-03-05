@@ -7,7 +7,7 @@ from utils.loc_datetime import datetime
 import json
 
 
-from inventory_items.item_pydantic_models import validate_item_dict, ignore_fingerprint_keys
+from inventory_items.items_validation.item_pydantic_models import validate_item_dict, ignore_fingerprint_keys
 
 import copy
 

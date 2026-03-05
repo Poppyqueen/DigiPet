@@ -26,7 +26,7 @@ from pydantic import BaseModel, Field, ValidationError # Import ValidationError
 
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
-from inventory_items.item_pydantic_models import ItemDefinitionListContainer, validate_item_dict # Import the item definition model
+from inventory_items.items_validation.item_pydantic_models import ItemDefinitionListContainer, validate_item_dict # Import the item definition model
 
 
 

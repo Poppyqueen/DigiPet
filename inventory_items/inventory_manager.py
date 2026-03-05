@@ -49,7 +49,10 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
         for i in available_states:
             if i == selected_state_name:
+                # print(f"DEBUG INVENTORY MANAGER INIT: Selected state {selected_state_name} is valid.")
                 selected_state=self.initial_state_manager.create_state(i)
+                # print(f"DEBUG INVENTORY MANAGER INIT: Selected state {selected_state}.")
+
 
 
         #selected_state = available_states.get(selected_state_name, self.initial_state_manager.create_state("base_state")) # Fallback if name not found

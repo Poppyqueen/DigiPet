@@ -5,8 +5,8 @@
 # The current implementation is being used by an AI agent to manage cooking tasks.
 
 from typing import List, Dict, Any
-from inventory_items.item_pydantic_models import validate_item_dict
-from inventory_items.ai_schema_builder import build_llm_schema_for_types
+from inventory_items.items_validation.item_pydantic_models import validate_item_dict
+from inventory_items.items_validation.ai_schema_builder import build_llm_schema_for_types
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 # Build once at import time — the cook only ever produces consumables.

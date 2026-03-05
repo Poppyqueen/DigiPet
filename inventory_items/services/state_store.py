@@ -9,8 +9,8 @@ except ImportError:
     print("Error: generic_json_tool.py not found. Make sure it's in the same directory or PYTHONPATH.")
     import sys; sys.exit(1)
 
-from inventory_items.item_pydantic_models import validate_item_dict
-from inventory_items.room_pydantic_models import validate_room_dict
+from inventory_items.items_validation.item_pydantic_models import validate_item_dict
+from inventory_items.items_validation.room_pydantic_models import validate_room_dict
 
 class StateStore(GenericJsonTool):
     ITEM_ID_START_COUNTER = 1 # Re-define constants here or pass from config
