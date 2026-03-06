@@ -199,9 +199,7 @@
     {
         "name": "Storage Room",
         "image": "oil_room",
-        "room_types": [
-            "storage_room"
-        ],
+        "room_types": [],
         "music": "white_room",
         "descriptions": {
             "late night": [
@@ -252,7 +250,6 @@
         "name": "Sleeping Nook",
         "image": "sleeping_nook",
         "room_types": [
-            "sleeping_nook",
             "library"
         ],
         "music": "white_room",

@@ -58,21 +58,21 @@ def make_report()->ReportData:
 print("-" * 20)
 
 
-single_item_test("Mid-Century Walnut Console TV")
+# single_item_test("Wall-Mounted Snack Dispenser")
 
-single_item_test("Wall-Mounted Modern OLED TV")
+# single_item_test("Wall-Mounted Modern OLED TV")
 
 
-# report = make_report()
-# print("Invalid items:")
-# print(report.invalid_items)
-# print("Valid items:")
-# print(report.valid_items)
-# print("Total items:")
-# print(report.total_items)
-# print("-" * 20)
-# print("Invalid items list report:")
-# for item in report.invalid_items_list:
-#     print(f"Item: {item.name}")
-#     print(f"Error: {item.error}")
-#     print("-" * 20)
+report = make_report()
+print("Invalid items:")
+print(report.invalid_items)
+print("Valid items:")
+print(report.valid_items)
+print("Total items:")
+print(report.total_items)
+print("-" * 20)
+print("Invalid items list report:")
+for item in report.invalid_items_list:
+    print(f"Item: {item.name}")
+    print(f"Error: {item.error}")
+    print("-" * 20)

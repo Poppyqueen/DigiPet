@@ -20,7 +20,7 @@
 # Do NOT mark fields Optional — if a field is conditionally present, reconsider
 # whether it belongs in the mixin at all.
 
-from typing import Any, get_args, get_origin, Union
+from typing import Any, ClassVar, Optional, get_args, get_origin, Union
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.fields import FieldInfo
 
@@ -57,6 +57,14 @@ class ContractMixin(BaseModel):
       - Mark any field Optional.
 
     Violations raise TypeError at class definition time (import error).
+
+    Optional class variable:
+        model_description: ClassVar[str]
+            A plain English description of what this item/room type *is*.
+            Survives field flattening in build_llm_schema() and is injected
+            into the generated model's docstring, giving the LLM semantic
+            context about the type. Example:
+                model_description: ClassVar[str] = "A vessel of spirit fuel for the lighthouse lamp."
     """
 
     model_config = ConfigDict(extra="forbid")

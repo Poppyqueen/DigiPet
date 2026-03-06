@@ -20,10 +20,12 @@
         "granulated sugar (500 g)",
         "Milk (1L carton)",
         "Bag of Banana Gum[x5]",
-        "Candy Dispenser",
+        "Wall-Mounted Snack Dispenser",
         "Ground Cinnamon Tin[x5]",
         "Mid-Century Walnut Console TV",
         "lettuce head[x10]"
     ],
-    "inventory": []
+    "inventory": [
+        "Arts Notebook"
+    ]
 }

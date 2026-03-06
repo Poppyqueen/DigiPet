@@ -355,8 +355,30 @@
             "A soft, fluffy pillow on the bed."
         ],
         "static": false,
-        "type": ["furniture", "seat", "pillow"],
+        "type": [
+            "furniture",
+            "seat",
+            "pillow"
+        ],
         "stackable": true
-
+    },
+    {
+        "name": "Wall-Mounted Snack Dispenser",
+        "descriptions": [
+            "A sturdy metal dispenser bolted to the wall with a glass front, revealing rows of packaged snacks. A lever on the side releases one item at a time.",
+            "A faded label lists the available items and their sizes. It hums faintly when idle."
+        ],
+        "static": true,
+        "type": [
+            "dispenser",
+            "furniture",
+            "misc"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "dispenser_state": {
+            "contents": null
+        }
     }
 ]

@@ -1,4 +1,3 @@
-
 # services/inventory_service.py
 from __future__ import annotations
 
@@ -72,7 +71,7 @@ class InventoryService:
                 if self._get_item_stacking_key(existing_item) == item_stacking_key:
                     # Check if there's space in the stack
                     current_quantity = existing_item.get("quantity", 0)
-                    max_size = existing_item.get("max_stack_size", float('inf')) # Use infinity if no max_stack_size
+                    max_size = self._max_stack_size(existing_item)
                     if current_quantity < max_size:
                         return existing_item
         return None
@@ -80,6 +79,22 @@ class InventoryService:
     def set_room_manager(self, room_manager_instance):
         """Sets the RoomManager dependency to resolve circular dependency."""
         self._room_manager = room_manager_instance
+
+    # ── Helper ──────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _max_stack_size(item: dict) -> float:
+        """
+        Returns the effective maximum stack size for *item*.
+
+        The Pydantic model stores ``None`` for "unlimited", and absent keys
+        should also mean unlimited.  Both cases map to ``float('inf')`` so
+        that arithmetic and comparisons always work without extra guards.
+        """
+        value = item.get("max_stack_size")   # None if absent OR explicitly None
+        return float("inf") if value is None else value
+
+    # ────────────────────────────────────────────────────────────────────────
 
     def _send_signal(self, signal_data):
         if self._signal_callback:
@@ -166,7 +181,7 @@ class InventoryService:
         if item_data.get("stackable", False):
             existing_stack = self._find_matching_stack_in_list(inventory_list, item_data)
             if existing_stack:
-                space = existing_stack.get("max_stack_size", float("inf")) - existing_stack.get("quantity", 0)
+                space = self._max_stack_size(existing_stack) - existing_stack.get("quantity", 0)
                 if space > 0:
                     return True  # Will merge, no slot needed
 
@@ -231,7 +246,7 @@ class InventoryService:
         if item_to_move.get("stackable", False):
             target_stack = self._find_matching_stack_in_list(inventory_list, item_to_move)
             if target_stack:
-                space_in_target = target_stack.get("max_stack_size", float('inf')) - target_stack.get("quantity", 0)
+                space_in_target = self._max_stack_size(target_stack) - target_stack.get("quantity", 0)
                 amount_to_transfer = min(remaining_to_pickup, space_in_target)
 
                 if amount_to_transfer > 0:
@@ -332,7 +347,7 @@ class InventoryService:
                 target_stack = self._find_matching_stack_in_list(target_room["items"], item_to_drop)
                 
                 if target_stack:
-                    space_in_target = target_stack.get("max_stack_size", float('inf')) - target_stack.get("quantity", 0)
+                    space_in_target = self._max_stack_size(target_stack) - target_stack.get("quantity", 0)
                     amount_to_transfer = min(remaining_to_drop, space_in_target)
 
                     if amount_to_transfer > 0:
@@ -482,7 +497,7 @@ class InventoryService:
                     existing_stack = self._find_matching_stack_in_list(target_list, item_data_template)
 
                     if existing_stack:
-                        space_in_target = existing_stack.get("max_stack_size", float("inf")) - existing_stack.get("quantity", 0)
+                        space_in_target = self._max_stack_size(existing_stack) - existing_stack.get("quantity", 0)
                         amount_to_transfer = min(current_quantity_to_add, space_in_target)
 
                         if amount_to_transfer > 0:
@@ -513,7 +528,7 @@ class InventoryService:
                         new_stack_item["id"]       = new_item_id
                         new_stack_item["quantity"] = current_quantity_to_add
 
-                        max_size = new_stack_item.get("max_stack_size", float("inf"))
+                        max_size = self._max_stack_size(new_stack_item)
                         if new_stack_item["quantity"] > max_size:
                             original_qty = new_stack_item["quantity"]
                             new_stack_item["quantity"] = max_size
@@ -978,7 +993,7 @@ class InventoryService:
             if i.get("id") != item_id
             and i.get("stackable", False)
             and self._get_item_stacking_key(i) == self._get_item_stacking_key(detached_preview)
-            and i.get("quantity", 0) < i.get("max_stack_size", float("inf"))),
+            and i.get("quantity", 0) < self._max_stack_size(i)),
             None
         )
 
@@ -1004,7 +1019,7 @@ class InventoryService:
 
         messages = []
         if existing_target:
-            space = existing_target.get("max_stack_size", float("inf")) - existing_target.get("quantity", 0)
+            space = self._max_stack_size(existing_target) - existing_target.get("quantity", 0)
             can_merge = min(actual_qty, space)
             existing_target["quantity"] += can_merge
             leftover = actual_qty - can_merge

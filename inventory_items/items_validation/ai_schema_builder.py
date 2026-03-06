@@ -26,7 +26,7 @@
 #   Container models also use extra="forbid". This satisfies the
 #   additionalProperties: false requirement throughout.
 
-from typing import List, Optional, Dict, Any, Type, get_args, get_origin, Union
+from typing import List, Optional, Dict, Any, Type, get_args, get_origin, Union, Literal
 from pydantic import BaseModel, Field, ConfigDict, create_model
 
 from .contract_mixin import ContractMixin
@@ -60,6 +60,15 @@ def build_llm_schema(
         suitable for passing directly to OpenAI structured output.
     """
     relevant_contracts = {t: contracts[t] for t in types if t in contracts}
+
+    # Collect model_description from each contract mixin that defines one.
+    # These survive field flattening by being injected into the model's __doc__,
+    # which Pydantic renders as the "description" on the root schema object.
+    type_context_lines = []
+    for type_str, contract_class in relevant_contracts.items():
+        desc = getattr(contract_class, "model_description", None)
+        if desc:
+            type_context_lines.append(f"'{type_str}': {desc}")
 
     # Map each field name to the list of types that require it, for description annotation.
     field_to_types: Dict[str, List[str]] = {}
@@ -97,16 +106,32 @@ def build_llm_schema(
             full_description = f"{requirement_note} {original_desc}".strip()
 
             fields[field_name] = (
-                optional_annotation,
-                Field(default=None, description=full_description),
+                annotation,
+                Field(default=field_info.default, description=full_description),
             )
 
-    return create_model(
+    # Narrow the 'type' field to only the requested types
+    if types:
+        NarrowedType = Literal[tuple(types)]  # type: ignore[valid-type]
+        fields["type"] = (
+            List[NarrowedType],
+            Field(description="One or more type tags. From valid literals.")
+        )
+
+    model = create_model(
         model_name,
         __base__=base,
         __config__=ConfigDict(extra="forbid"),
         **fields,
     )
+
+    # Inject type context descriptions as the model's docstring.
+    # Pydantic renders __doc__ as the "description" field in the JSON schema,
+    # giving the LLM semantic context about what each type means.
+    if type_context_lines:
+        model.__doc__ = "Type context:\n" + "\n".join(type_context_lines)
+
+    return model
 
 
 # =============================================================================

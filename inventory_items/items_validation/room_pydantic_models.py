@@ -28,7 +28,7 @@ room_types = [
     "garden", "white_room", "kitchen", "ALIFE_research", "computer_room", "outdoors_view"
 ]
 
-lighthouse_room_types = ["lantern_room", "lighthouse_gallery", "accessible_light_viewing_room"]
+lighthouse_room_types = ["lantern_room", "lighthouse_gallery", "accessible_light_viewing_room", "fresnel_lens_interior"]
 room_types.extend(lighthouse_room_types)
 
 

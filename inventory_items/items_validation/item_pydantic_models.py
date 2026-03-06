@@ -21,15 +21,21 @@ from .contract_mixin import ContractMixin
 from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 from tools.tools_folder.tools_data.harvesting_data import plant_types
 
+from inventory_items.items_provider.item_store import ItemStore
+
+from typing import ClassVar
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
+item_store = ItemStore()
+
 toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
 item_types = ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag", "toggle_item_power"]
 item_types.extend(toggable_items)
+
 
 lighthouse_items = [
     "iov_pressure_system", "kerosene_container", "iov_spirit_pan", "hand_fire_source",
@@ -40,9 +46,25 @@ item_types.extend(lighthouse_items)
 
 ignore_fingerprint_keys = ["id", "quantity", "static"]
 
+# # Register consumables
+# # 1. Get the list of dictionaries
+# consumable_items_data = item_store.get_items_by_type("consumable")
+# # 2. Extract just the names into a tuple
+# _consumable_names = tuple(item['name'] for item in consumable_items_data)
+# # 3. Create the Literal Type
+# ConsumableItemType = Literal[_consumable_names] # type: ignore[valid-type]
+# # 4. (Optional) For display or debugging
+# print(f"Registered consumables: {', '.join(_consumable_names)}")
+# print(ConsumableItemType)
 
 # =============================================================================
-# TV REGISTRY
+# ITEM TYPES REGISTRY
+# =============================================================================
+
+ItemType = Literal[tuple(item_types)]
+
+# =============================================================================
+# TV TYPES REGISTRY
 # =============================================================================
 
 _tv_type_keys = tuple(TV_TYPE_CHANNELS.keys())
@@ -51,12 +73,14 @@ tv_type_names = ", ".join(_tv_type_keys)
 
 
 # =============================================================================
-# PLANT REGISTRY
+# PLANT TYPES REGISTRY
 # =============================================================================
 
 _plant_type_keys = tuple(plant_types.keys())
 PlantType = Literal[_plant_type_keys]        # type: ignore[valid-type]
 plant_type_names = ", ".join(_plant_type_keys)
+
+## Go to plant_types (imported variable) to see, edit and create new plant types.
 
 # =============================================================================
 # SHARED SUB-MODELS
@@ -69,36 +93,32 @@ class BookChapter(BaseModel):
     """A single chapter inside a book item."""
     title: str
     content: str
-    is_locked: bool = Field(default=True, description="Whether the chapter is locked.")
-
 
 class ItemStatsEdit(BaseModel):
     """Stat deltas applied when a consumable item is used."""
-    fullness: float = Field(description="Change to fullness stat. Negative values allowed.")
-    hydration: float = Field(description="Change to hydration stat. Negative values allowed.")
-    energy: float = Field(description="Change to energy stat. Negative values allowed.")
+    fullness: float = Field(description="A positive or negative float representing an effect on the metabolic system of a character. Dangerous meals use negative floats as they are harmful to the character.")
+    hydration: float = Field(description="A positive or negative float representing an effect on the hydration of a character. Meals affect the dryness on the mouth, use floats logically. i.e. A meaty and salty broth would make the character feel thirstier, so a negative float is appropriate. A glass of water would be a positive float. Eating a raw meat would dehydrate the character, so a negative float is appropriate.")
+    energy: float = Field(description="A positive or negative float representing an effect on the energy system of a character. Raw, spoiled, or otherwise dangerous meals when consumed cause digestive issues and risk sickness so negative values need to be applied respectively.")
+
 
 
 class DispenserState(BaseModel):
-    model_config = ConfigDict(extra="forbid")  # was extra="allow"
-    contents: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Maps existing item names to remaining quantities."
+    model_config = ConfigDict(extra="forbid")
+    contents: Optional[Dict[str, int]] = Field(
+        default=None,
+        description="Always set to null. Contents are managed at runtime, never by generation."
     )
-
 
 class TVState(BaseModel):
     model_config = ConfigDict(extra="forbid")
     tv_type: TVType = Field(
         default=_tv_type_keys[0],
-        description=f"The type of TV. One of: {tv_type_names}."
+        description=f"The type of TV. From valid literals." # 
     )
     current_channel: Optional[str] = Field(
         default=None,
         description=f"Currently airing channel. Starts as None, managed by the TV tool."
     )
-
-
 
 # =============================================================================
 # BASE ITEM
@@ -113,9 +133,9 @@ class BaseItem(BaseModel):
 
     name: str = Field(description="Human-readable item name, e.g. 'Bowl of Nuts'.")
     descriptions: List[str] = Field(description="One or more description strings shown to the player.")
-    static: bool = Field(description="True if the item cannot be picked up or moved.")
-    type: List[str] = Field(description=f"One or more type tags. Available types: {', '.join(item_types)}.")
-    stackable: bool = Field(default=False, description="True for small non-unique items that can stack.")
+    static: bool = Field(description="True if the item cannot be logically picked up or moved by a single human, like furniture, machinery, permanent fixtures or installed work equipment.")
+    type: List[ItemType] = Field(description=f"One or more type tags. From valid literals.")
+    stackable: bool = Field(default=False, description="Stackability is primarily driven by item size and weight, then by uniqueness. Most items are stackable except for furniture, objects larger than a human, or items that are too heavy to lift. Some truly unique items are not stackable, a specific meal is not stackable, but a red apple is stackable.")
     quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Default to 1.")
     max_stack_size: Optional[PositiveInt] = Field(default=None, description="Maximum units per stack. None means unlimited.")
 
@@ -141,50 +161,58 @@ class BaseItem(BaseModel):
 # =============================================================================
 
 class ConsumableFields(ContractMixin):
+    consume_uses_left: PositiveInt = Field(
+        default=1,
+        description=(
+            "Logical bites or portions for consumables, dishes, bags, jars, bowls, etc. A single piece of bread has 5 bites, a full meal has 10, a milk carton has 25, etc."
+            "Set to 1 for single-bite items like single pieces of candy, chocolates, or other single-bite items."
+        )
+    )
     stats_edit: ItemStatsEdit = Field(
-        description="Stat changes applied on consumption. Negative values allowed for harmful items."
+        description="You should first think 'Is this a Potentially Hazardous Food'? raw meats, spoiled foods, etc. If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0. "
     )
     effects: List[str] = Field(
-        description="Narrative effect strings shown to the player on consumption."
-    )
-    consume_uses_left: PositiveInt = Field(
-        description=(
-            "Remaining uses for multi-use consumables (jars, bags, large bowls, etc). "
-            "Set to 1 for single-use items."
-        )
+        description="Narrative, evocative, grounded descriptions of the effects of consuming the item, **second-person, present tense** narration of the phenomenal experience of giving a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
     )
 
 
 class SeedFields(ContractMixin):
+    model_description: ClassVar[str] = "A seed item, most of them are also consumables, they have a direct tie to a plant through its plant type, it must be always set as any of the valid literals. This seed growth and behavior are directly tied to its plant type."
+
     plant_type: PlantType = Field(
-        description=f"The plant this seed grows. One of: {plant_type_names}."
+        description=f"The plant this type of seed grows. From valid literals. Always required for seed type." 
     )
 
 
 class BookFields(ContractMixin):
-    chapters: List[BookChapter] = Field(
-        description="Ordered list of chapters in this book."
+    model_description: ClassVar[str] = "A book item, it can be a notebook for personal use or a publication with content, it can be empty or contain chapters. Its locked quality is determined by its use case. It varies wildly in presentation, from size, to cover art, to the color and format of the pages inside."
+    chapters: Optional[List[BookChapter]] = Field(
+        default=None,
+        description="Ordered list of chapters in this book. If None, the book is empty."
     )
     is_locked: bool = Field(
-        description="True if the book cannot be written to."
+        default=True,
+        description="True if the book cannot be written to or edited after creation."
     )
 
 
 class DispenserFields(ContractMixin):
-    dispenser_state: DispenserState = Field(
-        description="Internal state of the dispenser, including remaining contents."
+    dispenser_state: Optional[DispenserState] = Field(
+        default={},
+        description="Always set dispenser_state.contents to empty dict. Runtime manages contents."
     )
 
 
 class CandyBagFields(ContractMixin):
-    contents: Dict[str, PositiveInt] = Field(
-        description="Maps contained item names to their quantities."
+    contents: Optional[Dict[str, int]] = Field(
+        default=None,
+        description="Maps contained item names to their quantities. "
     )
 
 
 class ToggableFields(ContractMixin):
     power_toggle: bool = Field(
-        description="Current power state. True = on, False = off."
+        description="Current power state for electronic devices. True = on, False = off."
     )
 
 
@@ -195,16 +223,25 @@ class TVFields(ContractMixin):
 
 # Lighthouse mixins
 
-class LighthouseSpiritPanFields(ContractMixin):
-    filled: bool = Field(
-        description="Whether the spirit pan is filled with spirit."
-    )
-
-
 class LighthouseSpiritSourceFields(ContractMixin):
+    model_description: ClassVar[str] = "A large container for spirit fuel, they come in various sizes, materials and shapes, depending on era. From wooden barrels, metal tins, to plastic containers. Usually stackable."
+
     spirit_quantity: float = Field(
-        description="Amount of spirit in the source. Float from 0.0 to 1.0."
+        default=1.0,
+        description="Amount of spirit remaining. 1.0 is full, 0.0 is empty."
     )
+
+
+class LighthouseSpiritPanFields(ContractMixin):
+    #model_description = "The pan that holds spirit directly beneath the lighthouse mantle burner."
+
+    filled: bool = Field(
+        default=False,
+        description="Whether the spirit pan currently contains spirit."
+    )
+
+class ArtBookFields(ContractMixin): # Does not define any fields, but injects a model_description for the LLM to use.
+    model_description: ClassVar[str] = "These are varieties of notebooks, from digital to physical sketchbooks. They are used for drawing, sketching, and other forms of art. Covers can be made of various materials, such as paper, leather, plastic, etc."
 
 
 # =============================================================================
@@ -226,6 +263,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "tv":                TVFields,
     "iov_spirit_pan":    LighthouseSpiritPanFields,
     "spirit_source":     LighthouseSpiritSourceFields,
+    "art_book":          ArtBookFields, # no fields — model_description only
 }
 
 

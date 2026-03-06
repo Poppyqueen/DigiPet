@@ -281,7 +281,7 @@
         ],
         "static": false,
         "type": [
-            "ingredient"
+            "consumable"
         ],
         "stackable": true,
         "effects": [

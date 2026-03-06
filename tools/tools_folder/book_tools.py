@@ -50,7 +50,11 @@ class BookTools:
         if not result.success:
             return None, result.error
         return result.item_data, None
-
+    
+    def _get_chapters(self, book_data: dict) -> list:
+        """Safely extracts the chapters list, defaulting to [] if None or missing."""
+        chaps = book_data.get("chapters")
+        return chaps if isinstance(chaps, list) else []
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -84,26 +88,23 @@ class BookTools:
 
     def list_book_chapters(self, book_item_id: int) -> str:
         book_data, error_msg = self._fetch_book(book_item_id)
-        if error_msg:
-            return f"Error: {error_msg}"
+        if error_msg: return f"Error: {error_msg}"
 
-        chapters = book_data.get("chapters", [])
+        chapters = self._get_chapters(book_data)
         if not chapters:
             return f"The book {self._item_display(book_data, book_item_id)} has no chapters."
 
         chapter_titles = [
             f"- '{chap.get('title', 'Untitled Chapter')}'"
-            for chap in chapters
-            if isinstance(chap, dict)
+            for chap in chapters if isinstance(chap, dict)
         ]
         return f"Chapters in {self._item_display(book_data, book_item_id)}:\n" + "\n".join(chapter_titles)
-
+        
     def read_book_chapter(self, book_item_id: int, chapter_title: str) -> str:
         book_data, error_msg = self._fetch_book(book_item_id)
-        if error_msg:
-            return f"Error: {error_msg}"
+        if error_msg: return f"Error: {error_msg}"
 
-        chapters = book_data.get("chapters", [])
+        chapters = self._get_chapters(book_data)
         target_chapter = next(
             (c for c in chapters if c.get("title", "").lower() == chapter_title.lower()), None
         )
@@ -126,7 +127,7 @@ class BookTools:
         if not isinstance(content, str) or not content.strip():
             return "Error: Chapter content cannot be empty."
 
-        chapters = copy.deepcopy(book_data.get("chapters", []))
+        chapters = copy.deepcopy(self._get_chapters(book_data))
         if any(c.get("title", "").lower() == chapter_title.lower() for c in chapters):
             return (
                 f"Error: Chapter '{chapter_title}' already exists in "
@@ -161,7 +162,7 @@ class BookTools:
         if operation not in ("append", "replace"):
             return f"Error: Unknown operation '{operation}'. Use 'append' or 'replace'."
 
-        chapters_clone = copy.deepcopy(book_data.get("chapters", []))
+        chapters_clone = copy.deepcopy(self._get_chapters(book_data))
         target_chapter = next(
             (c for c in chapters_clone if c.get("title", "").lower() == chapter_title.lower()), None
         )
@@ -188,7 +189,7 @@ class BookTools:
         if book_data.get("is_locked"):
             return f"{self._item_display(book_data, book_item_id)} is locked. Cannot delete chapters."
 
-        chapters = book_data.get("chapters", [])
+        chapters = self._get_chapters(book_data)
         updated_chapters = [c for c in chapters if c.get("title", "").lower() != chapter_title.lower()]
 
         if len(updated_chapters) == len(chapters):
