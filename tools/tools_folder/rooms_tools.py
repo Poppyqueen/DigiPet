@@ -59,7 +59,6 @@ def _send_signal(self, signal_data):
         pass # Silently fail if no callback is registered, or log loudly
 # ------------------------------------------------------
 
-
 class room_kitchen:
     def __init__(self, state_manager, signal=None, config_manager=None):
         self._signal_callback=signal
@@ -420,10 +419,6 @@ class room_garden:
     # Add the helper method
     _send_signal = _send_signal # Assign the common helper function
 
-    def display_information(self):
-        return self.open_meteo.get_full_weather()
-        
-
     def lay_down(self):
         edit=5
         self.state_manager.adjust_stat("energy", edit)
@@ -518,15 +513,6 @@ class room_living_room:
         self.state_manager.adjust_stat("energy", edit)
         return message
 
-    def look_at_window(self):
-        """
-        Returns a string with the current weather information
-        delegated to Open Meteo handle
-        """
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/window_icon.png"})
-        # ------------------------
-        return self.open_meteo.get_full_weather()
 
 
 

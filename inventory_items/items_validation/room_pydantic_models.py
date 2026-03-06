@@ -13,8 +13,8 @@
 #   2. Add an entry to ROOM_TYPE_FIELD_CONTRACTS.
 #   That's it — validate_room_dict and the LLM schema update automatically.
 
-from typing import List, Optional, Dict, Any, Type
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from typing import List, Optional, Dict, Any, Type, Literal
+from pydantic import BaseModel, Field, ConfigDict, model_validator, PositiveInt
 
 from .contract_mixin import ContractMixin
 
@@ -25,12 +25,18 @@ from .contract_mixin import ContractMixin
 
 room_types = [
     "planting_garden", "library", "bedroom", "living_room", "bathroom",
-    "garden", "white_room", "kitchen", "ALIFE_research", "computer_room", "outdoors_view"
+    "garden", "white_room", "kitchen", "ALIFE_research", "computer_room",
 ]
+
+refactored_types = ["outdoors_area"]
 
 lighthouse_room_types = ["lantern_room", "lighthouse_gallery", "accessible_light_viewing_room", "fresnel_lens_interior"]
 room_types.extend(lighthouse_room_types)
 
+
+# Register room types
+RoomType = Literal[tuple(room_types)]
+room_type_names = ", ".join(room_types)
 
 # =============================================================================
 # SHARED SUB-MODELS
@@ -67,18 +73,18 @@ class BaseRoom(BaseModel):
         description="Time-of-day description strings. All 7 slots required, each with at least one string."
     )
     image: str = Field(
-        description="Background image filename without extension, e.g. 'garden'."
+        description="Background image filename without extension, e.g. 'garden'." # do something about the file names
     )
     music: Optional[str] = Field(
         default=None,
-        description="Background music filename without extension, or None for silence."
+        description="Background music filename without extension, or None for silence." # do something about the file names
     )
-    room_types: List[str] = Field(
-        description=f"One or more room type tags. Available types: {', '.join(room_types)}."
+    room_types: List[RoomType] = Field(
+        description=f"One or more room type tags. From available Literals."
     )
     items: List[Any] = Field(
-        default_factory=list,
-        description="Items currently present in this room. Each entry must independently pass validate_item_dict."
+        default_factory=[],
+        description="Items currently present in this room. Each entry must independently pass validate_item_dict. Initialize as empty list."
     )
 
     @model_validator(mode="after")
@@ -104,8 +110,8 @@ class BaseRoom(BaseModel):
 # =============================================================================
 
 class PlantingGardenFields(ContractMixin):
-    plot_number: int = Field(
-        description="Number of planting plots available in this garden room."
+    plot_number: PositiveInt = Field(
+        description="Number of planting plots available in this garden room. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
     )
 
 

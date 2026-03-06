@@ -1,0 +1,172 @@
+[
+    {
+        "name": "Panoramic Starbridge Window",
+        "descriptions": [
+            "A floor-to-ceiling curved viewport that runs along the length of a starbridge promenade, offering an uninterrupted vista of nearby nebulae and starfields.",
+            "Optically stabilized and magnetically damped to remove ship-vibration shimmer; integrated glare filaments dim to preserve night vision.",
+            "Usually found adjacent to a viewing rail; built-in HUD anchors can overlay navigational data on the glass."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Reinforced Hull Porthole",
+        "descriptions": [
+            "A circular, triple-layered viewport set in the hull plating with honeycombed shock mounts and transparent ceramic glazing.",
+            "Small but highly durable — used in engineering corridors and maintenance alcoves to inspect exterior hardware without depressurizing.",
+            "Has an internal scratch-resistant coating and a quick-seal shutter for emergency isolation."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Observation Dome Skylight",
+        "descriptions": [
+            "A hemispherical skylight set into the upper hull of a common-room or arboretum, offering a telescopic aperture to deep space.",
+            "Equipped with a diffraction lattice that can filter cosmic rays and create a stabilized starfield for relaxed observation.",
+            "Physically in the ceiling and designed for overhead viewing; maintenance access required for external cleaning."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": false
+    },
+    {
+        "name": "Quantum Phase Variable Viewscreen",
+        "descriptions": [
+            "A smart-glass pane that switches between crystal-clear transparency, full opacity, and layered holographic displays via quantum-phase gel interlayers.",
+            "Used as a window, privacy wall, and tactical feed — it can simulate an outside view, stream sensor overlays, or present crew messages.",
+            "Responds to biometric presence and voice commands; delicate electronics are recessed behind armored bezel."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Airlock Transfer Aperture",
+        "descriptions": [
+            "A reinforced viewport set into the hatch of a cargo or personnel airlock, with intercom and thermal readouts along the rim.",
+            "Designed to be inspected from either side while maintaining full pressure seals; emergency quick-slide covers can isolate the lens.",
+            "Often ringed by touch-activated handholds and lockout indicators for safe transfer procedures."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Holographic Paneglaze",
+        "descriptions": [
+            "A window-sized emitter that projects high-fidelity, sensor-fed holographic scenery — any plausible exterior can be rendered on demand.",
+            "Because the display is volumetric and not a physical opening, it can render viewpoints impossible in reality (e.g., from outside the ship).",
+            "Often used in passenger cabins and lounges when real external visibility is restricted or undesirable."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Micro-viewport Array",
+        "descriptions": [
+            "A linear strip containing dozens of tiny sensor-ports and microscopic lenses — together they form a composite, high-resolution outside image.",
+            "Designed for redundant sensing in heavily shielded sections where a single large pane would be structurally weak.",
+            "Individual nodes can be swapped during maintenance; the array provides stitched panoramas and depth maps."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Emergency Egress Skylight Tube",
+        "descriptions": [
+            "A narrow, armored skylight doubling as an escape tube with deployable ladder and exterior tether points for emergency evacuation.",
+            "Its glazing includes heat-dispersal channels and blast membranes; normally sealed except during drills or emergency deployment.",
+            "Placed on high decks where rapid vertical egress may be necessary; requires crew training to use safely."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": false
+    },
+    {
+        "name": "Zero-G Observation Bay Seat with Window",
+        "descriptions": [
+            "An integrated lounge seat bolted to the observation bay, with a contoured harness and a recessed viewport framing the forward thruster plume or stellar vista.",
+            "The seat is treated as installed furniture but designed to be used in microgravity; straps and micro-grips keep occupants near the glass.",
+            "Under-seat storage contains life tether reels and a local comm panel for private feeds."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    },
+    {
+        "name": "Thermalized Radiation-Shielded Viewport",
+        "descriptions": [
+            "A heavy, multi-sheath viewport incorporating ablative layers and magneto-thermal rings to dissipate radiation and thermal flux during close stellar passes.",
+            "Visible through a narrow band of filtered glass, exterior sensors provide corrected imagery to compensate for thermal bloom.",
+            "Primarily installed in tactical and science modules where both visibility and protection are critical."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "furniture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true
+    }
+]

@@ -2,6 +2,8 @@
 # This is more of a tool than an item state service, but it was here before everything else.
 # Now follows the same pattern as other tool classes: receives state_manager directly,
 # accesses state only through the public facade, no private member access.
+
+# change this to use a bookshelf item instead of library room type
 import copy
 
 from typing import TYPE_CHECKING

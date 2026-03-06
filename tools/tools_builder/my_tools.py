@@ -925,95 +925,6 @@ garden_room_tools=[
         }
     },
 ]
-
-living_room_tools= [
-    {
-        "type": "function",
-        "name": "watch_tv",
-        "description": "Watch some TV. Whatever is on right now.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tv_id": {
-                    "type": "number",
-                    "description": "The ID of the TV to watch."
-                }
-            },
-            "required": [
-                "tv_id"
-            ],
-            "additionalProperties": False
-        }
-    },    
-    {
-        "type": "function",
-        "name": "browse_channels",
-        "description": "Browse through the available channels on the TV.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tv_id": {
-                    "type": "number",
-                    "description": "The ID of the TV to browse channels on."
-                }
-            },
-            "required": [
-                "tv_id"
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "change_channel",
-        "description": "Change the channel on the TV.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tv_id": {
-                    "type": "number",
-                    "description": "The ID of the TV to change channels on."
-                },
-                "channel_name": {
-                    "type": "string",
-                    "description": "The name of the channel to change to."
-                }
-            },
-            "required": [
-                "tv_id",
-                "channel_name"
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "look_at_window",
-        "description": "Look at the outside world from the window.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "sit_on_couch",
-        "description": "Sit on the couch for a while",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-
-]
 computer_room_tools=[
     {
         "type": "function",
@@ -2163,3 +2074,90 @@ toggle_item_power_tool = {
         "additionalProperties": False
     }
 }
+
+
+
+
+fenestration_apertures_tools = [
+
+    {    
+    "type": "function",
+    "name": "look_outdoors_through_fenestration",
+    "description": "The room you are in currently hosts windows, apertures, or fenetration features that allow you to peer into the outside world.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "aperture_id": {
+                "type": "number",
+                "description": "The ID of the window, clerestorie, oculus, or any other Fenêtre for a view."
+            }
+        },
+        "required": ["item_id"],
+        "additionalProperties": False
+    }
+    }
+
+]
+
+
+tv_tools = [
+    {
+        "type": "function",
+        "name": "watch_tv",
+        "description": "Watch some TV. Whatever is on right now.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to watch."
+                }
+            },
+            "required": [
+                "tv_id"
+            ],
+            "additionalProperties": False
+        }
+    },    
+    {
+        "type": "function",
+        "name": "browse_channels",
+        "description": "Browse through the available channels on the TV.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to browse channels on."
+                }
+            },
+            "required": [
+                "tv_id"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "change_channel",
+        "description": "Change the channel on the TV.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tv_id": {
+                    "type": "number",
+                    "description": "The ID of the TV to change channels on."
+                },
+                "channel_name": {
+                    "type": "string",
+                    "description": "The name of the channel to change to."
+                }
+            },
+            "required": [
+                "tv_id",
+                "channel_name"
+            ],
+            "additionalProperties": False
+        }
+    }
+]

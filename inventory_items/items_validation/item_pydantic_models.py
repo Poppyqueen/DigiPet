@@ -36,6 +36,10 @@ toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop",
 item_types = ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag", "toggle_item_power"]
 item_types.extend(toggable_items)
 
+refactored_types = ["fenestration_aperture"] # In process of refactoring tools and affordances, making them more general and modular.
+item_types.extend(refactored_types)
+item_types.extend(toggable_items)
+
 
 lighthouse_items = [
     "iov_pressure_system", "kerosene_container", "iov_spirit_pan", "hand_fire_source",
@@ -46,7 +50,7 @@ item_types.extend(lighthouse_items)
 
 ignore_fingerprint_keys = ["id", "quantity", "static"]
 
-# # Register consumables
+# # Register consumables # 
 # # 1. Get the list of dictionaries
 # consumable_items_data = item_store.get_items_by_type("consumable")
 # # 2. Extract just the names into a tuple
@@ -116,8 +120,8 @@ class TVState(BaseModel):
         description=f"The type of TV. From valid literals." # 
     )
     current_channel: Optional[str] = Field(
-        default=None,
-        description=f"Currently airing channel. Starts as None, managed by the TV tool."
+        default="",
+        description=f"Currently airing channel. Always set to empty string. Managed by the TV tool."
     )
 
 # =============================================================================
@@ -164,7 +168,7 @@ class ConsumableFields(ContractMixin):
     consume_uses_left: PositiveInt = Field(
         default=1,
         description=(
-            "Logical bites or portions for consumables, dishes, bags, jars, bowls, etc. A single piece of bread has 5 bites, a full meal has 10, a milk carton has 25, etc."
+            "Logical bites or portions for consumables, dishes, bags, jars, bowls, etc. A single piece of bread has 5 bites, a full meal has 15, a milk carton has 25, etc."
             "Set to 1 for single-bite items like single pieces of candy, chocolates, or other single-bite items."
         )
     )
@@ -205,16 +209,16 @@ class DispenserFields(ContractMixin):
 
 class CandyBagFields(ContractMixin):
     contents: Optional[Dict[str, int]] = Field(
-        default=None,
-        description="Maps contained item names to their quantities. "
+        default={},
+        description="Maps contained item names to their quantities." # This is an issue, bags need contents, but the contents need to be names of existing items. We can't force 300+ names as literals, or can we?.
     )
 
 
 class ToggableFields(ContractMixin):
     power_toggle: bool = Field(
-        description="Current power state for electronic devices. True = on, False = off."
+        default=False,
+        description="Current power state for electronic devices. True = on, False = off. Always set to False. Runtime manages state."
     )
-
 
 
 class TVFields(ContractMixin):
@@ -233,7 +237,7 @@ class LighthouseSpiritSourceFields(ContractMixin):
 
 
 class LighthouseSpiritPanFields(ContractMixin):
-    #model_description = "The pan that holds spirit directly beneath the lighthouse mantle burner."
+    model_description: ClassVar[str] = "Made of different metals and in varying conditions and ages, they are used to hold spirit fuel to host a small flame. Usually stackable."
 
     filled: bool = Field(
         default=False,
@@ -243,6 +247,14 @@ class LighthouseSpiritPanFields(ContractMixin):
 class ArtBookFields(ContractMixin): # Does not define any fields, but injects a model_description for the LLM to use.
     model_description: ClassVar[str] = "These are varieties of notebooks, from digital to physical sketchbooks. They are used for drawing, sketching, and other forms of art. Covers can be made of various materials, such as paper, leather, plastic, etc."
 
+
+class FenetreApertureFields(ContractMixin):
+    model_description: ClassVar[str] = "These are architectural designs, ornamental and functional furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world."
+
+    accessible: bool = Field(
+        default=True,
+        description="This true or false flag represents the accessibility, and reachability for the opening fixture. It asks if it is possible to stand no more than 1 feet besides it, if so, it should be set to true. Features like raised windows or skylights and other inaccessible apertures should be set as false."
+    )
 
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
@@ -264,6 +276,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "iov_spirit_pan":    LighthouseSpiritPanFields,
     "spirit_source":     LighthouseSpiritSourceFields,
     "art_book":          ArtBookFields, # no fields — model_description only
+
+    "fenestration_aperture": FenetreApertureFields,
 }
 
 

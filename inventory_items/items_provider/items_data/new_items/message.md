@@ -1,0 +1,1 @@
+this folder will contain a miscellaneous collection of items during this refactor process of the affordances naming and structural naming conventions

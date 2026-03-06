@@ -33,13 +33,14 @@ from tools.tools_folder.consumables import ConsumablesTools
 
 from tools.tools_folder.tv_controller import TVController
 
+from tools.tools_folder.outdoors_perception import OutdoorsPerception
+
 
 from .my_tools import (
     base_tools,
     library_tools,
     book_tools,
     white_room_tools,
-    living_room_tools,
     bedroom_tools,
     bathroom_tools,
     computer_room_tools,
@@ -66,6 +67,9 @@ from .my_tools import (
     spirit_source_tools,
     accessible_light_viewing_room_tools,
     toggle_item_power_tool,
+
+    fenestration_apertures_tools,
+    tv_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -121,6 +125,7 @@ class ToolRegistry:
         self.consumables_tools = ConsumablesTools(state_manager, signal)
 
         self.tv_controller     = TVController(state_manager, signal, config_manager)
+        self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
@@ -263,13 +268,6 @@ class ToolRegistry:
                 "definitions": library_tools,
                 "room_types": ["library"],
             },
-            "living_room": {
-                "functions": {"look_at_window": self.room_tools.living_room.look_at_window}, # TODO: make this an item
-                "definitions": living_room_tools,
-                "room_types": ["living_room"],
-                # "display_information":  self.room_tools.living_room.display_information, # TODO: This returns... TV info, not specific to room
-                # "agent_information":    self.room_tools.living_room.display_information,
-            },
             "bathroom": {
                 "functions": {
                     "drink_water":  self.room_tools.bathroom.drink_water,
@@ -278,15 +276,15 @@ class ToolRegistry:
                 "definitions": bathroom_tools,
                 "room_types": ["bathroom"],
             },
-            "garden": {
+            "garden": { # This garden definition is being phased out
                 "functions": {
                     "dig_hole":     self.room_tools.garden.dig_hole,
                     "lay_down":     self.room_tools.garden.lay_down,
                 },
                 "definitions": garden_room_tools,
                 "room_types": ["garden"],
-                "display_information":  self.room_tools.garden.display_information,
-                "agent_information":    self.room_tools.garden.display_information,
+                "display_information":  self.outdoors_perception.outdoors_perception,
+                "agent_information":    self.outdoors_perception.outdoors_perception, 
             },
             "white_room": {
                 "functions": {"meditate": self.room_tools.white_room.meditate},
@@ -393,7 +391,7 @@ class ToolRegistry:
                     "browse_channels": self.tv_controller.browse_channels,
                     "change_channel": self.tv_controller.change_channel,
                 },
-                "definitions": living_room_tools,
+                "definitions": tv_tools,
                 "item_types": ["tv"],
                 "use_level": "dual_use",
                 "display_information": self.tv_controller.get_current_accessible_tv_gui, # non-blocking
@@ -424,20 +422,40 @@ class ToolRegistry:
                 "item_types": ["dispenser"],
                 "use_level": "room_only"
             },
+
+            
+    # New, refactored affordances to be more general
+
+            "fenestration_apertures": { # Windows, Light wells, portholes
+                "definitions": fenestration_apertures_tools,
+                "item_types": ["fenestration_aperture"],
+                "use_level": "room_only",
+                "functions": {
+                    "look_outdoors_through_fenestration": self.outdoors_perception.look_through_aperture
+                },
+                "display_information": self.outdoors_perception.window_perception,
+                "agent_information": self.outdoors_perception.window_perception,
+            },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
             # agent_information sources, not action tools)
             # ----------------------------------------------------------------
-            "outdoors_view": {
+            "outdoors": {
                 # No "functions" key — this entry exists purely to gate access
                 # to agent_information based on room type. The ToolAvailabilityChecker
                 # will treat missing/empty functions as available (no None check needed)
                 # because is_tool_available only None-checks values that exist.
-                "definitions": garden_room_tools,
-                "room_types": ["outdoors_view"],
-                "display_information": self.room_tools.garden.display_information,
-                "agent_information": self.room_tools.garden.display_information,
+                #"definitions": garden_room_tools,
+                "room_types": ["outdoors_area"],
+                "display_information": self.outdoors_perception.outdoors_perception,
+                "agent_information": self.outdoors_perception.outdoors_perception,
             },
+
+
+            # ----------------------------------------------------------------
+            # Special power toggle, internal, do not touch!
+            # ----------------------------------------------------------------
+
             "power_toggle": { 
                 # Power toggle special key, ignores power state. Any item that has this key will be managed by a power toggle to active its functions.
                 "functions": {
