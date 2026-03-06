@@ -20,7 +20,6 @@ from tools.tools_folder.base_tools import BaseTools
 from tools.tools_folder.alife_controller import ALifeController
 from tools.tools_folder.garden_tools import GardenController
 from tools.tools_folder.rooms_tools import main_tools_handle
-from tools.tools_folder.thinking_tool import emit_inner_thought
 from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
 from tools.tools_folder.auction_house import AuctionHouse
@@ -38,13 +37,10 @@ from tools.tools_folder.outdoors_perception import OutdoorsPerception
 
 from .my_tools import (
     base_tools,
-    library_tools,
     book_tools,
-    white_room_tools,
     bedroom_tools,
     bathroom_tools,
     computer_room_tools,
-    garden_room_tools,
     kitchen_room_tools,
     lab_room_tools,
     harvesting_garden_tools,
@@ -69,7 +65,9 @@ from .my_tools import (
     toggle_item_power_tool,
 
     fenestration_apertures_tools,
-    tv_tools
+    tv_tools,
+    creating_books_tools,
+    meditation_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -235,7 +233,7 @@ class ToolRegistry:
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
                     "drop_item":                    self.base_tools.drop_item,
                     "add_item_description":         self.base_tools.add_item_description,
-                    "emit_inner_thought":           emit_inner_thought
+                    "emit_inner_thought":           self.base_tools.emit_inner_thought
                 },
                 "definitions": base_tools,
                 "use_level": "always_available",
@@ -263,11 +261,11 @@ class ToolRegistry:
                 "display_information":  self.garden_manager.get_garden_summary,
                 "agent_information":    self.garden_manager.get_garden_summary,
             },
-            "library": {
-                "functions": {"create_book_item": self.book_tools.create_book_item},
-                "definitions": library_tools,
-                "room_types": ["library"],
-            },
+            # "library": {
+            #     "functions": {"create_book_item": self.book_tools.create_book_item},
+            #     "definitions": library_tools,
+            #     "room_types": ["library"],
+            # },
             "bathroom": {
                 "functions": {
                     "drink_water":  self.room_tools.bathroom.drink_water,
@@ -276,21 +274,16 @@ class ToolRegistry:
                 "definitions": bathroom_tools,
                 "room_types": ["bathroom"],
             },
-            "garden": { # This garden definition is being phased out
-                "functions": {
-                    "dig_hole":     self.room_tools.garden.dig_hole,
-                    "lay_down":     self.room_tools.garden.lay_down,
-                },
-                "definitions": garden_room_tools,
-                "room_types": ["garden"],
-                "display_information":  self.outdoors_perception.outdoors_perception,
-                "agent_information":    self.outdoors_perception.outdoors_perception, 
-            },
-            "white_room": {
-                "functions": {"meditate": self.room_tools.white_room.meditate},
-                "definitions": white_room_tools,
-                "room_types": ["white_room"],
-            },
+            # "garden": { # This garden definition is being phased out
+            #     "functions": {
+            #         "dig_hole":     self.room_tools.garden.dig_hole,
+            #         "lay_down":     self.room_tools.garden.lay_down,
+            #     },
+            #     "definitions": garden_room_tools,
+            #     "room_types": ["garden"],
+            #     "display_information":  self.outdoors_perception.outdoors_perception,
+            #     "agent_information":    self.outdoors_perception.outdoors_perception, 
+            # },,
             "kitchen": {
                 "functions": {"prepare_food": self.room_tools.kitchen.prepare_food},
                 "definitions": kitchen_room_tools,
@@ -425,7 +418,21 @@ class ToolRegistry:
 
             
     # New, refactored affordances to be more general
+            "meditation": { # this could be a base tool?... instead maybe for an item? a yoga mat?
+                "functions": {"meditate": self.room_tools.white_room.meditate},
+                "definitions": meditation_tools,
+                #"room_types": [""],
+                "item_types": ["meditation_aids"] # we are not good at it
+                },
 
+            "book_creation": { # Bookbinding and other methods
+                "functions": {"create_book_item": self.book_tools.create_book_item},
+                "definitions": creating_books_tools,
+                #"room_types": ["library"],
+                "item_types": ["bookmaking_implements"],
+                "use_level": "dual_use"
+                # No perception tools
+            },
             "fenestration_apertures": { # Windows, Light wells, portholes
                 "definitions": fenestration_apertures_tools,
                 "item_types": ["fenestration_aperture"],

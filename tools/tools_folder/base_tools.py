@@ -49,3 +49,15 @@ class BaseTools:
 
     def set_current_emote(self, emote_name: str) -> str:
         return self.state_manager.pet_state_manager.set_current_emote(emote_name)
+
+    def emit_inner_thought(thought: str, context: str = "unspecified"):
+        """
+        Emits a quick, ephemeral reflection or thought about the current or upcoming action.
+        Used for internal reasoning, questioning, or subtle judgment.
+
+        Args:
+            thought (str): A brief, freeform inner thought.
+            context (str, optional): Short description of what this thought refers to.
+        """
+        # Returning it to the AI is the main purpose of this function.
+        return f"Inner Thought - Context: {context}, Thought: {thought}"

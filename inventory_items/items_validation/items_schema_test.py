@@ -7,12 +7,12 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 client=AIConfiguration(provider="openai",model="gpt-5-mini",mode="simple_ai").get_client()
-select_types = ["fenestration_aperture", "furniture"]
+select_types = ["candy_bag"]
 test_base = build_llm_schema_for_types(select_types)
 
-# print(json.dumps(test_base.model_json_schema(), indent=2))
+print(json.dumps(test_base.model_json_schema(), indent=2))
 
 
-response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} ####", user="A set of appertures and different varied windows for a sci-fi space travel futuristic universe.", structure=test_base)
+response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} ####", user="Single item: Alien sci-fi candy bag full of 'Sour Andromedas', the design of the bag is a 3D image", structure=test_base)
 
 print(response.model_dump_json(indent=2))

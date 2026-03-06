@@ -1339,34 +1339,8 @@ bluesky_tools=[
     }
 ]
 
-library_tools = [    {
-        "type": "function",
-        "name": "create_book_item",
-        "description": "Given a title, and description, create a book item for you to write in.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "book_name": {
-                    "type": "string",
-                    "description": "Title of the book to create"
-                },
-                "description": {
-                    "type": "string",
-                    "description": "The description of the book."
-                }
-            },
-            "required": [
-                "book_name",
-                "description"
 
-            ],
-            "additionalProperties": False
-        }
-    }
-]
-
-
-mirror_tools = [
+mirror_tools = [ # This is really old
     {
         "type": "function",
         "name": "add_possible_emote",
@@ -1520,24 +1494,6 @@ book_tools = [
 ]
 
 
-white_room_tools = [
-    {
-        "type": "function",
-        "name": "meditate",
-        "description": "Engage in a meditation session.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "thoughts": {
-                    "type": "string",
-                    "description": "Some random thoughts that come to your mind"
-                }
-            },
-            "required": ["thoughts"],
-            "additionalProperties": False
-        }
-    }
-]   
 
 
 # --- NEW: Tool Definition for simulate_data_fetch ---
@@ -2161,3 +2117,56 @@ tv_tools = [
         }
     }
 ]
+
+
+
+creating_books_tools = [    {
+        "type": "function",
+        "name": "create_book_item",
+        "description": "Using the adequate implements, apparatus, machinery or tools, with a title, and description, create a book item for you to write in.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bookmaking_implements_id":{
+                    "type": "number",
+                    "description": "The ID to the bookmaking implements, or apparatus; binding tables, printers, and any other system as an item for making books in your vicinity."
+                },
+
+                "book_name": {
+                    "type": "string",
+                    "description": "Title of the book to create"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the book."
+                }
+            },
+            "required": [
+                "book_name",
+                "description"
+
+            ],
+            "additionalProperties": False
+        }
+    }
+]
+
+
+meditation_tools = [
+    {
+        "type": "function",
+        "name": "meditate",
+        "description": "Try to quiet down your mind, focus internally and clear any distractions.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "thoughts": {
+                    "type": "string",
+                    "description": "Some random thoughts that come to your mind"
+                }
+            },
+            "required": ["thoughts"],
+            "additionalProperties": False
+        }
+    }
+]   

@@ -24,8 +24,7 @@ from .contract_mixin import ContractMixin
 # =============================================================================
 
 room_types = [
-    "planting_garden", "library", "bedroom", "living_room", "bathroom",
-    "garden", "white_room", "kitchen", "ALIFE_research", "computer_room",
+    "planting_garden", "bedroom", "living_room", "bathroom", "kitchen", "ALIFE_research", "computer_room",
 ]
 
 refactored_types = ["outdoors_area"]

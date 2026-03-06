@@ -592,10 +592,11 @@ class room_white:
     def meditate(self, thoughts):
         edit=10
         self.state_manager.adjust_stat("energy", edit)
+        self.state_manager.get_steps
         # --- Add signal call ---
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/meditate_icon.png"})
         # ------------------------
-        return f"You begin to meditate, your mind is filled with thoughts at first, {thoughts}.\n As you keep going your mind begins to quiet down...\n...\n..."
+        return f"You feel inspired by the ambience, you try to quiet your mind, however, thoughts rush over you... {thoughts}.\n As you keep going your mind begins letting go...\n...\n..."
 
 
 # Define the main handler class

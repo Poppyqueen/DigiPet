@@ -61,11 +61,27 @@ class BookTools:
     # Public API
     # ------------------------------------------------------------------
 
-    def create_book_item(self, book_name: str, description: str) -> str:
+    def create_book_item(self, bookmaking_implements_id: int, book_name: str, description: str) -> str:
         if not isinstance(book_name, str) or not book_name.strip():
             return "Error: Book name must be a non-empty string."
         if not isinstance(description, str) or not description.strip():
             return "Error: Book description must be a non-empty string."
+
+        search_data = self.state_manager.find_item(bookmaking_implements_id, "bookmaking_implements", "accessible")
+
+        if search_data.error:
+            return search_data.error
+        
+        bookmaking_apparatus = search_data.item_data
+
+        ba = bookmaking_apparatus
+
+        apparatus_name = ba.get("name","")
+
+        apparatus_desc = "\n".join(ba.get("descriptions", []))
+
+        ba_message = f"You interact with the {apparatus_name}\n {apparatus_desc} \n"
+
 
         book_data = {
             "name": book_name.strip(),
@@ -86,7 +102,7 @@ class BookTools:
         })
         if not result.success:
             return f"Error creating book: {result.error}"
-        return f"{result.message}\nBook name: {book_name}"
+        return f"{ba_message}\n {result.message}\nBook name: {book_name}"
 
     def list_book_chapters(self, book_item_id: int) -> str:
         book_data, error_msg = self._fetch_book(book_item_id)

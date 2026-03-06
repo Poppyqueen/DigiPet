@@ -36,7 +36,7 @@ toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop",
 item_types = ["consumable", "misc", "furniture", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag", "toggle_item_power"]
 item_types.extend(toggable_items)
 
-refactored_types = ["fenestration_aperture"] # In process of refactoring tools and affordances, making them more general and modular.
+refactored_types = ["fenestration_aperture", "bookmaking_implements", "meditation_aids"] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 item_types.extend(toggable_items)
 
@@ -104,13 +104,17 @@ class ItemStatsEdit(BaseModel):
     hydration: float = Field(description="A positive or negative float representing an effect on the hydration of a character. Meals affect the dryness on the mouth, use floats logically. i.e. A meaty and salty broth would make the character feel thirstier, so a negative float is appropriate. A glass of water would be a positive float. Eating a raw meat would dehydrate the character, so a negative float is appropriate.")
     energy: float = Field(description="A positive or negative float representing an effect on the energy system of a character. Raw, spoiled, or otherwise dangerous meals when consumed cause digestive issues and risk sickness so negative values need to be applied respectively.")
 
+class BagContents(BaseModel):
+    """Contents of a bag item."""
+    model_config = ConfigDict(extra="forbid")
+
 
 
 class DispenserState(BaseModel):
     model_config = ConfigDict(extra="forbid")
     contents: Optional[Dict[str, int]] = Field(
-        default=None,
-        description="Always set to null. Contents are managed at runtime, never by generation."
+        default={},
+        description="Always set to empty dict. Contents are managed at runtime, never by generation."
     )
 
 class TVState(BaseModel):
@@ -173,10 +177,10 @@ class ConsumableFields(ContractMixin):
         )
     )
     stats_edit: ItemStatsEdit = Field(
-        description="You should first think 'Is this a Potentially Hazardous Food'? raw meats, spoiled foods, etc. If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0. "
+        description="You should first think 'Is this a Potentially Hazardous Food?' (raw meats, spoiled foods, etc.). If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0. "
     )
     effects: List[str] = Field(
-        description="Narrative, evocative, grounded descriptions of the effects of consuming the item, **second-person, present tense** narration of the phenomenal experience of giving a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
+        description="Narrative, evocative, grounded descriptions of the effects of consuming the item, **second-person, present tense** narration of the phenomenal experience of having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
     )
 
 
@@ -201,16 +205,16 @@ class BookFields(ContractMixin):
 
 
 class DispenserFields(ContractMixin):
-    dispenser_state: Optional[DispenserState] = Field(
+    dispenser_state: DispenserState = Field(
         default={},
         description="Always set dispenser_state.contents to empty dict. Runtime manages contents."
     )
 
 
 class CandyBagFields(ContractMixin):
-    contents: Optional[Dict[str, int]] = Field(
+    contents: Dict[str, int] = Field(
         default={},
-        description="Maps contained item names to their quantities." # This is an issue, bags need contents, but the contents need to be names of existing items. We can't force 300+ names as literals, or can we?.
+        description="Maps contained known item names to their quantities." # This is an issue, bags need contents, but the contents need to be names of existing items. We can't force 300+ names as literals, or can we?.
     )
 
 
@@ -244,18 +248,25 @@ class LighthouseSpiritPanFields(ContractMixin):
         description="Whether the spirit pan currently contains spirit."
     )
 
+###
+
 class ArtBookFields(ContractMixin): # Does not define any fields, but injects a model_description for the LLM to use.
-    model_description: ClassVar[str] = "These are varieties of notebooks, from digital to physical sketchbooks. They are used for drawing, sketching, and other forms of art. Covers can be made of various materials, such as paper, leather, plastic, etc."
+    model_description: ClassVar[str] = "These are varieties of notebooks, from E-ink drawing tablets to physical sketchbooks. They are used for drawing, sketching, and other forms of art. Covers can be made of various materials, such as paper, leather, plastic, etc."
 
 
 class FenetreApertureFields(ContractMixin):
-    model_description: ClassVar[str] = "These are architectural designs, ornamental and functional furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world."
+    model_description: ClassVar[str] = "These are architectural designs, ornamental, functional, furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world."
 
     accessible: bool = Field(
         default=True,
         description="This true or false flag represents the accessibility, and reachability for the opening fixture. It asks if it is possible to stand no more than 1 feet besides it, if so, it should be set to true. Features like raised windows or skylights and other inaccessible apertures should be set as false."
     )
 
+class BookMakingImplementsFields(ContractMixin): # No required fields, just adding model description
+    model_description: ClassVar[str] = "This type of item holds and provides the ability to create books, from DIY carry kits for simple books, simple areas for home-made binding in workbenches, DIY enthusiasts spaces, semi-profesional apparatuses, to large machinery, or any other."
+
+class MeditationAidsFields(ContractMixin):
+    model_description: ClassVar[str] = "These items are meditation aids, sensory decor, ambience decorations, meaningful, unique, or personal trinkets, furniture, and other sources of relaxation, inspiration for deep thought, meditation, or other forms of mindfulness practices. From small objects like incense, cushions, windchimes, emotionally charged trinkets, to larger items like yoga mats, particularly beautiful benches, fountains, and others."
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -278,6 +289,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "art_book":          ArtBookFields, # no fields — model_description only
 
     "fenestration_aperture": FenetreApertureFields,
+    "bookmaking_implements": BookMakingImplementsFields,
+    "meditation_aids": MeditationAidsFields,
 }
 
 
