@@ -28,7 +28,8 @@ class DispenserTools:
 
     def _get_bag_contents(self, item_data: dict) -> dict:
         """Safely extract candy bag contents, always returning a dict."""
-        return item_data.get("contents") or {}
+        entries = item_data.get("contents") or []
+        return {entry["item_name"]: entry["quantity"] for entry in entries}
 
     def examine_dispenser(self, item_id: int):
         """Examines the dispenser and returns its status."""

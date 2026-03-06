@@ -107,7 +107,7 @@ def build_llm_schema(
 
             fields[field_name] = (
                 annotation,
-                Field(default=field_info.default, description=full_description),
+                Field(description=full_description),  # ← no default
             )
 
     # Narrow the 'type' field to only the requested types

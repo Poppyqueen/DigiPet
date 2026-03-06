@@ -104,10 +104,9 @@ class ItemStatsEdit(BaseModel):
     hydration: float = Field(description="A positive or negative float representing an effect on the hydration of a character. Meals affect the dryness on the mouth, use floats logically. i.e. A meaty and salty broth would make the character feel thirstier, so a negative float is appropriate. A glass of water would be a positive float. Eating a raw meat would dehydrate the character, so a negative float is appropriate.")
     energy: float = Field(description="A positive or negative float representing an effect on the energy system of a character. Raw, spoiled, or otherwise dangerous meals when consumed cause digestive issues and risk sickness so negative values need to be applied respectively.")
 
-class BagContents(BaseModel):
-    """Contents of a bag item."""
-    model_config = ConfigDict(extra="forbid")
-
+class CandyBagEntry(BaseModel):
+    item_name: str
+    quantity: int
 
 
 class DispenserState(BaseModel):
@@ -211,10 +210,10 @@ class DispenserFields(ContractMixin):
     )
 
 
+
 class CandyBagFields(ContractMixin):
-    contents: Dict[str, int] = Field(
-        default={},
-        description="Maps contained known item names to their quantities." # This is an issue, bags need contents, but the contents need to be names of existing items. We can't force 300+ names as literals, or can we?.
+    contents: List[CandyBagEntry] = Field(
+        description="List of candy items and their quantities in the bag."
     )
 
 
