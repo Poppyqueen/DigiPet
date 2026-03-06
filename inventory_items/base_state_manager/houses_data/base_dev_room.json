@@ -2,9 +2,7 @@
     {
         "name": "garden",
         "image": "garden",
-        "room_types": [
-            "outdoors_area"
-        ],
+        "room_types": [],
         "music": "garden",
         "plot_number": 3,
         "descriptions": {
@@ -42,9 +40,7 @@
     {
         "name": "DevRoom",
         "image": "lab_room",
-        "room_types": [
-            "library"
-        ],
+        "room_types": [],
         "plot_number": 3,
         "music": "white_room",
         "descriptions": {
