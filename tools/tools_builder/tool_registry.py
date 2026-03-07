@@ -242,38 +242,14 @@ class ToolRegistry:
                 "functions": {"consume_item": self.consumables_tools.consume_item},
                 "definitions": base_tools,
                 "use_level": "inventory_only",
-                "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item
+                "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item? I like that idea 
             },
 
-            # ----------------------------------------------------------------
-            # Room-specific
-            # ----------------------------------------------------------------
-            "planting_garden": {
-                "functions": {
-                    "plant_seed":                       self.garden_manager.plant_seed,
-                    "check_plant_state":                self.garden_manager.check_plant_state,
-                    "harvest_plant":                    self.garden_manager.harvest_plant,
-                    "get_current_garden_information":   self.garden_manager.ai_get_garden_summary,
-                    "water_plot":                       self.garden_manager.water_plot,
-                },
-                "definitions": harvesting_garden_tools,
-                "room_types": ["planting_garden"],
-                "display_information":  self.garden_manager.get_garden_summary,
-                "agent_information":    self.garden_manager.get_garden_summary,
-            },
             # "library": {
             #     "functions": {"create_book_item": self.book_tools.create_book_item},
             #     "definitions": library_tools,
             #     "room_types": ["library"],
             # },
-            "bathroom": {
-                "functions": {
-                    "drink_water":  self.room_tools.bathroom.drink_water,
-                    "wash_hands":   self.room_tools.bathroom.wash_hands,
-                },
-                "definitions": bathroom_tools,
-                "room_types": ["bathroom"],
-            },
             # "garden": { # This garden definition is being phased out
             #     "functions": {
             #         "dig_hole":     self.room_tools.garden.dig_hole,
@@ -284,11 +260,6 @@ class ToolRegistry:
             #     "display_information":  self.outdoors_perception.outdoors_perception,
             #     "agent_information":    self.outdoors_perception.outdoors_perception, 
             # },,
-            "kitchen": {
-                "functions": {"prepare_food": self.room_tools.kitchen.prepare_food},
-                "definitions": kitchen_room_tools,
-                "room_types": ["kitchen"],
-            },
             "ALIFE_research": {
                 "functions": {
                     "set_current_tick_ALIFE":       al.set_current_tick_ALIFE          if al else None,
@@ -304,14 +275,13 @@ class ToolRegistry:
                     #"display_information":          al.display_information             if al else None,
                 },
                 "definitions": lab_room_tools,
-                "room_types": ["ALIFE_research"],
+                # "room_types": ["ALIFE_research"],
+                "item_types": ["ALIFE_interface"],
+                "use_level": "dual_use",
                 "display_information": al.display_information if al else None,
                 # agent_information intentionally omitted — contains restricted info (see TODO in original)
             },
 
-            # ----------------------------------------------------------------
-            # Item-based — inventory only
-            # ----------------------------------------------------------------
             "book": {
                 "functions": {
                     "list_chapters":        self.book_tools.list_book_chapters,
@@ -334,10 +304,7 @@ class ToolRegistry:
                 "use_level": "inventory_only",
             },
 
-            # ----------------------------------------------------------------
-            # Item-based — dual use / room only
-            # ----------------------------------------------------------------
-            "seat": {
+            "seat": { # Make this more general, or not? seatable, not seat
                 "functions": {"take_a_seat": self.room_tools.living_room.take_a_seat},
                 "definitions": seat_tools,
                 "item_types": ["seat"],
@@ -350,32 +317,10 @@ class ToolRegistry:
                     "VMaze-move":               self.maze.move,
                 },
                 "definitions": maze_tools,
-                "item_types": ["maze"],
+                "item_types": ["virtual_maze"],
                 "use_level": "room_only",
                 "display_information": self.maze.display_information,
                 # agent_information intentionally omitted — contains restricted info (see TODO in original)
-            },
-
-# Added manually
-            "bed": {
-                "functions": {
-                    "sleep":                self.room_tools.bedroom.sleep,
-                    "look_under_bed":       self.room_tools.bedroom.look_under_bed
-                },
-                "definitions": bedroom_tools,
-                "item_types": ["bed"],
-                "use_level": "dual_use",
-                #"room_types": ["bedroom"] # Left in for reference
-            },
-
-            "pillow": {
-                "functions": {
-                    "hug_pillow":           self.room_tools.bedroom.hug_pillow
-                },
-                "definitions": bedroom_tools,
-                "item_types": ["pillow"],
-                "use_level": "dual_use",
-                #"room_types": ["bedroom"] # Left in for reference
             },
 
             "tv": {
@@ -405,7 +350,7 @@ class ToolRegistry:
             },
 
             # Room Only Tools
-            "dispenser": {
+            "dispenser": { # This is mostly fine, however, it is owns candy bags, maybe make candy bags use consume uses left?
                 "functions": {
                     "dispense_candy": self.dispenser_tools.dispense_candy,
                     "refill_dispenser": self.dispenser_tools.refill_dispenser,
@@ -416,7 +361,60 @@ class ToolRegistry:
                 "use_level": "room_only"
             },
 
-            
+
+    # REFACTOR ZONE:
+
+            "planting_garden": { # Maybe this needs a big rework
+                "functions": {
+                    "plant_seed":                       self.garden_manager.plant_seed,
+                    "check_plant_state":                self.garden_manager.check_plant_state,
+                    "harvest_plant":                    self.garden_manager.harvest_plant,
+                    "get_current_garden_information":   self.garden_manager.ai_get_garden_summary,
+                    "water_plot":                       self.garden_manager.water_plot,
+                },
+                "definitions": harvesting_garden_tools,
+                "room_types": ["planting_garden"],
+                "display_information":  self.garden_manager.get_garden_summary,
+                "agent_information":    self.garden_manager.get_garden_summary,
+            },
+
+            "kitchen": { # Not sure what to do about this, probably clean it up first
+                "functions": {"prepare_food": self.room_tools.kitchen.prepare_food},
+                "definitions": kitchen_room_tools,
+                "room_types": ["kitchen"],
+            },
+
+            "bed": { # Make this more general, sleeping area? not bed 
+                "functions": {
+                    "sleep":                self.room_tools.bedroom.sleep,
+                    "look_under_bed":       self.room_tools.bedroom.look_under_bed
+                },
+                "definitions": bedroom_tools,
+                "item_types": ["bed"],
+                "use_level": "dual_use",
+                #"room_types": ["bedroom"] # Left in for reference
+            },
+
+            "pillow": { # Make this more general, what... other things do you hug??? huggable? what? maybe some things just ought to be, like this function
+                "functions": {
+                    "hug_pillow":           self.room_tools.bedroom.hug_pillow
+                },
+                "definitions": bedroom_tools,
+                "item_types": ["pillow"],
+                "use_level": "dual_use",
+                #"room_types": ["bedroom"] # Left in for reference
+            },
+
+            "bathroom": { # Make this a faucet tool
+                "functions": {
+                    "drink_water":  self.room_tools.bathroom.drink_water,
+                    "wash_hands":   self.room_tools.bathroom.wash_hands,
+                },
+                "definitions": bathroom_tools,
+                "room_types": ["bathroom"],
+            },
+
+
     # New, refactored affordances to be more general
             "meditation": { # this could be a base tool?... instead maybe for an item? a yoga mat?
                 "functions": {"meditate": self.room_tools.white_room.meditate},
