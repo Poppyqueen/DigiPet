@@ -255,9 +255,12 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     # Timers
     state.last_activity_time  = pygame.time.get_ticks()
     state.next_garden_tick_time = pygame.time.get_ticks() + garden_tick_interval_ms
-    state.panel_visible  = False
-    #state.panel_width    = 200
-    gui.gui_core.mark_layout_dirty()
+
+
+    # # Chat window (side panel) # Set up in state.py 
+    # state.panel_visible  = True
+    # state.panel_width    = 200
+    # #gui.gui_core.mark_layout_dirty()
 
     print(f"[init] Garden tick scheduled at {state.next_garden_tick_time} ms.")
 

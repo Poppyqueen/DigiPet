@@ -33,8 +33,8 @@ def run_config_main_menu_ui(screen, font, config_manager):
     running = True
 
 
-    state.panel_width=0
-    state.panel_visible=False
+    # state.panel_width=0
+    # state.panel_visible=False
 
 
     screen_width = screen.get_width()

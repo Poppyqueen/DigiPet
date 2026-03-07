@@ -99,8 +99,8 @@ def run_config_creation_twilight_zone(screen, font, init_states):
     global process_state, processing_thread, active_element, base_state_crafter_instance
     print("Entering Environment Creation UI...")
 
-    state.panel_width = 0
-    state.panel_visible = False
+    # state.panel_width = 0
+    # state.panel_visible = False
     clock = pygame.time.Clock()
     running = True
     screen_width = screen.get_width()

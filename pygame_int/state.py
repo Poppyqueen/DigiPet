@@ -106,7 +106,8 @@ thinking_start_time = 0 # Timestamp (ms) when the thinking animation started.
 # --- UI and Overlay States ---
 # Variables controlling visibility and state of UI elements like popups and modals.
 
-panel_width = 0 # Width of the side panel in pixels.
+# --- Chat window, (mostly called 'side panel' in codebase.) 
+panel_width = 200 # Width of the side panel in pixels. # TODO: panel visible true means panel_width = 200, not sure what to do about this
 panel_visible = True # Boolean to control the visibility of the side panel.
 
 active_popups = [] # List to hold active PopupMessage objects currently displayed.
