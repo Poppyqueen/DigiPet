@@ -8,8 +8,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -25,8 +24,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -42,8 +40,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -59,8 +56,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -76,8 +72,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -93,8 +88,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -110,8 +104,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -127,8 +120,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -144,8 +136,7 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
@@ -161,12 +152,88 @@
         ],
         "static": true,
         "type": [
-            "fenestration_aperture",
-            "furniture"
+            "fenestration_aperture"
         ],
         "stackable": false,
         "quantity": 1,
         "max_stack_size": 1,
         "accessible": true
+    },
+    {
+        "name": "Victorian Mahogany Chaise Longue",
+        "descriptions": [
+            "A graceful chaise longue carved from dark mahogany, its sinuous frame and scrolled feet polished to a soft sheen. The deep-buttoned back and seat are upholstered in wine-red velvet, edged with gilt tassels and a fringe trim.",
+            "Once a salon staple, this chaise is built for reclining: a raised headrest, a gently sloping seat, and enough length to stretch out. Faint impressions in the velvet suggest many afternoons spent in languid repose."
+        ],
+        "static": true,
+        "type": [
+            "sleepable_spot",
+            "seatable",
+            "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "narrative_sleeping": [
+            "You slide down the chaise and let its long seat take your weight; the velvet cools beneath you and the carved headrest cradles your neck as your limbs go heavy.",
+            "You stretch out along the chaise's graceful curve; the cushions yield around your hips and shoulders, and the room's hush draws your breathing slow and even.",
+            "You turn onto your side and tuck an arm beneath the tasselled bolster; the velvet rubs soft against your cheek while the afternoon light steals across your lids and you drift away."
+        ],
+        "narrative_sitting": [
+            "You fold yourself into the chaise, the tufted back giving just enough to support your spine while the arm curves to hold your elbow.",
+            "You perch at the chaise's middle, one knee bent, the velvet whispering under your hand as you lean back and watch the ceiling's plasterwork.",
+            "You recline half-way, propping yourself on a bolster; the mahogany frame presses cool beneath your palm and the upholstery settles around you in a small, comfortable hollow."
+        ]
+    },
+    {
+        "name": "Mother-of-Pearl Shirt Button (Victorian)",
+        "descriptions": [
+            "A small, slightly domed button carved from mother-of-pearl; its surface has a faint iridescent shimmer dulled by age and a hairline crack across one edge.",
+            "Tiny remnants of coarse black thread cling to the back, and a barely legible maker's stamp is impressed into the rim — the sort of mundane remnant tucked into dress hems and forgotten in sofa cushions."
+        ],
+        "static": false,
+        "type": [
+            "dust_bunnied_gleaning"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 20
+    },
+    {
+        "name": "Porcelain Cameo Brooch",
+        "descriptions": [
+            "Small oval porcelain cameo set in a slightly tarnished brass frame, the carved profile of a Victorian woman tinted with faint rose hues and a hairline hair crack on the reverse.",
+            "Found tucked behind an old jewelry box in a dusty dressing table drawer; carries a whisper of old perfume and threadbare velvet residue along the pin.",
+            "Can be used as a meditation focal object — hold between thumb and forefinger, trace the carved profile slowly to ground attention, or place on a lapel during quiet reflection to anchor memory and breath."
+        ],
+        "static": false,
+        "type": [
+            "dust_bunnied_gleaning",
+            "meditation_aids"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1
+    },
+    {
+        "name": "Embroidered Velvet Bolster Pillow (Victorian)",
+        "descriptions": [
+            "A deeply padded cylindrical bolster covered in crushed ruby velvet, its surface subtly faded at the center where generations have rested.",
+            "Edges trimmed with cream silk fringe and glass-seed beading; hand-stitched roses and scrolling vines wind along its length in muted silk thread.",
+            "A faint scent of lavender and old paper clings to the fabric; small worn patches at the seams show where hands have smoothed it over decades."
+        ],
+        "static": false,
+        "type": [
+            "comfort_object"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 5,
+        "narrative_hug": [
+            "You lift the bolster into your arms and feel the velvet yield with a slow, generous give, warm against your skin.",
+            "Your cheek settles into the embroidered roses; the raised silk thread brushes and then softens beneath your face.",
+            "The fringe tickles along your wrist while the pillow's dry lavender breath brushes your nose and loosens the tightness in your shoulders.",
+            "Held to your chest, the bolster contours to your body, its old, steady weight settling into the hollow of your arms like a quiet promise of calm."
+        ]
     }
 ]

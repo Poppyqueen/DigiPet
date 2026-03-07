@@ -805,9 +805,8 @@ class InventoryService:
         if required_type is not None:
             if required_type not in item_data.get("type", []):
                 return ItemLookupResult.fail(
-                    f"Item {item_id} ('{item_data.get('name', '?')}') "
-                    f"is not of type '{required_type}' "
-                    f"(found types: {item_data.get('type', [])})."
+                    f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
+                    f"but you can't use it that way."
                 )
 
         # 4. Location filter
@@ -816,9 +815,7 @@ class InventoryService:
                 if location != "inventory":
                     return ItemLookupResult.fail(
                         f"Item {item_id} ('{item_data.get('name', '?')}') "
-                        f"is not in your inventory (found in {location!r}"
-                        + (f", room '{location_name}'" if location_name else "")
-                        + ")."
+                        f"is not in your inventory."
                     )
 
             elif required_location == "room":
@@ -831,9 +828,8 @@ class InventoryService:
                         else "your inventory"
                     )
                     return ItemLookupResult.fail(
-                        f"Item {item_id} ('{item_data.get('name', '?')}') "
-                        f"is not in your current room "
-                        f"(it is in {where})."
+                        f"'{item_data.get('name', '?')}' ({item_id})"
+                        f"won't work while you are carrying it."
                     )
 
             elif required_location == "accessible":
@@ -847,9 +843,9 @@ class InventoryService:
                         else "an unknown location"
                     )
                     return ItemLookupResult.fail(
-                        f"Item {item_id} ('{item_data.get('name', '?')}') "
-                        f"is not accessible from your current location "
-                        f"(it is in {where})."
+                        f"You try reaching for '{item_data.get('name', '?')}' ({item_id})"
+                        f"but you don't see it anywhere."
+
                     )
 
         # 5. All filters passed

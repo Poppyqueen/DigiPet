@@ -247,24 +247,6 @@ art_book_tools=[
 
 ]
 
-seat_tools=[
-    {
-        "type": "function",
-        "name": "take_a_seat",
-        "description": "Allows you to take a seat on any sensible place you could imagine sitting on.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "item_id": {
-                    "type": "number",
-                    "description": "The item ID you want to take a seat on."
-                }
-            },
-            "required": ["item_id"],
-            "additionalProperties": False
-        }
-    }
-]
 musicbrainz_tools=[ 
     {
         "type": "function",
@@ -978,54 +960,6 @@ computer_room_tools=[
 ]
 
 
-bedroom_tools=[
-
-    {
-        "type": "function",
-        "name": "sleep",
-        "description": "Sleep for a given amount of seconds.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "seconds": {
-                    "type": "number",
-                    "description": "Amount of seconds to sleep. Try to sleep for at least a few minutes."
-                }
-            },
-            "required": ["seconds"
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "hug_pillow",
-        "description": "Hug your pillow!",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },    
-    {
-        "type": "function",
-        "name": "look_under_bed",
-        "description": "Look under the bed, who knows what might be there",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-
-]
-
 bathroom_tools=[
 
     {
@@ -1063,17 +997,16 @@ base_tools=[
     "parameters": {
         "type": "object",
         "properties": {
+        "context": {
+            "type": "string",
+            "description": "Short titled specific description of what this thought is or refers to."
+        },
         "thought": {
             "type": "string",
             "description": "A brief, freeform inner thought. Can be a question, concern, instinct, or moment of reflection."
-        },
-        "context": {
-            "type": "string",
-            "description": "Optional short description of what this thought refers to (e.g., current step, user request, past tool output).",
-            "default": "unspecified"
         }
         },
-        "required": ["thought"],
+        "required": ["thought", "context"],
         "additionalProperties": False
     }
     },
@@ -2142,9 +2075,9 @@ creating_books_tools = [    {
                 }
             },
             "required": [
+                "bookmaking_implements_id",
                 "book_name",
                 "description"
-
             ],
             "additionalProperties": False
         }
@@ -2152,7 +2085,79 @@ creating_books_tools = [    {
 ]
 
 
-meditation_tools = [
+
+
+
+
+comfort_tools = [
+    {
+        "type": "function",
+        "name": "sleep_on_item",
+        "description": "Try to sleep for a given amount of seconds on a specific item.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "lay_item_id": {
+                    "type": "number",
+                    "description": "The ID of the item to sleep on."
+                },
+                "seconds": {
+                    "type": "number",
+                    "description": "Amount of seconds to sleep."
+                }
+            },
+            "required": ["lay_item_id", "seconds"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function", 
+        "name": "reach_into_item_crevice",  
+        "description": "To reach and dive into shadowy corners, dark crannies and crevices under, above or around usually furniture features; places where inconsequential trinkets might hide.",
+        "parameters": {
+            "type": "object",
+            "properties":{
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the item that hosts a dark underside, an uncomfortably accessible wedge, or any other physical space for small and insignificant junk and trinkets to fall and be forgotten."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "take_a_seat",
+        "description": "Allows you to take a seat on any sensible place you could imagine sitting on.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The item ID you want to take a seat on."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function", 
+        "name": "hug_comfort_object",  
+        "description": "To hug a valid given item. Items one would want to hold and hug.",
+        "parameters": {
+            "type": "object",
+            "properties":{
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the item to hug. Usually soft goods or comfort objects."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
     {
         "type": "function",
         "name": "meditate",
@@ -2169,4 +2174,4 @@ meditation_tools = [
             "additionalProperties": False
         }
     }
-]   
+]

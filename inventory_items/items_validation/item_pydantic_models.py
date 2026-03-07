@@ -33,12 +33,16 @@ item_store = ItemStore()
 
 toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
-item_types = ["consumable", "misc", "seed", "seat", "art_book", "bed", "pillow", "book", "dispenser", "candy_bag", "toggle_item_power"]
+item_types = ["consumable", "misc", "seed", "art_book", "book", "dispenser", "candy_bag", "toggle_item_power"]
 item_types.extend(toggable_items)
 
-refactored_types = ["fenestration_aperture", "bookmaking_implements", "meditation_aids"] # In process of refactoring tools and affordances, making them more general and modular.
+refactored_types = [
+                    "fenestration_aperture", "bookmaking_implements", "meditation_aids", 
+                    "sleepable_spot", "seatable", 
+                    "cranny_host", "dust_bunnied_gleaning","comfort_object"
+                    ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
-item_types.extend(toggable_items)
+
 
 
 lighthouse_items = [
@@ -50,7 +54,7 @@ item_types.extend(lighthouse_items)
 
 ignore_fingerprint_keys = ["id", "quantity", "static"]
 
-# # Register consumables # 
+# # Register consumables # don't do this
 # # 1. Get the list of dictionaries
 # consumable_items_data = item_store.get_items_by_type("consumable")
 # # 2. Extract just the names into a tuple
@@ -146,14 +150,14 @@ class BaseItem(BaseModel):
     quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Default to 1.")
     max_stack_size: Optional[PositiveInt] = Field(default=None, description="Maximum units per stack. None means unlimited.")
 
-    @model_validator(mode="after")
-    def check_stacking_consistency(self) -> "BaseItem":
-        if not self.stackable:
-            if self.quantity > 1:
-                raise ValueError("Non-stackable item cannot have quantity > 1")
-            if self.max_stack_size is not None and self.max_stack_size > 1:
-                raise ValueError("Non-stackable item cannot have max_stack_size > 1")
-        return self
+    # @model_validator(mode="after") # Runtime handles this.
+    # def check_stacking_consistency(self) -> "BaseItem":
+    #     if not self.stackable:
+    #         if self.quantity > 1:
+    #             raise ValueError("Non-stackable item cannot have quantity > 1")
+    #         if self.max_stack_size is not None and self.max_stack_size > 1:
+    #             raise ValueError("Non-stackable item cannot have max_stack_size > 1")
+    #     return self
 
 
 # =============================================================================
@@ -193,9 +197,9 @@ class SeedFields(ContractMixin):
 
 class BookFields(ContractMixin):
     model_description: ClassVar[str] = "A book item, it can be a notebook for personal use or a publication with content, it can be empty or contain chapters. Its locked quality is determined by its use case. It varies wildly in presentation, from size, to cover art, to the color and format of the pages inside."
-    chapters: Optional[List[BookChapter]] = Field(
-        default=None,
-        description="Ordered list of chapters in this book. If None, the book is empty."
+    chapters: List[BookChapter] = Field(
+        default=[],
+        description="Ordered list of chapters in this book. Empty list means the book is empty."
     )
     is_locked: bool = Field(
         default=True,
@@ -266,6 +270,33 @@ class BookMakingImplementsFields(ContractMixin): # No required fields, just addi
 
 class MeditationAidsFields(ContractMixin):
     model_description: ClassVar[str] = "These items are meditation aids, sensory decor, ambience decorations, meaningful, unique, or personal trinkets, furniture, and other sources of relaxation, inspiration for deep thought, meditation, or other forms of mindfulness practices. From small objects like incense, cushions, windchimes, emotionally charged trinkets, to larger items like yoga mats, particularly beautiful benches, fountains, and others."
+
+class SleepableSpotFields(ContractMixin):
+    model_description: ClassVar[str] = "These items range from beds, couches, hammocks and some chairs to tents, sleeping bags, some rugs, or any reasonable place where one could sleep on."
+
+    narrative_sleeping: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, laying down and sleeping on this item."
+    )
+
+class CrannyHostFields(ContractMixin):
+    model_description: ClassVar[str] = "A cranny host is any kind of furniture, appliance or item that would have accidental wedges, nooks, dark corners or any other crevices where small items like forgotten trinkets, small broken implements, or any other minutiae might drop and hide. Crannies are reachable, unintended places where inconsequential flotsam would end up due to carelessness. The underside of an antique victorian vanity desk or the space between the fridge and the wall."
+
+class DustBunniedGleaningFields(ContractMixin):
+    model_description: ClassVar[str] = "Inconsequential flotsam of all sorts, the rewards of reaching into the forgotten corners and crevices of a room, such as lost buttons, discontinued coins, antique kitchen utensils, former held-close trinkets, and other defunct minutiae."
+
+class SeatableFields(ContractMixin):
+    model_description: ClassVar[str] = "Items like chairs, seats, stools, benches, couches, hammocks, beds, some desks, a variety of rugs, or any reasonable place where one could sit on."
+
+    narrative_sitting: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, sitting on this item."
+    )
+
+class ComfortObjectFields(ContractMixin):
+    model_description: ClassVar[str] = "These items usually are soft goods, tactile comfort objects or other emotionally charged objects; plushies, blankets, pillows, dolls, or any other item that can be hugged."
+
+    narrative_hug: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, hugging this item."
+    )
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -287,9 +318,14 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "spirit_source":     LighthouseSpiritSourceFields,
     "art_book":          ArtBookFields, # no fields — model_description only
 
-    "fenestration_aperture": FenetreApertureFields,
-    "bookmaking_implements": BookMakingImplementsFields,
+    "fenestration_aperture": FenetreApertureFields, # windows, doors, skylights, clerestories, light wells, portholes, sun tubes, etc.
+    "bookmaking_implements": BookMakingImplementsFields, 
     "meditation_aids": MeditationAidsFields,
+    "sleepable_spot": SleepableSpotFields, # Spaces to sleep, holes, tents, hammocks, beds, couches.
+    "cranny_host": CrannyHostFields, # Any furniture where small inconsequential items can fall under.
+    "dust_bunnied_gleaning": DustBunniedGleaningFields, # Rewards of digging into crannies.
+    "seatable": SeatableFields, # Places you can sit on
+    "comfort_object": ComfortObjectFields, # You would want to hug these
 }
 
 

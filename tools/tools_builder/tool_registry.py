@@ -33,12 +33,13 @@ from tools.tools_folder.consumables import ConsumablesTools
 from tools.tools_folder.tv_controller import TVController
 
 from tools.tools_folder.outdoors_perception import OutdoorsPerception
+from tools.tools_folder.comfort_affordances import ComfortAffordances
 
 
 from .my_tools import (
     base_tools,
     book_tools,
-    bedroom_tools,
+    #bedroom_tools,
     bathroom_tools,
     computer_room_tools,
     kitchen_room_tools,
@@ -48,7 +49,7 @@ from .my_tools import (
     discogs_tools,
     musicbrainz_tools,
     bluesky_tools,
-    seat_tools,
+    #seat_tools,
     art_book_tools,
     laptop_tools,
     dispenser_tools,
@@ -67,7 +68,7 @@ from .my_tools import (
     fenestration_apertures_tools,
     tv_tools,
     creating_books_tools,
-    meditation_tools
+    comfort_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -124,8 +125,10 @@ class ToolRegistry:
 
         self.tv_controller     = TVController(state_manager, signal, config_manager)
         self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
+        self.comfort = ComfortAffordances(state_manager, signal)
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
+
 
         # Optional services
         self.youtube         = None
@@ -244,22 +247,6 @@ class ToolRegistry:
                 "use_level": "inventory_only",
                 "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item? I like that idea 
             },
-
-            # "library": {
-            #     "functions": {"create_book_item": self.book_tools.create_book_item},
-            #     "definitions": library_tools,
-            #     "room_types": ["library"],
-            # },
-            # "garden": { # This garden definition is being phased out
-            #     "functions": {
-            #         "dig_hole":     self.room_tools.garden.dig_hole,
-            #         "lay_down":     self.room_tools.garden.lay_down,
-            #     },
-            #     "definitions": garden_room_tools,
-            #     "room_types": ["garden"],
-            #     "display_information":  self.outdoors_perception.outdoors_perception,
-            #     "agent_information":    self.outdoors_perception.outdoors_perception, 
-            # },,
             "ALIFE_research": {
                 "functions": {
                     "set_current_tick_ALIFE":       al.set_current_tick_ALIFE          if al else None,
@@ -302,13 +289,6 @@ class ToolRegistry:
                 "definitions": art_book_tools,
                 "item_types": ["art_book"],
                 "use_level": "inventory_only",
-            },
-
-            "seat": { # Make this more general, or not? seatable, not seat
-                "functions": {"take_a_seat": self.room_tools.living_room.take_a_seat},
-                "definitions": seat_tools,
-                "item_types": ["seat"],
-                "use_level": "dual_use",
             },
             "maze": {
                 "functions": {
@@ -375,34 +355,13 @@ class ToolRegistry:
                 "definitions": harvesting_garden_tools,
                 "room_types": ["planting_garden"],
                 "display_information":  self.garden_manager.get_garden_summary,
-                "agent_information":    self.garden_manager.get_garden_summary,
+                "agent_information":    self.garden_manager.get_garden_summary, # TODO: Make a specific function for this
             },
 
             "kitchen": { # Not sure what to do about this, probably clean it up first
                 "functions": {"prepare_food": self.room_tools.kitchen.prepare_food},
                 "definitions": kitchen_room_tools,
                 "room_types": ["kitchen"],
-            },
-
-            "bed": { # Make this more general, sleeping area? not bed 
-                "functions": {
-                    "sleep":                self.room_tools.bedroom.sleep,
-                    "look_under_bed":       self.room_tools.bedroom.look_under_bed
-                },
-                "definitions": bedroom_tools,
-                "item_types": ["bed"],
-                "use_level": "dual_use",
-                #"room_types": ["bedroom"] # Left in for reference
-            },
-
-            "pillow": { # Make this more general, what... other things do you hug??? huggable? what? maybe some things just ought to be, like this function
-                "functions": {
-                    "hug_pillow":           self.room_tools.bedroom.hug_pillow
-                },
-                "definitions": bedroom_tools,
-                "item_types": ["pillow"],
-                "use_level": "dual_use",
-                #"room_types": ["bedroom"] # Left in for reference
             },
 
             "bathroom": { # Make this a faucet tool
@@ -414,14 +373,7 @@ class ToolRegistry:
                 "room_types": ["bathroom"],
             },
 
-
     # New, refactored affordances to be more general
-            "meditation": { # this could be a base tool?... instead maybe for an item? a yoga mat?
-                "functions": {"meditate": self.room_tools.white_room.meditate},
-                "definitions": meditation_tools,
-                #"room_types": [""],
-                "item_types": ["meditation_aids"] # we are not good at it
-                },
 
             "book_creation": { # Bookbinding and other methods
                 "functions": {"create_book_item": self.book_tools.create_book_item},
@@ -441,6 +393,45 @@ class ToolRegistry:
                 "display_information": self.outdoors_perception.window_perception,
                 "agent_information": self.outdoors_perception.window_perception,
             },
+            "nook_item": { # Beds, tents, sofas and other places to sleep on
+                "functions": {
+                    "sleep_on_item":        self.comfort.sleep_on_item,
+                },
+                "definitions": comfort_tools,
+                "item_types": ["sleepable_spot"],
+                "use_level": "room_only", # can't sleep while... holding the sleeping bag
+            },
+            "cranny": { # these items, usually furniture allow you to reach under them sometimes revealing forgotten rewards!
+                "functions": {
+                    "reach_into_item_crevice": self.comfort.reach_into_item_crevice,
+                },
+                "definitions": comfort_tools,
+                "item_types": ["cranny_host"],
+                "use_level": "room_only",
+            },
+
+            "seat": { # seatables!
+                "functions": {"take_a_seat": self.comfort.take_a_seat},
+                "definitions": comfort_tools,
+                "item_types": ["seatable"],
+                "use_level": "dual_use",
+            },
+
+            "soft_goods": { # You would want to hug these items
+                "functions": {
+                    "hug_comfort_object":           self.comfort.hug_comfort_object # maybe if the agent carries an specific item for an extended period of time, its type gets 'comfort_objects'
+                },
+                "definitions": comfort_tools,
+                "item_types": ["comfort_object"],
+                "use_level": "dual_use",
+                #"room_types": ["bedroom"] # Left in for reference
+            },
+            "meditation": { # this could be a base tool?... instead maybe for an item? a yoga mat?
+                "functions": {"meditate": self.comfort.meditate},
+                "definitions": comfort_tools,
+                #"room_types": [""], # This should be a base tool? Not sure. Maybe the tool tracks a log of how many times has the agent meditated, and when the count reaches a certain number, meditation is now a base tool- That's messy to implement. Maybe add, a way to edit agent's base affordances in the GUI creation screen of it? Maybe an option to add 1 or 2 select extra functions to base
+                "item_types": ["meditation_aids"] # we are not good at it
+                },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
             # agent_information sources, not action tools)

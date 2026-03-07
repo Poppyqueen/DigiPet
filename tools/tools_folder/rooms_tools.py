@@ -12,11 +12,14 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+
 
 import asyncio
 import math
 
-from tools.tools_folder.tools_helpers import random_object
+from tools.tools_folder.tools_helpers import random_object # outdated
 
 from tools.tools_folder.tools_helpers.ai_cook import cook
 
@@ -24,26 +27,11 @@ import random
 
 from utils.loc_datetime import datetime
 
-
-if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+from inventory_items.items_provider.item_store import ItemStore
 
 
-def check_one_in(number: int):
-  """
-  Checks if a random event with a 1 in (the given argument) chance occurs.
+from utils.misc import check_one_in
 
-  Returns:
-      bool: True if the  event occurs, False otherwise.
-  """
-  # Generate a random integer between 1 and number (inclusive)
-  random_number = random.randint(1, number)
-
-  # The event occurs if the number is 1
-  if random_number == 1:
-    return True
-  else:
-    return False
 
 # --- Helper method to be added to each room class ---
 def _send_signal(self, signal_data):
@@ -355,58 +343,6 @@ class room_bathroom:
         return message
 
 
-# Define Bedroom Class - similarly, accept state_manager
-class room_bedroom:
-    def __init__(self, state_manager, signal=None, memory=None):
-        self.memory=memory
-        self._signal_callback=signal
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
-        #print("Bedroom initialized.")
-
-    # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function
-
-    # Add instance methods here
-    async def sleep(self, seconds):
-        #print("Going to sleep in the bedroom...")
-        #message=self.state_manager.sleep(seconds)
-        constant = 1
-        # Using square root:
-        energy_gain = constant * math.sqrt(seconds)
-        # self.memory.save_to_memory("You beggin your sleep process.", "short_term", "user")
-        self._send_signal({"type": "show_message_popup", "message": f"Entering sleep for {seconds} seconds!"})
-        #int_gain=int(energy_gain)
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
-        self._send_signal({"type": "start_sleep", "time_to_sleep": seconds})
-        await asyncio.sleep(seconds)
-        self._send_signal({"type": "end_sleep"})
-        self.state_manager.adjust_stat("energy", energy_gain)
-
-        # completely delegated to the state manager
-        # --- Add signal call ---
-        # ------------------------
-        return f"You rested for {seconds} seconds, recovering {energy_gain} energy points. You feel refreshed."
-
-    def hug_pillow(self):
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/pillow_icon.png"})
-        # ------------------------
-        return "You give the pillow a big hug, it is comfortable."
-
-
-    def look_under_bed(self):
-        message = "You look under the bed and found nothing."
-        if check_one_in(50):
-            found_item = random_object.load_and_get_random_item("found_items/underbed_found_data.json")
-            result = self.state_manager.create_item("inventory", None, found_item)
-            if result.success:
-                message = f"You found something under the bed! It is a {found_item['name']}. {result.message}"
-            else:
-                message = f"You found something under the bed, but couldn't pick it up. {result.error}"
-            self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/item_found_icon.png"})
-        return message
-
 
 class room_garden:
     def __init__(self, state_manager, signal=None, open_meteo=None):
@@ -458,62 +394,6 @@ class room_garden:
             self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/dig_icon.png", "popup_type": 2})
 
         return message
-
-
-class room_living_room:
-    def __init__(self, state_manager, signal=None, open_meteo=None):
-        self._signal_callback=signal
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
-
-        self.open_meteo = open_meteo
-
-        self.last_show_watched=""
-        #print("Living room initialized.")
-
-    # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function
-
-    def display_information(self):
-        message=f"The last TV show watched was:\n {self.last_show_watched}"
-        return message
-    
-
-    def take_a_seat(self, item_id: int):
-        item_object = self.state_manager.find_item(item_id=item_id, required_type="seat", required_location="room")
-        if not item_object.success:
-            return item_object.error
-
-        # Safe to access item_data only after success check
-        item_details = item_object.item_data
-
-        edit = 1
-        message = f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
-        if check_one_in(10):
-            edit = 5
-            message = f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points."
-
-        self.state_manager.adjust_stat("energy", edit)
-
-        item_name = item_details.get("name", "")
-        item_desc = "\n".join(item_details.get("descriptions", []))
-        return f"You take a seat on the {item_name}\n{item_desc}\n{message}"
-
-
-    def sit_on_couch(self):
-        edit=1
-        message=f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
-        if check_one_in(10):
-            edit=5
-            message=f"You sit down, the world seems to pass really slowly for now. You rested for {edit} energy points"
-
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/sofa_icon.png"})
-        # ------------------------
-        self.state_manager.adjust_stat("energy", edit)
-        return message
-
-
 
 
 class room_computer:
@@ -579,26 +459,6 @@ class room_computer:
         return article
     
 
-class room_white:
-    def __init__(self, state_manager, signal=None): # <-- Removed the extra 'main_handler' argument
-        self._signal_callback=signal
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
-        #print("White room initialized.")
-
-    # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function
-
-    def meditate(self, thoughts):
-        edit=10
-        self.state_manager.adjust_stat("energy", edit)
-        self.state_manager.get_steps
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/meditate_icon.png"})
-        # ------------------------
-        return f"You feel inspired by the ambience, you try to quiet your mind, however, thoughts rush over you... {thoughts}.\n As you keep going your mind begins letting go...\n...\n..."
-
-
 # Define the main handler class
 class main_tools_handle:
     def __init__(self, state_manager, signal=None, memory_manager=None, config_manager=None, open_meteo=None):
@@ -607,7 +467,7 @@ class main_tools_handle:
         wikipedia_enabled = config_manager.get_config('Tools', "enable_wikipedia")
 
 
-        print(f"DEBUG: WIKPEDIA enabled (config): {wikipedia_enabled}")
+        print(f"DEBUG: WIKPEDIA enabled (config): {wikipedia_enabled}") # TODO: initialization and loading shouldn't be hiding here, move to tool_registry, conditional loading
 
         self.wiki=None
         if wikipedia_enabled:
@@ -627,14 +487,16 @@ class main_tools_handle:
         # Instantiate the room classes and store them as attributes
         # Pass the state_manager AND the signal callback to the room instances
         self.bathroom = room_bathroom(self.state_manager, self._signal_callback)
-        self.bedroom = room_bedroom(self.state_manager, self._signal_callback, self.memory)
-        self.living_room= room_living_room(self.state_manager, self._signal_callback, self.open_meteo)
+        #self.bedroom = room_bedroom(self.state_manager, self._signal_callback, self.memory)
+        #self.living_room= room_living_room(self.state_manager, self._signal_callback, self.open_meteo)
         self.computer = room_computer(self.state_manager, self._signal_callback, self.wiki)
         self.garden = room_garden(self.state_manager, self._signal_callback, self.open_meteo)
         # --- Fix: Removed the extra 'self' argument here ---
-        self.white_room = room_white(self.state_manager, self._signal_callback)
+        #  self.white_room = room_white(self.state_manager, self._signal_callback)
         # ---------------------------------------------------
         self.kitchen = room_kitchen(self.state_manager, self._signal_callback, config_manager)
+
+       # self.comfort = ComfortAffordances(self.state_manager, self._signal_callback, self.memory)
 
     # You already have _send_signal in main_tools_handle, but it's not currently used
     # by the room methods. The approach above adds it *to* the room instances.
