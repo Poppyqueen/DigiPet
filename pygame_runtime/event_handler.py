@@ -204,59 +204,42 @@ def handle_custom_events(event, *, chatbot, music_player, current_time_ms: int) 
 # Input (mouse / keyboard) event handlers
 # ---------------------------------------------------------------------------
 
-def _handle_inventory_panel_events(
-    event, *, inventory_toggle_button_rect, room_list_area_rect, player_list_area_rect
+def _handle_inventory_scroll(
+    event, *, room_list_area_rect, player_list_area_rect
 ) -> bool:
     """
-    When the inventory panel is open it behaves modally:
-    only scroll + close interactions are accepted.
+    Handle scroll-wheel events inside the inventory panel's list areas.
+    Only processes scroll — close is handled in _handle_mouse_button.
 
     Returns True if the event was consumed.
     """
-    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-        if state.lore_panel_visible:
-            state.lore_panel_visible = False
-        else:
-            state.inventory_panel_visible = False
-        return True
-
-    if event.type != pygame.MOUSEBUTTONDOWN:
+    if event.type != pygame.MOUSEBUTTONDOWN or event.button not in (4, 5):
         return False
 
-    # Close button
-    if (
-        inventory_toggle_button_rect
-        and inventory_toggle_button_rect.collidepoint(event.pos)
-        and event.button == 1
-    ):
-        state.inventory_panel_visible = False
+    scroll_delta = config.SCROLL_SPEED * (-1 if event.button == 4 else 1)
+
+    if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
+        room_h = gui.gui_inventory.calculate_list_height(state.room_inventory_list)
+        max_scroll = max(0, room_h - room_list_area_rect.height)
+        state.room_inventory_scroll_y = max(
+            0, min(state.room_inventory_scroll_y + scroll_delta, max_scroll)
+        )
         return True
 
-    # Scroll wheel inside list areas
-    if event.button in (4, 5):
-        scroll_delta = config.SCROLL_SPEED * (-1 if event.button == 4 else 1)
-
-        if room_list_area_rect and room_list_area_rect.collidepoint(event.pos):
-            room_h = gui.gui_inventory.calculate_list_height(state.room_inventory_list)
-            max_scroll = max(0, room_h - room_list_area_rect.height)
-            state.room_inventory_scroll_y = max(
-                0, min(state.room_inventory_scroll_y + scroll_delta, max_scroll)
-            )
-            return True
-
-        if player_list_area_rect and player_list_area_rect.collidepoint(event.pos):
-            player_h = gui.gui_inventory.calculate_list_height(state.player_inventory_list)
-            max_scroll = max(0, player_h - player_list_area_rect.height)
-            state.player_inventory_scroll_y = max(
-                0, min(state.player_inventory_scroll_y + scroll_delta, max_scroll)
-            )
-            return True
+    if player_list_area_rect and player_list_area_rect.collidepoint(event.pos):
+        player_h = gui.gui_inventory.calculate_list_height(state.player_inventory_list)
+        max_scroll = max(0, player_h - player_list_area_rect.height)
+        state.player_inventory_scroll_y = max(
+            0, min(state.player_inventory_scroll_y + scroll_delta, max_scroll)
+        )
+        return True
 
     return False
 
 
 def _handle_mouse_motion(event) -> None:
     """Update hover state for care packages and stat icons."""
+    # Suppress hover when inventory or lore panel is open.
     if state.inventory_panel_visible or state.lore_panel_visible:
         return
 
@@ -296,14 +279,46 @@ def _handle_mouse_button(
     mute_button_rect,
     history_display_area,
     add_items_fn,
+    room_list_area_rect,
+    player_list_area_rect,
 ) -> bool:
     """
-    Handle MOUSEBUTTONDOWN events when the inventory panel is NOT open.
+    Handle MOUSEBUTTONDOWN events.
+
+    When the inventory panel is open:
+      - Inventory scroll is handled first (priority).
+      - Inventory close button closes the panel.
+      - Chat scroll, mute, panel toggle still work.
+      - Care packages, lore toggle, clock, stat hover are blocked.
 
     Returns True if the event was consumed.
     """
-    # Lore panel toggle
+    # ---- Inventory panel open: handle its own interactions first ----
+    if state.inventory_panel_visible:
+        # Close via the inventory toggle button
+        if (
+            inventory_toggle_button_rect
+            and inventory_toggle_button_rect.collidepoint(event.pos)
+            and event.button == 1
+        ):
+            state.inventory_panel_visible = False
+            return True
+
+        # Scroll inside the inventory lists
+        if _handle_inventory_scroll(
+            event,
+            room_list_area_rect=room_list_area_rect,
+            player_list_area_rect=player_list_area_rect,
+        ):
+            return True
+
+        # Fall through — chat scroll, mute, panel toggle are still handled below.
+        # Care packages and lore are blocked implicitly: their hit-test code is
+        # guarded by `not state.inventory_panel_visible` further down.
+
+    # ---- Lore panel toggle (blocked while inventory is open) ----
     if (
+        #not state.inventory_panel_visible
         lore_toggle_button_rect
         and lore_toggle_button_rect.collidepoint(event.pos)
         and event.button == 1
@@ -311,17 +326,16 @@ def _handle_mouse_button(
         if not state.lore_panel_visible:
             state.lore_panel_visible  = True
             state.lore_panel_scroll_y = 0
-            # Fetch fresh content in the background — same call the signal
-            # handler makes on every agent signal.
             start_lore_panel_refresh(chatbot=chatbot)
         return True
 
     if state.lore_panel_visible:
-        return False  # Lore panel is open; don't handle other clicks.
+        return False  # Lore panel open — don't handle other clicks.
 
-    # Inventory toggle (open)
+    # ---- Inventory toggle (open) — blocked while lore panel is open ----
     if (
-        inventory_toggle_button_rect
+        not state.inventory_panel_visible
+        and inventory_toggle_button_rect
         and inventory_toggle_button_rect.collidepoint(event.pos)
         and event.button == 1
     ):
@@ -330,7 +344,7 @@ def _handle_mouse_button(
         state.player_inventory_scroll_y = 0
         return True
 
-    # Mute button
+    # ---- Mute button — always available ----
     if (
         mute_button_rect
         and mute_button_rect.collidepoint(event.pos)
@@ -343,7 +357,7 @@ def _handle_mouse_button(
         gui.gui_text_utils.add_message_to_history(f"Music toggled {status}.", "system")
         return True
 
-    # Panel toggle
+    # ---- Panel toggle — always available ----
     all_buttons  = gui.gui_core.get_button_rects()
     panel_toggle = all_buttons.get("panel_toggle")
     if panel_toggle and panel_toggle.collidepoint(event.pos) and event.button == 1:
@@ -354,7 +368,7 @@ def _handle_mouse_button(
         gui.gui_core.update_gui_rects(state.panel_width)
         return True
 
-    # Chat history scroll
+    # ---- Chat history scroll — always available ----
     if history_display_area and history_display_area.collidepoint(event.pos):
         if event.button == 4:
             state.scroll_y -= config.SCROLL_SPEED
@@ -365,21 +379,23 @@ def _handle_mouse_button(
         state.scroll_y = max(0, min(state.scroll_y, max_scroll))
         return True
 
-    # Care package scroll wheel
-    if state.hovered_package_identifier:
-        scroll_info = gui.gui_care_package.get_package_scroll_info()
-        if event.button == 4:
-            state.package_scroll_y = max(0, state.package_scroll_y - scroll_info["line_height"])
-        elif event.button == 5:
-            state.package_scroll_y = min(scroll_info["max_scroll"], state.package_scroll_y + scroll_info["line_height"])
+    # ---- Care package interactions — blocked while inventory is open ----
+    if not state.inventory_panel_visible:
+        # Care package scroll wheel on hovered button
+        if state.hovered_package_identifier:
+            scroll_info = gui.gui_care_package.get_package_scroll_info()
+            if event.button == 4:
+                state.package_scroll_y = max(0, state.package_scroll_y - scroll_info["line_height"])
+            elif event.button == 5:
+                state.package_scroll_y = min(scroll_info["max_scroll"], state.package_scroll_y + scroll_info["line_height"])
 
-    # Care package buttons (left-click only, not locked)
-    if not is_input_locked and not state.inventory_panel_visible and event.button == 1:
-        return _handle_care_package_click(
-            event,
-            chatbot=chatbot,
-            add_items_fn=add_items_fn,
-        )
+        # Care package buttons (left-click only, not locked)
+        if not is_input_locked and event.button == 1:
+            return _handle_care_package_click(
+                event,
+                chatbot=chatbot,
+                add_items_fn=add_items_fn,
+            )
 
     return False
 
@@ -446,10 +462,12 @@ def _handle_keyboard(
     """
     key = event.key
 
-    # Escape: close panels or quit.
+    # Escape: close inventory, then lore, then quit.
     if key == pygame.K_ESCAPE:
         if state.inventory_panel_visible:
             state.inventory_panel_visible = False
+        elif state.lore_panel_visible:
+            state.lore_panel_visible = False
         else:
             running_ref[0] = False
         return True
@@ -466,7 +484,7 @@ def _handle_keyboard(
         return True
 
     if is_input_locked:
-        return True  # Swallow all other keys while locked.
+        return True  # Swallow all other keys while agent is sleeping / bot processing.
 
     # Active text input (cursor is on and bot is idle).
     if state.cursor_active and not state.chatbot_is_processing:
@@ -573,15 +591,6 @@ def handle_input_events(
         room_list_area   = panel_rects.get("room_list_area")
         player_list_area = panel_rects.get("player_list_area")
 
-    # ------- Modal inventory panel -------
-    if state.inventory_panel_visible:
-        return _handle_inventory_panel_events(
-            event,
-            inventory_toggle_button_rect=inventory_toggle,
-            room_list_area_rect=room_list_area,
-            player_list_area_rect=player_list_area,
-        )
-
     # ------- Mouse motion (hover) -------
     if event.type == pygame.MOUSEMOTION:
         _handle_mouse_motion(event)
@@ -602,6 +611,8 @@ def handle_input_events(
             mute_button_rect=mute_button,
             history_display_area=history_area,
             add_items_fn=add_items_fn,
+            room_list_area_rect=room_list_area,
+            player_list_area_rect=player_list_area,
         )
 
     # ------- Keyboard -------

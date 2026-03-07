@@ -135,12 +135,12 @@ def handle_gui_event(event) -> None:
 
         return  # Consume all other clicks while lore panel is open.
 
-    # --- Priority 2: Clock ---
+# --- Priority 2: Clock (blocked while inventory is open) ---
     if event.button == 1 and not state.inventory_panel_visible:
         if gui_clock.handle_clock_click(mouse_pos):
             return
 
-    # --- Priority 3: Input box focus ---
+    # --- Priority 3: Input box focus --- (works regardless of inventory state)
     if event.button == 1 and not state.chatbot_is_processing:
         if state.panel_visible and input_rect and not state.agent_sleeping:
             if not input_rect.collidepoint(mouse_pos):
