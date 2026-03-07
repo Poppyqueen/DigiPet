@@ -97,21 +97,17 @@ cd DigiPet
 
     *   **All dependencies:**
 ```bash
-pip install "DigiPet[all]"
-```
-    If you get an error, try:
-```bash
 pip install '.[all]'
 ```
 
     *   **Selected dependencies only:**
 ```bash
-pip install "DigiPet[google, openai, bluesky]"
+pip install ".[google, openai, bluesky]"
 ```
 
     Available extras:
-    * `google`, `openai`, `ollama`, `groq` — AI providers (install at least one, recommended two)
-    * `youtube`, `bluesky`, `musicbrainz`, `discogs`, `searx` — optional integrations
+    * `google`, `openai`, `ollama`, `groq`, `openrouter` — AI providers (install at least one, recommended two)
+    * `youtube`, `bluesky`, `musicbrainz`, `discogs`, `searxng` — optional integrations
 
 ## Configuration
 

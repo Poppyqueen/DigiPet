@@ -508,7 +508,7 @@ def load_and_set_background(image_path: str) -> None:
 
     Searches several directories in order, with and without extension.
     """
-    image_dirs = [
+    image_dirs = [ # Move these out of here? asset files, asset paths
         "style/images/local_rooms_images",
         "style/images/rooms_images",
         "style/images/local_rooms_images/local_ai_gens",
