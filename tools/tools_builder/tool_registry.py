@@ -12,7 +12,6 @@
 #   Phase 3: Build the toolset_checker from tool_definitions (needs the dict to exist)
 #   Phase 4: Services that NEED the toolset_checker (lighthouse, etc.)
 
-import os
 
 from tools.tools_folder.base_tools import BaseTools
 
@@ -34,13 +33,13 @@ from tools.tools_folder.tv_controller import TVController
 
 from tools.tools_folder.outdoors_perception import OutdoorsPerception
 from tools.tools_folder.comfort_affordances import ComfortAffordances
+from tools.tools_folder.water_points import WaterInstallation
 
 
 from .my_tools import (
     base_tools,
     book_tools,
-    #bedroom_tools,
-    bathroom_tools,
+    #bathroom_tools,
     computer_room_tools,
     kitchen_room_tools,
     lab_room_tools,
@@ -49,7 +48,6 @@ from .my_tools import (
     discogs_tools,
     musicbrainz_tools,
     bluesky_tools,
-    #seat_tools,
     art_book_tools,
     laptop_tools,
     dispenser_tools,
@@ -68,7 +66,8 @@ from .my_tools import (
     fenestration_apertures_tools,
     tv_tools,
     creating_books_tools,
-    comfort_tools
+    comfort_tools,
+    water_source_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -126,6 +125,8 @@ class ToolRegistry:
         self.tv_controller     = TVController(state_manager, signal, config_manager)
         self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
         self.comfort = ComfortAffordances(state_manager, signal)
+
+        self.water_points = WaterInstallation(state_manager, signal)
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
@@ -364,14 +365,6 @@ class ToolRegistry:
                 "room_types": ["kitchen"],
             },
 
-            "bathroom": { # Make this a faucet tool
-                "functions": {
-                    "drink_water":  self.room_tools.bathroom.drink_water,
-                    "wash_hands":   self.room_tools.bathroom.wash_hands,
-                },
-                "definitions": bathroom_tools,
-                "room_types": ["bathroom"],
-            },
 
     # New, refactored affordances to be more general
 
@@ -402,7 +395,7 @@ class ToolRegistry:
                 "use_level": "room_only", # can't sleep while... holding the sleeping bag
             },
             "cranny": { # these items, usually furniture allow you to reach under them sometimes revealing forgotten rewards!
-                "functions": {
+                "functions": { # TODO: Update this to include cranny type in this item object definition, handle returning different types of gleanings based on different types
                     "reach_into_item_crevice": self.comfort.reach_into_item_crevice,
                 },
                 "definitions": comfort_tools,
@@ -430,8 +423,22 @@ class ToolRegistry:
                 "functions": {"meditate": self.comfort.meditate},
                 "definitions": comfort_tools,
                 #"room_types": [""], # This should be a base tool? Not sure. Maybe the tool tracks a log of how many times has the agent meditated, and when the count reaches a certain number, meditation is now a base tool- That's messy to implement. Maybe add, a way to edit agent's base affordances in the GUI creation screen of it? Maybe an option to add 1 or 2 select extra functions to base
-                "item_types": ["meditation_aids"] # we are not good at it
+                "item_types": ["meditation_aid"], # we are not good at it
+                "display_information": self.comfort.get_accessible_meditative_elements,
+                "agent_information": self.comfort.get_accessible_meditative_elements,
                 },
+
+
+            "water_source": { 
+                "functions": {
+                    "drink_from_water_point": self.water_points.drink_from_water_point,
+                    "wash_self_water_feature":   self.water_points.wash_self_water_feature, # Not here anymore
+                },
+                "definitions": water_source_tools,
+                "item_types": ["water_point"],
+                "use_level": "dual_use"
+
+            },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
             # agent_information sources, not action tools)
@@ -446,12 +453,9 @@ class ToolRegistry:
                 "display_information": self.outdoors_perception.outdoors_perception,
                 "agent_information": self.outdoors_perception.outdoors_perception,
             },
-
-
             # ----------------------------------------------------------------
             # Special power toggle, internal, do not touch!
             # ----------------------------------------------------------------
-
             "power_toggle": { 
                 # Power toggle special key, ignores power state. Any item that has this key will be managed by a power toggle to active its functions.
                 "functions": {

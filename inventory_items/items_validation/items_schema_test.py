@@ -7,12 +7,12 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 client=AIConfiguration(provider="openai",model="gpt-5-mini",mode="simple_ai").get_client()
-select_types = ["comfort_object"]
+select_types = ["meditation_aid", "toggle_item_power"]
 test_base = build_llm_schema_for_types(select_types)
 
 #print(json.dumps(test_base.model_json_schema(), indent=2))
 
 
-response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} ####", user="One example of: Victorian room item.", structure=test_base)
+response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} ####", user="One example of this item.", structure=test_base)
 
 print(response.model_dump_json(indent=2))

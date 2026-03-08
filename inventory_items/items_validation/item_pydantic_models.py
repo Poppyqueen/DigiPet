@@ -37,9 +37,10 @@ item_types = ["consumable", "misc", "seed", "art_book", "book", "dispenser", "ca
 item_types.extend(toggable_items)
 
 refactored_types = [
-                    "fenestration_aperture", "bookmaking_implements", "meditation_aids", 
+                    "fenestration_aperture", "bookmaking_implements", "meditation_aid", 
                     "sleepable_spot", "seatable", 
-                    "cranny_host", "dust_bunnied_gleaning","comfort_object"
+                    "cranny_host", "dust_bunnied_gleaning","comfort_object",
+                    "water_point"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -104,9 +105,9 @@ class BookChapter(BaseModel):
 
 class ItemStatsEdit(BaseModel):
     """Stat deltas applied when a consumable item is used."""
-    fullness: float = Field(description="A positive or negative float representing an effect on the metabolic system of a character. Dangerous meals use negative floats as they are harmful to the character.")
-    hydration: float = Field(description="A positive or negative float representing an effect on the hydration of a character. Meals affect the dryness on the mouth, use floats logically. i.e. A meaty and salty broth would make the character feel thirstier, so a negative float is appropriate. A glass of water would be a positive float. Eating a raw meat would dehydrate the character, so a negative float is appropriate.")
-    energy: float = Field(description="A positive or negative float representing an effect on the energy system of a character. Raw, spoiled, or otherwise dangerous meals when consumed cause digestive issues and risk sickness so negative values need to be applied respectively.")
+    fullness: float = Field(description="A positive or negative float representing an effect on the metabolic system of a character. Dangerous meals or drinks use negative floats as they are harmful to the character.")
+    hydration: float = Field(description="A positive or negative float representing an effect on the hydration of a character. Meals and drinks affect the dryness on the mouth, use floats logically. i.e. A meaty and salty broth would make the character feel thirstier, so a negative float is appropriate. A glass of water would be a positive float. Eating a raw meat would dehydrate the character, so a negative float is appropriate.")
+    energy: float = Field(description="A positive or negative float representing an effect on the energy system of a character. Raw, spoiled, or otherwise dangerous meals or tainted drinks when consumed cause digestive issues and risk sickness so negative values need to be applied respectively.")
 
 class CandyBagEntry(BaseModel):
     item_name: str
@@ -183,7 +184,7 @@ class ConsumableFields(ContractMixin):
         description="You should first think 'Is this a Potentially Hazardous Food?' (raw meats, spoiled foods, etc.). If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0. "
     )
     effects: List[str] = Field(
-        description="Narrative, evocative, grounded descriptions of the effects of consuming the item, **second-person, present tense** narration of the phenomenal experience of having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
     )
 
 
@@ -268,9 +269,13 @@ class FenetreApertureFields(ContractMixin):
 class BookMakingImplementsFields(ContractMixin): # No required fields, just adding model description
     model_description: ClassVar[str] = "This type of item holds and provides the ability to create books, from DIY carry kits for simple books, simple areas for home-made binding in workbenches, DIY enthusiasts spaces, semi-profesional apparatuses, to large machinery, or any other."
 
-class MeditationAidsFields(ContractMixin):
-    model_description: ClassVar[str] = "These items are meditation aids, sensory decor, ambience decorations, meaningful, unique, or personal trinkets, furniture, and other sources of relaxation, inspiration for deep thought, meditation, or other forms of mindfulness practices. From small objects like incense, cushions, windchimes, emotionally charged trinkets, to larger items like yoga mats, particularly beautiful benches, fountains, and others."
+class MeditationAidFields(ContractMixin):
+    model_description: ClassVar[str] = "These items are meditation aid, sensory decor, ambience decorations, meaningful, unique, or personal trinkets, furniture, and other sources of relaxation, inspiration for deep thought, meditation, or other forms of mindfulness practices. From small objects like incense, cushions, windchimes, emotionally charged trinkets, to larger items like yoga mats, particularly beautiful benches, fountains, and others."
 
+    meditation_aid_ambience: List[str] = Field(
+        description="**Present tense** evocative descriptions of what ambience effect this specific item brings, examples range from the description of humidifiers and their soft LED illumination, to personal objects like jewerly emitting powerful courage for whoever is near it, or the entrancing soft rythm of a water fountain."
+    )
+    
 class SleepableSpotFields(ContractMixin):
     model_description: ClassVar[str] = "These items range from beds, couches, hammocks and some chairs to tents, sleeping bags, some rugs, or any reasonable place where one could sleep on."
 
@@ -297,6 +302,21 @@ class ComfortObjectFields(ContractMixin):
     narrative_hug: List[str] = Field(
         description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, hugging this item."
     )
+
+class WaterPointFields(ContractMixin):
+    model_description: ClassVar[str] = "This type is never combined with 'consumable' type; Water points are currently functional or active, environmental features, water fixtures, water bodies, aqueous outlets, all sorts of water sources and water points, like rivers, ponds, kitchen faucets, outdoors faucets and others, ranging in safety from tainted rivers, to fresh water ponds and saline shoars, sewage outlets and kitchen fauces and more, exclusive to fixtures and large features of the environment, NEVER individual carry water sources like water bottles or glasses of water."
+
+    narrative_drinking: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, taking a sip directly out of this water source."
+    )
+    narrative_wash_self: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, different ways to wash and rinse oneself with such water source."
+    )
+    stats_edit: ItemStatsEdit = Field(
+    description="You should first think 'Is this a Potentially Hazardous Water Source?' (badly tainted rivers, sewage outlets, a saline water body, etc.). If it is, all the stat edits should be negative floats ranging from -15.0 to -0.5 depending on severity. If it is instead a fresh drinkable water source, all the stat edits should be positive floats ranging from 0.5 to 10.0. They represent a sip."
+    )
+
+
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -320,12 +340,13 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
 
     "fenestration_aperture": FenetreApertureFields, # windows, doors, skylights, clerestories, light wells, portholes, sun tubes, etc.
     "bookmaking_implements": BookMakingImplementsFields, 
-    "meditation_aids": MeditationAidsFields,
+    "meditation_aid": MeditationAidFields, 
     "sleepable_spot": SleepableSpotFields, # Spaces to sleep, holes, tents, hammocks, beds, couches.
-    "cranny_host": CrannyHostFields, # Any furniture where small inconsequential items can fall under.
-    "dust_bunnied_gleaning": DustBunniedGleaningFields, # Rewards of digging into crannies.
+    "cranny_host": CrannyHostFields, # Any furniture where small inconsequential items can fall under. # TODO: Update with dust_bunnied_gleaning type
+    "dust_bunnied_gleaning": DustBunniedGleaningFields, # Rewards of digging into crannies. # TODO: Add specific typing for this, like the plants or the TV registry with literals, tie the "dust_bunnied_gleaning" with a new cranny_host type.
     "seatable": SeatableFields, # Places you can sit on
     "comfort_object": ComfortObjectFields, # You would want to hug these
+    "water_point": WaterPointFields
 }
 
 

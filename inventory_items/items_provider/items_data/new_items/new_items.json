@@ -209,7 +209,7 @@
         "static": false,
         "type": [
             "dust_bunnied_gleaning",
-            "meditation_aids"
+            "meditation_aid"
         ],
         "stackable": false,
         "quantity": 1,
@@ -235,5 +235,62 @@
             "The fringe tickles along your wrist while the pillow's dry lavender breath brushes your nose and loosens the tightness in your shoulders.",
             "Held to your chest, the bolster contours to your body, its old, steady weight settling into the hollow of your arms like a quiet promise of calm."
         ]
+    },
+    {
+        "name": "Mini Zen Flow Fountain",
+        "descriptions": [
+            "A compact ceramic tabletop fountain: water gently cascades over three stacked river stones into a shallow basin, lit from below by a warm, dimmable LED.",
+            "Polished bamboo trim and a soft, constant trickle make it both a decorative centrepiece and a quiet focus for breathing exercises.",
+            "A small reservoir hides a whisper-quiet pump; the piece is designed for close, intimate use in a meditation corner or study shelf."
+        ],
+        "static": false,
+        "type": [
+            "meditation_aid",
+            "water_point"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "meditation_aid_ambience": [
+            "A steady, gentle trickle fills the immediate space with rhythm, each drop a quiet metronome for inhalation and release.",
+            "A faint cool mist rises from the basin, softening light and sharpening the hush around you.",
+            "The ceramic's warm glow and water's muted shimmer draw attention inward; time narrows to the pulse of flowing water."
+        ],
+        "narrative_drinking": [
+            "You cup your hands beneath the thin stream, lift them to your lips, and the water is cool, mineral-bright, and instantly clarifying.",
+            "You tilt your head and sip directly from the steady ribbon of water; it tastes faintly of stone and freshness, and your mouth smoothes into quiet focus.",
+            "You draw a small mouthful from the basin; the cold touch on your tongue snaps tight the edges of a distracted mind into immediate presence."
+        ],
+        "narrative_wash_self": [
+            "You splash the cool water onto your face; droplets erase the heat around your eyes and anchor your breath to the present.",
+            "You wet your palms, press them to your chest, and feel the brief, refreshing cool bleed tension from your shoulders.",
+            "You rinse your wrists under the stream and roll your shoulders as the water slides off skin, bringing a crisp, wakeful shock of clarity."
+        ],
+        "stats_edit": {
+            "fullness": 0.5,
+            "hydration": 4.0,
+            "energy": 1.0
+        }
+    },
+    {
+        "name": "Harmonic Mist Diffuser Lamp",
+        "descriptions": [
+            "A compact ceramic diffuser topped with a frosted glass dome; when active it releases a slow, patterned plume of scented mist and a soft amber glow.",
+            "Designed for meditation corners or bedside altars — the lamp hums almost inaudibly and includes a subtle bell-tone chime on cycle changes."
+        ],
+        "static": false,
+        "type": [
+            "meditation_aid",
+            "toggle_item_power"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "meditation_aid_ambience": [
+            "A warm, honeyed light bathes nearby surfaces, pulling focus inward and easing visual tension.",
+            "Rhythmic, slow breaths of mist scent the air with sandalwood and bergamot, anchoring attention to the present.",
+            "Every few minutes a barely-there bell tone rings like a distant tide, marking a gentle return to posture and breath."
+        ],
+        "power_toggle": false
     }
 ]

@@ -960,35 +960,35 @@ computer_room_tools=[
 ]
 
 
-bathroom_tools=[
+# bathroom_tools=[
 
-    {
-        "type": "function",
-        "name": "drink_water",
-        "description": "Drink water from the faucet.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "wash_hands",
-        "description": "Wash your hands in the bathroom.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-]
+#     {
+#         "type": "function",
+#         "name": "drink_water",
+#         "description": "Drink water from the faucet.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#             },
+#             "required": [
+#             ],
+#             "additionalProperties": False
+#         }
+#     },
+#     {
+#         "type": "function",
+#         "name": "wash_hands",
+#         "description": "Wash your hands in the bathroom.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#             },
+#             "required": [
+#             ],
+#             "additionalProperties": False
+#         }
+#     },
+# ]
 base_tools=[
     {
     "type": "function",
@@ -2174,4 +2174,39 @@ comfort_tools = [
             "additionalProperties": False
         }
     }
+]
+
+water_source_tools = [ 
+    {
+        "type": "function",
+        "name": "drink_from_water_point",
+        "description": "Drink directly from a flowing water point, it might be any fixture or environmental feature, from faucets to rivers and any other water outlet.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source_id": {
+                    "type": "number",
+                    "description": "The ID of the water fixture to drink from."
+                }
+            },
+            "required": ["source_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "wash_self_water_feature",
+        "description": "To use any water fixture or flowing water point to interact with the water source to get a splash of water.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source_id": {
+                    "type": "number",
+                    "description": "The ID of the water fixture to use to cleanse yourself."
+                }
+            },
+            "required": ["source_id"],
+            "additionalProperties": False
+        }
+    }        
 ]

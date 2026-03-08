@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.services.return_objects import InventoryStateResult, InventoryItemEntry
 
 
 from inventory_items.items_provider.item_store import ItemStore
@@ -23,6 +24,9 @@ SLEEP_NARRATIVE = "narrative_sleeping"
 HUGGABLE_ITEM = "comfort_object"
 NARRATIVE_HUG = "narrative_hug"
 
+MEDITATION_AID_ITEM = "meditation_aid"
+MEDITATION_AID_NARRATIVE = "meditation_aid_ambience"
+
 
 
 # Turned into ComfortAffordances, maybe move later, maybe don't, or even rename, decide another time
@@ -36,9 +40,13 @@ class ComfortAffordances:
         self.item_store = ItemStore()
 
     @staticmethod
-    def _get_item_phenom(item_deets, narrative_name:str):
-        item_phenoms = item_deets.get(narrative_name, []) 
-        return random.choice(item_phenoms)
+    def _get_item_text(item_deets, source:str):
+        item_texts = item_deets.get(source, []) 
+        return random.choice(item_texts)
+
+    def _filter_meditative_items(self, item_data: list[InventoryItemEntry]):
+        return [item for item in item_data if "meditation_aid" in item.item_data.get("type", "")]
+
 
     def meditate(self, thoughts):
         current_steps = self.state_manager.get_steps()
@@ -50,6 +58,53 @@ class ComfortAffordances:
         # ------------------------
         return f"You feel inspired by the ambience, you try to quiet your mind, however, thoughts rush over you... {thoughts}.\n As you keep going your mind begins letting go...\n...\n..."
 
+    def _get_medit_item_state(self, item_id: int) -> tuple[bool, dict | str]:
+        found_response = self.state_manager.find_item(
+            item_id=item_id, required_type=MEDITATION_AID_ITEM, required_location="accessible"
+        )
+        if found_response.error:
+            return False, found_response.error
+
+        item_data = found_response.item_data
+        ambience = item_data.get(MEDITATION_AID_NARRATIVE)
+        item_name = item_data.get("name", "")
+
+        power_toggle = found_response.item_data.get("power_toggle", True)
+        if not power_toggle:
+            return False, f"Meditative item {item_name} is turned off." 
+
+        return True, {
+            "name": item_name,
+            "description": self._get_item_text(item_data, "descriptions"),
+            "ambience": ambience,
+        }
+
+    def get_accessible_meditative_elements(self):
+        inventory: InventoryStateResult = self.state_manager.get_inventory_state()
+
+        check_all = inventory.inventory_items + inventory.room_items
+        meditative_items = self._filter_meditative_items(check_all)
+
+        if not meditative_items:
+            return "A an odd sensation that something is missing overcomes you..."
+
+        info_string = "The area is provided with a beautiful ambience, at a quick glance, you can notice:\n"
+
+        for item in meditative_items:
+            item_id = item.item_id
+
+            flag, state = self._get_medit_item_state(item_id)
+            if not flag:
+                info_string += f" ({state})\n"
+                continue
+
+            info_string += f"  {state['name']}\n    {state['description']}\n    {self._get_item_text(state, 'ambience')}\n"
+            info_string += "=" * 30 + "\n"
+
+        return info_string
+        
+        
+
     def take_a_seat(self, item_id: int):
         item_object = self.state_manager.find_item(item_id=item_id, required_type=SEAT_TYPE, required_location="room")
         if not item_object.success:
@@ -58,7 +113,8 @@ class ComfortAffordances:
         # Safe to access item_data only after success check
         item_details = item_object.item_data
         item_name = item_details.get("name", "")
-        item_phenom = self._get_item_phenom(item_details, SEAT_NARRATIVE)
+        item_desc = self._get_item_text(item_details, "descriptions")
+        item_phenom = self._get_item_text(item_details, SEAT_NARRATIVE)
         edit = 1
 
         self._signal_callback({"type": "show_message_popup", "message": f"Sat on {item_name}!"})
@@ -70,8 +126,7 @@ class ComfortAffordances:
 
         self.state_manager.adjust_stat("energy", edit)
 
-        item_name = item_details.get("name", "")
-        item_desc = "\n".join(item_details.get("descriptions", []))
+        
         # TODO: Add icon pop-up signal and image to assets
         return f"You take a seat on the {item_name}\n{item_desc}\n{item_phenom}\n{message}"
 
@@ -87,7 +142,7 @@ class ComfortAffordances:
         item_data = lookup.item_data
 
         item_name = item_data.get("name", "Unnamed")
-        item_desc = "\n".join(item_data.get("descriptions", []))
+        item_desc = self._get_item_text(item_data, "descriptions")
 
         self._signal_callback({"type": "show_message_popup", "message": f"Looking for something hidden..."})
 
@@ -123,8 +178,8 @@ class ComfortAffordances:
         item_data = lookup.item_data
 
         item_name = item_data.get("name", "Unnamed")
-        item_desc = "\n".join(item_data.get("descriptions", []))
-        item_phenom = self._get_item_phenom(item_data, SLEEP_NARRATIVE)# **second-person, present tense** narrative of the experience of laying down and sleeping on this item.
+        item_desc = self._get_item_text(item_data, "descriptions")
+        item_phenom = self._get_item_text(item_data, SLEEP_NARRATIVE)# **second-person, present tense** narrative of the experience of laying down and sleeping on this item.
 
 
         constant = 1
@@ -158,9 +213,9 @@ class ComfortAffordances:
         item_data = lookup.item_data
 
         item_name = item_data.get("name", "")
-        item_desc = "\n".join(item_data.get("descriptions", []))
+        item_desc = self._get_item_text(item_data, "descriptions")
 
-        item_phenom = self._get_item_phenom(item_data, NARRATIVE_HUG)
+        item_phenom = self._get_item_text(item_data, NARRATIVE_HUG)
 
         self._signal_callback({"type": "show_message_popup", "message": f"Hugging {item_name}!"})
 

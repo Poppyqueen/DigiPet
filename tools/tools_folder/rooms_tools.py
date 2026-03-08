@@ -308,39 +308,39 @@ class room_kitchen:
         print("Rollback complete.")
 
 
-class room_bathroom:
-    def __init__(self, state_manager, signal=None):
-        self._signal_callback=signal
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
-        #print("Bathroom initialized.")
+# class room_bathroom:
+#     def __init__(self, state_manager, signal=None):
+#         self._signal_callback=signal
+#         # Store the state_manager reference
+#         self.state_manager : InventoryHouseManager = state_manager
+#         #print("Bathroom initialized.")
 
-    # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function
+#     # Add the helper method
+#     _send_signal = _send_signal # Assign the common helper function
 
 
-    # Make methods instance methods by adding 'self'
-    def drink_water(self):
-        print("Drinking water...")
-        # You can now access the state_manager if needed
-        edit=10
-        self.state_manager.adjust_stat("hydration", edit)
-        message=f"Drank some water from the faucet! Got {edit} hydration points."
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
-        # ------------------------
-        return message
+#     # Make methods instance methods by adding 'self'
+#     def drink_water(self):
+#         print("Drinking water...")
+#         # You can now access the state_manager if needed
+#         edit=10
+#         self.state_manager.adjust_stat("hydration", edit)
+#         message=f"Drank some water from the faucet! Got {edit} hydration points."
+#         # --- Add signal call ---
+#         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
+#         # ------------------------
+#         return message
 
-    # Make methods instance methods by adding 'self'
-    def wash_hands(self):
-        edit=2
-        print("Washing hands...")
-        self.state_manager.adjust_stat("hydration", edit) # Washing hands might not give hydration, maybe hygiene or something else?
-        message=f"You wash your hands, you feel refreshed."
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"}) # Or a soap icon?
-        # ------------------------
-        return message
+#     # Make methods instance methods by adding 'self'
+#     def wash_hands(self):
+#         edit=2
+#         print("Washing hands...")
+#         self.state_manager.adjust_stat("hydration", edit) # Washing hands might not give hydration, maybe hygiene or something else?
+#         message=f"You wash your hands, you feel refreshed."
+#         # --- Add signal call ---
+#         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"}) # Or a soap icon?
+#         # ------------------------
+#         return message
 
 
 
@@ -486,7 +486,7 @@ class main_tools_handle:
 
         # Instantiate the room classes and store them as attributes
         # Pass the state_manager AND the signal callback to the room instances
-        self.bathroom = room_bathroom(self.state_manager, self._signal_callback)
+        #self.bathroom = room_bathroom(self.state_manager, self._signal_callback)
         #self.bedroom = room_bedroom(self.state_manager, self._signal_callback, self.memory)
         #self.living_room= room_living_room(self.state_manager, self._signal_callback, self.open_meteo)
         self.computer = room_computer(self.state_manager, self._signal_callback, self.wiki)
