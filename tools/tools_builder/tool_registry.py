@@ -35,13 +35,14 @@ from tools.tools_folder.outdoors_perception import OutdoorsPerception
 from tools.tools_folder.comfort_affordances import ComfortAffordances
 from tools.tools_folder.water_points import WaterInstallation
 
+from tools.tools_folder.cooking_tool import CookingApparatus
+
 
 from .my_tools import (
     base_tools,
     book_tools,
-    #bathroom_tools,
     computer_room_tools,
-    kitchen_room_tools,
+    #kitchen_room_tools,
     lab_room_tools,
     harvesting_garden_tools,
     youtube_playlister_tools,
@@ -67,7 +68,8 @@ from .my_tools import (
     tv_tools,
     creating_books_tools,
     comfort_tools,
-    water_source_tools
+    water_source_tools,
+    prepare_food_tools,
 )
 
 from .tool_availability import make_toolset_checker
@@ -127,6 +129,8 @@ class ToolRegistry:
         self.comfort = ComfortAffordances(state_manager, signal)
 
         self.water_points = WaterInstallation(state_manager, signal)
+
+        self.cook = CookingApparatus(state_manager, signal, config_manager) # Needs config manager to select AI model for runtime generation
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
@@ -359,10 +363,10 @@ class ToolRegistry:
                 "agent_information":    self.garden_manager.get_garden_summary, # TODO: Make a specific function for this
             },
 
-            "kitchen": { # Not sure what to do about this, probably clean it up first
-                "functions": {"prepare_food": self.room_tools.kitchen.prepare_food},
-                "definitions": kitchen_room_tools,
-                "room_types": ["kitchen"],
+            "cook_technology": { # It is clean, now what?, if touching this first think about what to do with the consumables
+                "functions": {"prepare_food": self.cook.prepare_food},
+                "definitions": prepare_food_tools,
+                "item_types": ["culinary_equipment"]
             },
 
 
@@ -432,7 +436,7 @@ class ToolRegistry:
             "water_source": { 
                 "functions": {
                     "drink_from_water_point": self.water_points.drink_from_water_point,
-                    "wash_self_water_feature":   self.water_points.wash_self_water_feature, # Not here anymore
+                    "wash_self_water_feature":   self.water_points.wash_self_water_feature, # It's back!
                 },
                 "definitions": water_source_tools,
                 "item_types": ["water_point"],
@@ -456,7 +460,7 @@ class ToolRegistry:
             # ----------------------------------------------------------------
             # Special power toggle, internal, do not touch!
             # ----------------------------------------------------------------
-            "power_toggle": { 
+            "power_toggle": { # TODO: Add key to pydantic model, ask for power up and power down operation, second, maybe make it more general toggle, not only electrical power, also could track toggle uses left, None for infinite toggles (incense vs TV)
                 # Power toggle special key, ignores power state. Any item that has this key will be managed by a power toggle to active its functions.
                 "functions": {
                     "toggle_item_power": self.item_toggle.toggle_item_power_auto,

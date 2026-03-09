@@ -53,7 +53,6 @@ class WaterInstallation:
 
     # # Make methods instance methods by adding 'self'
     def wash_self_water_feature(self, source_id):
-        edit=2
         lookup = self.state_manager.find_item(source_id, WATER_FEATURE_TYPE, "accessible")
         if lookup.error:
             return lookup.error
@@ -64,7 +63,9 @@ class WaterInstallation:
         phenom = self._get_item_text(item_details, WASH_SELF_NARRATIVE
         )
         #print("Washing hands...")
-        stats_edit = self.state_manager.adjust_stat("hydration", edit) # Washing hands might not give hydration, maybe hygiene or something else?
+
+        hydration_edit=random.uniform(0.05, 0.15)
+        stats_edit = self.state_manager.adjust_stat("hydration", hydration_edit) # Washing hands might not give hydration, maybe hygiene or something else?
         stats_message = stats_edit.message
 
         message=f"You reach for the {item_name}, {desc}\n{phenom}\n{stats_message}"

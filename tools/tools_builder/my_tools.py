@@ -2210,3 +2210,46 @@ water_source_tools = [
         }
     }        
 ]
+
+
+prepare_food_tools=[
+        {
+        "type": "function",
+        "name": "prepare_food",
+        "description": "Prepare some food with the consumable items in your inventory and a cooking apparatus. You can only prepare food that is logical to prepare with the items you have.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                    "process": {
+                    "type": "string",
+                    "description": "A full and detailed recipe, complete description of the process to apply into these items to prepare or cook something to eat."
+                },
+                    "items_list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The ID of the item to use."
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "The amount of uses for the item in the recipe. It represents portions, spoonfuls or pinches, depending on the nature of the item, meaning, for any preparation, it is required a sensible value larger than one."
+                            }
+                        },
+                        "required": ["item_id", "amount"],
+                        "additionalProperties": False
+                    }
+                },
+                "cooking_apparatus_id": {
+                    "type": "number",
+                    "description": "The ID of a cookery or hearth item that allows for the preparation of meals."
+                }
+            },
+            "required": ["process", "items_list", "cooking_apparatus_id"],
+            "additionalProperties": False
+        }
+    },    
+
+]

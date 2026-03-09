@@ -11,6 +11,7 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 # Build once at import time — the cook only ever produces consumables.
 _COOK_SCHEMA = build_llm_schema_for_types(["consumable"])
+MAX_RETRIES = 4 # 4!!!
 
 
 class cook:
@@ -22,21 +23,8 @@ class cook:
 
         self.client=AIConfiguration(provider=selected_config_client,model=config_model,mode="simple_ai").get_client()
 
-    def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]:
-        """
-        Calls the cooking AI, retrieves structured item definitions,
-        and processes them into a list of dictionaries, removing
-        'effects' and 'stats_edit' for 'misc' type items.
-
-        Args:
-            items: List of input item names.
-            process: Description of the process applied.
-
-        Returns:
-            A list of dictionaries, where each dictionary represents a resulting item,
-            with 'effects' and 'stats_edit' removed for 'misc' type items.
-            Returns an empty list if the AI call fails.
-        """
+    def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]: # TODO: improve this prompt
+ 
         system=f"""You are a cooking AI, given a set of items and a cooking related process, you will return a single
         food item definition that would result from applying such cooking process into the given items. 
         You should identify the main resulting item which are 'consumable' directly from the preparation process. 
@@ -66,34 +54,33 @@ class cook:
         Some other cases for negative stats are items that are salty, sour, bitter, spicy, etc., usually condiments, seasonings, for these, keep the negative stats as negative for your calculation.
         """
 
-        process_prompt=f"""Using the items: {items}, and applying the process: {process}, design a single item that would result from it. 
+        process_prompt = f"""Using the items: {items}, and applying the process: {process}, design a single item that would result from it. 
         Do not return any tools or utensils, only food items, consumables. Create only the main plate or product that would result from such recipe."""
 
-        print("\n--- Calling AI ---")
-        print(f"Prompt: {process_prompt}")
 
-        response = self.client.structured_output(
-            system=system,
-            user=process_prompt,
-            structure=_COOK_SCHEMA
-        )
+        last_error = None
 
-        if response is None:
-             print("AI call failed. Returning empty list.")
-             return []
+        for attempt in range(1, MAX_RETRIES + 1):
+            retry_note = f"\nYour previous attempt was invalid: {last_error}. Please fix it." if last_error else ""
 
-        print("DEBUG: AI COOK RECIEVED AI RESPONSE") # TODO: Sometimes this hangs, at least with OpenAI as the cook, need to investigate why and if it happens with other providers.
-        print(f"AI response: {response}")
+            response = self.client.structured_output(
+                system=system,
+                user=process_prompt + retry_note,
+                structure=_COOK_SCHEMA
+            )
 
-        processed_items_list: List[Dict[str, Any]] = []
-
-        for item_definition in response.items:
-            item_dict = item_definition.model_dump(exclude_none=True)
-            result, error = validate_item_dict(item_dict)
-            if error:
-                print(f"Warning: AI generated invalid item '{item_dict.get('name')}': {error}")
+            if response is None:
+                print(f"Attempt {attempt}: AI call failed.")
                 continue
-            processed_items_list.append(item_dict)
 
-        print("--- AI Call Successful ---")
-        return processed_items_list
+            for item_definition in response.items:
+                item_dict = item_definition.model_dump(exclude_none=True)
+                result, error = validate_item_dict(item_dict)
+                if error:
+                    print(f"Attempt {attempt}: Invalid item '{item_dict.get('name')}': {error}")
+                    last_error = error
+                    break
+                return [item_dict]
+
+        print(f"All {MAX_RETRIES} attempts failed. Last error: {last_error}")
+        return []

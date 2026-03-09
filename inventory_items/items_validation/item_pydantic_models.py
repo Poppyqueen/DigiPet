@@ -40,7 +40,7 @@ refactored_types = [
                     "fenestration_aperture", "bookmaking_implements", "meditation_aid", 
                     "sleepable_spot", "seatable", 
                     "cranny_host", "dust_bunnied_gleaning","comfort_object",
-                    "water_point"
+                    "water_point", "culinary_equipment"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -313,9 +313,18 @@ class WaterPointFields(ContractMixin):
         description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, different ways to wash and rinse oneself with such water source."
     )
     stats_edit: ItemStatsEdit = Field(
-    description="You should first think 'Is this a Potentially Hazardous Water Source?' (badly tainted rivers, sewage outlets, a saline water body, etc.). If it is, all the stat edits should be negative floats ranging from -15.0 to -0.5 depending on severity. If it is instead a fresh drinkable water source, all the stat edits should be positive floats ranging from 0.5 to 10.0. They represent a sip."
+    description="You should first think 'Is this a Potentially Hazardous Water Source?' (badly tainted rivers, sewage outlets, a saline water body, etc.). If it is, all the stat edits should be negative floats ranging from -15.0 to -0.5 depending on severity. If it is instead a fresh drinkable water source, all the stat edits should be positive floats ranging from 0.1 to 0.5. They represent a sip."
     )
 
+class CulinaryImplementsFields(ContractMixin):
+    model_description: ClassVar[str] = "These culinary fixtures, furniture, appliances, workstations or vessels that transform food, from salad mixers, blenders, toasters, ovens to open fires and grills, cookeries or hearths, from appliances or work areas. It strictly excludes utensils and items that are not completely self-contained for their full functional use."
+
+    narrative_prepare: List[str] = Field(
+        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, the starting interaction, first actions and first contact with this specific item. Do not mention specific ingredients, processes or outcomes, only descriptions and narratives of encountering and preparing to use such item."
+    )
+    # equipment_affordances: str = Field( # For future reference, possible update, make this utensils and equipment, and use affordances propmt for AI cook, validate a list of all equipments and consumables separately, validate accessibility for equipments, validate power toggle or default to true. Do not overthink contianers, but maybe do.
+    #     description="A string listing the range of affordances, verbs or actions this item provides."
+    # )
 
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
@@ -346,7 +355,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "dust_bunnied_gleaning": DustBunniedGleaningFields, # Rewards of digging into crannies. # TODO: Add specific typing for this, like the plants or the TV registry with literals, tie the "dust_bunnied_gleaning" with a new cranny_host type.
     "seatable": SeatableFields, # Places you can sit on
     "comfort_object": ComfortObjectFields, # You would want to hug these
-    "water_point": WaterPointFields
+    "water_point": WaterPointFields, # 
+    "culinary_equipment": CulinaryImplementsFields, # Needs an update alongside consumables.
 }
 
 

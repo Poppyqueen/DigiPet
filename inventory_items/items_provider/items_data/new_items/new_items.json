@@ -292,5 +292,25 @@
             "Every few minutes a barely-there bell tone rings like a distant tide, marking a gentle return to posture and breath."
         ],
         "power_toggle": false
+    },
+    {
+        "name": "Floor-Mounted Commercial Convection Oven",
+        "descriptions": [
+            "A heavy-duty stainless-steel convection oven with a reinforced door, tempered-glass window, and a multi-shelf interior.",
+            "Industrial-grade fans circulate air evenly; an intuitive digital control panel and durable knobs provide precise adjustments.",
+            "Built for continuous service in commercial kitchens, it sits on adjustable legs and has removable racks for cleaning."
+        ],
+        "static": true,
+        "type": [
+            "culinary_equipment"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "narrative_prepare": [
+            "You run your hand along the brushed-steel faceplate, feeling the solid construction and slight residual warmth from recent use.",
+            "You grasp the sturdy door handle and swing the tempered-glass door open, noting the smooth hinge and the rack guides inside.",
+            "You place your palm on the control panel and feel the faint vibration as the interior fan idles, the display glowing softly beneath your fingers."
+        ]
     }
 ]

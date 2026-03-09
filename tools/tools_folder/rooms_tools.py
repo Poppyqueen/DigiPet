@@ -47,265 +47,103 @@ def _send_signal(self, signal_data):
         pass # Silently fail if no callback is registered, or log loudly
 # ------------------------------------------------------
 
-class room_kitchen:
-    def __init__(self, state_manager, signal=None, config_manager=None):
-        self._signal_callback=signal
+# class room_kitchen:
+#     def __init__(self, state_manager, signal=None, config_manager=None):
+#         self._signal_callback=signal
 
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
-        self.cook = cook(config_manager)
-        #print("Kitchen initialized.")
+#         # Store the state_manager reference
+#         self.state_manager : InventoryHouseManager = state_manager
+#         self.cook = cook(config_manager)
+#         #print("Kitchen initialized.")
 
-    # Add the helper method
-    _send_signal = _send_signal # Assign the common helper function (?)
+#     # Add the helper method
+#     _send_signal = _send_signal # Assign the common helper function (?)
 
-    def drink_water(self):
-        print("Drinking water...")
-        # You can now access the state_manager if needed
-        edit=10
-        self.state_manager.adjust_stat("hydration", edit)
-        message=f"Drank some water from the kitchen faucet! Got {edit} hydration points."
-        # --- Add signal call ---
-        self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
-        # ------------------------
-        return message
+#     def drink_water(self):
+#         print("Drinking water...")
+#         # You can now access the state_manager if needed
+#         edit=10
+#         self.state_manager.adjust_stat("hydration", edit)
+#         message=f"Drank some water from the kitchen faucet! Got {edit} hydration points."
+#         # --- Add signal call ---
+#         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/water_icon.png"})
+#         # ------------------------
+#         return message
 
-    def _scale_stats(self, stats_edit, amount):
-        if not stats_edit:
-            return {}
-        return {k: round(v * amount, 2) for k, v in stats_edit.items()}
-        
+#     def _scale_stats(self, stats_edit, amount):
+#         if not stats_edit:
+#             return {}
+#         return {k: round(v * amount, 2) for k, v in stats_edit.items()}
+            
 
-    def prepare_food(self, process, items_list):
-        # --- 1. Validate input is not empty ---
-        if not items_list:
-            return "Error: No items specified for preparation."
+#     def prepare_food(self, process, items_list):
+#         if not items_list:
+#             return "Error: No items specified for preparation."
 
-        valid_consumable_details = []
-        valid_tool_details = []
-        validation_errors = []
+#         consumables, tools, errors = [], [], []
 
-        # --- 2. Validate every item before touching any state ---
-        for entry in items_list:
-            if not (isinstance(entry, dict) and "item_id" in entry and "amount" in entry):
-                validation_errors.append(f"Invalid entry format: {entry!r}. Expected {{'item_id': id, 'amount': amount}}.")
-                continue
+#         for entry in items_list:
+#             item_id = entry.get("item_id")
+#             amount = entry.get("amount", 1)
 
-            item_id_raw = entry["item_id"]
-            amount = entry["amount"]
+#             result = self.state_manager.find_item(item_id, required_location="inventory")
+#             if not result.success:
+#                 errors.append(result.error)
+#                 continue
 
-            if not isinstance(item_id_raw, int):
-                try:
-                    item_id = int(item_id_raw)
-                except (ValueError, TypeError):
-                    validation_errors.append(f"Invalid item ID format: {item_id_raw!r} is not an integer.")
-                    continue
-            else:
-                item_id = item_id_raw
+#             item = result.item_data
+#             types = item.get("type", [])
 
-            if not isinstance(amount, (int, float)) or amount <= 0:
-                validation_errors.append(f"Invalid amount {amount!r} for item ID {item_id}: must be a positive number.")
-                continue
+#             if "consumable" in types:
+#                 uses = item.get("consume_uses_left")
+#                 if uses is not None and amount > uses:
+#                     errors.append(f"'{item['name']}' only has {uses} use(s) left, {amount} requested.")
+#                     continue
+#                 consumables.append((item, amount))
 
-            item_result = self.state_manager.find_item(item_id, required_location="inventory")
-            if not item_result.success:
-                validation_errors.append(item_result.error)
-                continue
+#             elif "tool" in types:
+#                 tools.append(item)
 
-            item_data = item_result.item_data
-            item_name = item_data.get("name", f"ID {item_id}")
-            item_type_list = item_data.get("type", [])
+#             else:
+#                 errors.append(f"'{item.get('name')}' is not a consumable or tool.")
 
-            if "consumable" in item_type_list:
-                consume_uses_left = item_data.get("consume_uses_left")
-                if consume_uses_left is not None and amount > consume_uses_left:
-                    validation_errors.append(
-                        f"Item '{item_name}' (ID: {item_id}) only has {consume_uses_left} use(s) left, "
-                        f"but {amount} were requested."
-                    )
-                    continue
-                valid_consumable_details.append((item_data, amount))
+#         if errors:
+#             return "Preparation failed: " + "; ".join(errors)
 
-            elif "tool" in item_type_list:
-                valid_tool_details.append(item_data)
+#         ingredients = [
+#             {**{k: item[k] for k in ("name", "descriptions", "effects", "stats_edit") if k in item},
+#             "amount": amount,
+#             "stats_edit": self._scale_stats(item.get("stats_edit"), amount)}
+#             for item, amount in consumables
+#         ] + [
+#             {**{k: item[k] for k in ("name", "descriptions", "effects", "stats_edit") if k in item},
+#             "stats_edit": self._scale_stats(item.get("stats_edit"), 1)}
+#             for item in tools
+#         ]
 
-            else:
-                validation_errors.append(
-                    f"Item '{item_name}' (ID: {item_id}) has type {item_type_list!r}; "
-                    f"only 'consumable' or 'tool' items can be used."
-                )
+#         generated = self.cook.prepare_food(ingredients, process)
+#         if not generated:
+#             return "You mime and begin preparing food, your plan was perfect, however when you start, you trip up the sequence of actions!... You just trace back your steps and start right from the beginning."
 
-        if validation_errors:
-            print("Preparation failed due to validation errors:")
-            for error in validation_errors:
-                print(f"  - {error}")
-            return "Preparation failed: " + "; ".join(validation_errors)
+#         for item_data in generated:
+#             self.state_manager.create_item("inventory", None, item_data)
 
-        print(f"Validation passed: {len(valid_consumable_details)} consumable(s), {len(valid_tool_details)} tool(s).")
+#         for item, amount in consumables:
+#             item_id = int(item["id"])
+#             uses = item.get("consume_uses_left")
+#             if uses is None or uses - amount <= 0:
+#                 self.state_manager.remove_item(item_id)
+#             else:
+#                 self.state_manager.set_item_attribute(item_id, "consume_uses_left", uses - amount)
 
-        # --- 3. Call cook AI (no state changes yet) ---
-        COOK_AI_FIELDS = {"name", "descriptions", "effects", "stats_edit"}
+#         created_names = [i.get("name", "item") for i in generated]
+#         self._send_signal({
+#             "type": "show_icon_popup",
+#             "icon_path": "style/images/action_icons/plate_icon.png",
+#             "popup_type": 2,
+#         })
+#         return f"Preparation successful! Created: {', '.join(created_names)}."
 
-        all_ingredient_details = [
-            {**{k: v for k, v in d.items() if k in COOK_AI_FIELDS},
-            "amount": amount,
-            "stats_edit": self._scale_stats(d.get("stats_edit"), amount)}
-            for d, amount in valid_consumable_details
-        ] + [
-            {**{k: v for k, v in d.items() if k in COOK_AI_FIELDS},
-            "stats_edit": self._scale_stats(d.get("stats_edit"), 1)}
-            for d in valid_tool_details
-        ]
-
-        print(f"Calling cook.prepare_food — process: '{process}', ingredients: {all_ingredient_details}")
-
-        try:
-            list_generated_items_data = self.cook.prepare_food(all_ingredient_details, process)
-        except Exception as e:
-            print(f"Error during cook process: {e}")
-            return f"Preparation failed: Error during food generation process: {e}"
-
-        if not list_generated_items_data:
-            print("Cook process generated no output items.")
-            return "Preparation process completed, but no food items were created by the cook."
-
-        # --- 4. Create new items BEFORE consuming ingredients ---
-        # Facade wrapper handles inventory-full fallback automatically.
-        successfully_created_items_info = []
-
-        print(f"Creating {len(list_generated_items_data)} new item(s)...")
-        for generated_item_data in list_generated_items_data:
-            item_name = generated_item_data.get("name", "Unnamed Item")
-            creation_result = self.state_manager.create_item("inventory", None, generated_item_data)
-
-            if not creation_result.success:
-                print(f"  Failed to create '{item_name}'. Rolling back {len(successfully_created_items_info)} already-created item(s).")
-                self._rollback_preparation([], successfully_created_items_info)
-                return (
-                    f"Preparation failed: Could not create generated item '{item_name}'. "
-                    f"{creation_result.error} "
-                    "No ingredients were consumed. Rolled back partial item creation."
-                )
-
-            for new_item_id in creation_result.created_ids:
-                print(f"  Created '{item_name}' → ID {new_item_id} in {creation_result.location}.")
-                successfully_created_items_info.append({
-                    "id": new_item_id,
-                    "location_type": creation_result.location,
-                    "name": item_name,
-                })
-
-        print("All new items created successfully.")
-
-        # --- 5. Consume ingredients ---
-        successfully_consumed = []
-
-        print("Consuming ingredients...")
-        for item_data, amount in valid_consumable_details:
-            item_id = int(item_data.get("id"))
-            item_name = item_data.get("name", f"ID {item_id}")
-            consume_uses_left = item_data.get("consume_uses_left")
-
-            if consume_uses_left is not None:
-                new_consume_uses_left = consume_uses_left - amount
-
-                if new_consume_uses_left <= 0:
-                    removal_result = self.state_manager.remove_item(item_id)
-                    if not removal_result.success:
-                        print(f"  Failed to remove depleted item '{item_name}' (ID: {item_id}).")
-                        self._rollback_preparation(successfully_consumed, successfully_created_items_info)
-                        return (
-                            f"Preparation failed: Could not remove depleted ingredient '{item_name}' "
-                            f"(ID: {item_id}). Rolled back changes."
-                        )
-                    print(f"  Removed depleted item '{item_name}' (ID: {item_id}).")
-                    successfully_consumed.append((item_data, 0))
-
-                else:
-                    attr_result = self.state_manager.set_item_attribute(item_id, "consume_uses_left", new_consume_uses_left)
-                    if not attr_result.success:
-                        print(f"  Failed to decrement consume_uses_left for '{item_name}' (ID: {item_id}).")
-                        self._rollback_preparation(successfully_consumed, successfully_created_items_info)
-                        return (
-                            f"Preparation failed: {attr_result.message} "
-                            f"(ID: {item_id}). Rolled back changes."
-                        )
-                    print(f"  '{item_name}' (ID: {item_id}): consume_uses_left {consume_uses_left} → {new_consume_uses_left}.")
-                    successfully_consumed.append((item_data, new_consume_uses_left))
-
-            else:
-                # No consume_uses_left field — remove entirely
-                removal_result = self.state_manager.remove_item(item_id)
-                if not removal_result.success:
-                    print(f"  Failed to remove ingredient '{item_name}' (ID: {item_id}).")
-                    self._rollback_preparation(successfully_consumed, successfully_created_items_info)
-                    return (
-                        f"Preparation failed: Could not remove ingredient '{item_name}' "
-                        f"(ID: {item_id}). Rolled back changes.\n"
-                        f"{removal_result.error}"
-                    )
-                print(f"  Removed ingredient '{item_name}' (ID: {item_id}) (no consume_uses_left field).")
-                successfully_consumed.append((item_data, None))
-
-        print("All ingredients consumed successfully.")
-
-        # --- 6. Success ---
-        item_names_and_ids = [
-            f"{info.get('name', 'Unnamed')} (ID: {info.get('id', '?')}) in {info.get('location_type', '?')}"
-            for info in successfully_created_items_info
-        ]
-        self._send_signal({
-            "type": "show_icon_popup",
-            "icon_path": "style/images/action_icons/plate_icon.png",
-            "popup_type": 2,
-        })
-        return f"Preparation successful! Created: {', '.join(item_names_and_ids)}."
-
-
-    def _rollback_preparation(self, consumed_ingredients, created_items_info):
-        print("Preparation failed — attempting rollback...")
-
-        for item_data, new_consume_uses_left in reversed(consumed_ingredients):
-            item_id = item_data.get("id", "?")
-            item_name = item_data.get("name", "Unnamed")
-
-            if new_consume_uses_left == 0 or new_consume_uses_left is None:
-                print(f"  Re-creating removed ingredient '{item_name}' (original ID: {item_id})...")
-                result = self.state_manager.create_item("inventory", None, item_data)
-                if not result.success:
-                    print(f"  CRITICAL: Failed to re-create '{item_name}'. Item may be lost! {result.message}")
-                else:
-                    print(f"  Re-created '{item_name}' → new ID: {result.created_ids[0]}.")
-            else:
-                original_consume_uses_left = item_data.get("consume_uses_left")
-                print(
-                    f"  Restoring consume_uses_left for '{item_name}' (ID: {item_id}): "
-                    f"{new_consume_uses_left} → {original_consume_uses_left}..."
-                )
-                attr_result = self.state_manager.set_item_attribute(
-                    int(item_id), "consume_uses_left", original_consume_uses_left
-                )
-                if not attr_result.success:
-                    print(f"  CRITICAL: Failed to restore consume_uses_left for '{item_name}' (ID: {item_id})!")
-                else:
-                    print(f"  Restored consume_uses_left for '{item_name}'.")
-
-        for item_info in reversed(created_items_info):
-            item_id = item_info.get("id")
-            item_name = item_info.get("name", "Unnamed")
-            if item_id is None:
-                print(f"  Internal error: created item info missing ID: {item_info}")
-                continue
-            print(f"  Removing created item '{item_name}' (ID: {item_id})...")
-            removal_result = self.state_manager.remove_item(item_id)
-            if not removal_result.success:
-                print(f"  CRITICAL: Failed to remove created item '{item_name}' (ID: {item_id}). Duplicate may exist!\n"
-                f"{removal_result.error}")
-            else:
-                print(f"  Removed created item '{item_name}' (ID: {item_id}).\n"
-                f"{removal_result.message}")
-
-        print("Rollback complete.")
 
 
 # class room_bathroom:
@@ -494,7 +332,7 @@ class main_tools_handle:
         # --- Fix: Removed the extra 'self' argument here ---
         #  self.white_room = room_white(self.state_manager, self._signal_callback)
         # ---------------------------------------------------
-        self.kitchen = room_kitchen(self.state_manager, self._signal_callback, config_manager)
+        # self.kitchen = room_kitchen(self.state_manager, self._signal_callback, config_manager)
 
        # self.comfort = ComfortAffordances(self.state_manager, self._signal_callback, self.memory)
 
