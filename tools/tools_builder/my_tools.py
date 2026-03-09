@@ -841,44 +841,7 @@ lab_room_tools=[
         }
     }
 ]
-kitchen_room_tools=[
-        {
-        "type": "function",
-        "name": "prepare_food",
-        "description": "Prepare some food with the consumable items in your inventory",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                    "process": {
-                    "type": "string",
-                    "description": "A full and detailed recipe, complete description of the process to apply into these items to prepare or cook something to eat."
-                },
-                    "items_list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "item_id": {
-                                "type": "string",
-                                "description": "The ID of the item to use."
-                            },
-                            "amount": {
-                                "type": "number",
-                                "description": "The amount of uses for the item in the recipe. It represents portions, spoonfuls or pinches, depending on the nature of the item, meaning, for any preparation, it is required a sensible value larger than one."
-                            }
-                        },
-                        "required": ["item_id", "amount"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            "required": ["process", "items_list"
-            ],
-            "additionalProperties": False
-        }
-    },    
 
-]
 garden_room_tools=[
         {
         "type": "function",
@@ -959,36 +922,6 @@ computer_room_tools=[
     }
 ]
 
-
-# bathroom_tools=[
-
-#     {
-#         "type": "function",
-#         "name": "drink_water",
-#         "description": "Drink water from the faucet.",
-#         "parameters": {
-#             "type": "object",
-#             "properties": {
-#             },
-#             "required": [
-#             ],
-#             "additionalProperties": False
-#         }
-#     },
-#     {
-#         "type": "function",
-#         "name": "wash_hands",
-#         "description": "Wash your hands in the bathroom.",
-#         "parameters": {
-#             "type": "object",
-#             "properties": {
-#             },
-#             "required": [
-#             ],
-#             "additionalProperties": False
-#         }
-#     },
-# ]
 base_tools=[
     {
     "type": "function",

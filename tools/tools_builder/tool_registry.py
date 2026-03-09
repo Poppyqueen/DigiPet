@@ -37,6 +37,8 @@ from tools.tools_folder.water_points import WaterInstallation
 
 from tools.tools_folder.cooking_tool import CookingApparatus
 
+from tools.tools_folder.wikipedia_controller import WikipediaController
+
 
 from .my_tools import (
     base_tools,
@@ -134,6 +136,8 @@ class ToolRegistry:
 
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
+        self.wikipedia_controller = WikipediaController(state_manager, signal, memory_manager)
+
 
         # Optional services
         self.youtube         = None
@@ -174,7 +178,7 @@ class ToolRegistry:
     # ------------------------------------------------------------------
 
 
-    def _init_optional_services(self, state_manager, signal):
+    def _init_optional_services(self, state_manager, signal): # This is conditional importing, not adding wikipedia here even tho there is a config flag for it as imports are only requests, no specific library, conditional runtime still works thanks to _add_conditional_tools
         if self.youtube_enabled:
             try:
                 from tools.tools_folder.tools_helpers.services import youtube_service
@@ -252,7 +256,7 @@ class ToolRegistry:
                 "use_level": "inventory_only",
                 "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item? I like that idea 
             },
-            "ALIFE_research": {
+            "ALIFE_research": { # TODO: Update this, create an agent information method that holds the information on the current sim alongside the current tick, maybe do not include the whole state, but metadata
                 "functions": {
                     "set_current_tick_ALIFE":       al.set_current_tick_ALIFE          if al else None,
                     "observe_ALIFE":                al.observe_ALIFE                   if al else None,
@@ -286,7 +290,7 @@ class ToolRegistry:
                 "item_types": ["book"],
                 "use_level": "inventory_only",
             },
-            "art_book": {
+            "art_book": { # What to do about this? Rename to create drawing, introduce narrative texts on using different items, from notebooks with fountain pens, to hand-held drawing tablets, and professional stations, each archive needs to be tied to the item in some way, maybe make some UID? that is created for each item the first time one interacts with it, and registers it to the global datbase, why not use item ID? bypassing any fears that it might for some reason change, it shouldn't, but making a unique tracking ID for it would make sure that nobody else touches it. Maybe... keep the data like the book? the difference is that we can't save svgs directly, just make a pointer to a folder? needs a lot of stuff
                 "functions": {
                     "create_svg_image": self.images_lab.create_svg_image,
                     "read_archive":     self.images_lab.read_archive,
@@ -295,7 +299,7 @@ class ToolRegistry:
                 "item_types": ["art_book"],
                 "use_level": "inventory_only",
             },
-            "maze": {
+            "maze": { # TODO: Make this an item, not room type, also needs to handle individual state for item instead of global, however this is a big choice.
                 "functions": {
                     "VMaze-create_maze":        self.maze.create_maze,
                     "VMaze-observe_environment": self.maze.observe_environment,
@@ -305,24 +309,10 @@ class ToolRegistry:
                 "item_types": ["virtual_maze"],
                 "use_level": "room_only",
                 "display_information": self.maze.display_information,
-                # agent_information intentionally omitted — contains restricted info (see TODO in original)
+                # agent_information intentionally omitted — contains restricted info (see TODO in original) # Make agent specific method
             },
-
-            "tv": {
-                "functions": {
-                    "watch_tv": self.tv_controller.watch_tv,
-                    "browse_channels": self.tv_controller.browse_channels,
-                    "change_channel": self.tv_controller.change_channel,
-                },
-                "definitions": tv_tools,
-                "item_types": ["tv"],
-                "use_level": "dual_use",
-                "display_information": self.tv_controller.get_current_accessible_tv_gui, # non-blocking
-                "agent_information": self.tv_controller.get_current_accessible_tv_agent, # blocking
-            },
-
             "auction": {
-                "functions": {
+                "functions": { # These methods need love
                     "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
                     "computer_lookup_auction_house_item": self.auction_house.lookup_item,
                     "computer_buy_item": self.auction_house.buy_item,
@@ -330,13 +320,13 @@ class ToolRegistry:
                     "computer_get_currency": self.auction_house.get_currency
                 },
                 "definitions": laptop_tools,
-                "item_types": ["laptop", "desktop_computer"],
+                "item_types": ["online_store"],
                 "use_level": "dual_use"
             },
 
             # Room Only Tools
             "dispenser": { # This is mostly fine, however, it is owns candy bags, maybe make candy bags use consume uses left?
-                "functions": {
+                "functions": { # Not sure what to do about this, optimally, this should be a general container? not sure
                     "dispense_candy": self.dispenser_tools.dispense_candy,
                     "refill_dispenser": self.dispenser_tools.refill_dispenser,
                     "examine_dispenser": self.dispenser_tools.examine_dispenser
@@ -367,6 +357,19 @@ class ToolRegistry:
                 "functions": {"prepare_food": self.cook.prepare_food},
                 "definitions": prepare_food_tools,
                 "item_types": ["culinary_equipment"]
+            },
+
+            "tv": { # rename this, could be a TV or a radio, specifically a one to many and channel/station based information reciever device.
+                "functions": { # Also add more TV types
+                    "watch_tv": self.tv_controller.watch_tv,
+                    "browse_channels": self.tv_controller.browse_channels,
+                    "change_channel": self.tv_controller.change_channel,
+                },
+                "definitions": tv_tools,
+                "item_types": ["tv"],
+                "use_level": "dual_use",
+                "display_information": self.tv_controller.get_current_accessible_tv_gui, # non-blocking
+                "agent_information": self.tv_controller.get_current_accessible_tv_agent, # blocking
             },
 
 
@@ -411,7 +414,7 @@ class ToolRegistry:
                 "functions": {"take_a_seat": self.comfort.take_a_seat},
                 "definitions": comfort_tools,
                 "item_types": ["seatable"],
-                "use_level": "dual_use",
+                "use_level": "room_only",
             },
 
             "soft_goods": { # You would want to hug these items
@@ -428,6 +431,7 @@ class ToolRegistry:
                 "definitions": comfort_tools,
                 #"room_types": [""], # This should be a base tool? Not sure. Maybe the tool tracks a log of how many times has the agent meditated, and when the count reaches a certain number, meditation is now a base tool- That's messy to implement. Maybe add, a way to edit agent's base affordances in the GUI creation screen of it? Maybe an option to add 1 or 2 select extra functions to base
                 "item_types": ["meditation_aid"], # we are not good at it
+                "use_level": "dual_use",
                 "display_information": self.comfort.get_accessible_meditative_elements,
                 "agent_information": self.comfort.get_accessible_meditative_elements,
                 },
@@ -478,12 +482,12 @@ class ToolRegistry:
         if self.wikipedia_enabled:
             self.tool_definitions["wikipedia"] = {
                 "functions": {
-                    "computer_search_wikipedia_articles":       self.room_tools.computer.search_wikipedia_articles,
-                    "computer_get_wikipedia_article_content":   self.room_tools.computer.get_wikipedia_article_content,
+                    "computer_search_wikipedia_articles":       self.wikipedia_controller.search_wikipedia_articles,
+                    "computer_get_wikipedia_article_content":   self.wikipedia_controller.get_wikipedia_article_content,
                 },
                 "definitions": computer_room_tools,
-                "item_types": ["wikipedia", "laptop", "desktop_computer"],
-                "display_information": self.room_tools.computer.display_information,
+                "item_types": ["wikipedia"], # Only wikipedia type, a computer or anything could be wikipedia type
+                "display_information": self.wikipedia_controller.display_information,
                 "use_level": "dual_use",
             }
             print("Wikipedia tools added.")

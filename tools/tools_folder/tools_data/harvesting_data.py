@@ -33,7 +33,7 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("lettuce head"), "base_harvest_yield": 7},
+            {"item": cc.get_item("lettuce head"), "base_harvest_yield": 7}, # Notice, it is calling our item store and getting these harvestables, 'lettuce head', make sure that they exist if adding new plant types, or create new items, they need to be 'consumable' type, no specific harvest type yet, not sure if it is needed. 
             {"item": cc.get_item("Lettuce Seeds"), "base_harvest_yield": 2}
         ],
         "life_cycle": "annual",

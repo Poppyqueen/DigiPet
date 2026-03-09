@@ -122,10 +122,10 @@ def _build_chatbot(
     bots_archive_dir: str,
     config_manager: ConfigManager,
     signal_callback,
-) -> tuple[Optional[BaseChatbot], bool]:
+) -> tuple[BaseChatbot, bool]:  # Removed Optional since it won't return None anymore
     """
     Dynamically import and instantiate the correct chatbot class.
-    Returns (chatbot_instance, chatbot_available).
+    Raises an exception and crashes the runtime if initialization fails.
     """
     providers_map = {
         "ai_player":   "ai_managers.agents.agent_api.AgentChatbot",
@@ -139,9 +139,12 @@ def _build_chatbot(
         )
 
     module_path, class_name = providers_map[game_mode].rsplit(".", 1)
+    
+    # Let import errors bubble up naturally as fatal crashes
     module        = importlib.import_module(module_path)
     provider_cls  = getattr(module, class_name)
 
+    # Attempt instantiation without the broad try/except block
     try:
         chatbot = provider_cls(
             signal_callback  = signal_callback,
@@ -151,8 +154,10 @@ def _build_chatbot(
         print(f"[init] {type(chatbot).__name__} ready (mode={game_mode}).")
         return chatbot, True
     except Exception as exc:
-        print(f"[init] Chatbot init failed: {type(exc).__name__}: {exc}")
-        return None, False
+        # Log the specific failure before re-raising or exiting
+        print(f"[FATAL] Chatbot init failed: {type(exc).__name__}: {exc}")
+        # Re-raise the exception to crash the runtime
+        raise RuntimeError(f"Failed to initialize chatbot for {game_mode}") from exc
 
 
 def _load_initial_game_state(chatbot: BaseChatbot) -> None:
@@ -243,12 +248,12 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
 
     garden_tick_interval_ms = config.IDLE_TIMEOUT_MINUTES * (3 / 5) * 60 * 1000
 
-    chatbot, chatbot_available = _build_chatbot(
+    chatbot, chatbot_available = _build_chatbot( # Fatal crash if this fails
         game_mode, bots_archive_dir, config_manager, signal_callback
     )
 
-    if chatbot_available and chatbot:
-        _load_initial_game_state(chatbot)
+    # if chatbot_available and chatbot:
+    _load_initial_game_state(chatbot)
 
     _splash(screen)
 

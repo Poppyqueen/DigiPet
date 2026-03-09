@@ -72,7 +72,7 @@ class OutdoorsPerception: # this could follow the pattern of the TV that allows 
 
         message = "\n".join([
             "You get as close as you can to the aperture in the room;",
-            "\n".join(accessibility_message),
+            accessibility_message,
             "\n".join(descriptions),
             f"As you peer outwards, you notice the weather with absolute precision:",
             f"{weather_info}"

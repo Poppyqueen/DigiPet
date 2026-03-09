@@ -40,7 +40,8 @@ refactored_types = [
                     "fenestration_aperture", "bookmaking_implements", "meditation_aid", 
                     "sleepable_spot", "seatable", 
                     "cranny_host", "dust_bunnied_gleaning","comfort_object",
-                    "water_point", "culinary_equipment"
+                    "water_point", "culinary_equipment",
+                    "ALIFE_interface", # Needs work on its methods
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -79,6 +80,8 @@ ItemType = Literal[tuple(item_types)]
 _tv_type_keys = tuple(TV_TYPE_CHANNELS.keys())
 TVType = Literal[_tv_type_keys]  # type: ignore[valid-type]
 tv_type_names = ", ".join(_tv_type_keys)
+
+# Go to TV_TYPE_CHANNELS and write new TV types! 
 
 
 # =============================================================================
