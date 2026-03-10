@@ -586,7 +586,7 @@ youtube_playlister_tools=[
 
 
 
-harvesting_garden_tools=[
+plants_tools=[
     {
         "type": "function",
         "name": "get_current_garden_information",
@@ -601,30 +601,38 @@ harvesting_garden_tools=[
     {
         "type": "function",
         "name": "plant_seed",
-        "description": "Plants a seed from your inventory.",
+        "description": "Plants a seed from your inventory into a valid room or specified pot.",
         "parameters": {
             "type": "object",
-            "properties": {
+            "properties": {                
+                "pot_id": {
+                    "type": ["number", "null"],
+                    "description": "Optional, point at a pot or planter item to plant the seed into. If missing, the seed will planted in the current room."
+                },
                 "plot_id": {
                     "type": "string",
-                    "description": "The plot ID where to plant this seed"
+                    "description": "The plot ID where to plant this seed. Could be a plot in a planter or in a room."
                 },
-                "item_id": {
+                "seed_id": {
                     "type": "number",
-                    "description": "An int for the ID of the seed item you want to plant in the plot."
+                    "description": "An int for the ID of the seed item you want to plant in the selected area."
                 }
             },
-            "required": ["plot_id", "item_id"],
+            "required": ["plot_id", "seed_id"],
             "additionalProperties": False
         }
     },
     {
         "type": "function",
-        "name": "check_plant_state",
-        "description": "Check the state of the plant in a plot of the current garden",
+        "name": "check_plant",
+        "description": "Check the state of the selected plant.",
         "parameters": {
             "type": "object",
             "properties": {
+                "pot_id": {
+                    "type": ["number", "null"],
+                    "description": "Optional, point at a pot or planter item to check the plant from. If missing, it will target a given plant in the room."
+                },
                 "plot_id": {
                     "type": "string",
                     "description": "The plot ID for the plant to check its state of"
@@ -641,9 +649,13 @@ harvesting_garden_tools=[
         "parameters": {
             "type": "object",
             "properties": {
+                "pot_id": {
+                    "type": ["number", "null"],
+                    "description": "Optional, point at a pot or planter item to harvest the plant from. If missing, it will target a given plant in the room."
+                },
                 "plot_id": {
                     "type": "string",
-                    "description": "The plot ID for the plant to harvest"
+                    "description": "The ID for the plant to harvest from either room or planter."
                 }
             },
             "required": ["plot_id"],
@@ -652,14 +664,18 @@ harvesting_garden_tools=[
     },
     {
         "type": "function",
-        "name": "water_plot",
-        "description": "Water the plot for the given ID",
+        "name": "water_plant",
+        "description": "Water the selected plant.",
         "parameters": {
             "type": "object",
             "properties": {
+                "pot_id": {
+                    "type": ["number", "null"],
+                    "description": "Optional, point at a pot or planter item to water the plant from. If missing, it will target a given plant in the room."
+                },
                 "plot_id": {
                     "type": "string",
-                    "description": "The plot ID for the plant to water"
+                    "description": "The plot ID for the plant to water in either planter or room plot."
                 },
                 "water_level_type": {
                     "type": "string",
@@ -667,6 +683,26 @@ harvesting_garden_tools=[
                 }
             },
             "required": ["plot_id", "water_level_type"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "remove_plant",
+        "description": "Rip and tear against the plant to remove it from its rooting home.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "pot_id": {
+                    "type": ["number", "null"],
+                    "description": "Optional, point at a pot or planter item to harvest the plant from. If missing, it will target a given plant in the room."
+                },
+                "plot_id": {
+                    "type": "string",
+                    "description": "The ID for the plant to harvest from either room or planter."
+                }
+            },
+            "required": ["plot_id"],
             "additionalProperties": False
         }
     },

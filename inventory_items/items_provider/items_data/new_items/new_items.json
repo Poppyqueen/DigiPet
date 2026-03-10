@@ -312,5 +312,37 @@
             "You grasp the sturdy door handle and swing the tempered-glass door open, noting the smooth hinge and the rack guides inside.",
             "You place your palm on the control panel and feel the faint vibration as the interior fan idles, the display glowing softly beneath your fingers."
         ]
+    },
+    {
+        "name": "Glazed Ceramic Planter (Large)",
+        "descriptions": [
+            "A deep, glazed ceramic pot with a wide rim and decorative blue-green pattern. It smells faintly of damp earth and old compost.",
+            "Designed to hold multiple seedlings, this planter includes a removable inner liner for easy repotting and drainage holes with a matching saucer.",
+            "In-game: holds two plant slots and slightly boosts harvest yields thanks to its rich, insulating soil and good drainage."
+        ],
+        "static": false,
+        "type": [
+            "planter_pot"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 5,
+        "capacity": 2,
+        "size_multiplier": 1.15
+    },
+    {
+        "name": "Sunflower Seed Packet",
+        "descriptions": [
+            "A small paper packet filled with golden sunflower seeds. Each seed glows faintly when held up to the sun — a sign of vigorous germination potential.",
+            "Plantable in outdoor soil or large containers; produces tall sunflowers that track sunlight, attract pollinators, and yield more seeds when mature. Prefers full sun and well-drained soil; typical germination in 7–14 days."
+        ],
+        "static": false,
+        "type": [
+            "seed"
+        ],
+        "stackable": true,
+        "quantity": 10,
+        "max_stack_size": 50,
+        "plant_type": "sunflower"
     }
 ]

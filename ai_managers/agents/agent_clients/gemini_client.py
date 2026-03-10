@@ -54,6 +54,9 @@ class GeminiClient(AbstractLLMClient):
 
         type_str = schema_dict.get("type")
         if type_str:
+            if isinstance(type_str, list):
+                type_str = next((t for t in type_str if t != "null"), None)
+                kwargs["nullable"] = True
             try:
                 kwargs["type"] = getattr(types.Type, type_str.upper())
             except AttributeError:

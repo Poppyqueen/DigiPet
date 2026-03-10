@@ -46,7 +46,7 @@ from .my_tools import (
     computer_room_tools,
     #kitchen_room_tools,
     lab_room_tools,
-    harvesting_garden_tools,
+    #harvesting_garden_tools,
     youtube_playlister_tools,
     discogs_tools,
     musicbrainz_tools,
@@ -72,6 +72,7 @@ from .my_tools import (
     comfort_tools,
     water_source_tools,
     prepare_food_tools,
+    plants_tools,
 )
 
 from .tool_availability import make_toolset_checker
@@ -244,7 +245,7 @@ class ToolRegistry:
                     "pick_up_item":                 self.base_tools.pick_up_item,
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
                     "drop_item":                    self.base_tools.drop_item,
-                    "add_item_description":         self.base_tools.add_item_description,
+                    #"add_item_description":         self.base_tools.add_item_description, # Sometimes the AI will use this to replace actions or behaviors instead with just making notes into items, that's why it has been removed.
                     "emit_inner_thought":           self.base_tools.emit_inner_thought
                 },
                 "definitions": base_tools,
@@ -339,19 +340,6 @@ class ToolRegistry:
 
     # REFACTOR ZONE:
 
-            "planting_garden": { # Maybe this needs a big rework
-                "functions": {
-                    "plant_seed":                       self.garden_manager.plant_seed,
-                    "check_plant_state":                self.garden_manager.check_plant_state,
-                    "harvest_plant":                    self.garden_manager.harvest_plant,
-                    "get_current_garden_information":   self.garden_manager.ai_get_garden_summary,
-                    "water_plot":                       self.garden_manager.water_plot,
-                },
-                "definitions": harvesting_garden_tools,
-                "room_types": ["planting_garden"],
-                "display_information":  self.garden_manager.get_garden_summary,
-                "agent_information":    self.garden_manager.get_garden_summary, # TODO: Make a specific function for this
-            },
 
             "cook_technology": { # It is clean, now what?, if touching this first think about what to do with the consumables
                 "functions": {"prepare_food": self.cook.prepare_food},
@@ -445,7 +433,22 @@ class ToolRegistry:
                 "definitions": water_source_tools,
                 "item_types": ["water_point"],
                 "use_level": "dual_use"
-
+            },
+            "planting_garden": { # Reworked, now handles individual items, introduced planter_pot item
+                "functions": {
+                    "plant_seed":                       self.garden_manager.plant_seed,
+                    "check_plant":                      self.garden_manager.check_plant, # Detailed plant by plant state.
+                    "harvest_plant":                    self.garden_manager.harvest_plant,
+                    #"get_accessible_plants_info":       self.garden_manager.get_current_accessible_garden_agent, # Returns a summary of the plants and pots around, does not detail the specific state of each of them. # Keep toggled off? it should work fine.
+                    "water_plant":                      self.garden_manager.water_plant,
+                    "remove_plant":                     self.garden_manager.remove_plant
+                },
+                "definitions": plants_tools,
+                "room_types": ["cultivation_zone"],
+                "item_types": ["planter_pot"],
+                "use_level": "dual_use",
+                "display_information":  self.garden_manager.get_current_accessible_garden_gui, # Same info as get_accessible_plants_info, but this one does not reduce stats
+                "agent_information":    self.garden_manager.get_current_accessible_garden_gui, # Exact same method, both are summaries of the state.
             },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
@@ -457,7 +460,7 @@ class ToolRegistry:
                 # will treat missing/empty functions as available (no None check needed)
                 # because is_tool_available only None-checks values that exist.
                 #"definitions": garden_room_tools,
-                "room_types": ["outdoors_area"],
+                "room_types": ["outdoors_area"], # soft link with garden manager, it is looking for room with this type and watering plants that are in them
                 "display_information": self.outdoors_perception.outdoors_perception,
                 "agent_information": self.outdoors_perception.outdoors_perception,
             },

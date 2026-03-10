@@ -18,16 +18,19 @@ from pydantic import BaseModel, Field, ConfigDict, model_validator, PositiveInt
 
 from .contract_mixin import ContractMixin
 
+# Needs various updates
+
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
 room_types = [
-    "planting_garden", "bedroom", "living_room", "bathroom", "kitchen", "ALIFE_research", "computer_room",
+    "bedroom", "living_room", "bathroom", "kitchen", "ALIFE_research", "computer_room", # needs changes, most of these don't exist anymore
 ]
 
-refactored_types = ["outdoors_area"]
+refactored_types = ["outdoors_area", "open_soil_zone"]
+room_types.extend(refactored_types)
 
 lighthouse_room_types = ["lantern_room", "lighthouse_gallery", "accessible_light_viewing_room", "fresnel_lens_interior"]
 room_types.extend(lighthouse_room_types)
@@ -125,7 +128,7 @@ class PlantingGardenFields(ContractMixin):
 # =============================================================================
 
 ROOM_TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
-    "planting_garden": PlantingGardenFields,
+    "open_soil_zone": PlantingGardenFields,
 }
 
 

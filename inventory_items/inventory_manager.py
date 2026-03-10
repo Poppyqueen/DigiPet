@@ -23,7 +23,8 @@ from inventory_items.services.return_objects import (
     InventoryStateResult,
     AdjustCurrencyResult,
     GetCurrencyResult,
-    StatsResult
+    StatsResult,
+    InventoryItemEntry
 )
 
 from typing import Literal
@@ -315,6 +316,15 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         """
         return self.inventory_service.get_inventory_state()
 
+    def get_all_items_by_type(self, item_type: str) -> list[InventoryItemEntry]:
+        """
+        Returns every item of the given type from the player inventory
+        and every room in state — not just the current room.
+
+        Used by systems that tick or process items globally (e.g. pot plants
+        growing while the player is elsewhere).
+        """
+        return self.inventory_service.get_all_items_by_type(item_type)
 
     # Added methods for currency
 

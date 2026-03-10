@@ -14,7 +14,7 @@
 #   That's it — validate_item_dict and the LLM schema update automatically.
 
 from typing import List, Optional, Union, Dict, Any, Literal, Annotated, Type
-from pydantic import BaseModel, Field, ConfigDict, PositiveInt, model_validator, create_model
+from pydantic import BaseModel, Field, ConfigDict, PositiveInt, model_validator, create_model, PositiveFloat
 from pydantic.functional_validators import AfterValidator
 
 from .contract_mixin import ContractMixin
@@ -42,6 +42,7 @@ refactored_types = [
                     "cranny_host", "dust_bunnied_gleaning","comfort_object",
                     "water_point", "culinary_equipment",
                     "ALIFE_interface", # Needs work on its methods
+                    "planter_pot",
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -100,6 +101,7 @@ plant_type_names = ", ".join(_plant_type_keys)
 # the LLM receives a documented, named structure rather than an opaque dict,
 # and validation catches wrong shapes early.
 # =============================================================================
+
 
 class BookChapter(BaseModel):
     """A single chapter inside a book item."""
@@ -173,8 +175,7 @@ class BaseItem(BaseModel):
 #   - Every field must have Field(description=...).
 #   - No field may be typed Any, object, or Optional.
 #     Optional fields belong on the base model, not on mixins.
-# =============================================================================
-
+# =============================================================================    
 class ConsumableFields(ContractMixin):
     consume_uses_left: PositiveInt = Field(
         default=1,
@@ -329,6 +330,22 @@ class CulinaryImplementsFields(ContractMixin):
     #     description="A string listing the range of affordances, verbs or actions this item provides."
     # )
 
+
+class PlanterPotFields(ContractMixin):
+    model_description: ClassVar[str] = (...)
+
+    capacity: int = Field(
+        default=1,
+        description="How many plant slots this pot has. A small terracotta pot has 1, a rooftop planting bed might have 3 or 4."
+    )
+    size_multiplier: float = Field(
+        default=1.0,
+        le=2.5,
+        ge=0.25,
+        description="Harvest yield multiplier at harvest time. Above 1.0 increases yield, below 1.0 reduces it."
+    )
+
+
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -360,6 +377,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "comfort_object": ComfortObjectFields, # You would want to hug these
     "water_point": WaterPointFields, # 
     "culinary_equipment": CulinaryImplementsFields, # Needs an update alongside consumables.
+    "planter_pot": PlanterPotFields,
 }
 
 

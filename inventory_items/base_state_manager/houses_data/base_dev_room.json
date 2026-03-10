@@ -2,7 +2,10 @@
     {
         "name": "garden",
         "image": "garden",
-        "room_types": [],
+        "room_types": [
+            "outdoors_area",
+            "open_soil_zone"
+        ],
         "music": "garden",
         "plot_number": 3,
         "descriptions": {

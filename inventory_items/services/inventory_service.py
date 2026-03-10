@@ -1139,3 +1139,71 @@ class InventoryService:
             room_name=room_name,
             room_display=room_display,
         )
+
+    def get_all_items_by_type(self, item_type: str) -> list[InventoryItemEntry]:
+        """
+        Returns every item whose type list includes item_type, searching
+        both the player inventory and every room in state.
+
+        This is the only method that crosses room boundaries — it is
+        intentionally broader than get_inventory_state(), which only covers
+        the current room.  Use it for systems that need to act on items
+        regardless of where the player currently is (e.g. pot plants ticking
+        while the player is elsewhere).
+
+        Parameters
+        ----------
+        item_type : The type string to match (e.g. "pot", "seed").
+                    Matched against item_data["type"] list.
+
+        Returns
+        -------
+        list[InventoryItemEntry]
+            May be empty. Never raises.
+        """
+        results: list[InventoryItemEntry] = []
+
+        # --- Player inventory ---
+        for raw in self._state_store.get_state_section("inventory", []):
+            if not isinstance(raw, dict):
+                continue
+            if item_type not in raw.get("type", []):
+                continue
+            is_valid, _ = self._is_valid_item_data(raw, check_id=True)
+            if not is_valid:
+                continue
+            results.append(InventoryItemEntry(
+                item_id=raw["id"],
+                name=raw.get("name", "Unnamed Item"),
+                display_string=self._format_item_for_display(raw),
+                item_data=raw,
+                location="inventory",
+                location_id=None,
+                location_name=None,
+            ))
+
+        # --- All rooms ---
+        for room in self._state_store.get_state_section("rooms", []):
+            if not isinstance(room, dict):
+                continue
+            room_id   = room.get("id")
+            room_name = room.get("name", "Unknown Room")
+            for raw in room.get("items", []):
+                if not isinstance(raw, dict):
+                    continue
+                if item_type not in raw.get("type", []):
+                    continue
+                is_valid, _ = self._is_valid_item_data(raw, check_id=True)
+                if not is_valid:
+                    continue
+                results.append(InventoryItemEntry(
+                    item_id=raw["id"],
+                    name=raw.get("name", "Unnamed Item"),
+                    display_string=self._format_item_for_display(raw),
+                    item_data=raw,
+                    location="room",
+                    location_id=room_id,
+                    location_name=room_name,
+                ))
+
+        return results
