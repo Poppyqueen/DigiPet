@@ -1,5 +1,5 @@
 """
-Garden Controller
+Garden Controller (Renamed to Plants Controller)
 =================
 
 Top-level shell that the game engine calls directly.

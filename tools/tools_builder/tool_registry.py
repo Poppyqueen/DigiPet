@@ -17,7 +17,7 @@ from tools.tools_folder.base_tools import BaseTools
 
 
 from tools.tools_folder.alife_controller import ALifeController
-from tools.tools_folder.garden_tools import GardenController
+from tools.tools_folder.plants_controller import GardenController
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
