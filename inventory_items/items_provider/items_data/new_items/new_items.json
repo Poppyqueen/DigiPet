@@ -344,5 +344,41 @@
         "quantity": 10,
         "max_stack_size": 50,
         "plant_type": "sunflower"
+    },
+    {
+        "name": "Stained Glass Bay Window",
+        "descriptions": [
+            "A three-panel bay window set in a carved oak frame, each pane filled with jewel-toned stained glass depicting stylized ivy. The central sash is fixed while the two flanking casements open outward on brass hinges. It projects slightly from the wall, creating a shallow seat inside and casting colored light across the room when the sun hits.",
+            "Ornamental lead came holds the glass together; the wooden frame is painted deep mahogany and shows signs of age but is structurally sound. The window provides a clear view of the garden at certain angles when backlit, and a thin brass latch secures each casement."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "accessible": true,
+        "outdoors_type": "earth-weather"
+    },
+    {
+        "name": "Sea-facing Panoramic Window",
+        "descriptions": [
+            "A wide, salt-weathered picture window framed in knotty cedar, offering an unobstructed view of the rocky shoreline, tide pools and the rolling surf beyond.",
+            "The single-pane glass has faint ripples and tiny blemishes that bend the light; on clear mornings you can watch gulls wheel and fishermen tending nets along the horizon.",
+            "A narrow interior ledge beneath the frame holds a scattering of shells and a brass spyglass — the window is often left open a crack to carry in the briny air."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "accessible": true,
+        "outdoors_type": [
+            "ocean-views",
+            "earth-weather"
+        ]
     }
 ]

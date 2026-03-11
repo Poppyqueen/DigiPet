@@ -1,81 +1,201 @@
-
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager # just for typing
+    from inventory_items.inventory_manager import InventoryHouseManager  # just for typing
 
-class OutdoorsPerception: # this could follow the pattern of the TV that allows for TV to have different channels, it would check current accessible apertures from the items, which the TV does, it would have to extend that idea to current room type? and... room type... type ??? (you would have to just track outdoors_area room types, and if we are standing on it, it should have what kind of outdoor it is, this is a bit better than it being a pet state, but not that much) and determine what the 'outside' is with that... maybe make the outside type a value for the main state, state manager, like currency is
-    def __init__(self, state_manager, signal=None, open_meteo = None):
-        self._signal_callback=signal
-        # Store the state_manager reference
-        self.state_manager : InventoryHouseManager = state_manager
+from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import OutdoorsProvider
+from tools.tools_folder.tools_helpers.outdoors_helpers.earth_weather_prov import EarthWeatherProvider
+from tools.tools_folder.tools_helpers.outdoors_helpers.marine_weather_prov import MarineWeatherProvider
 
+
+from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
+
+_PROVIDER_SEPARATOR = "\n" + "-" * 30 + "\n"
+_DEFAULT_OUTDOORS_TYPE = ["earth-weather"]
+
+
+class OutdoorsPerception:
+    def __init__(self, state_manager, signal=None, open_meteo=None):
+        self._signal_callback = signal
+        self.state_manager: InventoryHouseManager = state_manager
         self.open_meteo = open_meteo
 
+        # Registry: outdoors_type string → provider instance
+        self._providers: dict[str, OutdoorsProvider] = {}
+    
+        self._register_provider(EarthWeatherProvider(open_meteo))
 
-    # --- Helper method to be added to each room class ---
+        self._register_provider(MarineWeatherProvider(open_meteo))
+
+        # Warn at init if any defined type has no registered provider.
+        # Catches mismatches between outdoors_type_definitions.py and the
+        # providers wired up here before they surface as runtime fallbacks.
+        for type_name in OUTDOORS_TYPES:
+            if type_name not in self._providers:
+                print(f"[OutdoorsPerception] WARNING: outdoors_type '{type_name}' is defined but has no registered provider.")
+
+    # ------------------------------------------------------------------
+    # Provider registry
+    # ------------------------------------------------------------------
+
+    def _register_provider(self, provider: OutdoorsProvider) -> None:
+        self._providers[provider.outdoors_type] = provider
+
+    def _resolve_providers(self, outdoors_types: list[str]) -> list[tuple[str, OutdoorsProvider | None]]:
+        """
+        Walk the outdoors_type list and return (type_name, provider_or_None)
+        pairs. Unknown types get None so callers can emit an inline note.
+        """
+        return [(t, self._providers.get(t)) for t in outdoors_types]
+
+    def _collect_perception(self, outdoors_types: list[str], level: str) -> str:
+        """
+        Walk all requested providers and collect their perception output at
+        the given level ("limited" or "full"). Unknown types produce an inline
+        note. Outputs are joined with a separator.
+
+        Parameters
+        ----------
+        outdoors_types : list of outdoors_type strings read from item/room data.
+        level          : "limited" → get_limited_perception()
+                         "full"    → get_full_perception()
+        """
+        parts = []
+        for type_name, provider in self._resolve_providers(outdoors_types):
+            if provider is None:
+                parts.append(f"[Perception source '{type_name}' is currently unavailable.]")
+                continue
+            try:
+                if level == "limited":
+                    parts.append(provider.get_limited_perception())
+                else:
+                    parts.append(provider.get_full_perception())
+            except Exception as e:
+                parts.append(f"[Perception source '{type_name}' encountered an error: {e}]")
+
+        return _PROVIDER_SEPARATOR.join(parts) if parts else "[No perception available.]"
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
     def _send_signal(self, signal_data):
-        """Helper method to send signals using the registered callback."""
         if self._signal_callback:
-            # print(f"{self.__class__.__name__} signaling: {signal_data}") # Optional: uncomment for debug
             try:
                 self._signal_callback(signal_data)
             except Exception as e:
                 print(f"Error sending signal from {self.__class__.__name__}: {e}")
-        else:
-            # print(f"{self.__class__.__name__} attempted to signal, but no callback registered: {signal_data}") # Optional: uncomment for debug
-            pass # Silently fail if no callback is registered, or log loudly
-    # ------------------------------------------------------
 
-    def outdoors_perception(self): # Full perception of the weather, used for environment awareness in outdoors areas, and as a helper to look_through_aperture
-        return self.open_meteo.get_full_weather()
+    def _get_outdoors_types_from_item(self, item_data: dict) -> list[str]:
+        """
+        Read the outdoors_type list from a flat item dict.
+        Falls back to the default if the key is absent or not a list.
+        """
+        raw = item_data.get("outdoors_type", _DEFAULT_OUTDOORS_TYPE)
+        if isinstance(raw, list) and raw:
+            return raw
+        return _DEFAULT_OUTDOORS_TYPE
 
-    def window_perception(self): # Limited perception of the weather, it revels rain and day conditions, used for environment awareness affordance when around a Fenêtre and helper to look_through_aperture
-        structure_weather = self.open_meteo.get_structured_weather()
-        message = "\n".join([
-            "From where you stand, you can catch an incomplete glimplse of the outside world through an opening around you,",
-            f"Is day: {structure_weather["is_day"]}",
-            f"Precipitation: {structure_weather["precipitation"]}"
-            ]
+    def _get_outdoors_types_from_room(self) -> list[str]:
+        """
+        Read the outdoors_type list from the current room's extra_data.
+        Falls back to the default if absent.
+        """
+        room_data = self.state_manager.get_current_room_data()
+        raw = room_data.extra_data.get("outdoors_type", _DEFAULT_OUTDOORS_TYPE)
+        if isinstance(raw, list) and raw:
+            return raw
+        return _DEFAULT_OUTDOORS_TYPE
+
+    # ------------------------------------------------------------------
+    # Public perception methods  (same surface as before)
+    # ------------------------------------------------------------------
+
+    def outdoors_perception(self) -> str:
+        """
+        Full perception of the outdoors. Used for environment awareness in
+        outdoors_area rooms, and as the backing call for look_through_aperture
+        when the aperture is accessible.
+
+        Reads outdoors_type from the current room's extra_data.
+        """
+        outdoors_types = self._get_outdoors_types_from_room()
+        return self._collect_perception(outdoors_types, level="full")
+
+    def window_perception(self) -> str:
+        """
+        Limited perception of the outdoors. Used as agent_information when
+        the agent is in a room that contains one or more fenestration apertures.
+
+        Mirrors _get_accessible_tv_data — walks the current room's items,
+        filters for fenestration_aperture type, and collects each window's
+        limited perception independently. Each window contributes its own
+        block, separated by the provider separator.
+
+        Windows with no outdoors_type key fall back to ["earth-weather"].
+        """
+        inventory = self.state_manager.get_inventory_state()
+
+        windows = [
+            item for item in inventory.room_items
+            if "fenestration_aperture" in item.item_data.get("type", [])
+        ]
+
+        if not windows:
+            return ""  # No windows in room — caller should not be invoking this
+
+        parts = []
+        for window in windows:
+            outdoors_types = self._get_outdoors_types_from_item(window.item_data)
+            perception = self._collect_perception(outdoors_types, level="limited")
+            parts.append(perception)
+
+        return _PROVIDER_SEPARATOR.join(parts)
+
+    def look_through_aperture(self, aperture_id: int) -> str:
+        """
+        Returns a string describing what the agent perceives by looking through
+        a specific fenestration aperture.
+
+        The aperture's own `accessible` flag determines whether the agent gets
+        full or limited perception — inaccessible apertures (glass ceilings,
+        high windows) still only yield limited perception regardless of type.
+
+        outdoors_type is read as a flat key from the aperture's item_data,
+        falling back to the room's extra_data value, then to the default.
+        """
+        item_object = self.state_manager.find_item(
+            item_id=aperture_id,
+            required_type="fenestration_aperture",
+            required_location="room",
         )
-        return message
-
-    def look_through_aperture(self, aperture_id):
-        """
-        Returns a string with the current weather information
-        delegated to Open Meteo handle
-        """
-        # --- Add signal call ---
-        item_object = self.state_manager.find_item(item_id=aperture_id, required_type="fenestration_aperture", required_location="room") # we need it to be a 'fenestration_aperture' to look through
         if not item_object.success:
             return item_object.error
 
-        # Safe to access item_data only after success check
         item_details = item_object.item_data
-        # Nothing to do about the window details.
         descriptions = item_details.get("descriptions", [])
+        accessibility_flag = item_details.get("accessible", True)
 
-        # one could add a window type that instead of returning weather data retuns for example astronomical information, or others
-
-        accessibility_flag = item_details.get("accessible", True) # Determines if such apperture is accessible for walking close to it
-
-        weather_info = "" # Decide what kind of perception the agent will get based on accessibility
-        accessibility_message = "" # Flavor text for the agent
-        if accessibility_flag:
-            weather_info = self.outdoors_perception() # Agent can call the window to look at it, it gets full perception of the outdoors
-            accessibility_message = "You walk right besides the window, standing there it allows you to see everything outside, with clarity"
-            # could add fun stuff here
+        # Resolve outdoors_type: item first, then room, then default.
+        if "outdoors_type" in item_details:
+            outdoors_types = self._get_outdoors_types_from_item(item_details)
         else:
-            weather_info = self.window_perception() # Agent can't get close to such aperture (a glass ceiling, or raised window), it gets simpler perception of the weather
-            accessibility_message = "That aperture is not in a place you can walk to, you focus all your attention into it for a second,"
+            outdoors_types = self._get_outdoors_types_from_room()
+
+        if accessibility_flag:
+            weather_info = self._collect_perception(outdoors_types, level="full")
+            accessibility_message = f"You walk right besides the {item_details["name"]}, standing there it allows you to see everything outside, with clarity"
+        else:
+            weather_info = self._collect_perception(outdoors_types, level="limited")
+            accessibility_message = f"You can't walk close enough to the {item_details["name"]}, however you focus all your attention into it for a second,"
 
         message = "\n".join([
-            "You get as close as you can to the aperture in the room;",
+            f"You get as close as you can to the {item_details["name"]};",
             accessibility_message,
             "\n".join(descriptions),
-            f"As you peer outwards, you notice the weather with absolute precision:",
-            f"{weather_info}"
+            "As you peer outwards, you notice the outside world with absolute precision:",
+            weather_info,
         ])
 
         self._send_signal({"type": "show_icon_popup", "icon_path": "style/images/action_icons/window_icon.png"})

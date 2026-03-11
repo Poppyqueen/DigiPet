@@ -16,20 +16,18 @@
 from typing import List, Optional, Union, Dict, Any, Literal, Annotated, Type
 from pydantic import BaseModel, Field, ConfigDict, PositiveInt, model_validator, create_model, PositiveFloat
 from pydantic.functional_validators import AfterValidator
+from typing import ClassVar
 
 from .contract_mixin import ContractMixin
+
+from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 from tools.tools_folder.tools_data.harvesting_data import plant_types
-
-from inventory_items.items_provider.item_store import ItemStore
-
-from typing import ClassVar
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
-item_store = ItemStore()
 
 toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
@@ -57,16 +55,6 @@ item_types.extend(lighthouse_items)
 
 ignore_fingerprint_keys = ["id", "quantity", "static"]
 
-# # Register consumables # don't do this
-# # 1. Get the list of dictionaries
-# consumable_items_data = item_store.get_items_by_type("consumable")
-# # 2. Extract just the names into a tuple
-# _consumable_names = tuple(item['name'] for item in consumable_items_data)
-# # 3. Create the Literal Type
-# ConsumableItemType = Literal[_consumable_names] # type: ignore[valid-type]
-# # 4. (Optional) For display or debugging
-# print(f"Registered consumables: {', '.join(_consumable_names)}")
-# print(ConsumableItemType)
 
 # =============================================================================
 # ITEM TYPES REGISTRY
@@ -94,6 +82,16 @@ PlantType = Literal[_plant_type_keys]        # type: ignore[valid-type]
 plant_type_names = ", ".join(_plant_type_keys)
 
 ## Go to plant_types (imported variable) to see, edit and create new plant types.
+
+
+# =============================================================================
+# OUTDOORS TYPES REGISTRY
+# =============================================================================
+
+_outdoors_type_keys = tuple(OUTDOORS_TYPES)
+OutdoorsType = Literal[_outdoors_type_keys]  # type: ignore[valid-type]
+outdoors_type_names = ", ".join(_outdoors_type_keys)
+# Go to OUTDOORS_TYPES and add new outdoors types! Provider based system with an Abstract Class.
 
 # =============================================================================
 # SHARED SUB-MODELS
@@ -268,6 +266,11 @@ class FenetreApertureFields(ContractMixin):
     accessible: bool = Field(
         default=True,
         description="This true or false flag represents the accessibility, and reachability for the opening fixture. It asks if it is possible to stand no more than 1 feet besides it, if so, it should be set to true. Features like raised windows or skylights and other inaccessible apertures should be set as false."
+    )
+
+    outdoors_type: List[OutdoorsType] = Field(
+        default=[_outdoors_type_keys[0]],
+        description=f"A list of outdoors types that can be seen from this aperture. From valid literals."
     )
 
 class BookMakingImplementsFields(ContractMixin): # No required fields, just adding model description

@@ -20,6 +20,17 @@ from .contract_mixin import ContractMixin
 
 # Needs various updates
 
+from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
+
+
+# =============================================================================
+# OUTDOORS TYPES REGISTRY
+# =============================================================================
+
+_outdoors_type_keys = tuple(OUTDOORS_TYPES)
+OutdoorsType = Literal[_outdoors_type_keys]  # type: ignore[valid-type]
+outdoors_type_names = ", ".join(_outdoors_type_keys)
+# Go to OUTDOORS_TYPES and add new outdoors types!
 
 # =============================================================================
 # CONSTANTS
@@ -117,6 +128,12 @@ class PlantingGardenFields(ContractMixin):
         description="Number of planting plots available in this garden room. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
     )
 
+class OutdoorsAreaFields(ContractMixin):
+    outdoors_type: List[OutdoorsType] = Field(
+        default=[_outdoors_type_keys[0]],
+        description=f"A list of Literals from valid options, they represent where this outdoors area is located."
+    )
+
 
 # =============================================================================
 # ROOM_TYPE_FIELD_CONTRACTS REGISTRY
@@ -129,6 +146,7 @@ class PlantingGardenFields(ContractMixin):
 
 ROOM_TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "open_soil_zone": PlantingGardenFields,
+    "outdoors_area": OutdoorsAreaFields,
 }
 
 

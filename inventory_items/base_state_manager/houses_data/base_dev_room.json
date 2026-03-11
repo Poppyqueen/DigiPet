@@ -8,6 +8,10 @@
         ],
         "music": "garden",
         "plot_number": 3,
+        "outdoors_type": [
+            "earth-weather",
+            "ocean-views"
+        ],
         "descriptions": {
             "late night": [
                 "Moonlight silvered across glossy leaves and petals, while fireflies thread the darkness and a lone bench wrapped in a soft blanket feels like a secret, cozy alcove.",
