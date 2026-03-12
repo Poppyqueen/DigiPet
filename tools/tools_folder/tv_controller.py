@@ -51,10 +51,10 @@ class TVController:
         )
         if found_response.error:
             return False, found_response.error
-
-        power_toggle = found_response.item_data.get("power_toggle", True)
-        if not power_toggle:
-            return False, f"TV {tv_id} is turned off." # Added TV toggle check, interesting bug, the affordances system manages the availability of the abstract concept of a TV, if a TV is 'on', all TVs are 'on' for the awareness perception methods bypassing the affordances layer. Important to have in mind.
+            
+        ts = found_response.item_data.get("toggle_state", {})
+        if isinstance(ts, dict) and ts.get("toggle_state") == "off":
+            return False, f"TV {tv_id} is turned off."
 
         tv_state = found_response.item_data.get("tv_state", {})
         tv_type = tv_state.get("tv_type")

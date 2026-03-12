@@ -131,6 +131,7 @@ def garden_tick_worker(chatbot_instance) -> None:
         registry.garden_manager.tick()
         registry.lighthouse.lighthouse_tick()
         registry.tv_controller.tv_tick()
+        registry.item_toggle.tick()
         print("[garden_tick_worker] Tick complete.")
 
         room_info = chatbot_instance.functions_builder.get_current_tools_info()

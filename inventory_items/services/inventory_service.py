@@ -966,11 +966,22 @@ class InventoryService:
         # --- Stackable path ---
         stacking_key_before = self._get_item_stacking_key(item_data)
 
-        modified_preview = item_data.copy()
+        modified_preview = copy.deepcopy(item_data)
         self._apply_nested_set(modified_preview, path, key, value)
         stacking_key_after = self._get_item_stacking_key(modified_preview)
 
         fingerprint_unchanged = (stacking_key_before == stacking_key_after)
+
+
+        # # 🔍 DEBUG
+        # print(f"\n=== set_item_attribute DEBUG ===")
+        # print(f"  item_id={item_id}, key={key!r}, value={value!r}, path={path!r}")
+        # print(f"  available={available}, actual_qty={actual_qty}, remaining_in_source={available - actual_qty}")
+        # print(f"  fingerprint_unchanged={fingerprint_unchanged}")
+        # print(f"  stacking_key_before={stacking_key_before}")
+        # print(f"  stacking_key_after={stacking_key_after}")
+        # print(f"  item_data id()={id(item_data)}")
+        # print(f"  toggle_state nested dict id()={id(item_data.get('toggle_state'))}")
 
         if fingerprint_unchanged:
             self._apply_nested_set(item_data, path, key, value)
@@ -1007,8 +1018,15 @@ class InventoryService:
         else:
             target_list[:] = [i for i in target_list if i.get("id") != item_id]
 
-        detached = {**item_data}
+        # detached = {**item_data}
+        detached = copy.deepcopy(item_data)
+        # print(f"  detached id()={id(detached)}")
+        # print(f"  detached toggle_state id()={id(detached.get('toggle_state'))}")
+        # print(f"  item_data toggle_state BEFORE _apply_nested_set: {item_data.get('toggle_state')}")
         self._apply_nested_set(detached, path, key, value)
+        # print(f"  item_data toggle_state AFTER  _apply_nested_set: {item_data.get('toggle_state')}")
+        # print(f"  detached toggle_state AFTER   _apply_nested_set: {detached.get('toggle_state')}")
+        # print(f"================================\n")
         detached["quantity"] = actual_qty
 
         existing_target = self._find_matching_stack_in_list(target_list, detached)

@@ -23,10 +23,10 @@ class ItemContext:
         return items_map
 
     def _identify_powered_off_items(self):
-        """Identify all items that are powered off."""
         powered_off = set()
         for item_id, item in self.all_items.items():
-            if "power_toggle" in item and not item.get("power_toggle", False):
+            ts = item.get("toggle_state")
+            if isinstance(ts, dict) and ts.get("toggle_state") == "off":
                 powered_off.add(item_id)
         return powered_off
 

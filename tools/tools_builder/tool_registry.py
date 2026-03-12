@@ -465,16 +465,17 @@ class ToolRegistry:
                 "agent_information": self.outdoors_perception.outdoors_perception,
             },
             # ----------------------------------------------------------------
-            # Special power toggle, internal, do not touch!
+            # Special toggle, internal, do not touch!
             # ----------------------------------------------------------------
-            "power_toggle": { # TODO: Add key to pydantic model, ask for power up and power down operation, second, maybe make it more general toggle, not only electrical power, also could track toggle uses left, None for infinite toggles (incense vs TV)
-                # Power toggle special key, ignores power state. Any item that has this key will be managed by a power toggle to active its functions.
+            "item_toggle": { # Power toggle special key, ignores power state. Any item that has this key will be managed by a toggle to actiavte its functions.
                 "functions": {
-                    "toggle_item_power": self.item_toggle.toggle_item_power_auto,
+                    "toggle_item": self.item_toggle.toggle_item_power_auto,
                 },
                 "definitions": [toggle_item_power_tool],
-                "item_types": ["toggle_item_power"],
+                "item_types": ["toggleable"],
                 "use_level": "dual_use",
+                "display_information": self.item_toggle.get_access_toggles,
+                "agent_information": self.item_toggle.get_access_toggles, 
                 "ignore_power_state": True
             }
         }

@@ -31,7 +31,7 @@ from tools.tools_folder.tools_data.harvesting_data import plant_types
 
 toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
 
-item_types = ["consumable", "misc", "seed", "art_book", "book", "dispenser", "candy_bag", "toggle_item_power"]
+item_types = ["consumable", "misc", "seed", "art_book", "book", "dispenser", "candy_bag"]
 item_types.extend(toggable_items)
 
 refactored_types = [
@@ -41,6 +41,7 @@ refactored_types = [
                     "water_point", "culinary_equipment",
                     "ALIFE_interface", # Needs work on its methods
                     "planter_pot",
+                    "toggleable",
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -100,6 +101,39 @@ outdoors_type_names = ", ".join(_outdoors_type_keys)
 # and validation catches wrong shapes early.
 # =============================================================================
 
+class ToggleableStates(BaseModel):
+    """Object containing the info for a toggleable state."""
+    toggle_state: Literal["on", "off"] = Field(
+        default="off",
+        description="Current toggle state of the item.")
+    toggle_uses_left: int | None = Field( # This could be 'consume_uses_left' from consumables, rip that key from it and make "digestable"s? ingestables? and make a general "consume_uses" type item that all other types and methods also use?
+        default=None,
+        description="Number of times the item can be toggled before it is disabled or fully consumed by its uses, i.e an incense stick could have 2 or 3 uses. None for infinite toggles like electronics.")
+
+    on_description: str = Field(
+        description="Short, single sentence description of the item as it is on, **present tense**")
+    off_description: str = Field(
+        description="Short, single sentence description of the item as it is off, **present tense**")
+
+    on_sequence: str = Field(
+        description="**second-person, present tense** evocative and grounded narration of the phenomenal experience of, the boot-up, cold start-up or toggle action experience of this item."
+    )
+    off_sequence: str = Field(
+        description="**second-person, present tense** evocative and grounded narration of the phenomenal experience of, the turning off, cooldown or extinguishing of such item."
+    )
+
+    perishable: bool = Field(
+        description="Is this item ephemeral? transitory? Will it be completely consumed when it has no more uses left? If so, set this to true."
+    )
+    ticks_lasting : int = Field(
+        description="Represents how many in-game ticks a single use lasts. Ranging from 3 to 10. Only relevant for items that have toggle_uses_left."
+    )
+    ticks_elapsed : int = Field(
+        default=0,
+        description="Handled by runtime, always initialize as 0."
+    )
+
+
 
 class BookChapter(BaseModel):
     """A single chapter inside a book item."""
@@ -151,7 +185,7 @@ class BaseItem(BaseModel):
     static: bool = Field(description="True if the item cannot be logically picked up or moved by a single human, like furniture, machinery, permanent fixtures or installed work equipment.")
     type: Optional[List[ItemType]] = Field(default=[], description=f"Empty, one or more type tags from valid literals. Used to define, control and determine specific behaviors and required keys for the item. Standard items with no interaction do not require a type.")
     stackable: bool = Field(default=False, description="Stackability is primarily driven by item size and weight, then by uniqueness. Most items are stackable except for furniture, objects larger than a human, or items that are too heavy to lift. Some truly unique items are not stackable, a specific meal is not stackable, but a red apple is stackable.")
-    quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Default to 1.")
+    quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Always 1.")
     max_stack_size: Optional[PositiveInt] = Field(default=None, description="Maximum units per stack. None means unlimited.")
 
     # @model_validator(mode="after") # Runtime handles this.
@@ -225,10 +259,11 @@ class CandyBagFields(ContractMixin):
 
 
 class ToggableFields(ContractMixin):
-    power_toggle: bool = Field(
-        default=False,
-        description="Current power state for electronic devices. True = on, False = off. Always set to False. Runtime manages state."
+    model_description : ClassVar[str] = "This type modifies any item so its affordances are toggleable, these items are utilities one can change their state, ranging from incense sticks to electronic devices like computers, to windows or other systems."
+    toggle_state : ToggleableStates = Field(
+        description="The initial state of a toggable item, detailing its total uses capacity, and description on either state."
     )
+
 
 
 class TVFields(ContractMixin):
@@ -364,7 +399,6 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "book":              BookFields,
     "dispenser":         DispenserFields,
     "candy_bag":         CandyBagFields,
-    "toggle_item_power": ToggableFields,
     "tv":                TVFields,
     "iov_spirit_pan":    LighthouseSpiritPanFields,
     "spirit_source":     LighthouseSpiritSourceFields,
@@ -381,6 +415,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "water_point": WaterPointFields, # 
     "culinary_equipment": CulinaryImplementsFields, # Needs an update alongside consumables.
     "planter_pot": PlanterPotFields,
+    "toggleable": ToggableFields,
+
 }
 
 

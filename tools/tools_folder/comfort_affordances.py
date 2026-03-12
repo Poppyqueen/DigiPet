@@ -69,9 +69,9 @@ class ComfortAffordances:
         ambience = item_data.get(MEDITATION_AID_NARRATIVE)
         item_name = item_data.get("name", "")
 
-        power_toggle = found_response.item_data.get("power_toggle", True)
-        if not power_toggle:
-            return False, f"Meditative item {item_name} is turned off." 
+        ts = found_response.item_data.get("toggle_state", {})
+        if isinstance(ts, dict) and ts.get("toggle_state") == "off":
+            return False, ""
 
         return True, {
             "name": item_name,
@@ -95,10 +95,10 @@ class ComfortAffordances:
 
             flag, state = self._get_medit_item_state(item_id)
             if not flag:
-                info_string += f" ({state})\n"
+                info_string += f"{state}\n"
                 continue
 
-            info_string += f"  {state['name']}\n    {state['description']}\n    {self._get_item_text(state, 'ambience')}\n"
+            info_string += f"  {state['name']} ID: {item_id}\n  {state['description']}\n    {self._get_item_text(state, 'ambience')}\n"
             info_string += "=" * 30 + "\n"
 
         return info_string

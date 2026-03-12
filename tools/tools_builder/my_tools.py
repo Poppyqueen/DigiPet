@@ -1916,23 +1916,6 @@ accessible_light_viewing_room_tools = [
     }
 ]
 
-toggle_item_power_tool = {
-    "type": "function",
-    "name": "toggle_item_power",
-    "description": "Toggle the power on or off for any item that has a power switch.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "item_id": {
-                "type": "number",
-                "description": "The ID of the item to toggle."
-            }
-        },
-        "required": ["item_id"],
-        "additionalProperties": False
-    }
-}
-
 
 
 
@@ -2222,3 +2205,22 @@ prepare_food_tools=[
     },    
 
 ]
+
+
+
+toggle_item_power_tool = {
+    "type": "function",
+    "name": "toggle_item",
+    "description": "Toggle, engage or change the state of a simple item, from electronics to finite objects.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "item_id": {
+                "type": "number",
+                "description": "The ID of the item to toggle, phases, or change the state of."
+            }
+        },
+        "required": ["item_id"],
+        "additionalProperties": False
+    }
+}

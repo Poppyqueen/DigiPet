@@ -311,7 +311,7 @@ class FunctionBuilder:
         mapper = ItemToolMapper(self.tool_definitions, item_context)
         return {
             "item_name":       item_data.get("name", "Unknown"),
-            "has_power_switch": "power_toggle" in item_data,
+            "has_power_switch": "toggle_state" in item_data,
             "is_powered_on":   item_context.is_item_powered_on(item_id),
             "provided_tools":  mapper.get_tools_for_item(item_id),
         }

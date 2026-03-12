@@ -281,7 +281,7 @@
         "static": false,
         "type": [
             "meditation_aid",
-            "toggle_item_power"
+            "toggleable"
         ],
         "stackable": false,
         "quantity": 1,
@@ -380,5 +380,122 @@
             "ocean-views",
             "earth-weather"
         ]
+    },
+    {
+        "name": "Aetheric Parlour Television",
+        "descriptions": [
+            "A tall walnut cabinet inset with brass filigree and a convex, mercury-tinted screen that hums faintly with contained lightning.",
+            "Victorian styling fused with arcane circuitry: gaslamp dials, a phonograph-style speaker grille, and etched runes that trace eldritch conduits along the wood.",
+            "An anachronistic device said to pluck moving images from the Aether; townsfolk call it the parlour's 'moving lantern.'"
+        ],
+        "static": true,
+        "type": [
+            "toggleable",
+            "tv"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "toggle_state": {
+            "toggle_state": "off",
+            "toggle_uses_left": null,
+            "on_description": "The mercury-tinted screen bathes the room in wavering sepia luminescence and soft electric whispers.",
+            "off_description": "The convex screen sits dark and reflective, the filigree runes cold and unlit.",
+            "on_sequence": "You press the brass lever and a small clockwork sigh answers; filaments flare, a warm hiss runs through the grille, and an image blooms on the glass like fog struck by lightning.",
+            "off_sequence": "You lower the lever; the filigree shutters exhale, the luminous fog collapses inward, and the screen cools back to a mirror-dark hush.",
+            "perishable": false,
+            "ticks_lasting": 0,
+            "ticks_elapsed": 0
+        },
+        "tv_state": {
+            "tv_type": "standard",
+            "current_channel": ""
+        }
+    },
+    {
+        "name": "Single Incense Stick (Jasmine-Sandalwood)",
+        "descriptions": [
+            "A slender incense stick perfumed with jasmine and sandalwood, wrapped in thin paper.",
+            "Light it to fill the room with a warm, grounding aroma — one use per stick."
+        ],
+        "static": false,
+        "type": [
+            "toggleable",
+            "meditation_aid"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 20,
+        "toggle_state": {
+            "toggle_state": "off",
+            "toggle_uses_left": 1,
+            "on_description": "A jasmine-sandalwood incense stick burns, sending up a thin, steady plume of scented smoke.",
+            "off_description": "An unlit jasmine-sandalwood incense stick.",
+            "on_sequence": "You strike a match and draw it along the tip; a brief flame blooms and settles into a glowing ember, and a pale ribbon of jasmine-sandalwood smoke unfurls and curls upward.",
+            "off_sequence": "You pinch the ember or let it smolder out; the tiny flame dies and the scent softens, leaving behind a warm, ash-darkened stub.",
+            "perishable": true,
+            "ticks_lasting": 6,
+            "ticks_elapsed": 0
+        },
+        "meditation_aid_ambience": [
+            "Emits a slow, floral-woody aroma that calms rapid thoughts and invites slow, steady breathing.",
+            "The rising smoke traces gentle, ephemeral patterns that encourage moment-to-moment awareness.",
+            "Its warm scent anchors posture and deepens quiet, reflective focus."
+        ]
+    },
+    {
+        "name": "Oak Casement Window",
+        "descriptions": [
+            "An oak-framed casement window with clear double glazing and two brass latches, set at standing height.",
+            "When open it admits fresh air and distant sounds; when closed it seals the room against drafts and noise."
+        ],
+        "static": true,
+        "type": [
+            "fenestration_aperture",
+            "toggleable"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "accessible": true,
+        "outdoors_type": [
+            "earth-weather"
+        ],
+        "toggle_state": {
+            "toggle_state": "off",
+            "toggle_uses_left": null,
+            "on_description": "The casement is open, letting in fresh air and the sounds of the outside world.",
+            "off_description": "The casement is closed, sealing the room from outside air and noise.",
+            "on_sequence": "You unlatch the catches and push the casement outward; a cool breeze and distant street sounds spill into the room.",
+            "off_sequence": "You draw the sash shut and snap the latches; the airflow dies down and the room grows quieter.",
+            "perishable": false,
+            "ticks_lasting": 0,
+            "ticks_elapsed": 0
+        }
+    },
+    {
+        "name": "Anachronistic Victorian LED Panel",
+        "descriptions": [
+            "A hand-polished brass frame cradles an etched crystal pane behind which modern LEDs simulate the warm, flickering glow of Victorian gaslight.",
+            "Bridging ornate 19th-century ornament and contemporary engineering, this decorative panel offers adjustable color and intensity while throwing delicate filigree shadows across nearby surfaces."
+        ],
+        "static": false,
+        "type": [
+            "toggleable"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": 1,
+        "toggle_state": {
+            "toggle_state": "off",
+            "toggle_uses_left": null,
+            "on_description": "The brass-framed panel glows amber, its LEDs imitating a steady gaslight and casting intricate filigree shadows.",
+            "off_description": "The etched crystal panel is dark and glassy, the brasswork reflecting only ambient room light.",
+            "on_sequence": "You press the slim, concealed toggle; tiny LEDs gather from near-invisible points and bloom into warm light, the etched pattern blooming into dancing shadow across the wall.",
+            "off_sequence": "You press the toggle again; the LEDs dim smoothly and the warm glow sighs away, leaving the etched crystal cool and mute.",
+            "perishable": false,
+            "ticks_lasting": 0,
+            "ticks_elapsed": 0
+        }
     }
 ]
