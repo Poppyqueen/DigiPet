@@ -34,6 +34,7 @@ from utils.config_manager import ConfigManager
 from inventory_items.base_state_manager.base_state_config import InitialStateConst
 from ai_managers.agents.abstract_agent import BaseChatbot
 
+from pygame_runtime.tick_registry import TickRegistry
 
 # ---------------------------------------------------------------------------
 # Data container returned to game.py
@@ -52,8 +53,9 @@ class GameContext:
     music_player_ref:    list          # [None] — filled in after splash
     bots_archive_dir:    str
     idle_time_mins:      float
-    garden_tick_interval_ms: float
+    #garden_tick_interval_ms: float
     game_mode:           str
+    tick_registry:       TickRegistry
 
 def _init_jukebox_silent(chatbot: BaseChatbot) -> Optional[jukebox]:
     """
@@ -192,7 +194,23 @@ def _load_initial_game_state(chatbot: BaseChatbot) -> None:
         for item in inv.inventory_display_strings
     ]
 
+# Register new tick workers here.
+# reg contains all the initialized tool services from tools/tools_builder/tool_registry.py
 
+def _build_tick_registry(chatbot,) -> TickRegistry:
+    registry = TickRegistry(chatbot)
+    fb = chatbot.functions_builder
+    reg = fb.registry
+
+
+    idle_ms = config.IDLE_TIMEOUT_MINUTES * 60 * 1000  # base unit, individual ticks fire 
+
+    registry.register("garden",      reg.garden_manager.tick,        interval_ms=idle_ms * 0.6) # each 60% of idle timeout
+    registry.register("lighthouse",  reg.lighthouse.lighthouse_tick, interval_ms=idle_ms * 0.6) # each 60% of idle timeout
+    registry.register("tv",          reg.tv_controller.tv_tick,      interval_ms=idle_ms * 1.5) # each 150% of idle timeout
+    registry.register("item_toggle", reg.item_toggle.tick,           interval_ms=idle_ms * 2.2) # each 220% of idle timeout
+
+    return registry
 def _splash(screen: pygame.Surface) -> None:
     """Play intro sound and show the splash image popup."""
     if pygame.mixer.get_init():
@@ -246,7 +264,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     )
     print(f"[init] Idle timeout: {idle_time_mins} min.")
 
-    garden_tick_interval_ms = config.IDLE_TIMEOUT_MINUTES * (3 / 5) * 60 * 1000
+    #garden_tick_interval_ms = config.IDLE_TIMEOUT_MINUTES * (3 / 5) * 60 * 1000
 
     chatbot, chatbot_available = _build_chatbot( # Fatal crash if this fails
         game_mode, bots_archive_dir, config_manager, signal_callback
@@ -255,11 +273,13 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     # if chatbot_available and chatbot:
     _load_initial_game_state(chatbot)
 
+    tick_registry = _build_tick_registry(chatbot)
+
     _splash(screen)
 
     # Timers
     state.last_activity_time  = pygame.time.get_ticks()
-    state.next_garden_tick_time = pygame.time.get_ticks() + garden_tick_interval_ms
+    #state.next_garden_tick_time = pygame.time.get_ticks() + garden_tick_interval_ms
 
 
     # # Chat window (side panel) # Set up in state.py 
@@ -267,7 +287,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     # state.panel_width    = 200
     # #gui.gui_core.mark_layout_dirty()
 
-    print(f"[init] Garden tick scheduled at {state.next_garden_tick_time} ms.")
+    #print(f"[init] Garden tick scheduled at {state.next_garden_tick_time} ms.")
 
     return GameContext(
         screen               = screen,
@@ -279,6 +299,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
         music_player_ref     = [_init_jukebox_silent(chatbot)],
         bots_archive_dir     = bots_archive_dir,
         idle_time_mins       = idle_time_mins,
-        garden_tick_interval_ms = garden_tick_interval_ms,
+        #garden_tick_interval_ms = garden_tick_interval_ms,
         game_mode            = game_mode,
+        tick_registry        = tick_registry,
     )

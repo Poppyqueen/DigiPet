@@ -105,68 +105,6 @@ def start_chatbot_request(
     return True
 
 
-# ---------------------------------------------------------------------------
-# Garden / simulation tick worker
-# ---------------------------------------------------------------------------
-
-def garden_tick_worker(chatbot_instance) -> None:
-    """
-    Advances all time-based simulations (garden, lighthouse, TV) then
-    posts UPDATE_LORE_DISPLAY_EVENT with fresh room data.
-
-    Designed to run in a daemon thread; never touches Pygame directly
-    except through event posting.
-    """
-    # Safety: bail out early if the registry isn't ready.
-    registry = getattr(
-        getattr(chatbot_instance, "functions_builder", None), "registry", None
-    )
-    garden_manager = getattr(registry, "garden_manager", None)
-    if not callable(getattr(garden_manager, "tick", None)):
-        print("[garden_tick_worker] Garden manager not ready — skipping tick.")
-        return
-
-    print("[garden_tick_worker] Tick started.")
-    try:
-        registry.garden_manager.tick()
-        registry.lighthouse.lighthouse_tick()
-        registry.tv_controller.tv_tick()
-        registry.item_toggle.tick()
-        print("[garden_tick_worker] Tick complete.")
-
-        room_info = chatbot_instance.functions_builder.get_current_tools_info()
-        if not isinstance(room_info, dict):
-            room_info = {}
-
-        pygame.event.post(
-            pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_info)
-        )
-
-    except Exception as exc:
-        print(f"[garden_tick_worker] Error: {type(exc).__name__}: {exc}")
-
-
-def start_garden_tick_request(*, chatbot, chatbot_available: bool) -> bool:
-    """
-    Gate-check then spawn a garden_tick_worker thread.
-
-    Returns True if the thread was launched.
-    Skips silently if the chatbot is busy (except during sleep).
-    """
-    if not chatbot_available or not chatbot:
-        return False
-
-    if state.chatbot_is_processing and not state.agent_sleeping:
-        return False  # Defer; the tick timer is NOT advanced so it retries next frame.
-
-    thread = threading.Thread(
-        target=garden_tick_worker,
-        args=(chatbot,),
-        daemon=True,
-    )
-    thread.start()
-    return True
-
 
 # ---------------------------------------------------------------------------
 # Lore panel refresh worker

@@ -28,7 +28,7 @@ from pygame_int.juke_box import jukebox
 from pygame_runtime.signal_handler import make_signal_handler
 from pygame_runtime.initializer    import initialize
 from pygame_runtime.event_handler  import handle_custom_events, handle_input_events, update_scroll_clamp, update_cursor_lock
-from pygame_runtime.workers        import start_chatbot_request, start_garden_tick_request
+from pygame_runtime.workers        import start_chatbot_request
 
 
 # ---------------------------------------------------------------------------
@@ -135,19 +135,13 @@ def _trigger_autonomous_action(current_time_ms: int) -> None:
         )
 
 
-def _trigger_garden_tick(current_time_ms: int) -> None:
-    """Advance simulations when the tick timer fires."""
-    if current_time_ms < state.next_garden_tick_time:
-        return
 
-    launched = start_garden_tick_request(
-        chatbot=ctx.chatbot,
-        chatbot_available=ctx.chatbot_available,
+def _handle_tick_workers(current_time_ms: int) -> None:
+    ctx.tick_registry.tick(
+        current_time_ms,
+        chatbot_is_processing=state.chatbot_is_processing,
+        agent_sleeping=state.agent_sleeping,
     )
-    if launched:
-        state.next_garden_tick_time = current_time_ms + ctx.garden_tick_interval_ms
-    # If deferred (chatbot busy), next_garden_tick_time stays the same
-    # so the tick retries on the very next free frame.
 
 
 # ---------------------------------------------------------------------------
@@ -225,7 +219,7 @@ def main() -> None:
 
         # --- Autonomous logic ---
         _trigger_autonomous_action(current_time_ms)
-        _trigger_garden_tick(current_time_ms)
+        _handle_tick_workers(current_time_ms)
 
         # --- Update phase (logic that must run before rendering) ---
         is_input_locked = state.agent_sleeping or state.chatbot_is_processing

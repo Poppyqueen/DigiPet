@@ -140,7 +140,7 @@ is_muted = False # Boolean flag for muting/unmuting sounds.
 
 
 # --- Garden Tick State ---
-next_garden_tick_time = 0 # Stores the time (ms) when the next garden tick is due
+# next_garden_tick_time = 0 # Stores the time (ms) when the next garden tick is due
 
 
 
