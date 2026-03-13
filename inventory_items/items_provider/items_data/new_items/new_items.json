@@ -497,5 +497,31 @@
             "ticks_lasting": 0,
             "ticks_elapsed": 0
         }
+    },
+    {
+        "name": "Victorian Cucumber Tea Sandwich",
+        "descriptions": [
+            "A slender, crustless tea sandwich of thin-sliced cucumber laid between delicately buttered white bread — the classic refreshment of a Victorian afternoon.",
+            "Soothingly cool and feather-light, seasoned with a pinch of salt and a hint of lemon, made to be eaten in polite bites beside steaming teacups."
+        ],
+        "static": false,
+        "type": [
+            "consumable"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 6,
+        "consume_uses_left": 4,
+        "stats_edit": {
+            "fullness": 1.0,
+            "hydration": 0.8,
+            "energy": 0.7
+        },
+        "effects": [
+            "You bite through the soft, crustless bread; the crumb gives like a sigh and the first sheet of cucumber releases a cool, watery flash that brightens your mouth.",
+            "A thin smear of butter melts against your tongue, wrapping the cucumber's vegetal clarity in a faint, milky richness that soothes the palate.",
+            "A polite pinch of salt and a whisper of lemon lift the flavor; the cucumber's crispness snaps thin and clean, leaving a cooling thread across your tongue.",
+            "You swallow the last bite and feel pleasantly sated — the sandwich's delicate simplicity lingers like the memory of floral steam rising from a teacup."
+        ]
     }
 ]

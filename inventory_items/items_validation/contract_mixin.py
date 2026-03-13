@@ -69,6 +69,26 @@ class ContractMixin(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    model_description: ClassVar[str] = ""
+    examine_fields: ClassVar[list[str]] = []
+
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        """
+        Default examine renderer. Pulls cls.examine_fields keys from item_data
+        and formats them as 'Key: value' lines.
+
+        Override this on mixins that need custom rendering logic (e.g. ToggableFields
+        reading toggle_state to decide which description to show).
+
+        Returns None if nothing was rendered (caller skips the section silently).
+        """
+        lines = []
+        for field_name in cls.examine_fields:
+            if field_name in item_data:
+                lines.append(f"{field_name.replace('_', ' ').title()}: {item_data[field_name]}")
+        return "\n".join(lines) if lines else None
+
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
 

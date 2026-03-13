@@ -630,7 +630,7 @@ class GardenManager:
             plant = PlantState.from_dict(slot["plant"])
             lines.append(
                 f"  Slot {sid}:\n"
-                f"    Plant : {plant.plant_type} (UID: {plant.plant_uid})"
+                f"    Plant : {plant.plant_type} (UID: {plant.plant_uid}) stage: {plant.current_stage_name}"
             )
 
         return "\n".join(lines)

@@ -32,6 +32,10 @@ from .tool_availability import (
     ItemToolMapper,
 )
 
+from inventory_items.items_validation.item_pydantic_models import TYPE_FIELD_CONTRACTS
+
+import random
+
 
 class FunctionBuilder:
 
@@ -321,30 +325,38 @@ class FunctionBuilder:
         if "error" in info:
             return info["error"]
 
-        extra = []
-        if info["has_power_switch"]:
-            extra.append(f"The power switch is currently {'on' if info['is_powered_on'] else 'off'}.")
-
-        tools = info["provided_tools"]
-        if tools:
-            extra.append(f"Provides tools: {', '.join(tools)}")
-        elif info["has_power_switch"] and not info["is_powered_on"]:
-            extra.append("Turn the power on to use this item's tools.")
-
         item_object = self.state_manager.find_item(item_id)
         if not item_object.success:
             return item_object.error
         data = item_object.item_data
+
         item_display = self.state_manager.inventory_service._format_item_for_display(data)
         descriptions = data.get("descriptions", [])
 
         output = f"{item_display}\n\n"
-        if descriptions and isinstance(descriptions, list) and all(isinstance(d, str) for d in descriptions):
-            output += "\n".join(descriptions + extra)
+        if descriptions and isinstance(descriptions, list):
+            output += random.choice(descriptions)
         else:
             output += "(No description available.)"
 
-        if "consume_uses_left" in data:
-            output += f"\nConsumable uses left: {data['consume_uses_left']}"
+        # Collect type-specific examine sections
+        type_sections = []
+        for type_str in data.get("type", []):
+            contract = TYPE_FIELD_CONTRACTS.get(type_str)
+            if contract is None:
+                continue
+            section = contract.render_examine_section(data)
+            if section:
+                type_sections.append(section)
+
+        if type_sections:
+            output += "\n\n" + "\n".join(type_sections)
+
+        # Tool info (power-gated)
+        tools = info["provided_tools"]
+        if tools:
+            output += f"\n\nProvides tools: {', '.join(tools)}"
+        elif info["has_power_switch"] and not info["is_powered_on"]:
+            output += "\n\nTurn the power on to use this item's tools."
 
         return output

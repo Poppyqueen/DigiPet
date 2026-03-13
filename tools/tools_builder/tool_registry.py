@@ -281,7 +281,7 @@ class ToolRegistry:
 
             "book": {
                 "functions": {
-                    "list_chapters":        self.book_tools.list_book_chapters,
+                    "list_chapters":        self.book_tools.list_book_chapters, # Now general examine returns a list of the contents, but leaving this function here, maybe remove later?
                     "add_chapter":          self.book_tools.add_book_chapter,
                     "read_chapter":         self.book_tools.read_book_chapter,
                     "delete_chapter":       self.book_tools.delete_book_chapter,
@@ -330,7 +330,7 @@ class ToolRegistry:
                 "functions": { # Not sure what to do about this, optimally, this should be a general container? not sure
                     "dispense_candy": self.dispenser_tools.dispense_candy,
                     "refill_dispenser": self.dispenser_tools.refill_dispenser,
-                    "examine_dispenser": self.dispenser_tools.examine_dispenser
+                    #"examine_dispenser": self.dispenser_tools.examine_dispenser
                 },
                 "definitions": dispenser_tools,
                 "item_types": ["dispenser"],
@@ -678,12 +678,12 @@ class ToolRegistry:
             "display_information": lh.lighthouse_manager.lantern.get_fresnel_rotation,
             "agent_information":   lh.lighthouse_manager.lantern.get_fresnel_rotation,
         }
-        self.tool_definitions["spirit_source"] = {
-            "functions": {
-                "examine_spirit_source": lh.examine_spirit_source,
-            },
-            "definitions": spirit_source_tools,
-            "item_types": ["spirit_source"],
-            "use_level": "dual_use",
-        }
+        # self.tool_definitions["spirit_source"] = {
+        #     "functions": {
+        #         #"examine_spirit_source": lh.examine_spirit_source,
+        #     },
+        #     "definitions": spirit_source_tools,
+        #     "item_types": ["spirit_source"],
+        #     "use_level": "dual_use",
+        # }
         print("DEBUG: ToolRegistry: Lighthouse tools added.")

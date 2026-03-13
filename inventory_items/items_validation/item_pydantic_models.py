@@ -223,6 +223,9 @@ class ConsumableFields(ContractMixin):
         description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
     )
 
+    examine_fields: ClassVar[list[str]] = ["consume_uses_left"] # Examine fields are not used during validation nor LLM structured generation, they define the behavior of each type for the 'examine_item' tool, whatever is listed here or returned by a 'render_examine_section' classmethod will be appended into any examine action for an item that matches this type. 
+
+
 
 class SeedFields(ContractMixin):
     model_description: ClassVar[str] = "A seed item, most of them are also consumables, they have a direct tie to a plant through its plant type, it must be always set as any of the valid literals. This seed growth and behavior are directly tied to its plant type."
@@ -243,6 +246,24 @@ class BookFields(ContractMixin):
         description="True if the book cannot be written to or edited after creation."
     )
 
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        """Return a formatted Table of Contents for the book."""
+        chapters = item_data.get("chapters", [])
+        
+        if not chapters:
+            return "The pages are blank."
+
+        # Header for the section
+        lines = ["--- CONTENTS ---"]
+        
+        # Enumerate provides the index (starting at 1) and the chapter data
+        for i, chapter in enumerate(chapters, 1):
+            title = chapter.get("title", "Untitled Chapter")
+            lines.append(f"{i}. {title}")
+            
+        return "\n".join(lines)
+
 
 class DispenserFields(ContractMixin):
     dispenser_state: DispenserState = Field(
@@ -250,7 +271,13 @@ class DispenserFields(ContractMixin):
         description="Always set dispenser_state.contents to empty dict. Runtime manages contents."
     )
 
-
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        contents = (item_data.get("dispenser_state") or {}).get("contents") or {}
+        total = sum(contents.values())
+        if total <= 0:
+            return "The dispenser is empty. You need to refill it."
+        return f"The dispenser has {total} candies left."
 
 class CandyBagFields(ContractMixin):
     contents: List[CandyBagEntry] = Field(
@@ -264,11 +291,36 @@ class ToggableFields(ContractMixin):
         description="The initial state of a toggable item, detailing its total uses capacity, and description on either state."
     )
 
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        ts = item_data.get("toggle_state")
+        if not ts:
+            return None
+        state = ts.get("toggle_state", "off")
+        desc = ts.get("on_description") if state == "on" else ts.get("off_description")
+        lines = [f"State: {state}", desc] if desc else [f"State: {state}"]
+        uses = ts.get("toggle_uses_left")
+        if uses is not None:
+            lines.append(f"Uses remaining: {uses}")
+        return "\n".join(lines)
 
 
 class TVFields(ContractMixin):
     tv_state: TVState = Field(description="Runtime state of the TV, managed by the TV tool.")
 
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        tv = item_data.get("tv_state")
+        if not tv:
+            return None
+        state = item_data.get("toggle_state", {})
+        if state:
+            if state.get("toggle_state") != "on":
+                return None
+        channel = tv.get("current_channel")
+        if not channel:
+            return None
+        return f"Current channel: {channel}"
 
 # Lighthouse mixins
 
@@ -280,6 +332,11 @@ class LighthouseSpiritSourceFields(ContractMixin):
         description="Amount of spirit remaining. 1.0 is full, 0.0 is empty."
     )
 
+    @classmethod
+    def render_examine_section(cls, item_data: dict) -> str | None:
+        return f"Spirit Percentage: {item_data.get('spirit_quantity', 0):.1%}"
+
+
 
 class LighthouseSpiritPanFields(ContractMixin):
     model_description: ClassVar[str] = "Made of different metals and in varying conditions and ages, they are used to hold spirit fuel to host a small flame. Usually stackable."
@@ -288,6 +345,7 @@ class LighthouseSpiritPanFields(ContractMixin):
         default=False,
         description="Whether the spirit pan currently contains spirit."
     )
+    examine_fields: ClassVar[list[str]] = ["filled"]
 
 ###
 
@@ -382,6 +440,7 @@ class PlanterPotFields(ContractMixin):
         ge=0.25,
         description="Harvest yield multiplier at harvest time. Above 1.0 increases yield, below 1.0 reduces it."
     )
+    examine_fields: ClassVar[list[str]] = ["capacity"]
 
 
 # =============================================================================
