@@ -523,5 +523,21 @@
             "A polite pinch of salt and a whisper of lemon lift the flavor; the cucumber's crispness snaps thin and clean, leaving a cooling thread across your tongue.",
             "You swallow the last bite and feel pleasantly sated — the sandwich's delicate simplicity lingers like the memory of floral steam rising from a teacup."
         ]
+    },
+    {
+        "name": "Gravity-Plated Vanity Desk (Starborne)",
+        "descriptions": [
+            "A compact vanity desk bolted to the cabin deck, its shell lined with micro-gravity plating that keeps toiletries from drifting during maneuvers. The surface is scuffed, and a small holo-mirror folds out from a recessed slot.",
+            "Numerous crannies: a thin shadow-gap between the top drawer and the apron, a curved, recessed lip behind the stowage wells where hairpins and reactor shims collect, a magnetic dust-rail along the underside edge that traps metallic flakes, and a maintenance seam beneath the left leg hiding a tiny access cavity.",
+            "Several panels are reachable if you kneel and slide the lower kickplate — the seam is faint but audible when nudged. Common finds include loose cred-chips, bent pins, micro-screws, and the occasional lost data-fob wedged deep in the rear corner.",
+            "Fixed to the deck with anti-shear bolts; it's intended as installed furniture and can't reasonably be carried off by one person."
+        ],
+        "static": true,
+        "type": [
+            "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
     }
 ]

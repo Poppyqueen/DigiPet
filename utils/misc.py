@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 def check_one_in(number: int):
   """
@@ -15,3 +16,18 @@ def check_one_in(number: int):
     return True
   else:
     return False
+
+def front_weighted_pick(items: list[Any], none_chance=0.0):
+    """
+    Picks an item from a list with front-weighted probability.
+    
+    Args:
+        items (list[Any]): The list of items to pick from.
+        none_chance (float): The probability of returning None.
+    
+    Returns:
+        Any: The picked item.
+    """
+    if random.random() < none_chance:
+        return None
+    return random.choices(items, weights=[i for i in range(len(items), 0, -1)], k=1)[0]

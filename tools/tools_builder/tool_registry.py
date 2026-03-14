@@ -39,6 +39,7 @@ from tools.tools_folder.cooking_tool import CookingApparatus
 
 from tools.tools_folder.wikipedia_controller import WikipediaController
 
+from utils.ai_items_crafter import ItemsCrafter
 
 from .my_tools import (
     base_tools,
@@ -105,6 +106,11 @@ class ToolRegistry:
         self._signal = signal
         self._get_context = get_context_fn
 
+        crafter_config_model = config_manager.get_config("AI","cook_model")
+        crafter_selected_config_client = config_manager.get_config("AI","cook_provider")
+
+        self.items_crafter = ItemsCrafter(provider=crafter_selected_config_client, model=crafter_config_model)
+
         # --- Feature flags ---
         self.youtube_enabled       = config_manager.get_config("Tools", "enable_youtube")
         self.discogs_enabled       = config_manager.get_config("Tools", "enable_discogs")
@@ -129,7 +135,7 @@ class ToolRegistry:
 
         self.tv_controller     = TVController(state_manager, signal, config_manager)
         self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
-        self.comfort = ComfortAffordances(state_manager, signal)
+        self.comfort = ComfortAffordances(state_manager, signal, memory_manager, self.items_crafter)
 
         self.water_points = WaterInstallation(state_manager, signal)
 

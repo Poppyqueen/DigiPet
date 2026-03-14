@@ -7,12 +7,12 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 client=AIConfiguration(provider="openai",model="gpt-5-mini",mode="simple_ai").get_client()
-select_types = ["consumable"]
+select_types = ["cranny_host"]
 test_base = build_llm_schema_for_types(select_types)
 
 # print(json.dumps(test_base.model_json_schema(), indent=2))
 
 
-response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} #### Always generate only 1 item.", user="One example of this item. Victorian era sandwich", structure=test_base)
+response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} #### Always generate only 1 item.", user="One example of this item. Gravity plating spaceship's vanity desk", structure=test_base)
 
 print(response.model_dump_json(indent=2))

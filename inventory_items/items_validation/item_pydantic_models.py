@@ -55,8 +55,6 @@ lighthouse_items = [
 item_types.extend(lighthouse_items)
 
 ignore_fingerprint_keys = ["id", "quantity", "static"]
-
-
 # =============================================================================
 # ITEM TYPES REGISTRY
 # =============================================================================

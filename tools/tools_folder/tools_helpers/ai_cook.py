@@ -13,6 +13,7 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 _COOK_SCHEMA = build_llm_schema_for_types(["consumable"])
 MAX_RETRIES = 4 # 4!!!
 
+# TODO: Update this to use utils/ai_items_crafter.py and help the AI calculate the resulting stats for an item instead of letting it decide.
 
 class cook:
 

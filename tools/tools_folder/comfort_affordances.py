@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from inventory_items.items_provider.item_store import ItemStore
 
-from utils.misc import check_one_in
+from utils.misc import check_one_in, front_weighted_pick
 import random
 import math
 import asyncio
@@ -31,13 +31,16 @@ MEDITATION_AID_NARRATIVE = "meditation_aid_ambience"
 
 # Turned into ComfortAffordances, maybe move later, maybe don't, or even rename, decide another time
 class ComfortAffordances:
-    def __init__(self, state_manager, signal=None, memory=None):
+    def __init__(self, state_manager, signal=None, memory=None, items_crafter=None):
         self.memory=memory
         self._signal_callback = signal
         # Store the state_manager reference
         self.state_manager : InventoryHouseManager = state_manager
         #print("Bedroom initialized.")
         self.item_store = ItemStore()
+        self.items_crafter = items_crafter
+
+        
 
     @staticmethod
     def _get_item_text(item_deets, source:str):
@@ -142,26 +145,42 @@ class ComfortAffordances:
         item_data = lookup.item_data
 
         item_name = item_data.get("name", "Unnamed")
+        item_descs = item_data.get("descriptions", [])
         item_desc = self._get_item_text(item_data, "descriptions")
 
         self._signal_callback({"type": "show_message_popup", "message": f"Looking for something hidden..."})
 
-        if not check_one_in(55): # magic number 55
+        if not check_one_in(45): # magic number 55
             return f"You squeeze your hand and arm and reach for the cranny in the {item_name}, you flail in search for a while, however you can't find anything but dust bunnies."
 
-        all_items = self.item_store.get_items_by_type("dust_bunnied_gleaning")
-        
-        random_item = random.choice(all_items)
+        # all_items = self.item_store.get_items_by_type("dust_bunnied_gleaning")
+        # random_item = random.choice(all_items)
 
-        result = self.state_manager.create_item("inventory", None, random_item)
+        # At this point we passed the check and we are creating an item!
+        found_item_types = ["dust_bunnied_gleaning"]
 
-        if result.error:
-            return f"You spend a good effort while fishing under the {item_name}, for a moment you think you had found something, but you realize it was just a mirage."
+        # From defined types in pydantic models
+        modifier_types = ["comfort_object", "meditation_aid", "toggleable"] # Order matters here! 
+        pick = front_weighted_pick(items=modifier_types, none_chance=0.30)
+        if pick:
+            found_item_types.append(pick)
 
-        print(random_item)
-        
+        # Call item crafter AI
+        item_descs_text = "\n".join(item_descs)
+        items = self.items_crafter.craft_item(
+            user_prompt=f"Create an item that you would find under the item: {item_name}, {item_descs_text}. \n This should be an inconsequential item, with no real value or use. Create an evocative item that fits the qualities of the item it was found under.",
+            select_types=found_item_types
+        )
+        messages = []
+        for item_data in items:
+            messages.append(f"{item_data['name']}! You take a close look at it, {'\n'.join(item_data['descriptions'])}")
+            result = self.state_manager.create_item("inventory", None, item_data)
+            if result.error:
+                print(result.error)
+                return f"You spend a good effort while fishing under the {item_name}, for a moment you think you had found something, but you realize it was just a mirage."
+
         self._signal_callback({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trumpet.png"}) # TODO: Maybe get specific icon for this
-        return f"After a while of reaching and rummaging through the darkness under and around the {item_name}, you find a {random_item['name']}! You take a close look at it, {"\n".join(random_item['descriptions'])}"
+        return f"After a while of reaching and rummaging through the darkness under and around the {item_name}, {item_desc}, you found:" + "\n".join(messages)
 
     # Add instance methods here
     async def sleep_on_item(self, lay_item_id, seconds):
