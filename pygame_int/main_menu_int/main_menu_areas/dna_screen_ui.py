@@ -163,7 +163,7 @@ def run_dna_selector_ui(screen: pygame.Surface, font: pygame.font.Font):
     # ------------------------------------------------------------------
     rand_btn = Button(
         btn_x, rand_y, btn_w, btn_h,
-        "randomize missing", font,
+        "FILL MISSING...", font,
         action=lambda: "randomize",
         button_color=(30, 30, 40),
         hover_color=(50, 50, 65),
@@ -172,7 +172,7 @@ def run_dna_selector_ui(screen: pygame.Surface, font: pygame.font.Font):
 
     cont_btn = Button(
         btn_x, cont_y, btn_w, btn_h,
-        "done", font,
+        "ENTER", font,
         action=lambda: "continue",
         button_color=(30, 30, 40),
         hover_color=(50, 50, 65),
