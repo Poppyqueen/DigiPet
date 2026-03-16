@@ -46,7 +46,8 @@ pet_sound = "mellow_friend.mp3" # Default sound for the pet.
 pet_radius = 0 # The current drawing radius of the pet.
 current_radius = 0 # Appears potentially redundant with pet_radius, but kept as provided.
 
-
+current_emote = None
+pet_dna = None   # set by initializer from config seed
 # --- Pet Animation State ---
 # Variables controlling various pet animations and their timings.
 

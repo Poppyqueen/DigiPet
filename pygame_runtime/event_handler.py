@@ -25,6 +25,17 @@ from pygame_int.main_digipet import animation, gui, gui_lore_panel
 
 from pygame_runtime.workers import start_chatbot_request, start_lore_panel_refresh
 
+_DEV_EMOTE_KEYS = {
+    pygame.K_1: "neutral",
+    pygame.K_2: "happy",
+    pygame.K_3: "sad",
+    pygame.K_4: "angry",
+    pygame.K_5: "excited",
+    pygame.K_6: "thinking",
+    pygame.K_7: "curious",
+    pygame.K_8: "confused",
+    pygame.K_9: "sleep",
+}
 
 # ---------------------------------------------------------------------------
 # Custom (agent-posted) event handlers
@@ -472,7 +483,7 @@ def _handle_keyboard(
             running_ref[0] = False
         return True
 
-    # Developer shortcut: manually trigger autonomous action.
+    # # # Developer shortcut: manually trigger autonomous action.
     if key == pygame.K_5 and pygame.key.get_mods() & pygame.KMOD_CTRL:
         start_chatbot_request(
             "Automated internal message: The following should be an autonomous action.",
@@ -482,6 +493,27 @@ def _handle_keyboard(
             clean_hover_fn=clean_hover_fn,
         )
         return True
+    
+    # # # Developer shortcuts: test emotions (SHIFT + key)
+    # if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+    #     emote = _DEV_EMOTE_KEYS.get(key)
+    #     if emote:
+    #         state.current_emote = emote
+    #         emote_map = {
+    #             "neutral":  animation.start_neutral_animation,
+    #             "happy":    animation.start_happy_animation,
+    #             "sad":      animation.start_sad_animation,
+    #             "angry":    animation.start_angry_animation,
+    #             "excited":  animation.start_excited_animation,
+    #             "thinking": animation.start_thinking_animation,
+    #             "curious":  animation.start_curious_animation,
+    #             "confused": animation.start_confused_animation,
+    #             "sleep":    animation.start_sleep_animation,
+    #         }
+    #         emote_map[emote]()
+    #         print(f"[dev] Emote forced → {emote}")
+    #         return True
+        
 
     if is_input_locked:
         return True  # Swallow all other keys while agent is sleeping / bot processing.

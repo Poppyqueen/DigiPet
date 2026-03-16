@@ -24,6 +24,12 @@ class PulsingText:
             self.text = new_text
             self._render_text()
 
+    def update_color(self, new_color):
+        """Updates the text color and re-renders the surface."""
+        if self.color != new_color:
+            self.color = new_color
+            self._render_text()
+
     def draw(self, screen):
         """Draw the text with its current alpha, which pulses using a sine wave, if visible."""
         if not self.visible or not self.text:

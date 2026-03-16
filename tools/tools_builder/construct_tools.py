@@ -265,6 +265,8 @@ class FunctionBuilder:
         inv_string = inventory_state.inventory_summary
         room_string = inventory_state.room_summary
 
+        possible_emotes = '\n'.join(self.state_manager.get_emotes_data().possible_emotes)
+
         
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
@@ -274,9 +276,9 @@ class FunctionBuilder:
             f"Current time: {now}, {get_time_tag_from_now()}",
             f"Currently, you are in: {room_name}\nRoom Description: {room_description}\n",
             "\n#############\n",
-            self.state_manager.get_current_emote(),
+            self.state_manager.get_emotes_data().message,
             "\n#############\n",
-            self.state_manager.get_possible_emotes(),
+            f"Possible emotes: {possible_emotes}",
             "\n#############\n",
             "In your inventory the current items are:",
             inv_string,

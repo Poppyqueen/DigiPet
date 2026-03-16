@@ -24,6 +24,9 @@ import sys
 
 from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
 
+from pygame_int.main_digipet.pet_dna import PetDNA
+
+from . import dna_screen_ui
 
 text_inputs = {}
 dropdowns = {}
@@ -433,6 +436,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                                 config_manager.set_config("AI", "pet_sound", selected_sound_filename)
                             else:
                                 config_manager.set_config("AI", "pet_sound", "mellow_friend.mp3")  # default sound
+
+                            dna = dna_screen_ui.run_dna_selector_ui(screen, font)
+                            # dna = PetDNA.generate_random()
+                            config_manager.set_config("AI", "pet_dna", dna.to_seed())
+                            print(f"[init] Generated DNA seed: {dna.to_seed()}")
 
                             config_manager.save_config_to_archive(config_name)
                             config_manager.load_config_from_archive(config_name)

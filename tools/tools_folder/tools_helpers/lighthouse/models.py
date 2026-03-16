@@ -51,7 +51,7 @@ class WeatherConditions:
     def from_weather_data(cls, weather_data: Dict[str, Any]) -> 'WeatherConditions':
         """Create from OpenMeteo data."""
         return cls(
-            is_day=weather_data.get("is_day", "False") == "True",
+            is_day=bool(weather_data.get("is_day", False)),
             temperature=float(weather_data.get("temperature", 20.0)),
             humidity=float(weather_data.get("humidity", 50.0)) / 100.0,
             precipitation=float(weather_data.get("precipitation", 0.0)),

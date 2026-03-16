@@ -36,6 +36,8 @@ from ai_managers.agents.abstract_agent import BaseChatbot
 
 from pygame_runtime.tick_registry import TickRegistry
 
+from pygame_int.main_digipet.pet_dna import PetDNA
+
 # ---------------------------------------------------------------------------
 # Data container returned to game.py
 # ---------------------------------------------------------------------------
@@ -117,6 +119,24 @@ def _apply_theme_and_settings(config_manager: ConfigManager) -> None:
     state.pet_color = config_manager.get_config("AI", "pet_color") or config.GREEN
     state.pet_sound = config_manager.get_config("AI", "pet_sound") or "mellow_friend.mp3"
     gui.gui_core.gui_construct_colors.set_color_theme()
+
+    seed = config_manager.get_config("AI", "pet_dna")
+    
+    # Check if seed exists at all
+    if not seed:
+        # --- DEV SECTION: UNCOMMENT TO ALLOW RANDOM GENERATION ---
+        # state.pet_dna = PetDNA.generate_random()
+        # return
+        # ---------------------------------------------------------
+        raise RuntimeError("FATAL: 'pet_dna' is missing from the configuration file.")
+
+    try:
+        # Attempt to parse the 7-part DNA string
+        state.pet_dna = PetDNA.from_seed(seed)
+    except ValueError as e:
+        # Re-raise as a fatal RuntimeError so the app stops immediately 
+        # with the specific validation error details from PetDNA.
+        raise RuntimeError(f"FATAL: Configuration corruption detected. {e}") from e
 
 
 def _build_chatbot(
@@ -274,6 +294,9 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     _load_initial_game_state(chatbot)
 
     tick_registry = _build_tick_registry(chatbot)
+
+    state.current_emote = chatbot.state_manager.get_emotes_data().current_emote
+    #print(f"DEBUG INITIALIZER: SETTING CURRENT EMOTE TO {state.current_emote}")
 
     _splash(screen)
 

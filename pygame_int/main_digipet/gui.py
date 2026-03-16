@@ -45,6 +45,8 @@ from pygame_int.main_digipet import gui_lore_panel
 from pygame_int.main_digipet import gui_stat_icons
 from pygame_int.main_digipet import gui_clock
 
+from pygame_int.main_digipet import gui_pet
+
 import pygame
 
 from utils.time_manager import get_time_tag_from_now
@@ -204,8 +206,7 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
     ox, oy = animation.calculate_circle_offset(current_time_ms)
     cx += ox
     cy += oy
-    pygame.draw.circle(screen, config.BLACK,     (int(cx), int(cy)), state.current_radius)
-    pygame.draw.circle(screen, state.pet_color,  (int(cx), int(cy)), state.current_radius, 5)
+    gui_pet.draw_pet(screen, cx, cy, current_time_ms)
 
     # ---- Side panel ----
     if state.panel_visible:

@@ -706,6 +706,22 @@ plants_tools=[
             "additionalProperties": False
         }
     },
+    {
+    "type": "function",
+    "name": "inspect_pot",
+    "description": "Inspect a planter pot to see all its slots and their contents. Use this to discover slot IDs before calling check_plant, water_plant, or any other action targeting a specific slot.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "pot_id": {
+                "type": "number",
+                "description": "The ID of the planter pot item to inspect."
+            }
+        },
+        "required": ["pot_id"],
+        "additionalProperties": False
+    }
+},
 ]
 lab_room_tools=[
     {
@@ -1933,7 +1949,7 @@ fenestration_apertures_tools = [
                 "description": "The ID of the window, clerestorie, oculus, or any other Fenêtre for a view."
             }
         },
-        "required": ["item_id"],
+        "required": ["aperture_id"],
         "additionalProperties": False
     }
     }
@@ -2211,13 +2227,13 @@ prepare_food_tools=[
 toggle_item_power_tool = {
     "type": "function",
     "name": "toggle_item",
-    "description": "Toggle, engage or change the state of a simple item, from electronics to finite objects.",
+    "description": "Toggle, engage or change the state of a simple item, from electronics to finite objects. 'Toggle' encompasses any change of state, most items require only this tool for interaction, otherwise they would have a more specific tool for interaction.",
     "parameters": {
         "type": "object",
         "properties": {
             "item_id": {
                 "type": "number",
-                "description": "The ID of the item to toggle, phases, or change the state of."
+                "description": "The ID of the item to toggle, phase, or change the state of."
             }
         },
         "required": ["item_id"],

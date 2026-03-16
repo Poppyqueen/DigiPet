@@ -1,10 +1,20 @@
 import math
+import traceback
 import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 
 # Setup the Open-Meteo API client with cache and retry on error
-cache_session = requests_cache.CachedSession('.cache', expire_after=900)
+import os
+
+os.makedirs(".cache", exist_ok=True)
+
+cache_session = requests_cache.CachedSession(
+       '.cache/openmeteo',
+       backend='filesystem',
+       expire_after=900,
+   )
+
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
 
@@ -22,6 +32,21 @@ def _safe(value) -> float | None:
     except (TypeError, ValueError):
         pass
     return value
+
+
+def _api_call(client, url, params):
+    """Wrapper around openmeteo API calls that preserves full error details."""
+    try:
+        return client.weather_api(url, params=params)
+    except Exception as e:
+        print("=" * 60)
+        print(f"Open-Meteo API error calling: {url}")
+        print(f"Params: {params}")
+        print(f"Error: {e}")
+        print("-" * 60)
+        # traceback.print_exc()
+        # print("=" * 60)
+        raise
 
 
 class OpenMeteoLoc:
@@ -62,11 +87,12 @@ class OpenMeteoLoc:
                 "sea_surface_temperature", # [11] °C   — surface water temperature
             ],
         }
+
     def _format_value(self, value, unit: str, decimals: int = 2) -> str:
-            """Helper to round values and append units, or return 'unavailable'."""
-            if value is None:
-                return "unavailable"
-            return f"{round(value, decimals)} {unit}"
+        """Helper to round values and append units, or return 'unavailable'."""
+        if value is None:
+            return "unavailable"
+        return f"{round(value, decimals)} {unit}"
 
     # ------------------------------------------------------------------
     # Timezone
@@ -77,7 +103,7 @@ class OpenMeteoLoc:
         if lat and long:
             params = {**self._weather_params, "latitude": lat, "longitude": long}
 
-        response = openmeteo.weather_api(_WEATHER_URL, params=params)[0]
+        response = _api_call(openmeteo, _WEATHER_URL, params)[0]
         return {
             "timezone":              response.Timezone(),
             "timezone_abbreviation": response.TimezoneAbbreviation(),
@@ -88,7 +114,8 @@ class OpenMeteoLoc:
     # ------------------------------------------------------------------
 
     def get_structured_weather(self) -> dict:
-        response = openmeteo.weather_api(_WEATHER_URL, params=self._weather_params)[0]
+        # print(f"DEBUG [OPENMETEO] - Calling weather endpoint with params: {self._weather_params}")
+        response = _api_call(openmeteo, _WEATHER_URL, self._weather_params)[0]
         current  = response.Current()
 
         return {
@@ -119,7 +146,9 @@ class OpenMeteoLoc:
     # ------------------------------------------------------------------
 
     def get_structured_marine(self) -> dict:
-        response = openmeteo.weather_api(_MARINE_URL, params=self._marine_params)[0]
+        # print(f"DEBUG [OPENMETEO] - Calling marine endpoint with params: {self._marine_params}")
+
+        response = _api_call(openmeteo, _MARINE_URL, self._marine_params)[0]
         current  = response.Current()
 
         return {

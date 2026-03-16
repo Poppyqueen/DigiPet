@@ -8,6 +8,9 @@ bots/
 *__pycache__/
 data_archive/
 
+.cache/
+*.db
+
 # Add piper voices to this path tts_providers/piper_voices/
 *.onnx
 *.onnx.json

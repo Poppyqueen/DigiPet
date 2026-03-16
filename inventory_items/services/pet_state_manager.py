@@ -1,5 +1,5 @@
 # services/pet_state_manager.py
-from inventory_items.services.return_objects import GetCurrencyResult, AdjustCurrencyResult
+from inventory_items.services.return_objects import GetCurrencyResult, AdjustCurrencyResult, EmotesResult
 
 # TODO: kick out the currency stuff, move to the tools folder... maybe not?
 class PetStateManager:
@@ -52,25 +52,33 @@ class PetStateManager:
             message = f"Error setting emote: 'possible_emotes' in state is not a dict ({type(possible_emotes).__name__}). Cannot set emote."
             print(message)
             return message
-
-        if emote_name in possible_emotes:
-            current_emote = self._state_store.get_state_section("current_emote")
-            if current_emote == emote_name:
-                return f"The current emote is already '{emote_name}'."
-
-            self._state_store.update_state_section("current_emote", emote_name)
-
-            emote_description = possible_emotes.get(emote_name, "No description available.")
-            self._send_signal({
-                "type": "emote_changed",
-                "emote_name": emote_name,
-                "sound_path": f"style/sounds/{emote_name.lower()}.mp3"
-            })
-            return f"Current emote successfully set to '{emote_name}' - {emote_description}"
-        else:
-            message = f"Error: Emote '{emote_name}' is not a possible emote. Available emotes: {', '.join(sorted(possible_emotes.keys()) if possible_emotes else ['none'])}"
+        print(f"DEBUG: emote_name={emote_name!r}, type={type(emote_name)}")
+        print(f"DEBUG: possible_emotes keys={list(possible_emotes.keys())!r}")
+        print(f"DEBUG: in check={emote_name in possible_emotes}")
+        if emote_name not in possible_emotes:
+            message = f"Error: Emote '{emote_name}' is not a possible emote. ..."
             print(message)
             return message
+
+        self._state_store.update_state_section("current_emote", emote_name)
+        emote_description = possible_emotes.get(emote_name, "No description available.")
+        self._send_signal({
+            "type": "emote_changed",
+            "emote_name": emote_name,
+            "sound_path": f"style/sounds/{emote_name.lower()}.mp3"
+        })
+        return f"You are feeling '{emote_name}'! {emote_description}"
+
+        #     self._send_signal({
+        #         "type": "emote_changed",
+        #         "emote_name": emote_name,
+        #         "sound_path": f"style/sounds/{emote_name.lower()}.mp3"
+        #     })
+        #     return f"You are feeling '{emote_name}'! {emote_description}"
+        # else:
+        #     message = f"Error: Emote '{emote_name}' is not a possible emote. Available emotes: {', '.join(sorted(possible_emotes.keys()) if possible_emotes else ['none'])}"
+        #     print(message)
+        #     return message
 
     # --- Steps Getters and Setters ---
     def get_steps(self) -> int:
@@ -125,3 +133,14 @@ class PetStateManager:
             return AdjustCurrencyResult.ok(currency=new_currency, message="Currency adjusted and reached 0.")
         self._state_store.update_state_section("currency", new_currency)
         return AdjustCurrencyResult.ok(currency=new_currency, message=f"Currency adjusted, new balance: {new_currency}")
+
+    def get_emotes_data(self) -> EmotesResult:
+        current_emote = self._state_store.get_state_section("current_emote", "unknown")
+        possible_emotes = self._state_store.get_state_section("possible_emotes", {})
+        if not isinstance(possible_emotes, dict):
+            possible_emotes = {}
+            return EmotesResult.fail(error="Invalid possible_emotes value found in state.", current_emote=current_emote, possible_emotes=list(possible_emotes.keys()))
+        if not isinstance(current_emote, str):
+            current_emote = "unknown"
+            return EmotesResult.fail(error="Invalid current_emote value found in state.", current_emote=current_emote, possible_emotes=list(possible_emotes.keys()))
+        return EmotesResult.ok(message=f"Your current emote is {current_emote}", current_emote=current_emote, possible_emotes=list(possible_emotes.keys()))

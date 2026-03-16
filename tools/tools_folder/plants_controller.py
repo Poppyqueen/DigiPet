@@ -364,6 +364,26 @@ class GardenController:
         self._maybe_save_pot(pot_id, updated)
         return msg
 
+    def inspect_pot(self, pot_id: int) -> str:
+        """
+        Lists all slots and their contents in a pot.
+        The AI uses this to discover slot IDs, then calls check_plant for details.
+        """
+        ok, pot_state = self._get_pot_state(pot_id)
+        if not ok:
+            return pot_state
+
+        found = self.state_manager.find_item(
+            item_id=pot_id,
+            required_type=POT_TYPE,
+            required_location="accessible",
+        )
+        pot_name = found.item_data.get("name", f"Pot {pot_id}") if found.success else f"Pot {pot_id}"
+
+        return self.garden_manager.get_pot_summary(
+            pot_state=pot_state,
+            pot_name=f"{pot_name} (ID: {pot_id})",
+        )
 
     # -----------------------------------------------------------------------
     # Contextual awareness

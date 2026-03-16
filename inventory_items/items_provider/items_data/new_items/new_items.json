@@ -408,7 +408,7 @@
             "ticks_elapsed": 0
         },
         "tv_state": {
-            "tv_type": "standard",
+            "tv_type": "bad tv",
             "current_channel": ""
         }
     },

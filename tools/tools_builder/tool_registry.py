@@ -456,6 +456,16 @@ class ToolRegistry:
                 "display_information":  self.garden_manager.get_current_accessible_garden_gui, # Same info as get_accessible_plants_info, but this one does not reduce stats
                 "agent_information":    self.garden_manager.get_current_accessible_garden_gui, # Exact same method, both are summaries of the state.
             },
+            "pot_specific_plant_care": { # This is a bit of a weird one, but it is for plants that need specific care, like bonsais, or carnivorous plants, maybe even a magical mandrake that needs to be sung to? It is a bit of a niche use case, but it allows for some interesting interactions and it is not too hard to implement since it can reuse most of the garden manager's methods, just with different parameters and maybe some extra ones.
+                "functions": {
+                    "inspect_pot": self.garden_manager.inspect_pot # This would return specific information about the pot and the plant in it, maybe even the history of interactions with it, to be used for plants that need specific care.
+                },
+                "definitions": plants_tools,
+                "item_types": ["planter_pot"],
+                "use_level": "dual_use",
+                "display_information": self.garden_manager.get_current_accessible_garden_gui,
+                "agent_information": self.garden_manager.get_current_accessible_garden_gui,
+            },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
             # agent_information sources, not action tools)

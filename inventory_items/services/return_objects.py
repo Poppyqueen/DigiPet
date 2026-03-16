@@ -515,3 +515,36 @@ class StatsResult(BaseModel):
     def fail(cls, error: str, stats: dict) -> StatsResult:
         """Build a failed result. message mirrors error for easy appending."""
         return cls(success=False, message=error, error=error, stats=stats)
+
+class EmotesResult(BaseModel):
+    """
+    Model for the result of a get_emotes operation.
+    Returns the current emotes.
+    Success value a bool
+    Error value a str
+    Message value a str - Always populated
+    """
+    
+    success: bool
+    message: str
+    error: str | None = None
+    current_emote: str
+    possible_emotes: list[str]
+    
+    @model_validator(mode="after")
+    def _check_consistency(self) -> EmotesResult:
+        if self.success:
+            assert self.error is None, "Successful result must not have an error."
+        else:
+            assert self.error is not None, "Failed result must have an error message."
+        return self
+    
+    @classmethod
+    def ok(cls, message: str, current_emote: str, possible_emotes: list[str]) -> EmotesResult:
+        """Build a successful result."""
+        return cls(success=True, message=message, error=None, current_emote=current_emote, possible_emotes=possible_emotes)
+    
+    @classmethod
+    def fail(cls, error: str, current_emote: str, possible_emotes: list[str]) -> EmotesResult:
+        """Build a failed result. message mirrors error for easy appending."""
+        return cls(success=False, message=error, error=error, current_emote=current_emote, possible_emotes=possible_emotes)

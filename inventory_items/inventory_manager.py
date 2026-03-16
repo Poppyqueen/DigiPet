@@ -24,7 +24,8 @@ from inventory_items.services.return_objects import (
     AdjustCurrencyResult,
     GetCurrencyResult,
     StatsResult,
-    InventoryItemEntry
+    InventoryItemEntry,
+    EmotesResult
 )
 
 from typing import Literal
@@ -122,13 +123,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
     # Needs changes:
     # TODO: Return a standard object instead of a string? 
-    # These are called for AI agent context
-    # Some tools might want to use them for something fun, none of them do, but imagine a lamp that changes color based on the emotion of the pet
-    def get_current_emote(self) -> str:
-        return self.pet_state_manager.get_current_emote()
-
-    def get_possible_emotes(self) -> str:  # This is called in construct tools each time we construct agent context, could return an object instead, just update construct_context in construct_tools if you do.
-        return self.pet_state_manager.get_possible_emotes() 
         
     def set_current_room(self, room_id: int | float | str): # Used by agent, could be API as well, no tool is using it yet
         room_id = int(room_id)
@@ -138,6 +132,10 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # ============================================================= #
     # Public Methods verified for tools to use. (Public API of InventoryHouseManager)
     # ============================================================= #
+
+
+    def get_emotes_data(self) -> EmotesResult:
+        return self.pet_state_manager.get_emotes_data() # Only used in initialization for now, however it could be used by tools.
 
     def get_stats(self) -> StatsResult: 
         return self.stat_tracker.get_stats()

@@ -126,11 +126,13 @@ def _on_emote_changed(signal_data: dict, music_player, **_kwargs) -> None:
         "thinking": animation.start_thinking_animation,
         "curious":  animation.start_curious_animation,
         "confused": animation.start_confused_animation,
+        "neutral": animation.start_neutral_animation,
     }
 
     if emote_name in emote_map:
         print(f"[signal] emote_changed → {emote_name}")
         emote_map[emote_name]()
+        state.current_emote = emote_name
     elif emote_name:
         print(f"[signal] emote_changed — unhandled emote: {emote_name}")
 
