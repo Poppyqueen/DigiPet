@@ -41,6 +41,9 @@ from tools.tools_folder.wikipedia_controller import WikipediaController
 
 from utils.ai_items_crafter import ItemsCrafter
 
+from .mcp_registry import MCPRegistry, MCPServerConfig
+
+
 from .my_tools import (
     base_tools,
     book_tools,
@@ -75,6 +78,12 @@ from .my_tools import (
 )
 
 from .tool_availability import make_toolset_checker
+
+
+import sys
+import os
+
+venv_bin = os.path.dirname(sys.executable)
 
 
 class ToolRegistry:
@@ -178,6 +187,58 @@ class ToolRegistry:
         )
         self._add_lighthouse_tools()
 
+
+
+    @classmethod
+    async def create(
+        cls,
+        state_manager,
+        signal,
+        subdirectory,
+        memory_manager,
+        config_manager,
+        open_meteo,
+        get_context_fn,
+    ) -> "ToolRegistry":
+        """
+        Async factory method. Use this instead of calling ToolRegistry(...)
+        directly when MCP servers may be configured.
+ 
+        Runs the full synchronous __init__ first (all existing service and
+        tool_definitions setup unchanged), then connects to any configured
+        MCP servers and merges their tool entries into tool_definitions.
+ 
+        If no MCP servers are configured, this is a thin wrapper around
+        __init__ with zero behaviour change.
+        """
+        instance = cls(
+            state_manager  = state_manager,
+            signal         = signal,
+            subdirectory   = subdirectory,
+            memory_manager = memory_manager,
+            config_manager = config_manager,
+            open_meteo     = open_meteo,
+            get_context_fn = get_context_fn,
+        )
+        await instance._connect_mcp()
+        return instance
+    
+    async def _connect_mcp(self) -> None:       # no config_manager arg needed
+        configs = self._get_mcp_server_configs()
+
+        if not configs:
+            self.mcp_registry = None
+            return
+
+        self.mcp_registry = MCPRegistry()
+        for config in configs:
+            try:
+                await self.mcp_registry.connect(config)
+                entry = self.mcp_registry.build_tool_definition_entry(config)
+                self.tool_definitions[config.registry_key] = entry
+                print(f"[MCP] '{config.registry_key}' merged into tool_definitions.")
+            except Exception as exc:
+                print(f"[MCP] WARNING: Failed to load '{config.registry_key}': {exc}")
     # ------------------------------------------------------------------
     # Phase 1 helpers
     # ------------------------------------------------------------------
@@ -720,3 +781,53 @@ class ToolRegistry:
         #     "use_level": "dual_use",
         # }
         print("DEBUG: ToolRegistry: Lighthouse tools added.")
+
+
+    def _get_mcp_server_configs(self) -> list[MCPServerConfig]:
+        """
+        Declare all MCP servers here, exactly like optional services are
+        declared in _init_optional_services.
+
+        Add or remove entries freely — the registry handles connection,
+        tool discovery, and tool_definitions merging automatically.
+        """
+        configs = []
+
+        # Adding config flags later in here, updating later
+
+        if True:
+            configs.append(MCPServerConfig( # Using austenstone/myinstants-mcp 'https://github.com/austenstone/myinstants-mcp'. Fun soundboard MCP server.
+            # Register the MCP server here, usually it is a json config that the client reads, but... anyhow, it is a similar format to other clients.
+            registry_key = "myinstants",
+            transport    = "stdio",
+            command      = "npx", # Make sure you have npx installed and globally available, install node.js or something, also, PLEASE read the MCP server documentation.
+            args       = ["-y", "myinstants-mcp@latest"], # -y will automatically install the package if it's not already installed, and then run it. 
+            env          = {"MYINSTANTS_VOLUME": "0.8"},
+
+            # Keys from the original tooling framework, still work the same:
+            item_types   = ["sound_effects_apparatus"], # Only items with this type will be able to access the tools from this MCP server, and they will be gated by inventory_only use level, so the agent needs to be holding the item to use them.
+            use_level    = "inventory_only",
+        ))
+
+        if False:  # TODO: Not sure why this specific MCP won't work. There is a GitHub issue on the repo that documents what's going on: 'open_colab_browser_connection returns false'
+            configs.append(MCPServerConfig(
+            registry_key = "mcp_colab",
+            transport    = "stdio",
+            command      = os.path.join(venv_bin, "colab-mcp"),
+            #args         = ["-m", "colab_mcp"],  # or whatever the package's entry point is
+            use_level    = "dual_use",
+            item_types=["colab_endpoint"], # Optional: specify item types that gate access to this server's tools
+        ))
+
+        if False:
+            configs.append(MCPServerConfig( # Local, self defined server, useful example if you wanted to bypass the tooling framework and instead make a custom MCP server. Look at 'servers/test_server.py'
+            registry_key = "mcp_test",
+            transport    = "stdio",
+            command      = sys.executable,
+            args         = [os.path.join(os.path.dirname(__file__), "..", "..", "servers", "test_server.py")],
+            item_types   = ["test_server_endpoint"],
+            use_level    = "inventory_only",
+        ))
+
+
+        return configs

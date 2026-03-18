@@ -46,7 +46,9 @@ refactored_types = [
 
                     "youtube_playlists_endpoint", "discogs_endpoint",
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
-                    "wikipedia_endpoint", "searxng_endpoint"
+                    "wikipedia_endpoint", "searxng_endpoint",
+                    "colab_endpoint", # First of its kind, spins up a MCP server that provides access to Colab notebooks as tools.
+                    "sound_effects_apparatus" # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -460,6 +462,12 @@ class WikipediaEndpointFields(ContractMixin):
     model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to Wikipedia, with a stateless implementation, it is direct access to the Wikipedia database without any accounts tied to it. It provides the ability to search and retrieve Wikipedia articles."
 class SearxngEndpointFields(ContractMixin):
     model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Searxng instance with direct access to a meta-search engine and the ability to query found results for full website content retrieval."
+
+class ColabEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Colab notebook, with the ability to execute code cells, retrieve outputs, and manage the notebook's content. It is meant to be used as a powerful tool for running custom code, data analysis, or any other task that can be accomplished within a Colab environment."
+
+class SoundboardFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} These must always be portable devices, any device will do, however it needs to be a handheld, wearable, portable or any carryable device. It allows for borwsing and on-demand playback of a vast library of sounds."
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -499,6 +507,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "bluesky_social_endpoint": BlueskySocialEndpointFields,
     "wikipedia_endpoint": WikipediaEndpointFields,
     "searxng_endpoint": SearxngEndpointFields,
+    "colab_endpoint": ColabEndpointFields,
+    "sound_effects_apparatus": SoundboardFields, # For future reference, this is a type of endpoint that provides access to a soundboard tool, it can be used for ambience, music, ASMR, or any other use case involving audio playback.
 
 }
 

@@ -30,6 +30,8 @@ from pygame_runtime.initializer    import initialize
 from pygame_runtime.event_handler  import handle_custom_events, handle_input_events, update_scroll_clamp, update_cursor_lock
 from pygame_runtime.workers        import start_chatbot_request
 
+import asyncio
+
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -157,7 +159,7 @@ def main() -> None:
     music_player_ref = [None]
     signal_callback  = make_signal_handler(chatbot_ref, music_player_ref)
 
-    ctx = initialize(GAME_MODE, signal_callback)
+    ctx = asyncio.run(initialize(GAME_MODE, signal_callback))
 
     # Wire the chatbot reference into the signal handler.
     chatbot_ref[0]      = ctx.chatbot

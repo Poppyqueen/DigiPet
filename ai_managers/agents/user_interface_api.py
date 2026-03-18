@@ -55,6 +55,15 @@ class UserController(BaseChatbot):
 
         print("UserInterfaceChatbot initialized successfully (mode: user_player).")
 
+
+    @classmethod
+    async def create(cls, config_manager, signal_callback=None, bots_archive_dir="data_archive") -> "UserController":
+        return await super().create(
+            config_manager   = config_manager,
+            signal_callback  = signal_callback,
+            bots_archive_dir = bots_archive_dir,
+            # deep_memory_override goes away entirely — __init__ handles it
+        )
     # ------------------------------------------------------------------
     # Developer message  — base prompt + live available_rooms injection
     # ------------------------------------------------------------------

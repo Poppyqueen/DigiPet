@@ -71,6 +71,61 @@ class FunctionBuilder:
 
         self.function_map = {}
 
+
+
+    @classmethod
+    async def create(
+        cls,
+        state_manager,
+        signal       = None,
+        subdirectory = None,
+        memory_manager  = None,
+        config_manager  = None,
+        open_meteo      = None,
+    ) -> "FunctionBuilder":
+        """
+        Async factory method. Replaces direct FunctionBuilder(...) calls
+        when MCP support is needed.
+ 
+        Builds the instance synchronously via __init__ (unchanged), then
+        upgrades the registry to the async-initialised ToolRegistry so
+        MCP tool entries are present before any tool map is built.
+ 
+        The examine_item self-reference is re-wired after the upgrade
+        because ToolRegistry.create() constructs a fresh tool_definitions
+        dict that doesn't yet have it.
+        """
+        # Step 1 — normal sync init (builds registry via ToolRegistry.__init__)
+        instance = cls(
+            state_manager  = state_manager,
+            signal         = signal,
+            subdirectory   = subdirectory,
+            memory_manager = memory_manager,
+            config_manager = config_manager,
+            open_meteo     = open_meteo,
+        )
+ 
+        # Step 2 — upgrade to async-initialised ToolRegistry (runs _connect_mcp)
+        instance.registry = await ToolRegistry.create(
+            state_manager  = state_manager,
+            signal         = signal,
+            subdirectory   = subdirectory,
+            memory_manager = memory_manager,
+            config_manager = config_manager,
+            open_meteo     = open_meteo,
+            get_context_fn = instance._get_current_context,
+        )
+ 
+        # Step 3 — re-point tool_definitions at the upgraded registry's dict
+        instance.tool_definitions = instance.registry.tool_definitions
+ 
+        # Step 4 — re-wire the self-referential examine_item function
+        # (this was set in __init__ against the old registry; do it again)
+        instance.tool_definitions["base_functions"]["functions"]["examine_item"] = (
+            instance.get_item_details_with_tools
+        )
+ 
+        return instance
     # -----------------------------------------------------------------------
     # Context helpers
     # -----------------------------------------------------------------------

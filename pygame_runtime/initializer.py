@@ -138,37 +138,38 @@ def _apply_theme_and_settings(config_manager: ConfigManager) -> None:
         # with the specific validation error details from PetDNA.
         raise RuntimeError(f"FATAL: Configuration corruption detected. {e}") from e
 
-
-def _build_chatbot(
+ 
+async def _build_chatbot(
     game_mode: str,
     bots_archive_dir: str,
     config_manager: ConfigManager,
     signal_callback,
-) -> tuple[BaseChatbot, bool]:  # Removed Optional since it won't return None anymore
+) -> tuple:
     """
-    Dynamically import and instantiate the correct chatbot class.
-    Raises an exception and crashes the runtime if initialization fails.
+    Dynamically import and instantiate the correct chatbot class via its
+    async create() factory. Raises on failure — same behaviour as before.
+ 
+    The only change from the sync version: provider_cls.create() is awaited
+    instead of calling provider_cls(...) directly.
     """
     providers_map = {
         "ai_player":   "ai_managers.agents.agent_api.AgentChatbot",
         "user_player": "ai_managers.agents.user_interface_api.UserController",
     }
-
+ 
     if game_mode not in providers_map:
         raise ValueError(
             f"Invalid game_mode: {game_mode!r}. "
             f"Valid options: {list(providers_map.keys())}"
         )
-
+ 
     module_path, class_name = providers_map[game_mode].rsplit(".", 1)
-    
-    # Let import errors bubble up naturally as fatal crashes
-    module        = importlib.import_module(module_path)
-    provider_cls  = getattr(module, class_name)
-
-    # Attempt instantiation without the broad try/except block
+    module       = importlib.import_module(module_path)
+    provider_cls = getattr(module, class_name)
+ 
     try:
-        chatbot = provider_cls(
+        # ← only line that changes: await .create() instead of calling directly
+        chatbot = await provider_cls.create(
             signal_callback  = signal_callback,
             config_manager   = config_manager,
             bots_archive_dir = bots_archive_dir,
@@ -176,10 +177,9 @@ def _build_chatbot(
         print(f"[init] {type(chatbot).__name__} ready (mode={game_mode}).")
         return chatbot, True
     except Exception as exc:
-        # Log the specific failure before re-raising or exiting
         print(f"[FATAL] Chatbot init failed: {type(exc).__name__}: {exc}")
-        # Re-raise the exception to crash the runtime
         raise RuntimeError(f"Failed to initialize chatbot for {game_mode}") from exc
+ 
 
 
 def _load_initial_game_state(chatbot: BaseChatbot) -> None:
@@ -261,68 +261,56 @@ def _calculate_sized_by_steps(
 # Public entry point
 # ---------------------------------------------------------------------------
 
-def initialize(game_mode: str, signal_callback) -> GameContext:
+
+async def initialize(game_mode: str, signal_callback) -> GameContext:
     """
     Run all startup steps in order and return a populated GameContext.
-
-    ``signal_callback`` must be the closure produced by
-    ``signal_handler.make_signal_handler()`` *before* this function
-    is called, so the chatbot can fire signals during init if needed.
+ 
+    Now async so _build_chatbot (which awaits MCP connections) can run
+    inside it. Called from game.py via asyncio.run(initialize(...)).
+ 
+    Everything except the _build_chatbot call is identical to before.
     """
-    InitialStateConst()  # Ensure initial state constants are registered.
-
+    InitialStateConst()
+ 
     bots_archive_dir = f"data_archive/{game_mode}/"
-
-    screen, font    = _init_pygame()
-    config_manager  = _load_config(bots_archive_dir, screen, font)
-
+ 
+    screen, font   = _init_pygame()
+    config_manager = _load_config(bots_archive_dir, screen, font)
+ 
     _apply_theme_and_settings(config_manager)
-
+ 
     idle_time_mins = (
         config_manager.get_config("game_settings", "idle_time_minutes")
         or config.IDLE_TIMEOUT_MINUTES
     )
     print(f"[init] Idle timeout: {idle_time_mins} min.")
-
-    #garden_tick_interval_ms = config.IDLE_TIMEOUT_MINUTES * (3 / 5) * 60 * 1000
-
-    chatbot, chatbot_available = _build_chatbot( # Fatal crash if this fails
+ 
+    # ← await added; everything else identical
+    chatbot, chatbot_available = await _build_chatbot(
         game_mode, bots_archive_dir, config_manager, signal_callback
     )
-
-    # if chatbot_available and chatbot:
+ 
     _load_initial_game_state(chatbot)
-
+ 
     tick_registry = _build_tick_registry(chatbot)
-
+ 
     state.current_emote = chatbot.state_manager.get_emotes_data().current_emote
-    #print(f"DEBUG INITIALIZER: SETTING CURRENT EMOTE TO {state.current_emote}")
-
+ 
     _splash(screen)
-
-    # Timers
-    state.last_activity_time  = pygame.time.get_ticks()
-    #state.next_garden_tick_time = pygame.time.get_ticks() + garden_tick_interval_ms
-
-
-    # # Chat window (side panel) # Set up in state.py 
-    # state.panel_visible  = True
-    # state.panel_width    = 200
-    # #gui.gui_core.mark_layout_dirty()
-
-    #print(f"[init] Garden tick scheduled at {state.next_garden_tick_time} ms.")
-
+ 
+    state.last_activity_time = pygame.time.get_ticks()
+ 
     return GameContext(
-        screen               = screen,
-        font                 = font,
-        clock                = pygame.time.Clock(),
-        config_manager       = config_manager,
-        chatbot              = chatbot,
-        chatbot_available    = chatbot_available,
-        music_player_ref     = [_init_jukebox_silent(chatbot)],
-        bots_archive_dir     = bots_archive_dir,
-        idle_time_mins       = idle_time_mins,
-        #garden_tick_interval_ms = garden_tick_interval_ms,
-        game_mode            = game_mode,
-        tick_registry        = tick_registry,
+        screen             = screen,
+        font               = font,
+        clock              = pygame.time.Clock(),
+        config_manager     = config_manager,
+        chatbot            = chatbot,
+        chatbot_available  = chatbot_available,
+        music_player_ref   = [_init_jukebox_silent(chatbot)],
+        bots_archive_dir   = bots_archive_dir,
+        idle_time_mins     = idle_time_mins,
+        game_mode          = game_mode,
+        tick_registry      = tick_registry,
     )

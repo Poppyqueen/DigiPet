@@ -564,5 +564,84 @@
         "ticks_lasting": 5,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Colab Notebook — Data Analysis Playground",
+      "descriptions": [
+        "A cloud-hosted Colab notebook that lets you run Python code, inspect outputs, and save results to Drive.",
+        "Provides a live kernel, runnable cells, and integrated GPU/TPU options for experiments and data work."
+      ],
+      "static": true,
+      "type": [
+        "colab_endpoint",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The Colab notebook is connected and ready to execute cells.",
+        "off_description": "The Colab notebook is disconnected and awaiting a connection.",
+        "on_sequence": "You press the Connect button; the status icon pulses, the kernel spins up, and cells become live and executable as output placeholders appear.",
+        "off_sequence": "You click Disconnect; the kernel winds down, outputs freeze, and the connection indicator fades to a muted gray.",
+        "perishable": false,
+        "ticks_lasting": 3,
+        "ticks_elapsed": 0
+      }
+    },
+   {
+      "name": "Pocket Soundboard (myinstants)",
+      "descriptions": [
+        "A handheld, toggleable soundboard that connects to myinstants.com via the myinstants-mcp bridge to play short audio clips and sound effects.",
+        "Small metal chassis with a capacitive color display and a ring of LEDs around a single multifunction button; each tap triggers the UI and plays a selected instant from the remote library."
+      ],
+      "static": false,
+      "type": [
+        "sound_effects_apparatus",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The soundboard is powered on and is ready to play clips from myinstants.com.",
+        "off_description": "The soundboard is powered off and the display is dark.",
+        "on_sequence": "You press the chrome button; the display brightens, teal LEDs sweep around the bezel and the app syncs briefly with myinstants-mcp, listing hotbuttons for immediate playback.",
+        "off_sequence": "You hold the button; the LEDs dim and the screen winds down to black as the connection to the remote library severs.",
+        "perishable": false,
+        "ticks_lasting": 5,
+        "ticks_elapsed": 0
+      }
+    },
+    {
+      "name": "Clockwork Aeolophone Musicbox",
+      "descriptions": [
+        "A palm-sized, late-Victorian musicbox that blends gilt brass clockwork with a tiny luminous speaker — an anachronistic toy that hints at futures the Victorians might have imagined.",
+        "Its case is carved oak with inlaid mother-of-pearl stars; a small winding key and an ebony stop lever sit beside a perforated brass horn that throws sound with curious, metallic shimmer.",
+        "Wound, it plays a short, otherworldly mechanical melody interlaced with faint electric tinkles; unwound, it is compact and cool, like a pocket relic from a clockwork salon."
+      ],
+      "static": false,
+      "type": [
+        "sound_effects_apparatus",
+        "toggleable"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 5,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": 6,
+        "on_description": "The musicbox is playing a bright, metallic melody through its tiny brass horn.",
+        "off_description": "The musicbox is silent, its gears at rest and the little horn cold to the touch.",
+        "on_sequence": "You turn the brass key and feel the mainspring bite; gears click in a neat cascade, a soft electric whisper wells beneath the teeth, and a crystalline, clockwork tune unfurls from the horn.",
+        "off_sequence": "You flip the ebony stop lever; the melody winds down to a gentle mechanical sigh as gears coast to stillness and the faint glow in the speaker gutters.",
+        "perishable": false,
+        "ticks_lasting": 6,
+        "ticks_elapsed": 0
+      }
     }
 ]
