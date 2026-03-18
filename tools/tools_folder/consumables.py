@@ -97,3 +97,25 @@ class ConsumablesTools:
             "popup_type": 2,
         })
         return "\n".join(p for p in message_parts if p)
+    
+
+    def perceive_consumables(self) -> str:
+
+        inventory = self.state_manager.get_inventory_state()
+
+        consumables = [
+            item for item in inventory.inventory_items
+            if "consumable" in item.item_data.get("type", [])
+        ]
+
+        if not consumables:
+            return ""
+        
+        parts = []
+        for consumable in consumables:
+            item_id = consumable.item_id
+            uses_left = consumable.item_data.get("consume_uses_left", 1)
+            entry = f"Consumables in your inventory: \n - {item_id}: {consumable.item_data.get('name', 'Unknown')} (Uses left: {uses_left})\n"
+            parts.append(entry)
+
+        return "".join(parts)

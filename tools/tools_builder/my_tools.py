@@ -922,57 +922,7 @@ garden_room_tools=[
         }
     },
 ]
-computer_room_tools=[
-    {
-        "type": "function",
-        "name": "random_wikipedia",
-        "description": "Fetches a random Wikipedia article's title and main content extract. Useful for Browse or discovering random topics.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "computer_search_wikipedia_articles",
-        "description": "Searches Wikipedia based on a keyword query and returns a list of potential matching article titles, page IDs, and brief snippets. Use this to find relevant article titles before retrieving content. It does NOT return the full article content.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "The search term or keywords to look for on Wikipedia."
-                }
-            },
-            "required": [
-                "query"
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "computer_get_wikipedia_article_content",
-        "description": "Retrieves the main content extract of a specific Wikipedia article given its exact title. Use this after getting a title from 'search_wikipedia_articles' or if you already know the exact title.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "title": {
-                    "type": "string",
-                    "description": "The exact title of the Wikipedia article to retrieve content for. This should ideally come from the output of a 'search_wikipedia_articles' call."
-                }
-            },
-            "required": [
-                "title"
-            ],
-            "additionalProperties": False
-        }
-    }
-]
+
 
 base_tools=[
     {
@@ -2240,3 +2190,66 @@ toggle_item_power_tool = {
         "additionalProperties": False
     }
 }
+
+
+endpoints_tools = [
+    {
+        "type": "function",
+        "name": "search_wikipedia_articles",
+        "description": "Searches Wikipedia based on a keyword query and returns a list of potential matching article titles, page IDs, and brief snippets. Use this to find relevant article titles before retrieving content. It does NOT return the full article content.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search term or keywords to look for on Wikipedia."
+                }
+            },
+            "required": [
+                "query"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_wikipedia_article_summary",
+        "description": "Gets a brief summary of a specific Wikipedia article given its exact title.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "The exact title of the Wikipedia article to retrieve a summary for. This should ideally come from the output of a 'search_wikipedia_articles' call."
+                }
+            },
+            "required": [
+                "title"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_wikipedia_article_content",
+        "description": "Retrieves the main content extract of a specific Wikipedia article given its exact title. Use this after getting a title from 'search_wikipedia_articles' or if you already know the exact title.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "The exact title of the Wikipedia article to retrieve content for. This should ideally come from the output of a 'search_wikipedia_articles' call."
+                },
+                "memory_danger_override": {
+                    "type": "boolean",
+                    "description": "Optional. An alert is broadcasted when trying to access Wikipedia articles with large contents, this optional flag bypasses this memory safety mechanism and allows you to retrieve the content of any article regardless of its size."
+                }
+
+            },
+            "required": [
+                "title"
+            ],
+            "additionalProperties": False
+        }
+    },
+]

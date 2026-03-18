@@ -44,10 +44,8 @@ from utils.ai_items_crafter import ItemsCrafter
 from .my_tools import (
     base_tools,
     book_tools,
-    computer_room_tools,
-    #kitchen_room_tools,
+    #computer_room_tools,
     lab_room_tools,
-    #harvesting_garden_tools,
     youtube_playlister_tools,
     discogs_tools,
     musicbrainz_tools,
@@ -63,7 +61,6 @@ from .my_tools import (
     clockwork_lens_tools,
     lantern_room_tools,
     fresnel_lens_tools,
-    spirit_source_tools,
     accessible_light_viewing_room_tools,
     toggle_item_power_tool,
 
@@ -74,6 +71,7 @@ from .my_tools import (
     water_source_tools,
     prepare_food_tools,
     plants_tools,
+    endpoints_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -261,7 +259,9 @@ class ToolRegistry:
                 "functions": {"consume_item": self.consumables_tools.consume_item},
                 "definitions": base_tools,
                 "use_level": "inventory_only",
-                "item_types": ["consumable"], # TODO: Add agent information, return the uses left when holding an item? I like that idea 
+                "item_types": ["consumable"], 
+                "display_information": self.consumables_tools.perceive_consumables, 
+                "agent_information": self.consumables_tools.perceive_consumables, #
             },
             "ALIFE_research": { # TODO: Update this, create an agent information method that holds the information on the current sim alongside the current tick, maybe do not include the whole state, but metadata
                 "functions": {
@@ -502,14 +502,26 @@ class ToolRegistry:
         if self.wikipedia_enabled:
             self.tool_definitions["wikipedia"] = {
                 "functions": {
-                    "computer_search_wikipedia_articles":       self.wikipedia_controller.search_wikipedia_articles,
-                    "computer_get_wikipedia_article_content":   self.wikipedia_controller.get_wikipedia_article_content,
+                    # Search — returns titles + snippets, lightweight
+                    "search_wikipedia_articles":
+                        self.wikipedia_controller.search_wikipedia_articles,
+                    # Summary — intro section only, no memory danger
+                    "get_wikipedia_article_summary":
+                        self.wikipedia_controller.get_wikipedia_article_summary,
+                    # Full content — returns and counts the article's full text, if too large instead returns a warning that can be bypassed with an optional parameter.
+                    "get_wikipedia_article_content":
+                        self.wikipedia_controller.get_wikipedia_article_content,
                 },
-                "definitions": computer_room_tools,
-                "item_types": ["wikipedia"], # Only wikipedia type, a computer or anything could be wikipedia type
-                "display_information": self.wikipedia_controller.display_information,
+                "definitions": endpoints_tools,
+                "item_types": ["wikipedia_endpoint"],
                 "use_level": "dual_use",
+                # display_information → full content, for the UI ONLY, never feed to agent
+                "display_information": self.wikipedia_controller.display_information,
+                # agent_information → metadata only (last query + results + fetch status)
+                # NO article content; safe to include in agent context
+                "agent_information": self.wikipedia_controller.agent_information,
             }
+
             print("Wikipedia tools added.")
 
         if self.youtube:
@@ -518,19 +530,20 @@ class ToolRegistry:
                     "youtube_search_video":             self.youtube.search_video,
                     "youtube_create_playlist":          self.youtube.create_playlist,
                     "youtube_add_video_to_playlist":    self.youtube.add_video_to_playlist,
-                    "youtube_open_youtube_item":        self.youtube.open_youtube_item,
+                    #"open_youtube_item":        self.youtube.open_youtube_item,
+                    # Add functions to examine an existing playlist, get its details, etc.
                 },
                 "definitions": youtube_playlister_tools,
-                "room_types": ["youtube_playlists", "music_room"],
-                "item_types": ["youtube_playlists", "iPod"],
+                #"room_types": ["youtube_playlists", "music_room"],
+                "item_types": ["youtube_playlists_endpoint"], # Only 'youtube_playlists'
                 "display_information": self.youtube.get_summary,
-                "use_level": "inventory_only",
+                "use_level": "dual_use",
             }
             print("YouTube tools added.")
 
 
         if self.discogs_handle:
-            self.tool_definitions["discogs"] = {
+            self.tool_definitions["discogs"] = { # Needs clean up probs 
                 "functions": {
                     "discogs_search_artist_by_name":                self.discogs_handle.search_artist_by_name,
                     "discogs_get_artist_master_releases_overview":  self.discogs_handle.get_artist_master_releases_overview,
@@ -542,14 +555,14 @@ class ToolRegistry:
                     "discogs_get_wantlist_unique_artists":          self.discogs_handle.get_wantlist_unique_artists
                 },
                 "definitions": discogs_tools,
-                "room_types": ["discogs", "music_room"],
-                "item_types": ["discogs", "iPod"],
-                "use_level": "inventory_only"
+                # "room_types": ["discogs", "music_room"],
+                "item_types": ["discogs_endpoint"], # Only 'discogs_endpoint', a computer or anything could be discogs endpoint
+                "use_level": "dual_use"
             }
             print("Discogs tools added to unified definitions.")
 
         if self.musicbrainz_:
-            self.tool_definitions["musicbrainz"] = {
+            self.tool_definitions["musicbrainz"] = { # Needs better handling of the API
                 "functions": {
                     "musicbrainz_get_artist_details_and_works":     self.musicbrainz_.get_artist_details_and_works,
                     "musicbrainz_search_artists_by_name":           self.musicbrainz_.search_artists_by_name,
@@ -558,9 +571,9 @@ class ToolRegistry:
                     "musicbrainz_search_by_raw_lucene":             self.musicbrainz_.search_by_raw_lucene
                 },
                 "definitions": musicbrainz_tools,
-                "room_types": ["musicbrainz", "music_room"],
-                "item_types": ["musicbrainz", "iPod"],
-                "use_level": "inventory_only"
+                # "room_types": ["musicbrainz", "music_room"],
+                "item_types": ["musicbrainz_endpoint"],
+                "use_level": "dual_use"
             }
             print("MusicBrainz tools added to unified definitions.")
 
@@ -568,13 +581,17 @@ class ToolRegistry:
             self.tool_definitions["bluesky_social"] = {
                 "functions": {
                     "post_bluesky":                 self.bluesky.post_bluesky,
-                    "get_posts_needing_responses":  self.bluesky.get_posts_needing_responses,
+                    "get_posts_needing_responses":  self.bluesky.get_posts_needing_responses, # This is probably broken, needs help
                     "post_reply":                   self.bluesky.post_reply
+                    # Get a pairing detailed function for notifications 
+                    # Get a paginated function to examine our own account posts as a summary, entries with post content, engagement metrics, and ID to be used for the above two functions
+                    # Get a detailed examine post that returns all the information about the post and its responses, not the threads of the responses, but only the direct responses to the post
                 },
                 "definitions": bluesky_tools,
-                "room_types": ["bluesky_social"],
-                "item_types": ["bluesky_social", "cellphone", "laptop"],
-                "use_level": "inventory_only"
+                # "room_types": ["bluesky_social"],
+                "item_types": ["bluesky_social_endpoint"],
+                "use_level": "dual_use"
+                # Get display and agent information for this, get a simple notifications screen that tracks unread notifications and displays a small metadata summary of them.
                 # TODO: Think if we want an agent_information key for bluesky 
             }
             print("Bluesky tools added to unified definitions.")
@@ -587,9 +604,9 @@ class ToolRegistry:
                     "list_searxng_cache":           self.searxng.list_cache
                 },
                 "definitions": searxng_tools,
-                "item_types": ["searxng", "laptop", "desktop_computer"],
+                "item_types": ["searxng_endpoint"],
                 "use_level": "dual_use"
-                # TODO: Think if we want an agent_information key for searxng 
+                # TODO: Think if we want an agent_information key for searxng, it could return a list of the latest search and their results. 
             }
             print("SearxNG tools added to unified definitions.")
 

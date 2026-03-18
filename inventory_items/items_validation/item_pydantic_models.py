@@ -29,19 +29,24 @@ from tools.tools_folder.tools_data.harvesting_data import plant_types
 # =============================================================================
 
 
-toggable_items = ["tv", "bluesky_social", "iPod", "cellphone", "maze", "laptop", "desktop_computer"]
+toggable_items = ["tv", "maze"] # This variable is a concept bag, does not affect the code, will be removed later
 
-item_types = ["consumable", "misc", "seed", "art_book", "book", "dispenser", "candy_bag"]
+item_types = ["consumable", "seed", "art_book", "book", "dispenser", "candy_bag"]
 item_types.extend(toggable_items)
 
 refactored_types = [
                     "fenestration_aperture", "bookmaking_implements", "meditation_aid", 
                     "sleepable_spot", "seatable", 
                     "cranny_host", "dust_bunnied_gleaning","comfort_object",
-                    "water_point", "culinary_equipment",
+                    "water_point",  # If consumables change, this might want to change
+                    "culinary_equipment", # If consumables change, this has to change
                     "ALIFE_interface", # Needs work on its methods
                     "planter_pot",
                     "toggleable",
+
+                    "youtube_playlists_endpoint", "discogs_endpoint",
+                    "musicbrainz_endpoint", "bluesky_social_endpoint", 
+                    "wikipedia_endpoint", "searxng_endpoint"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -415,7 +420,7 @@ class WaterPointFields(ContractMixin):
     )
 
 class CulinaryImplementsFields(ContractMixin):
-    model_description: ClassVar[str] = "These culinary fixtures, furniture, appliances, workstations or vessels that transform food, from salad mixers, blenders, toasters, ovens to open fires and grills, cookeries or hearths, from appliances or work areas. It strictly excludes utensils and items that are not completely self-contained for their full functional use."
+    model_description: ClassVar[str] = "These are culinary fixtures, furniture, appliances, workstations or vessels that transform food, from salad mixers, blenders, toasters, ovens to open fires and grills, cookeries or hearths, from appliances or work areas. It strictly excludes utensils and items that are not completely self-contained for their full functional use."
 
     narrative_prepare: List[str] = Field(
         description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, the starting interaction, first actions and first contact with this specific item. Do not mention specific ingredients, processes or outcomes, only descriptions and narratives of encountering and preparing to use such item."
@@ -441,6 +446,20 @@ class PlanterPotFields(ContractMixin):
     examine_fields: ClassVar[list[str]] = ["capacity"]
 
 
+# Following fields do not contain any required keys, but they inject model descriptions for the LLM to use, and they are registered in the TYPE_FIELD_CONTRACTS registry to be recognized as valid types and have their descriptions injected into the LLM schema.
+base_endpoints_description = "These items, usually toggleable electronic devices, are gateways to different information sources, databases, APIs, or other digital repositories of information. They affort detailed interactions, control and manipulation on the information they provide access to, and they are meant to be used as tools for information retrieval, research, or entertainment. They can be mixed and matched with other types, from handhelds to interactive furniture."
+class YoutubeEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Youtube account, with the ability to search for videos, create and manage playlists."
+class DiscogsEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Discogs account, with the ability to search for records, create and manage collections, and view artist information."
+class MusicBrainzEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a MusicBrainz, with a stateless implementation, it is direct access to a large music database without any accounts tied to it. It provides the ability to search for artists, albums, tracks, and view detailed information about them."
+class BlueskySocialEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Bluesky Social account, with the ability to view and post content, with the platform's AT Protocol."
+class WikipediaEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to Wikipedia, with a stateless implementation, it is direct access to the Wikipedia database without any accounts tied to it. It provides the ability to search and retrieve Wikipedia articles."
+class SearxngEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Searxng instance with direct access to a meta-search engine and the ability to query found results for full website content retrieval."
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -473,6 +492,13 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "culinary_equipment": CulinaryImplementsFields, # Needs an update alongside consumables.
     "planter_pot": PlanterPotFields,
     "toggleable": ToggableFields,
+
+    "youtube_playlists_endpoint": YoutubeEndpointFields,
+    "discogs_endpoint": DiscogsEndpointFields,
+    "musicbrainz_endpoint": MusicBrainzEndpointFields,
+    "bluesky_social_endpoint": BlueskySocialEndpointFields,
+    "wikipedia_endpoint": WikipediaEndpointFields,
+    "searxng_endpoint": SearxngEndpointFields,
 
 }
 

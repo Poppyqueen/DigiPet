@@ -539,5 +539,30 @@
         "stackable": false,
         "quantity": 1,
         "max_stack_size": null
+    },
+    {
+      "name": "Wikipedia Access Terminal",
+      "descriptions": [
+        "A wall-mounted access terminal that provides direct, stateless queries to the Wikipedia database."
+      ],
+      "static": true,
+      "type": [
+        "wikipedia_endpoint",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The terminal is on and serving Wikipedia search results and articles.",
+        "off_description": "The terminal is off and the screen is dark.",
+        "on_sequence": "You press the illuminated button; the terminal hums, the screen brightens, and the familiar Wikipedia search bar appears, ready for queries.",
+        "off_sequence": "You press the button again; the screen dims, the hum fades, and the interface shutters into black.",
+        "perishable": false,
+        "ticks_lasting": 5,
+        "ticks_elapsed": 0
+      }
     }
 ]
