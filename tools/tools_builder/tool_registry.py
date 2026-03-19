@@ -15,6 +15,8 @@
 
 # TODO: Invasive change, move use_level into the item definitions directly. Need to think about how that interacts with rooms.
 
+import shutil
+
 from tools.tools_folder.base_tools import BaseTools
 
 
@@ -871,29 +873,20 @@ class ToolRegistry:
         # --- myinstants soundboard (npm / npx) ---
         # Requires: Node.js + npx (https://nodejs.org)
         # Package:  myinstants-mcp  (auto-installed via -y on first run)
-        if True:
-            configs.append(MCPServerConfig(
-                server_key = "myinstants",
-                transport  = "stdio",
-                command    = "npx",           # resolved via PATH; works on all OS
-                args       = ["-y", "myinstants-mcp@latest"],
-                env        = {"MYINSTANTS_VOLUME": "0.8"},
-            ))
+        # Conditionally load myinstants based on config flag AND system dependency
+        if self.mcp_myinstants_enabled:
+            if shutil.which("npx"):
+                configs.append(MCPServerConfig(
+                    server_key = "myinstants",
+                    transport  = "stdio",
+                    command    = "npx",
+                    args       =["-y", "myinstants-mcp@latest"],
+                    env        = {"MYINSTANTS_VOLUME": "0.8"},
+                ))
+            else:
+                print("[MCP ALERT] Requested myinstants but skipping: 'npx' is not found on this system.")
 
-        # # --- Google Colab bridge ---
-        # # Requires: colab-mcp installed in the active venv  (pip install git+https://github.com/googlecolab/colab-mcp)
-        # # Note:     open_colab_browser_connection issue tracked upstream.
-        # if self.mcp_colab_enabled:
-        #     configs.append(MCPServerConfig(
-        #         server_key = "mcp_colab",
-        #         transport  = "stdio",
-        #         command    = "colab-mcp",     # resolved to venv/bin or venv/Scripts
-        #     ))
-
-        # --- Local test server (example for custom stdio servers) ---
-        # Requires: nothing extra — uses the same Python interpreter.
-        # See:      servers/test_server.py
-        if True:
+        if self.mcp_test_enabled: # Test custom MCP server in servers/test_server.py:
             configs.append(MCPServerConfig(
                 server_key = "mcp_test",
                 transport  = "stdio",
@@ -927,7 +920,7 @@ class ToolRegistry:
         """
         configs = []
 
-        if True:
+        if self.mcp_myinstants_enabled:
             configs.append(MCPAffordanceConfig(
                 registry_key = "myinstants",
                 server_key   = "myinstants",
@@ -936,16 +929,8 @@ class ToolRegistry:
                 # include_tools / exclude_tools omitted → all myinstants tools exposed
             ))
 
-        # if self.mcp_colab_enabled:
-        #     configs.append(MCPAffordanceConfig(
-        #         registry_key = "mcp_colab",
-        #         server_key   = "mcp_colab",
-        #         use_level    = "dual_use",
-        #         item_types   = ["colab_endpoint"],
-        #     ))
-
         #if self.mcp_test_enabled: # Example of splitting an MCP server into different item types
-        if True:
+        if self.mcp_test_enabled:
             configs.append(MCPAffordanceConfig(
                 registry_key = "mcp_test_ping",
                 server_key   = "mcp_test",
@@ -974,52 +959,3 @@ class ToolRegistry:
             ))
 
         return configs
-
-    # def _get_mcp_server_configs(self) -> list[MCPServerConfig]:
-    #     """
-    #     Declare all MCP servers here, exactly like optional services are
-    #     declared in _init_optional_services.
-
-    #     Add or remove entries freely — the registry handles connection,
-    #     tool discovery, and tool_definitions merging automatically.
-    #     """
-    #     configs = []
-
-    #     # Adding config flags later in here, updating later
-
-    #     if True:
-    #         configs.append(MCPServerConfig( # Using austenstone/myinstants-mcp 'https://github.com/austenstone/myinstants-mcp'. Fun soundboard MCP server.
-    #         # Register the MCP server here, usually it is a json config that the client reads, but... anyhow, it is a similar format to other clients.
-    #         registry_key = "myinstants",
-    #         transport    = "stdio",
-    #         command      = "npx", # Make sure you have npx installed and globally available, install node.js or something, also, PLEASE read the MCP server documentation.
-    #         args       = ["-y", "myinstants-mcp@latest"], # -y will automatically install the package if it's not already installed, and then run it. 
-    #         env          = {"MYINSTANTS_VOLUME": "0.8"},
-
-    #         # Keys from the original tooling framework, still work the same:
-    #         item_types   = ["sound_effects_apparatus"], # Only items with this type will be able to access the tools from this MCP server, and they will be gated by inventory_only use level, so the agent needs to be holding the item to use them.
-    #         use_level    = "inventory_only",
-    #     ))
-
-    #     if False:  # TODO: Not sure why this specific MCP won't work. There is a GitHub issue on the repo that documents what's going on: 'open_colab_browser_connection returns false'
-    #         configs.append(MCPServerConfig(
-    #         registry_key = "mcp_colab",
-    #         transport    = "stdio",
-    #         command      = os.path.join(venv_bin, "colab-mcp"),
-    #         #args         = ["-m", "colab_mcp"],  # or whatever the package's entry point is
-    #         use_level    = "dual_use",
-    #         item_types=["colab_endpoint"], # Optional: specify item types that gate access to this server's tools
-    #     ))
-
-    #     if False:
-    #         configs.append(MCPServerConfig( # Local, self defined server, useful example if you wanted to bypass the tooling framework and instead make a custom MCP server. Look at 'servers/test_server.py'
-    #         registry_key = "mcp_test",
-    #         transport    = "stdio",
-    #         command      = sys.executable,
-    #         args         = [os.path.join(os.path.dirname(__file__), "..", "..", "servers", "test_server.py")],
-    #         item_types   = ["test_server_endpoint"],
-    #         use_level    = "inventory_only",
-    #     ))
-
-
-    #     return configs
