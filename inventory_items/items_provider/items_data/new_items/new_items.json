@@ -739,5 +739,32 @@
         "ticks_lasting": 5,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Portable Tamagotchi",
+      "descriptions": [
+        "A small, handheld digital pet you carry with you.",
+        "Care for your Tamagotchi wherever you are—feed, clean, and play on the go.",
+        "Perfect for quick interactions during commutes or breaks."
+      ],
+      "static": false,
+      "type": [
+        "toggleable",
+        "tamagotchi_device"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": null,
+      "toggle_state": {
+        "toggle_state": "on",
+        "toggle_uses_left": null,
+        "on_description": "The Tamagotchi lights up and the pet looks up, ready for care.",
+        "off_description": "The Tamagotchi screen is dark; the pet rests until awakened.",
+        "on_sequence": "Power hums to life as the screen glows; your virtual pet chirps and wags its tiny tail.",
+        "off_sequence": "The screen fades to black; the little creature blinks and drifts into sleep.",
+        "perishable": false,
+        "ticks_lasting": 6,
+        "ticks_elapsed": 0
+      }
     }
 ]

@@ -157,69 +157,35 @@ class BaseChatbot(ABC):
 
 
     @classmethod
-    async def create(
-        cls,
-        config_manager,
-        signal_callback  = None,
-        bots_archive_dir : str = "data_archive",
-        deep_memory_override = None,
-        **kwargs,   # absorbs any subclass-specific keyword args
-    ) -> "BaseChatbot":
-        """
-        Async factory. This is the correct way to instantiate any BaseChatbot
-        subclass — use it everywhere instead of calling the class directly.
- 
-            chatbot = await AgentChatbot.create(
-                config_manager   = config_manager,
-                signal_callback  = signal_callback,
-                bots_archive_dir = bots_archive_dir,
-            )
- 
-        Flow:
-          1. cls(...)         — runs __init__ synchronously (memory, state,
-                                TTS, location — everything except FunctionBuilder)
-          2. FunctionBuilder.create() — async, connects MCP servers if configured
-          3. ai_bot wired     — receives the fully initialised functions_builder
-        """
-        # --- Step 1: synchronous base construction ---
+    def create(cls, config_manager, signal_callback=None,
+            bots_archive_dir="data_archive", **kwargs) -> "BaseChatbot":
         instance = cls(
-            config_manager   = config_manager,
-            signal_callback  = signal_callback,
-            bots_archive_dir = bots_archive_dir,
+            config_manager=config_manager,
+            signal_callback=signal_callback,
+            bots_archive_dir=bots_archive_dir,
             **kwargs,
         )
- 
-        # --- Step 2: async FunctionBuilder (MCP connections happen here) ---
-        instance.functions_builder = await FunctionBuilder.create(
-            state_manager  = instance.state_manager,
-            signal         = instance._signal_callback,
-            subdirectory   = instance._sub_directory,
-            memory_manager = instance.memory,
-            config_manager = config_manager,
-            open_meteo     = instance.open_meteo,
+        instance.functions_builder = FunctionBuilder.create(
+            state_manager=instance.state_manager,
+            signal=instance._signal_callback,
+            subdirectory=instance._sub_directory,
+            memory_manager=instance.memory,
+            config_manager=config_manager,
+            open_meteo=instance.open_meteo,
         )
- 
-        # --- Step 3: wire ai_bot (previously in __init__, moved here) ---
-        provider    = config_manager.get_config("AI", "general_ai_provider")
-        model_name  = config_manager.get_config("AI", "general_model")
- 
-        llm_client = AIConfiguration(
-            provider = provider,
-            model    = model_name,
-            mode     = "agent",
-        ).get_client()
- 
+        provider   = config_manager.get_config("AI", "general_ai_provider")
+        model_name = config_manager.get_config("AI", "general_model")
+        llm_client = AIConfiguration(provider=provider, model=model_name, mode="agent").get_client()
         instance.ai = ai_bot(
-            data_filepath     = instance._ai_data_filepath,
-            act_model         = model_name,
-            functions_builder = instance.functions_builder,
-            state_manager     = instance.state_manager,
-            signal            = instance._signal_callback,
-            memory_manager    = instance.memory,
-            llm_client        = llm_client,
+            data_filepath      = instance._ai_data_filepath,
+            act_model          = model_name,
+            functions_builder  = instance.functions_builder,
+            state_manager      = instance.state_manager,
+            signal             = instance._signal_callback,
+            memory_manager     = instance.memory,
+            llm_client         = llm_client,
         )
- 
-        print(f"[{cls.__name__}] Async create() complete.")
+        print(f"[{cls.__name__}] create() complete.")
         return instance
     # ------------------------------------------------------------------
     # TTS  (private helper, called once from __init__)
@@ -478,18 +444,30 @@ class BaseChatbot(ABC):
 
 
     def shutdown(self) -> None:
-        """Stop TTS, close MCP sessions, and persist inventory/state."""
-        import asyncio
+        from pygame_runtime.async_loop import mcp_loop
         print(f"[{type(self).__name__}] Shutting down…")
+        
         if self.tts_provider:
             self.tts_provider.stop()
-        if self.functions_builder and self.functions_builder.registry.mcp_registry:
-            # mcp_registry.close() is async; run it in a new event loop
-            # (we're in a sync context at shutdown time).
+        
+        if self.functions_builder and \
+        hasattr(self.functions_builder, 'registry') and \
+        self.functions_builder.registry.mcp_registry:
             try:
-                asyncio.run(self.functions_builder.registry.mcp_registry.close())
+                # Run close() and stop the loop atomically from within the loop.
+                # This ensures anyio cancel scopes fully unwind before the loop stops.
+                async def _close_then_stop():
+                    await self.functions_builder.registry.mcp_registry.close()
+                    mcp_loop._loop.stop()
+
+                mcp_loop.run(_close_then_stop())
+                mcp_loop._thread.join(timeout=10)
+                print(f"[{type(self).__name__}] MCP sessions closed.")
             except Exception as exc:
                 print(f"[{type(self).__name__}] MCP shutdown error: {exc}")
+        else:
+            mcp_loop.stop()
+        
         if self.state_manager:
             self.state_manager.save_state()
         print(f"[{type(self).__name__}] Shutdown complete.")

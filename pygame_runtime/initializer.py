@@ -139,37 +139,19 @@ def _apply_theme_and_settings(config_manager: ConfigManager) -> None:
         raise RuntimeError(f"FATAL: Configuration corruption detected. {e}") from e
 
  
-async def _build_chatbot(
-    game_mode: str,
-    bots_archive_dir: str,
-    config_manager: ConfigManager,
-    signal_callback,
-) -> tuple:
-    """
-    Dynamically import and instantiate the correct chatbot class via its
-    async create() factory. Raises on failure — same behaviour as before.
- 
-    The only change from the sync version: provider_cls.create() is awaited
-    instead of calling provider_cls(...) directly.
-    """
+
+def _build_chatbot(game_mode, bots_archive_dir, config_manager, signal_callback) -> tuple:
     providers_map = {
         "ai_player":   "ai_managers.agents.agent_api.AgentChatbot",
         "user_player": "ai_managers.agents.user_interface_api.UserController",
     }
- 
     if game_mode not in providers_map:
-        raise ValueError(
-            f"Invalid game_mode: {game_mode!r}. "
-            f"Valid options: {list(providers_map.keys())}"
-        )
- 
+        raise ValueError(f"Invalid game_mode: {game_mode!r}.")
     module_path, class_name = providers_map[game_mode].rsplit(".", 1)
     module       = importlib.import_module(module_path)
     provider_cls = getattr(module, class_name)
- 
     try:
-        # ← only line that changes: await .create() instead of calling directly
-        chatbot = await provider_cls.create(
+        chatbot = provider_cls.create(
             signal_callback  = signal_callback,
             config_manager   = config_manager,
             bots_archive_dir = bots_archive_dir,
@@ -179,7 +161,6 @@ async def _build_chatbot(
     except Exception as exc:
         print(f"[FATAL] Chatbot init failed: {type(exc).__name__}: {exc}")
         raise RuntimeError(f"Failed to initialize chatbot for {game_mode}") from exc
- 
 
 
 def _load_initial_game_state(chatbot: BaseChatbot) -> None:
@@ -262,55 +243,35 @@ def _calculate_sized_by_steps(
 # ---------------------------------------------------------------------------
 
 
-async def initialize(game_mode: str, signal_callback) -> GameContext:
-    """
-    Run all startup steps in order and return a populated GameContext.
- 
-    Now async so _build_chatbot (which awaits MCP connections) can run
-    inside it. Called from game.py via asyncio.run(initialize(...)).
- 
-    Everything except the _build_chatbot call is identical to before.
-    """
+def initialize(game_mode: str, signal_callback) -> GameContext:
+    # No longer async — MCP connections happen on mcp_loop synchronously
     InitialStateConst()
- 
     bots_archive_dir = f"data_archive/{game_mode}/"
- 
-    screen, font   = _init_pygame()
-    config_manager = _load_config(bots_archive_dir, screen, font)
- 
+    screen, font     = _init_pygame()
+    config_manager   = _load_config(bots_archive_dir, screen, font)
     _apply_theme_and_settings(config_manager)
- 
-    idle_time_mins = (
+    idle_time_mins   = (
         config_manager.get_config("game_settings", "idle_time_minutes")
         or config.IDLE_TIMEOUT_MINUTES
     )
-    print(f"[init] Idle timeout: {idle_time_mins} min.")
- 
-    # ← await added; everything else identical
-    chatbot, chatbot_available = await _build_chatbot(
+    chatbot, chatbot_available = _build_chatbot(
         game_mode, bots_archive_dir, config_manager, signal_callback
     )
- 
     _load_initial_game_state(chatbot)
- 
-    tick_registry = _build_tick_registry(chatbot)
- 
-    state.current_emote = chatbot.state_manager.get_emotes_data().current_emote
- 
+    tick_registry        = _build_tick_registry(chatbot)
+    state.current_emote  = chatbot.state_manager.get_emotes_data().current_emote
     _splash(screen)
- 
     state.last_activity_time = pygame.time.get_ticks()
- 
     return GameContext(
-        screen             = screen,
-        font               = font,
-        clock              = pygame.time.Clock(),
-        config_manager     = config_manager,
-        chatbot            = chatbot,
-        chatbot_available  = chatbot_available,
-        music_player_ref   = [_init_jukebox_silent(chatbot)],
-        bots_archive_dir   = bots_archive_dir,
-        idle_time_mins     = idle_time_mins,
-        game_mode          = game_mode,
-        tick_registry      = tick_registry,
+        screen            = screen,
+        font              = font,
+        clock             = pygame.time.Clock(),
+        config_manager    = config_manager,
+        chatbot           = chatbot,
+        chatbot_available = chatbot_available,
+        music_player_ref  = [_init_jukebox_silent(chatbot)],
+        bots_archive_dir  = bots_archive_dir,
+        idle_time_mins    = idle_time_mins,
+        game_mode         = game_mode,
+        tick_registry     = tick_registry,
     )

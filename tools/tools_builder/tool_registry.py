@@ -138,10 +138,6 @@ class ToolRegistry:
 
 
 
-        self.mcp_myinstants_enabled = config_manager.get_config("Tools", "enable_mcp_myinstants")
-        # self.mcp_colab_enabled      = config_manager.get_config("Tools", "enable_mcp_colab")
-        self.mcp_test_enabled       = config_manager.get_config("Tools", "enable_mcp_test")
-
         # =================================================================
         # Phase 1 — services with no availability dependency
         # =================================================================
@@ -207,93 +203,42 @@ class ToolRegistry:
 
 
     @classmethod
-    async def create(
-        cls,
-        state_manager,
-        signal,
-        subdirectory,
-        memory_manager,
-        config_manager,
-        open_meteo,
-        get_context_fn,
-    ) -> "ToolRegistry":
-        """
-        Async factory. Use instead of ToolRegistry(...) directly.
-    
-        Runs the full synchronous __init__ first (all existing service and
-        tool_definitions setup unchanged), then connects MCP servers and
-        merges their affordance entries into tool_definitions.
-        """
+    def create(cls, state_manager, signal, subdirectory, memory_manager,
+            config_manager, open_meteo, get_context_fn) -> "ToolRegistry":
         instance = cls(
-            state_manager  = state_manager,
-            signal         = signal,
-            subdirectory   = subdirectory,
-            memory_manager = memory_manager,
-            config_manager = config_manager,
-            open_meteo     = open_meteo,
-            get_context_fn = get_context_fn,
+            state_manager=state_manager, signal=signal,
+            subdirectory=subdirectory, memory_manager=memory_manager,
+            config_manager=config_manager, open_meteo=open_meteo,
+            get_context_fn=get_context_fn,
         )
-        await instance._connect_mcp()
+        instance._connect_mcp()
         return instance
 
     # ------------------------------------------------------------------
     # _connect_mcp  — two-phase loader
     # ------------------------------------------------------------------
         
-    async def _connect_mcp(self) -> None:
-        print(f"[MCP DEBUG] _connect_mcp called, registry has: {list(vars(self.mcp_registry.__class__).keys()) if hasattr(self, 'mcp_registry') and self.mcp_registry else 'no registry yet'}")
-        print(f"[MCP DEBUG] MCPRegistry methods: {[m for m in dir(MCPRegistry) if not m.startswith('_')]}")
-    
-        # --- Load JSON config (may return empty lists if file absent) ---
-        json_server_cfgs, json_affordance_cfgs = load_json_configs()
-    
-        # --- Python-declared configs ---
-        py_server_cfgs    = self._get_mcp_server_configs()
-        py_affordance_cfgs = self._get_mcp_affordance_configs()
-    
-        # Merge: Python server keys take precedence over JSON if they clash.
-        # Build a deduplicated list: JSON first, Python overwrites duplicates.
-        server_map: dict[str, MCPServerConfig] = {
-            cfg.server_key: cfg for cfg in json_server_cfgs
-        }
-        for cfg in py_server_cfgs:
-            if cfg.server_key in server_map:
-                print(f"[MCP] Python config overrides JSON for server '{cfg.server_key}'.")
-            server_map[cfg.server_key] = cfg
-    
-        all_server_cfgs = list(server_map.values())
-    
-        # Affordances: same merge — Python registry_key wins over JSON.
-        affordance_map: dict[str, MCPAffordanceConfig] = {
-            aff.registry_key: aff for aff in json_affordance_cfgs
-        }
-        for aff in py_affordance_cfgs:
-            if aff.registry_key in affordance_map:
-                print(f"[MCP] Python affordance overrides JSON for '{aff.registry_key}'.")
-            affordance_map[aff.registry_key] = aff
-    
-        all_affordance_cfgs = list(affordance_map.values())
-    
-        if not all_server_cfgs:
+    def _connect_mcp(self) -> None:
+        from pygame_runtime.async_loop import mcp_loop
+
+        server_cfgs, affordance_cfgs = load_json_configs()
+
+        if not server_cfgs:
             self.mcp_registry = None
             return
-    
+
         self.mcp_registry = MCPRegistry()
-    
-        # --- Phase A: connect servers ---
-        for server_cfg in all_server_cfgs:
+
+        for server_cfg in server_cfgs:
             try:
-                await self.mcp_registry.connect_server(server_cfg)
+                mcp_loop.run_sync(self.mcp_registry.connect_server(server_cfg), timeout=30)
             except Exception as exc:
                 print(f"[MCP] WARNING: Could not connect to '{server_cfg.server_key}': {exc}")
-    
-        # --- Phase B: build affordance entries ---
-        for affordance in all_affordance_cfgs:
+
+        for affordance in affordance_cfgs:
             if not self.mcp_registry.is_connected(affordance.server_key):
-                print(
-                    f"[MCP] Skipping affordance '{affordance.registry_key}' — "
-                    f"server '{affordance.server_key}' not connected."
-                )
+                print(f"[MCP] Skipping affordance '{affordance.registry_key}' — "
+                    f"server '{affordance.server_key}' not connected.")
                 continue
             try:
                 entry = self.mcp_registry.build_affordance_entry(affordance)
@@ -301,8 +246,6 @@ class ToolRegistry:
                 print(f"[MCP] Affordance '{affordance.registry_key}' registered.")
             except Exception as exc:
                 print(f"[MCP] WARNING: Failed to build affordance '{affordance.registry_key}': {exc}")
-    
-    
     # ------------------------------------------------------------------
     # Phase 1 helpers
     # ------------------------------------------------------------------
@@ -935,7 +878,7 @@ class ToolRegistry:
                 registry_key = "mcp_test_ping",
                 server_key   = "mcp_test",
                 use_level    = "dual_use",
-                item_types   = ["pong_machine"],
+                item_types   = ["_test_point_ping"],
                 include_tools= ["ping"]
             ))
 
@@ -943,18 +886,18 @@ class ToolRegistry:
                 registry_key = "mcp_test_add",
                 server_key   = "mcp_test",
                 use_level    = "inventory_only",
-                item_types   = ["tiny_calculator"],
+                item_types   = ["_test_point_add"],
                 include_tools= ["add_numbers"]
             ))
 
             configs.append(MCPAffordanceConfig(
-                registry_key = "mcp_test_code_reviewer",
+                registry_key = "mcp_test_awareness",
                 server_key   = "mcp_test",
                 use_level    = "inventory_only",
-                item_types   = ["code_reviewer_notebook"],
+                item_types   = ["_test_point_awareness"],
                 exclude_tools= ["add_numbers", "ping"], # Ignore the basic tools
                 # No tools included — the prompt is exposed as agent_information instead, to be used as a system prompt for the agent when using the item
-                prompt_tools= ["code_reviewer"], # This will inject the prompt template as a tool, as it has arguments.
+                prompt_tools= ["say_hello"], # This will inject the prompt template as a tool, as it has arguments.
                 inject_prompts= ["daily_reminder"] # This will inject the prompt template as agent context, as it has no arguments and is meant to be used as a system prompt.
             ))
 

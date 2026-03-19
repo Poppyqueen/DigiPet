@@ -4,7 +4,6 @@ tick_registry.py
 A modular, per-service tick scheduler.
 """
 
-import asyncio
 import threading
 from dataclasses import dataclass, field
 from typing import Callable
@@ -81,22 +80,18 @@ class TickRegistry:
         threading.Thread(target=_worker, daemon=True, name=f"tick-{entry.name}").start()
 
     def _post_lore_update(self) -> None:
-        """
-        Fetch fresh tool info and post UPDATE_LORE_DISPLAY_EVENT.
+        from pygame_runtime.async_loop import mcp_loop
 
-        IMPORTANT: asyncio.run() must never be called on the main pygame thread
-        because it blocks until the coroutine completes — including any MCP
-        subprocess round-trips (GetPromptRequest etc.) that can take 100ms+.
+        if getattr(self, '_lore_update_in_flight', False):
+            return
+        self._lore_update_in_flight = True
 
-        This mirrors the pattern used in signal_handler._trigger_lore_panel_update
-        and workers._lore_refresh_worker: hand the async work to a daemon thread
-        so the game loop keeps ticking at 60fps.
-        """
         def _worker():
             try:
-                room_info = asyncio.run(
+                future = mcp_loop.run(
                     self._chatbot.functions_builder.get_current_tools_info()
                 )
+                room_info = future.result(timeout=30)
                 if not isinstance(room_info, dict):
                     room_info = {}
                 pygame.event.post(
@@ -104,5 +99,7 @@ class TickRegistry:
                 )
             except Exception as exc:
                 print(f"[TickRegistry] lore post error: {type(exc).__name__}: {exc}")
+            finally:
+                self._lore_update_in_flight = False
 
         threading.Thread(target=_worker, daemon=True, name="tick-lore-update").start()

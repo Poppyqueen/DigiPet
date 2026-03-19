@@ -74,57 +74,24 @@ class FunctionBuilder:
 
 
     @classmethod
-    async def create(
-        cls,
-        state_manager,
-        signal       = None,
-        subdirectory = None,
-        memory_manager  = None,
-        config_manager  = None,
-        open_meteo      = None,
-    ) -> "FunctionBuilder":
-        """
-        Async factory method. Replaces direct FunctionBuilder(...) calls
-        when MCP support is needed.
- 
-        Builds the instance synchronously via __init__ (unchanged), then
-        upgrades the registry to the async-initialised ToolRegistry so
-        MCP tool entries are present before any tool map is built.
- 
-        The examine_item self-reference is re-wired after the upgrade
-        because ToolRegistry.create() constructs a fresh tool_definitions
-        dict that doesn't yet have it.
-        """
-        # Step 1 — normal sync init (builds registry via ToolRegistry.__init__)
+    def create(cls, state_manager, signal=None, subdirectory=None,
+            memory_manager=None, config_manager=None, open_meteo=None) -> "FunctionBuilder":
         instance = cls(
-            state_manager  = state_manager,
-            signal         = signal,
-            subdirectory   = subdirectory,
-            memory_manager = memory_manager,
-            config_manager = config_manager,
-            open_meteo     = open_meteo,
+            state_manager=state_manager, signal=signal,
+            subdirectory=subdirectory, memory_manager=memory_manager,
+            config_manager=config_manager, open_meteo=open_meteo,
         )
- 
-        # Step 2 — upgrade to async-initialised ToolRegistry (runs _connect_mcp)
-        instance.registry = await ToolRegistry.create(
-            state_manager  = state_manager,
-            signal         = signal,
-            subdirectory   = subdirectory,
-            memory_manager = memory_manager,
-            config_manager = config_manager,
-            open_meteo     = open_meteo,
-            get_context_fn = instance._get_current_context,
+        # ToolRegistry.create() is now sync — no await needed
+        instance.registry = ToolRegistry.create(
+            state_manager=state_manager, signal=signal,
+            subdirectory=subdirectory, memory_manager=memory_manager,
+            config_manager=config_manager, open_meteo=open_meteo,
+            get_context_fn=instance._get_current_context,
         )
- 
-        # Step 3 — re-point tool_definitions at the upgraded registry's dict
         instance.tool_definitions = instance.registry.tool_definitions
- 
-        # Step 4 — re-wire the self-referential examine_item function
-        # (this was set in __init__ against the old registry; do it again)
         instance.tool_definitions["base_functions"]["functions"]["examine_item"] = (
             instance.get_item_details_with_tools
         )
- 
         return instance
     # -----------------------------------------------------------------------
     # Context helpers
@@ -190,6 +157,8 @@ class FunctionBuilder:
 
     async def call_function(self, name, args):
         """Dispatch a named tool call with the given args."""
+        from pygame_runtime.async_loop import mcp_loop
+
         self.construct_map()
         func = self.function_map.get(name)
 
@@ -197,12 +166,22 @@ class FunctionBuilder:
             try:
                 print(f"Calling {name} with args: {args}")
                 if not isinstance(args, dict):
-                    print(f"Warning: args for {name} were not a dict.")
-                    result = await func(args) if inspect.iscoroutinefunction(func) else func(args) if args else (await func() if inspect.iscoroutinefunction(func) else func())
+                    args = {}
+
+                # MCP callers must run on the persistent mcp_loop —
+                # they use sessions that live on that loop's event loop.
+                # Awaiting them here (on the chatbot thread's loop) would
+                # mean the session never gets scheduled and hangs forever.
+                if getattr(func, "_is_mcp_caller", False):
+                    result = mcp_loop.run_sync(func(**args), timeout=30)
+                elif inspect.iscoroutinefunction(func):
+                    result = await func(**args)
                 else:
-                    result = await func(**args) if inspect.iscoroutinefunction(func) else func(**args)
+                    result = func(**args)
+
                 print(f"{name} returned: {result}")
                 return result
+
             except TypeError as e:
                 print(f"Argument mismatch calling {name}: {e}")
                 return f"Error: Invalid arguments for '{name}'. Details: {e}"
@@ -266,21 +245,16 @@ class FunctionBuilder:
 
         return {"title": room_name, "body": body_content}
 
-
     async def get_current_tools_info_streaming(self, post_event_fn):
-        """
-        Calls post_event_fn immediately with room info,
-        then appends each tool's display_information as it arrives.
-        """
         try:
             current_room_data = self.state_manager.get_current_room_data()
         except ValueError:
             post_event_fn({"title": "Unknown Room", "body": "Could not retrieve room information."})
             return
 
-        room_name = current_room_data.name
+        room_name        = current_room_data.name
         room_description = current_room_data.description
-        body_parts = [room_description] if room_description else []
+        body_parts       = [room_description] if room_description else []
 
         post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
 
@@ -291,6 +265,12 @@ class FunctionBuilder:
             info_fn = tool_config.get("display_information")
             if not info_fn or not checker.is_tool_available(tool_config):
                 continue
+
+            # MCP agent_info_fn closures use persistent sessions on mcp_loop.
+            # The streaming path runs on its own asyncio.run() — never touch mcp_loop here.
+            if getattr(info_fn, "_is_mcp_caller", False):
+                continue
+
             try:
                 info = await info_fn() if inspect.iscoroutinefunction(info_fn) else info_fn()
                 if info:
@@ -299,9 +279,8 @@ class FunctionBuilder:
             except Exception as e:
                 display_name = tool_key.replace("_", " ").title()
                 body_parts.append(f"\n--- {display_name} Details ---\n(Error: {e})")
-            
+
             post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
-        
     async def construct_context(self) -> str:
         """Build the full context string injected into the LLM system prompt."""
         try:

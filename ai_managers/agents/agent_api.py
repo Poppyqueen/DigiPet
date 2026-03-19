@@ -42,18 +42,13 @@ class AgentChatbot(BaseChatbot):
 
 
     @classmethod
-    async def create(cls, config_manager, signal_callback=None, bots_archive_dir="data_archive") -> "AgentChatbot":
-        """
-        Async factory for AgentChatbot. Always use this instead of
-        AgentChatbot(...) directly.
-        """
-        instance = await super().create(
-            config_manager   = config_manager,
-            signal_callback  = signal_callback,
-            bots_archive_dir = bots_archive_dir,
+    def create(cls, config_manager, signal_callback=None,
+            bots_archive_dir="data_archive") -> "AgentChatbot":
+        instance = super().create(
+            config_manager=config_manager,
+            signal_callback=signal_callback,
+            bots_archive_dir=bots_archive_dir,
         )
-        # Cache sys_prompt (was set in __init__ but __init__ still runs, so this
-        # is already set — just keeping it explicit for clarity).
         instance._sys_prompt = config_manager.get_config("AI", "sys_prompt")
         return instance
  

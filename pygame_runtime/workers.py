@@ -109,8 +109,14 @@ def start_chatbot_request(
 # ---------------------------------------------------------------------------
 # Lore panel refresh worker
 # ---------------------------------------------------------------------------
+_lore_worker_in_flight = False
 
 def _lore_refresh_worker(chatbot_instance) -> None:
+    global _lore_worker_in_flight
+    if _lore_worker_in_flight:
+        return
+    _lore_worker_in_flight = True
+
     def _post(room_data):
         pygame.event.post(
             pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data)
@@ -121,7 +127,8 @@ def _lore_refresh_worker(chatbot_instance) -> None:
         )
     except Exception as exc:
         print(f"[_lore_refresh_worker] Error: {type(exc).__name__}: {exc}")
-
+    finally:
+        _lore_worker_in_flight = False
 
 def start_lore_panel_refresh(*, chatbot) -> None:
     """

@@ -1,6 +1,6 @@
 {
     "_comment": [
-        " Make or rename this file for 'mcp_config.json' .",
+        " Make or rename this file for 'mcp_config.json'.",
         "",
         "FORMAT",
         "-------",
@@ -35,10 +35,12 @@
     ],
 
     "mcpServers": {
-
         "google_colab": {
             "_comment": ["Simple example, uses a new 'mcp_colab' server by Google. Just the command needed, will resolve to .venv bin path.",
-                        "see https://github.com/googlecolab/colab-mcp for details."],
+                        "see https://github.com/googlecolab/colab-mcp for details.",
+                        
+                        "Install in project root: pip install git+https://github.com/googlecolab/colab-mcp",
+                        "command gets resolved to the executable in your Python environment."],
 
             "command": "mcp_colab",
             "affordance": {
@@ -48,23 +50,88 @@
             }
         },
 
-
         "github_readonly_mcp": {
-            "_comment": "Using docker to run a GitHub MCP server image. Requires Docker installed and configured.",
+            "_comment": ["Using docker to run a GitHub MCP server image. Requires Docker installed and configured.",
+                        "see https://github.com/github/github-mcp-server for details.",
+
+                        "Required to set GitHub token in .env file, 'GITHUB_PERSONAL_ACCESS_TOKEN', scope its permissions, preferably create it to read-only access, here a server is initialized with Read-Only functions.",
+                        "We take no responsibility for how you set up your token or Github permissions, be careful!",
+                        "Just make sure you set your token, Docker is running, and the server will get ready on first load."],
+
             "command": "docker",
             "args": [
-                "run", "-i", "--rm",
-                "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+                "run", 
+                "-i", 
+                "--rm",
+                "--env-file", ".env",
                 "-e", "GITHUB_READ_ONLY",
                 "ghcr.io/github/github-mcp-server"
             ],
             "env": {
-                "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>",
                 "GITHUB_READ_ONLY": "1"
             },
             "affordance": {
-                "use_level":  "dual_use",
-                "item_types": ["github_mcp_endpoint"]
+                "use_level": "dual_use",
+                "item_types": ["github_mcp_endpoint"],
+                "exclude_tools": ["list_commits"]
+            }
+        },
+
+        "tamagotchi_mcp": {
+            "_comment": "Example of an MCP server running as a local web service. Just needs the URL and an item type to gate access. (or 'always_available' if you want it open all the time, not recommended for most integrations!. Maybe if you want to run... a memory MCP use case?)",
+
+            "url": "http://localhost:8000/mcp",
+            "affordance": {
+                "use_level": "inventory_only",
+                "item_types": ["tamagotchi_device"]
+            }
+        },
+
+        "myinstants": {
+            "_comment": ["Requires Node.js + npx installed. Package auto-installs on first run via -y flag. See MCP_SERVERS.md.",
+                        "see https://github.com/austenstone/myinstants-mcp for details."],
+
+            "command": "npx",
+            "args": ["-y", "myinstants-mcp@latest"],
+            "env": {
+                "MYINSTANTS_VOLUME": "0.8"
+            },
+            "affordance": {
+                "use_level": "inventory_only",
+                "item_types": ["sound_effects_apparatus"]
+            }
+        },
+
+        "mcp_test_ping": {
+            "_comment": "Local test server — runs servers/test_server.py with your venv Python.",
+            "command": "python",
+            "args": ["servers/test_server.py"],
+            "affordance": {
+                "use_level": "dual_use",
+                "item_types": ["_test_point_ping"],
+                "include_tools": ["ping"]
+            }
+        },
+
+        "mcp_test_add": {
+            "command": "python",
+            "args": ["servers/test_server.py"],
+            "affordance": {
+                "use_level": "inventory_only",
+                "item_types": ["_test_point_add"],
+                "include_tools": ["add_numbers"]
+            }
+        },
+
+        "mcp_test_awareness": {
+            "command": "python",
+            "args": ["servers/test_server.py"],
+            "affordance": {
+                "use_level": "inventory_only",
+                "item_types": ["_test_point_awareness"],
+                "exclude_tools": ["add_numbers", "ping"],
+                "prompt_tools": ["say_hello"],
+                "inject_prompts": ["daily_reminder"]
             }
         }
     }

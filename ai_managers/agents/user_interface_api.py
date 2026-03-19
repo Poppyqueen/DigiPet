@@ -57,12 +57,12 @@ class UserController(BaseChatbot):
 
 
     @classmethod
-    async def create(cls, config_manager, signal_callback=None, bots_archive_dir="data_archive") -> "UserController":
-        return await super().create(
-            config_manager   = config_manager,
-            signal_callback  = signal_callback,
-            bots_archive_dir = bots_archive_dir,
-            # deep_memory_override goes away entirely — __init__ handles it
+    def create(cls, config_manager, signal_callback=None,
+            bots_archive_dir="data_archive") -> "UserController":
+        return super().create(
+            config_manager=config_manager,
+            signal_callback=signal_callback,
+            bots_archive_dir=bots_archive_dir,
         )
     # ------------------------------------------------------------------
     # Developer message  — base prompt + live available_rooms injection

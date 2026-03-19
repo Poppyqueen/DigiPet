@@ -24,9 +24,42 @@ from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions
 from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 from tools.tools_folder.tools_data.harvesting_data import plant_types
 
+import os
+import json
+
+## Registry helpers
+
+# 1. Load the MCP Config from root
+
+# this is a mess 
+# the issue is that these are shared for agents, so if you change your config, a previously configured world without the item types will delete items with those types from the state, because they won't validate anymore. The idea would be for each agent to own its own config, maybe cloned from the existing file in root, however, that would mess up all the initialization of this, requiring passing configs to know what agent we are loading, and this validation service is initiazed and imported across the codebase liberally.
+def get_mcp_item_types() -> List[str]:
+    """Helper to grab item_types from the mcp_config.json in root."""
+    try:
+        # Assuming this script is in a subdirectory, we look for root
+        # Adjust the path logic if your folder structure differs
+        config_path = os.path.join(os.getcwd(), 'mcp_config.json')
+        
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+                mcp_servers = config.get("mcpServers", {})
+                
+                # Extract all 'item_types' from the affordance blocks
+                found_types = []
+                for server in mcp_servers.values():
+                    affordance = server.get("affordance", {})
+                    types = affordance.get("item_types", [])
+                    found_types.extend(types)
+                return list(set(found_types)) # Return unique types
+    except Exception as e:
+        print(f"Warning: Could not load mcp_config.json: {e}")
+    return []
+
 # =============================================================================
 # CONSTANTS
 # =============================================================================
+ignore_fingerprint_keys = ["id", "quantity", "static"]
 
 
 toggable_items = ["tv", "maze"] # This variable is a concept bag, does not affect the code, will be removed later
@@ -47,13 +80,18 @@ refactored_types = [
                     "youtube_playlists_endpoint", "discogs_endpoint",
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
-                    "colab_endpoint", # First of its kind, spins up a MCP server that provides access to Colab notebooks as tools.
-                    "sound_effects_apparatus", # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'
+                    #"sound_effects_apparatus", # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'. Node.js + npx
 
-                    "code_reviewer_notebook", # A test type, probably will be removed, uses the test MCP server included in the codebase.
-                    "tiny_calculator", # test
-                    "pong_machine",# test
-                    "github_mcp_endpoint"
+                    # "_test_point_ping", "_test_point_add", "_test_point_awareness" # These are test types to exemplify the use of the MCP injected types in tool_registry.
+
+                # These are now loaded dynamically from local .gitignored mcp_config.json. Allows for quick registration of new item types, but items with mixins are first-class citizens. Jacks are quick and easy but they don't have the benefits of mixins with defined fields and descriptions.
+                    # "code_reviewer_notebook", # A test type, probably will be removed, uses the test MCP server included in the codebase.
+                    # "tiny_calculator", # test
+                    # "pong_machine",# test
+                    # "github_mcp_endpoint",
+                    # "tamagotchi_device"
+
+
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -66,7 +104,11 @@ lighthouse_items = [
 ]
 item_types.extend(lighthouse_items)
 
-ignore_fingerprint_keys = ["id", "quantity", "static"]
+# 2. Inject the types from the MCP configs dynamically into the item_types list. This allows the validation system to recognize the types defined automatically. A sort of 'jack' for dynamic type injection. This works because no affodances from the MCP require items with specific fields, so we can just inject the types without needing to define any ContractMixins for them. If you want to allow the AI crafter to understand your items, then define a contract with model_description.
+mcp_injected_types = get_mcp_item_types()
+for t in mcp_injected_types:
+    if t not in item_types:
+        item_types.append(t)
 # =============================================================================
 # ITEM TYPES REGISTRY
 # =============================================================================
@@ -471,8 +513,8 @@ class SearxngEndpointFields(ContractMixin):
 class ColabEndpointFields(ContractMixin):
     model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Colab notebook, with the ability to execute code cells, retrieve outputs, and manage the notebook's content. It is meant to be used as a powerful tool for running custom code, data analysis, or any other task that can be accomplished within a Colab environment."
 
-class SoundboardFields(ContractMixin):
-    model_description: ClassVar[str] = f"{base_endpoints_description} These must always be portable devices, any device will do, however it needs to be a handheld, wearable, portable or any carryable device. It allows for borwsing and on-demand playback of a vast library of sounds."
+# class SoundboardFields(ContractMixin):
+#     model_description: ClassVar[str] = f"{base_endpoints_description} These must always be portable devices, any device will do, however it needs to be a handheld, wearable, portable or any carryable device. It allows for borwsing and on-demand playback of a vast library of sounds."
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -513,7 +555,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "wikipedia_endpoint": WikipediaEndpointFields,
     "searxng_endpoint": SearxngEndpointFields,
     "colab_endpoint": ColabEndpointFields,
-    "sound_effects_apparatus": SoundboardFields, # For future reference, this is a type of endpoint that provides access to a soundboard tool, it can be used for ambience, music, ASMR, or any other use case involving audio playback.
+    #"sound_effects_apparatus": SoundboardFields, # For future reference, this is a type of endpoint that provides access to a soundboard tool, it can be used for ambience, music, ASMR, or any other use case involving audio playback.
 
 }
 

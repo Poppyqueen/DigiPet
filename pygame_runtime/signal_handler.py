@@ -25,6 +25,7 @@ show_message_popup  → show a timed text popup
 play_sound          → play a one-shot sound effect
 """
 
+import asyncio
 import threading
 
 import pygame
@@ -32,24 +33,35 @@ import pygame
 from pygame_int import config, state
 from pygame_int.main_digipet import animation, gui
 
-import asyncio
-
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+_lore_update_in_flight = False
+
 def _trigger_lore_panel_update(chatbot) -> None:
-    """Stream fresh tool info and post UPDATE_LORE_DISPLAY_EVENT."""
+    global _lore_update_in_flight
+    if _lore_update_in_flight:
+        return
+    _lore_update_in_flight = True
+
     def _post(room_data):
         pygame.event.post(
             pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data)
         )
 
     def _stream():
-        asyncio.run(chatbot.functions_builder.get_current_tools_info_streaming(_post))
+        global _lore_update_in_flight
+        try:
+            asyncio.run(
+                chatbot.functions_builder.get_current_tools_info_streaming(_post)
+            )
+        except Exception as exc:
+            print(f"[signal] lore update error: {type(exc).__name__}: {exc}")
+        finally:
+            _lore_update_in_flight = False
 
-    thread = threading.Thread(target=_stream, daemon=True)
-    thread.start()
+    threading.Thread(target=_stream, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
