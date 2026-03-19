@@ -222,7 +222,7 @@ class FunctionBuilder:
     # Context / display information
     # -----------------------------------------------------------------------
 
-    def get_current_tools_info(self, flag="display") -> dict:
+    async def get_current_tools_info(self, flag="display") -> dict:
         """
         Collect display_information or agent_information from all currently
         active tool entries.
@@ -252,7 +252,7 @@ class FunctionBuilder:
             if not checker.is_tool_available(tool_config):
                 continue
             try:
-                info = info_fn()
+                info = await info_fn() if inspect.iscoroutinefunction(info_fn) else info_fn()
                 if info:
                     display_name = tool_key.replace("_", " ").title()
                     body_parts.append(f"\n--- {display_name} Details ---\n{info}")
@@ -267,7 +267,7 @@ class FunctionBuilder:
         return {"title": room_name, "body": body_content}
 
 
-    def get_current_tools_info_streaming(self, post_event_fn):
+    async def get_current_tools_info_streaming(self, post_event_fn):
         """
         Calls post_event_fn immediately with room info,
         then appends each tool's display_information as it arrives.
@@ -292,7 +292,7 @@ class FunctionBuilder:
             if not info_fn or not checker.is_tool_available(tool_config):
                 continue
             try:
-                info = info_fn()
+                info = await info_fn() if inspect.iscoroutinefunction(info_fn) else info_fn()
                 if info:
                     display_name = tool_key.replace("_", " ").title()
                     body_parts.append(f"\n--- {display_name} Details ---\n{info}")
@@ -302,7 +302,7 @@ class FunctionBuilder:
             
             post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
         
-    def construct_context(self) -> str:
+    async def construct_context(self) -> str:
         """Build the full context string injected into the LLM system prompt."""
         try:
             current_room_data = self.state_manager.get_current_room_data()
@@ -322,6 +322,7 @@ class FunctionBuilder:
 
         possible_emotes = '\n'.join(self.state_manager.get_emotes_data().possible_emotes)
 
+        current_tools_info = (await self.get_current_tools_info("agent"))["body"]
         
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
@@ -345,7 +346,7 @@ class FunctionBuilder:
             self.state_manager.get_stats().message,
             "\n#############\n",
             "Current perception information:",
-            self.get_current_tools_info("agent")["body"],
+            current_tools_info if current_tools_info else "The world is quiet.",
         ]
 
 

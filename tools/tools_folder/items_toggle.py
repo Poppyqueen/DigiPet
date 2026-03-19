@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from inventory_items.inventory_manager import InventoryHouseManager, InventoryStateResult
+    from inventory_items.inventory_manager import InventoryHouseManager, InventoryStateResult, InventoryItemEntry
 
 class ItemToggleTool:
     def __init__(self, state_manager, signal):

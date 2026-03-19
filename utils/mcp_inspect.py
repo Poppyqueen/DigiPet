@@ -2,32 +2,35 @@
 # mcp_inspect.py
 # ─────────────────────────────────────────────────────────────────────────────
 # Diagnostic tool for exploring any MCP server before wiring it into the
-# framework.  Connects, discovers everything the server exposes, and prints
-# a full report plus a ready-to-paste MCPServerConfig / MCPAffordanceConfig
-# skeleton.
+# framework. Accepts the same JSON format as mcp_config.json so you can
+# copy-paste directly from your config.
 #
 # Usage
 # ─────
-#   # stdio server (installed package / script)
-#   python mcp_inspect.py --transport stdio --command colab-mcp
-#   python mcp_inspect.py --transport stdio --command python --args servers/my_server.py
+#   # Pass a server entry as inline JSON
+#   python mcp_inspect.py '{"command": "colab-mcp"}'
+#   python mcp_inspect.py '{"command": "npx", "args": ["-y", "myinstants-mcp@latest"]}'
 #
-#   # http server (already running, e.g. Docker)
-#   python mcp_inspect.py --transport http --url http://localhost:8080/mcp
+#   # Pass a JSON file (any single server entry, or a full mcpServers block)
+#   python mcp_inspect.py server.json
+#   python mcp_inspect.py mcp_config.json --server github_readonly_mcp
 #
-# Optional flags
-#   --server-key  NAME    override the server_key used in the generated skeleton
-#   --json                dump raw discovery data as JSON instead of pretty report
+#   # HTTP server
+#   python mcp_inspect.py '{"url": "http://localhost:8080/mcp"}'
+#
+#   # Dump raw JSON instead of pretty report
+#   python mcp_inspect.py '{"command": "colab-mcp"}' --json
+#
+#   # Override server key used in generated skeleton
+#   python mcp_inspect.py '{"command": "colab-mcp"}' --server-key colab
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Example to inspect the myinstants MCP server, auto installing if not available.
-# Make sure you have Node.js/npx to run this server.
-# python -m utils.mcp_inspect --transport stdio --command npx --args="-y" --args="myinstants-mcp@latest" 
 from __future__ import annotations
 
 import argparse
 import asyncio
 import json
+import os
 import sys
 import textwrap
 from typing import Any
@@ -44,11 +47,7 @@ def _section(title: str):
     print(f"  {title}")
     _hr()
 
-def _indent(text: str, prefix: str = "    ") -> str:
-    return textwrap.indent(str(text), prefix)
-
 def _schema_summary(schema: dict | None) -> str:
-    """One-line summary of a JSON Schema input_schema."""
     if not schema:
         return "(no parameters)"
     props = schema.get("properties", {})
@@ -57,10 +56,82 @@ def _schema_summary(schema: dict | None) -> str:
         return "(no parameters)"
     parts = []
     for name, info in props.items():
-        typ   = info.get("type", "any")
-        req   = "" if name in required else "?"
+        typ = info.get("type", "any")
+        req = "" if name in required else "?"
         parts.append(f"{name}{req}: {typ}")
     return ", ".join(parts)
+
+
+# ── config loading ────────────────────────────────────────────────────────────
+
+def load_server_config(source: str, server_name: str | None) -> tuple[dict, str]:
+    """
+    Parse the source string as either:
+      - A JSON file path (with optional --server to pick one entry)
+      - An inline JSON string
+
+    Returns (server_entry_dict, derived_server_key).
+    """
+    # Try as file path first
+    if os.path.exists(source):
+        with open(source) as f:
+            data = json.load(f)
+
+        # If it's a full mcp_config.json with mcpServers block
+        if "mcpServers" in data:
+            servers = data["mcpServers"]
+            if server_name:
+                if server_name not in servers:
+                    print(f"✗ Server '{server_name}' not found in mcpServers block.", file=sys.stderr)
+                    print(f"  Available: {', '.join(servers.keys())}", file=sys.stderr)
+                    sys.exit(1)
+                entry = servers[server_name]
+                return entry, server_name
+            elif len(servers) == 1:
+                name, entry = next(iter(servers.items()))
+                return entry, name
+            else:
+                print("File contains multiple servers. Specify one with --server:", file=sys.stderr)
+                for name in servers:
+                    print(f"  {name}", file=sys.stderr)
+                sys.exit(1)
+
+        # Single server entry directly in the file
+        return data, server_name or os.path.splitext(os.path.basename(source))[0]
+
+    # Try as inline JSON string
+    try:
+        entry = json.loads(source)
+        return entry, server_name or "server"
+    except json.JSONDecodeError:
+        print(f"✗ Could not parse as JSON or find file: {source!r}", file=sys.stderr)
+        sys.exit(1)
+
+
+def entry_to_connection_params(entry: dict) -> tuple[str, str | None, list[str], str | None, dict | None]:
+    """
+    Extract (transport, command, args, url, env) from a server entry dict.
+    Accepts both mcp_config.json format and Claude Desktop mcpServers format.
+    """
+    url     = entry.get("url")
+    command = entry.get("command")
+    args    = entry.get("args", [])
+    env_raw = entry.get("env", {}) or {}
+
+    # Resolve env — expand any values that reference real env vars
+    env = {}
+    for k, v in env_raw.items():
+        if v and not v.startswith("<"):
+            env[k] = v
+        elif os.getenv(k):
+            # fall back to host environment if placeholder value
+            env[k] = os.getenv(k)
+
+    if not env:
+        env = None
+
+    transport = "http" if url else "stdio"
+    return transport, command, args, url, env
 
 
 # ── core inspection ───────────────────────────────────────────────────────────
@@ -72,25 +143,22 @@ async def inspect(
     url:       str | None,
     env:       dict | None,
 ) -> dict[str, Any]:
-    """
-    Connect to the server, collect everything, return a structured dict.
-    """
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
     from mcp.client.streamable_http import streamablehttp_client
 
     result: dict[str, Any] = {
-        "server_info":  None,
-        "tools":        [],
-        "prompts":      [],
-        "resources":    [],
-        "errors":       {},
+        "server_info": None,
+        "tools":       [],
+        "prompts":     [],
+        "resources":   [],
+        "raw_content_sample": {},  # tool_name -> raw content blocks for debug
+        "errors":      {},
     }
 
     async def _do_inspect(session: ClientSession):
         await session.initialize()
 
-        # Server info
         try:
             result["server_info"] = {
                 "name":    session.server_info.name    if session.server_info else "unknown",
@@ -104,8 +172,8 @@ async def inspect(
             tl = await session.list_tools()
             result["tools"] = [
                 {
-                    "name":        t.name,
-                    "description": t.description or "",
+                    "name":         t.name,
+                    "description":  t.description or "",
                     "input_schema": t.inputSchema,
                 }
                 for t in tl.tools
@@ -123,7 +191,6 @@ async def inspect(
                     "description": p.description or "",
                     "arguments":   [],
                 }
-                # Try fetching the prompt to see its rendered content
                 try:
                     fetched = await session.get_prompt(p.name, {})
                     entry["messages"] = [
@@ -157,12 +224,11 @@ async def inspect(
             resources = []
             for r in rl.resources:
                 entry = {
-                    "name":     r.name,
-                    "uri":      str(r.uri),
-                    "mime_type": r.mimeType or "unknown",
+                    "name":        r.name,
+                    "uri":         str(r.uri),
+                    "mime_type":   r.mimeType or "unknown",
                     "description": r.description or "",
                 }
-                # Try reading a preview (first 300 chars)
                 try:
                     content = await session.read_resource(r.uri)
                     raw = ""
@@ -178,7 +244,6 @@ async def inspect(
         except Exception as e:
             result["errors"]["resources"] = str(e)
 
-    # ── connect ──
     if transport == "stdio":
         params = StdioServerParameters(command=command, args=args, env=env)
         async with stdio_client(params) as (read, write):
@@ -203,7 +268,7 @@ def print_report(data: dict, server_key: str, transport: str,
     print(f"║  MCP Inspector — {info.get('name','?')}  v{info.get('version','?')}".ljust(71) + "║")
     print("╚══════════════════════════════════════════════════════════════════════╝")
 
-    # ── Tools ──
+    # Tools
     tools = data["tools"]
     _section(f"TOOLS  ({len(tools)} found)")
     if not tools:
@@ -225,7 +290,7 @@ def print_report(data: dict, server_key: str, transport: str,
                 print(f"        · {pname} ({ptype}){req_mark}  {pdesc}")
         print()
 
-    # ── Prompts ──
+    # Prompts
     prompts = data["prompts"]
     _section(f"PROMPTS  ({len(prompts)} found)")
     if not prompts:
@@ -248,7 +313,7 @@ def print_report(data: dict, server_key: str, transport: str,
             print(f"      (could not fetch: {p['fetch_error']})")
         print()
 
-    # ── Resources ──
+    # Resources
     resources = data["resources"]
     _section(f"RESOURCES  ({len(resources)} found)")
     if not resources:
@@ -265,26 +330,25 @@ def print_report(data: dict, server_key: str, transport: str,
             print(f"      (could not read: {r['read_error']})")
         print()
 
-    # ── Errors ──
+    # Errors
     if data["errors"]:
         _section("ERRORS DURING DISCOVERY")
         for k, v in data["errors"].items():
             print(f"  ✗ {k}: {v}")
 
-    # ── Generated skeleton ──
-    _section("READY-TO-PASTE SKELETON  (copy into tool_registry.py)")
-
-    tool_names = [t["name"] for t in tools]
+    # Generated skeleton
+    tool_names   = [t["name"] for t in tools]
     prompt_names = [p["name"] for p in prompts]
     resource_uris = [r["uri"] for r in resources]
 
-    conn_block = ""
+    _section("READY-TO-PASTE SKELETON  (copy into tool_registry.py)")
+
     if transport == "stdio":
-        args_repr = repr(args)
+        args_repr = json.dumps(args)
         conn_block = f"""        MCPServerConfig(
             server_key = "{server_key}",
             transport  = "stdio",
-            command    = sys.executable,   # or full path to: {command}
+            command    = "{command}",
             args       = {args_repr},
         ),"""
     else:
@@ -295,53 +359,53 @@ def print_report(data: dict, server_key: str, transport: str,
         ),"""
 
     print(f"""
-  # ── In _get_mcp_server_configs() ─────────────────────────────────────
+  # ── In _get_mcp_server_configs() ──────────────────────────────────────
 {conn_block}
 
-  # ── In _get_mcp_affordance_configs() ─────────────────────────────────
+  # ── In _get_mcp_affordance_configs() ──────────────────────────────────
   # Full access affordance (all {len(tool_names)} tools)
         MCPAffordanceConfig(
             registry_key = "mcp_{server_key}_full",
             server_key   = "{server_key}",
             use_level    = "always_available",
-        ),
-""")
+        ),""")
 
     if tool_names:
-        print(f"""  # Fine-tuned affordance example (pick the tools you want)
+        first_three = json.dumps(tool_names[:3])
+        more = f"  # + {len(tool_names)-3} more" if len(tool_names) > 3 else ""
+        print(f"""
+  # Fine-tuned affordance example
         MCPAffordanceConfig(
             registry_key  = "mcp_{server_key}_custom",
             server_key    = "{server_key}",
-            include_tools = {json.dumps(tool_names[:3])},{"  # first 3 shown — extend as needed" if len(tool_names) > 3 else ""}
+            include_tools = {first_three},{more}
             item_types    = ["{server_key}_endpoint"],
             use_level     = "dual_use",
-        ),
-""")
+        ),""")
 
     if prompt_names:
-        print(f"""  # Affordance with prompt injection
+        print(f"""
+  # Affordance with prompt injection
         MCPAffordanceConfig(
             registry_key   = "mcp_{server_key}_guided",
             server_key     = "{server_key}",
             inject_prompts = {json.dumps(prompt_names)},
             item_types     = ["{server_key}_endpoint"],
             use_level      = "dual_use",
-        ),
-""")
+        ),""")
 
     if resource_uris:
-        print(f"""  # Available resource URIs (use resource_context_mode to inject):
-  #   {chr(10)+"  #   ".join(resource_uris)}
-  #
-  # Example with resource context:
+        uri_comment = "\n  #   ".join(resource_uris)
+        print(f"""
+  # Available resource URIs:
+  #   {uri_comment}
         MCPAffordanceConfig(
-            registry_key          = "mcp_{server_key}_with_resources",
+            registry_key          = "mcp_{server_key}_resources",
             server_key            = "{server_key}",
-            resource_context_mode = "names_only",   # or "full" for small servers
+            resource_context_mode = "names_only",
             item_types            = ["{server_key}_endpoint"],
             use_level             = "dual_use",
-        ),
-""")
+        ),""")
 
     _hr("─")
     print(f"  * = required parameter")
@@ -354,91 +418,71 @@ def print_report(data: dict, server_key: str, transport: str,
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Inspect an MCP server and generate framework config skeletons.",
+        description="Inspect an MCP server using the same JSON format as mcp_config.json.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""
         Examples:
-          python mcp_inspect.py --transport stdio --command colab-mcp
-          python mcp_inspect.py --transport stdio --command python --args servers/my_server.py
-          python mcp_inspect.py --transport http  --url http://localhost:8080/mcp
-          python mcp_inspect.py --transport stdio --command mcp-server-fetch --json
+          # Inline JSON (quote the whole thing)
+          python mcp_inspect.py '{"command": "colab-mcp"}'
+          python mcp_inspect.py '{"command": "npx", "args": ["-y", "myinstants-mcp@latest"]}'
+          python mcp_inspect.py '{"url": "http://localhost:8080/mcp"}'
+
+          # Docker server — args as a JSON array, no shell quoting headaches
+          python mcp_inspect.py '{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server","--read-only"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"ghp_..."}}'
+
+          # From your mcp_config.json (pick one server by name)
+          python mcp_inspect.py mcp_config.json --server github_readonly_mcp
+
+          # Raw JSON output
+          python mcp_inspect.py '{"command": "colab-mcp"}' --json
         """),
     )
     parser.add_argument(
-        "--transport", required=True, choices=["stdio", "http"],
-        help="Connection type: stdio (subprocess) or http (running server)"
+        "source",
+        help="Inline JSON string, or path to a JSON file (single entry or full mcp_config.json)"
     )
     parser.add_argument(
-        "--command", default=None,
-        help="[stdio] Command to run (e.g. 'colab-mcp', 'python')"
-    )
-    parser.add_argument(
-        "--args", nargs="*", default=[],
-        help="[stdio] Arguments to pass to the command (e.g. servers/my_server.py)"
-    )
-    parser.add_argument(
-        "--url", default=None,
-        help="[http] Full URL of the MCP endpoint (e.g. http://localhost:8080/mcp)"
-    )
-    parser.add_argument(
-        "--env", nargs="*", default=[],
-        metavar="KEY=VALUE",
-        help="[stdio] Environment variables to set (e.g. API_KEY=abc123)"
+        "--server", default=None,
+        help="When source is a full mcp_config.json, pick this server by name"
     )
     parser.add_argument(
         "--server-key", default=None,
-        help="Override the server_key used in generated skeleton (default: derived from command/url)"
+        help="Override the server_key used in the generated skeleton"
     )
     parser.add_argument(
         "--json", action="store_true",
-        help="Dump raw discovery data as JSON instead of pretty report"
+        help="Dump raw discovery data as JSON"
     )
 
     args = parser.parse_args()
 
-    # Validate
-    if args.transport == "stdio" and not args.command:
-        parser.error("--command is required for stdio transport")
-    if args.transport == "http" and not args.url:
-        parser.error("--url is required for http transport")
+    entry, derived_key = load_server_config(args.source, args.server)
+    server_key = args.server_key or derived_key
 
-    # Parse env vars
-    env = None
-    if args.env:
-        env = {}
-        for item in args.env:
-            if "=" not in item:
-                parser.error(f"--env values must be KEY=VALUE, got: {item!r}")
-            k, v = item.split("=", 1)
-            env[k] = v
+    transport, command, cmd_args, url, env = entry_to_connection_params(entry)
 
-    # Derive server_key
-    if args.server_key:
-        server_key = args.server_key
-    elif args.transport == "stdio":
-        server_key = (args.command or "server").split("/")[-1].replace("-", "_").replace(".py", "")
-    else:
-        from urllib.parse import urlparse
-        server_key = urlparse(args.url).hostname.replace(".", "_").replace("-", "_")
+    if transport == "stdio" and not command:
+        print("✗ No 'command' found in server entry.", file=sys.stderr)
+        sys.exit(1)
+    if transport == "http" and not url:
+        print("✗ No 'url' found in server entry.", file=sys.stderr)
+        sys.exit(1)
 
-    # Run
     try:
         data = asyncio.run(inspect(
-            transport = args.transport,
-            command   = args.command,
-            args      = args.args,
-            url       = args.url,
+            transport = transport,
+            command   = command,
+            args      = cmd_args,
+            url       = url,
             env       = env,
         ))
     except Exception as e:
         print(f"\n✗ Connection failed: {type(e).__name__}: {e}", file=sys.stderr)
-        print("\nCheck that:", file=sys.stderr)
-        if args.transport == "stdio":
-            print(f"  · '{args.command}' is installed and on PATH", file=sys.stderr)
-            print(f"  · Try: which {args.command}", file=sys.stderr)
+        if transport == "stdio":
+            print(f"\n  Check that '{command}' is installed and reachable.", file=sys.stderr)
+            print(f"  Try: which {command}", file=sys.stderr)
         else:
-            print(f"  · The server is running at {args.url}", file=sys.stderr)
-            print(f"  · Try: curl {args.url}", file=sys.stderr)
+            print(f"\n  Check that the server is running at {url}", file=sys.stderr)
         sys.exit(1)
 
     if args.json:
@@ -447,10 +491,10 @@ def main():
         print_report(
             data,
             server_key = server_key,
-            transport  = args.transport,
-            command    = args.command,
-            args       = args.args,
-            url        = args.url,
+            transport  = transport,
+            command    = command,
+            args       = cmd_args,
+            url        = url,
         )
 
 

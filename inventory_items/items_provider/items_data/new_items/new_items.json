@@ -643,5 +643,101 @@
         "ticks_lasting": 6,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Aetheric Pocket Calculagraph",
+      "descriptions": [
+        "A palm-sized brass instrument combining polished clockwork, etched dials, and a faintly humming glass receiver that glows when engaged.",
+        "An anachronistic Victorian electronic calculator that computes by modulating captured aether through precision gears and galvanic filaments."
+      ],
+      "static": false,
+      "type": [
+        "tiny_calculator",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The brass face gleams as a cool blue aetheric halo hums above the receiver and tiny clockwork cogs rotate steadily.",
+        "off_description": "The receiver sits dim and mute, its filaments dark and the gears stilled under polished brass.",
+        "on_sequence": "You thumb the knurled lever; a soft click travels through the brass, the filament inhales a cool blue light, and the receiver vibrates into a steady, low hum as the gears find their rhythm.",
+        "off_sequence": "You ease the lever back; the blue glow recedes like a held breath, the hum winds down to a quiet tick, and the gears settle into the device’s sleeping brass hush.",
+        "perishable": false,
+        "ticks_lasting": 0,
+        "ticks_elapsed": 0
+      }
+    },
+    {
+      "name": "Aetheric Telegraphium",
+      "descriptions": [
+        "A brass-and-ebony contraption of Victorian sensibilities, fitted with glass filaments and a lattice of etched coils that hum faintly when powered.",
+        "Its face bears engraved dials, an ivory key, and a small mica viewport through which a cool blue glow sometimes writhes like bottled lightning."
+      ],
+      "static": true,
+      "type": [
+        "pong_machine",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "Glass filaments pulse with a soft, aetheric blue and the coils emit a steady, musical hum.",
+        "off_description": "The brass sits mute and cool, the filaments dark and the dials motionless.",
+        "on_sequence": "You press the engraved ivory key and feel a tiny, resolute shiver under your palm as gears engage; a low, harmonic hum swells and the filaments along the glass chambers unfurl into a living blue light.",
+        "off_sequence": "You ease the main regulator downward; the harmonic unwinds like a held breath, the filaments gutter, and the blue aura contracts until the apparatus is silently cold beneath your fingers.",
+        "perishable": false,
+        "ticks_lasting": 10,
+        "ticks_elapsed": 0
+      }
+    },
+    {
+      "name": "Brassbound Anachronist's Notebook",
+      "descriptions": [
+        "A compact leather-covered notebook trimmed with brass corners and an embossed cog-and-script motif across the front. The leather smells faintly of lamp oil.",
+        "The pages within are cream, lightly ruled with a very faint grid, and entirely blank — no ink, no annotations. A small brass latch with a keyhole is present but currently unfastened.",
+        "Despite its Victorian styling, several details feel subtly out of time: unnaturally smooth paper suited for modern pens and marginal engineering marks that suggest later usage. It is an ornate, empty notebook, ready to be written in."
+      ],
+      "static": false,
+      "type": [
+        "book",
+        "code_reviewer_notebook"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "chapters": [],
+      "is_locked": false
+    },
+    {
+      "name": "OctoDesk — GitHub Direct Console",
+      "descriptions": [
+        "A broad, modular smart desk with an embedded console and live GitHub integration for repository management and CI status at your fingertips.",
+        "Built-in OLED, capacitive controls, and an isolated hardware endpoint provide a direct, authenticated connection to GitHub for push, fetch, and workflow control."
+      ],
+      "static": true,
+      "type": [
+        "toggleable",
+        "github_mcp_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The desk is actively connected to GitHub, showing live repository status and accepting commands.",
+        "off_description": "The desk is idle and disconnected from GitHub, its console dark.",
+        "on_sequence": "You press the capacitive emblem at the front edge; the desk vibrates softly as fans spin up, LEDs ripple across the surface, and the OLED boots to display your GitHub avatar and a live list of repositories — a secure console window opens on the desk's interface ready for commands.",
+        "off_sequence": "You tap the emblem again; the LEDs fade and the OLED slides into sleep mode as network activity winds down, open GitHub sessions close, and the desk settles into silence.",
+        "perishable": false,
+        "ticks_lasting": 5,
+        "ticks_elapsed": 0
+      }
     }
 ]

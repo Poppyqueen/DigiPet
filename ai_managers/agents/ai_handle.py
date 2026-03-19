@@ -45,7 +45,7 @@ class ai_bot:
             if developer_message:
                 extra_context=developer_message
 
-            current_context= str(self.functions_builder.construct_context())
+            current_context = await self.functions_builder.construct_context()
             extra_context = f"{extra_context}\n{current_context}"
 
             # this is logging

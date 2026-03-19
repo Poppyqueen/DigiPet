@@ -48,7 +48,12 @@ refactored_types = [
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
                     "colab_endpoint", # First of its kind, spins up a MCP server that provides access to Colab notebooks as tools.
-                    "sound_effects_apparatus" # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'
+                    "sound_effects_apparatus", # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'
+
+                    "code_reviewer_notebook", # A test type, probably will be removed, uses the test MCP server included in the codebase.
+                    "tiny_calculator", # test
+                    "pong_machine",# test
+                    "github_mcp_endpoint"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 

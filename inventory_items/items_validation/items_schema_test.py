@@ -7,12 +7,12 @@ from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
 client=AIConfiguration(provider="openai",model="gpt-5-mini",mode="simple_ai").get_client()
-select_types = ["soundboard", "toggleable"]
+select_types = ["toggleable", "github_mcp_endpoint"]
 test_base = build_llm_schema_for_types(select_types)
 
 # print(json.dumps(test_base.model_json_schema(), indent=2))
 
 
-response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} #### Always generate only 1 item.", user="One example of this item. Early 20th century musicbox toy, late victorian, early sci-fi, anachronistic toy/device", structure=test_base)
+response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} #### Always generate only 1 item.", user="One example of this item. Furniture, electronic device with GitHub straight connection.", structure=test_base)
 
 print(response.model_dump_json(indent=2))

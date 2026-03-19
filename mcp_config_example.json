@@ -1,0 +1,71 @@
+{
+    "_comment": [
+        " Make or rename this file for 'mcp_config.json' .",
+        "",
+        "FORMAT",
+        "-------",
+        "Compatible with Claude Desktop and Cursor out of the box.",
+        "Copy an existing mcpServers block from those clients and it will work.",
+        "",
+        "OPTIONAL 'affordance' BLOCK",
+        "----------------------------",
+        "Add an 'affordance' block to any server entry to control how its tools",
+        "are exposed inside the DigiPet framework. All fields are optional.",
+        "Servers without an affordance block default to always_available with",
+        "no item or room gating — all tools exposed, nothing hidden.",
+        "",
+        "affordance fields",
+        "  use_level     : 'always_available' | 'dual_use' | 'room_only' | 'inventory_only'",
+        "  item_types    : list of item type strings — agent must have/see one to access tools",
+        "  room_types    : list of room type strings — agent must be in a matching room",
+        "  include_tools : whitelist of tool names — omit or [] means ALL tools",
+        "  exclude_tools : blacklist of tool names — omit or [] means NOTHING hidden",
+        "  inject_prompts: list[str]  parameterless prompts only — rendered at context-build time as agent_information",
+        "  prompt_tools:   list[str]  prompts WITH arguments — exposed as callable tools the agent can invoke",
+        "",
+        "PRIORITY",
+        "--------",
+        "Python-declared servers/affordances in tool_registry.py always take",
+        "precedence over entries here if registry keys clash.",
+        "",
+        "EXTERNAL RUNTIMES",
+        "-----------------",
+        "stdio servers that use 'npx' require Node.js to be installed.",
+        "See MCP_SERVERS.md for per-server prerequisites."
+    ],
+
+    "mcpServers": {
+
+        "google_colab": {
+            "_comment": ["Simple example, uses a new 'mcp_colab' server by Google. Just the command needed, will resolve to .venv bin path.",
+                        "see https://github.com/googlecolab/colab-mcp for details."],
+
+            "command": "mcp_colab",
+            "affordance": {
+                "_comment": "Needs an item either in the room or inventory with type 'colab_endpoint' to access tools.",
+                "use_level":  "dual_use",
+                "item_types": ["colab_endpoint"]
+            }
+        },
+
+
+        "github_readonly_mcp": {
+            "_comment": "Using docker to run a GitHub MCP server image. Requires Docker installed and configured.",
+            "command": "docker",
+            "args": [
+                "run", "-i", "--rm",
+                "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+                "-e", "GITHUB_READ_ONLY",
+                "ghcr.io/github/github-mcp-server"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>",
+                "GITHUB_READ_ONLY": "1"
+            },
+            "affordance": {
+                "use_level":  "dual_use",
+                "item_types": ["github_mcp_endpoint"]
+            }
+        }
+    }
+}

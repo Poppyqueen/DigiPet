@@ -32,6 +32,7 @@ import pygame
 from pygame_int import config, state
 from pygame_int.main_digipet import animation, gui
 
+import asyncio
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -45,7 +46,7 @@ def _trigger_lore_panel_update(chatbot) -> None:
         )
 
     def _stream():
-        chatbot.functions_builder.get_current_tools_info_streaming(_post)
+        asyncio.run(chatbot.functions_builder.get_current_tools_info_streaming(_post))
 
     thread = threading.Thread(target=_stream, daemon=True)
     thread.start()

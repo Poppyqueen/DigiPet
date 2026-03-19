@@ -111,20 +111,14 @@ def start_chatbot_request(
 # ---------------------------------------------------------------------------
 
 def _lore_refresh_worker(chatbot_instance) -> None:
-    """
-    Streams fresh tool info and posts UPDATE_LORE_DISPLAY_EVENT.
-
-    Uses the streaming variant (get_current_tools_info_streaming) so the
-    lore panel content arrives incrementally rather than waiting for a full
-    round-trip.  Designed to run in a daemon thread.
-    """
     def _post(room_data):
         pygame.event.post(
             pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data)
         )
-
     try:
-        chatbot_instance.functions_builder.get_current_tools_info_streaming(_post)
+        asyncio.run(
+            chatbot_instance.functions_builder.get_current_tools_info_streaming(_post)
+        )
     except Exception as exc:
         print(f"[_lore_refresh_worker] Error: {type(exc).__name__}: {exc}")
 

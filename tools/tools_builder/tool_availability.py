@@ -75,22 +75,20 @@ class ToolAvailabilityChecker:
         self.current_room_types = current_room_types
 
     def is_tool_available(self, tool_config: dict) -> bool:
-        """
-        Returns True if the tool should be available given the current context.
-
-        Checks (in order):
-          1. All function values must be non-None (i.e. service initialized correctly)
-          2. 'always_available' use_level → always True
-          3. Room type match OR item type match
-        """
         functions = tool_config.get("functions", {})
+        #print(f"[AVAIL DEBUG2] checking functions type={type(functions).__name__} len={len(functions)} values_sample={[type(v).__name__ for v in list(functions.values())[:3]]}")
         if any(func is None for func in functions.values()):
+            # print(f"[AVAIL DEBUG] REJECTED (None func): item_types={tool_config.get('item_types')}")
             return False
 
         if tool_config.get("use_level") == "always_available":
             return True
 
-        return self._check_room_match(tool_config) or self._check_item_match(tool_config)
+        result = self._check_room_match(tool_config) or self._check_item_match(tool_config)
+        if tool_config.get("item_types") and not result:
+            # print(f"[AVAIL DEBUG] REJECTED (no match): item_types={tool_config.get('item_types')} use_level={tool_config.get('use_level')}")
+            pass
+        return result
 
     def _check_room_match(self, tool_config: dict) -> bool:
         room_types = tool_config.get("room_types", [])
@@ -102,9 +100,8 @@ class ToolAvailabilityChecker:
         item_types = tool_config.get("item_types", [])
         if not item_types:
             return False
-
         use_level = tool_config.get("use_level", "")
-        ignore_power = tool_config.get("ignore_power_state", False)  # ← read flag
+        ignore_power = tool_config.get("ignore_power_state", False)
 
         if use_level == "inventory_only":
             candidates = self.item_context.get_items_by_type(item_types, location="inventory")
@@ -112,6 +109,12 @@ class ToolAvailabilityChecker:
             candidates = self.item_context.get_items_by_type(item_types, location="room")
         else:
             candidates = self.item_context.get_items_by_type(item_types)
+
+        # DEBUG
+        # if item_types and any("github" in t or "mcp" in t or "endpoint" in t for t in item_types):
+            # print(f"[AVAIL DEBUG] tool item_types={item_types} use_level={use_level}")
+            # print(f"[AVAIL DEBUG] candidates found: {[i.get('id') for i in candidates]}")
+            # print(f"[AVAIL DEBUG] powered on: {[i.get('id') for i in candidates if self.item_context.is_item_powered_on(i.get('id'))]}")
 
         return any(
             (ignore_power or self.item_context.is_item_powered_on(item.get("id")))

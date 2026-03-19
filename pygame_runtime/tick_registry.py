@@ -23,6 +23,8 @@ import pygame
 
 from pygame_int import config, state
 
+import asyncio
+
 
 @dataclass
 class _ServiceEntry:
@@ -124,7 +126,9 @@ class TickRegistry:
 
     def _post_lore_update(self) -> None:
         try:
-            room_info = self._chatbot.functions_builder.get_current_tools_info()
+            room_info = asyncio.run(
+                self._chatbot.functions_builder.get_current_tools_info()
+            )
             if not isinstance(room_info, dict):
                 room_info = {}
             pygame.event.post(
