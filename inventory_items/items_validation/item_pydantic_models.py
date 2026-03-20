@@ -33,27 +33,46 @@ import json
 
 # this is a mess 
 # the issue is that these are shared for agents, so if you change your config, a previously configured world without the item types will delete items with those types from the state, because they won't validate anymore. The idea would be for each agent to own its own config, maybe cloned from the existing file in root, however, that would mess up all the initialization of this, requiring passing configs to know what agent we are loading, and this validation service is initiazed and imported across the codebase liberally.
-def get_mcp_item_types() -> List[str]:
-    """Helper to grab item_types from the mcp_config.json in root."""
+def get_mcp_item_types(config_path: str | None = None) -> list[str]:
+    """
+    Load MCP item types from a specific config path, or the root
+    mcp_config.json if config_path is None.
+    """
+    path = config_path
+    print(f"[DEBUG] Target config path: {path}")
+
+    if not os.path.exists(path):
+        print(f"[DEBUG] File not found at: {path}")
+        return []
+
     try:
-        # Assuming this script is in a subdirectory, we look for root
-        # Adjust the path logic if your folder structure differs
-        config_path = os.path.join(os.getcwd(), 'mcp_config.json')
+        with open(path, 'r') as f:
+            config = json.load(f)
+            
+        mcp_servers = config.get("mcpServers", {})
+        print(f"[DEBUG] Found {len(mcp_servers)} server entries in 'mcpServers'")
         
-        if os.path.exists(config_path):
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-                mcp_servers = config.get("mcpServers", {})
+        found_types = []
+        for server_name, server_data in mcp_servers.items():
+            affordance = server_data.get("affordance", {})
+            types = affordance.get("item_types", [])
+            
+            if types:
+                print(f"[DEBUG] Server '{server_name}' provided types: {types}")
+            else:
+                print(f"[DEBUG] Server '{server_name}' has no 'item_types' defined")
                 
-                # Extract all 'item_types' from the affordance blocks
-                found_types = []
-                for server in mcp_servers.values():
-                    affordance = server.get("affordance", {})
-                    types = affordance.get("item_types", [])
-                    found_types.extend(types)
-                return list(set(found_types)) # Return unique types
+            found_types.extend(types)
+
+        unique_types = list(set(found_types))
+        print(f"[DEBUG] Final unique item types list: {unique_types}")
+        return unique_types
+
+    except json.JSONDecodeError as e:
+        print(f"[DEBUG] ERROR: Failed to parse JSON in '{path}': {e}")
     except Exception as e:
-        print(f"Warning: Could not load mcp_config.json: {e}")
+        print(f"[DEBUG] ERROR: Unexpected error loading mcp_config: {e}")
+        
     return []
 
 # =============================================================================
@@ -104,16 +123,20 @@ lighthouse_items = [
 ]
 item_types.extend(lighthouse_items)
 
-# 2. Inject the types from the MCP configs dynamically into the item_types list. This allows the validation system to recognize the types defined automatically. A sort of 'jack' for dynamic type injection. This works because no affodances from the MCP require items with specific fields, so we can just inject the types without needing to define any ContractMixins for them. If you want to allow the AI crafter to understand your items, then define a contract with model_description.
-mcp_injected_types = get_mcp_item_types()
-for t in mcp_injected_types:
-    if t not in item_types:
-        item_types.append(t)
 # =============================================================================
 # ITEM TYPES REGISTRY
 # =============================================================================
 
 ItemType = Literal[tuple(item_types)]
+
+
+def get_base_item_types() -> list[str]:
+    """
+    Returns the full list of hardcoded item types known to this module.
+    Use this to build per-agent valid type sets rather than importing
+    item_types directly (which is a module-level list, not a copy).
+    """
+    return list(item_types)
 
 # =============================================================================
 # TV TYPES REGISTRY
@@ -235,7 +258,7 @@ class BaseItem(BaseModel):
     name: str = Field(description="Human-readable item name, e.g. 'Bowl of Nuts'.")
     descriptions: List[str] = Field(description="One or more description strings shown to the player.")
     static: bool = Field(description="True if the item cannot be logically picked up or moved by a single human, like furniture, machinery, permanent fixtures or installed work equipment.")
-    type: Optional[List[ItemType]] = Field(default=[], description=f"Empty, one or more type tags from valid literals. Used to define, control and determine specific behaviors and required keys for the item. Standard items with no interaction do not require a type.")
+    type: Optional[List[str]] = Field(default=[], description=f"Empty, one or more type tags from valid literals. Used to define, control and determine specific behaviors and required keys for the item. Standard items with no interaction do not require a type.")
     stackable: bool = Field(default=False, description="Stackability is primarily driven by item size and weight, then by uniqueness. Most items are stackable except for furniture, objects larger than a human, or items that are too heavy to lift. Some truly unique items are not stackable, a specific meal is not stackable, but a red apple is stackable.")
     quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Always 1.")
     max_stack_size: Optional[PositiveInt] = Field(default=None, description="Maximum units per stack. None means unlimited.")

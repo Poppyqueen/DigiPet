@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager
 
-from inventory_items.items_provider.item_store import ItemStore
 import random
 
 
 class DispenserTools:
-    def __init__(self, state_manager, signal=None):
+    def __init__(self, state_manager, signal=None, item_store=None):
         self.state_manager: InventoryHouseManager = state_manager
-        self.item_store = ItemStore()
+        self.item_store = item_store
         self._signal_callback = signal
 
     def _send_signal(self, signal_data):

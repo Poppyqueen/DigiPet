@@ -33,10 +33,11 @@ from typing import Literal
 class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     MAX_INVENTORY_SLOTS = 30 # This constant can stay here or move to InventoryService
 
-    def __init__(self, base_path, signal=None, config_manager=None):
+    def __init__(self, base_path, signal=None, config_manager=None, agent_config_path=None):
         self.base_path = base_path
         self._signal_callback = signal
         self.config_manager = config_manager
+        self.agent_config_path = agent_config_path
         self.initial_state_manager=InitialStateConst()
 
         # 1. Determine the initial state to load
@@ -61,7 +62,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
 
         # 2. Initialize the central StateStore
         #print(f"DEBUG INVENTORY MANAGER INIT: Initializing StateStore with {selected_state_name}")
-        self._state_store = StateStore(base_path, selected_state)
+        self._state_store = StateStore(base_path, selected_state, agent_config_path=agent_config_path)
 
         # 3. Initialize all services, passing StateStore and signal_callback
         # Order services to minimize immediate circular dependency issues, resolve later

@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from inventory_items.services.return_objects import ItemLookupResult
 
 import random
-from inventory_items.items_provider.item_store import ItemStore
 from inventory_items.items_provider.items_scanner import FuzzyMatcher
 
 
@@ -18,8 +17,8 @@ class AuctionHouse: # TODO: Refactor this, make a store_entry type, make diction
     # needs awareness affordance, return a sort of main menu, or interface which would be sensible to pass as context to the AI, not full details, just maybe available categories, currency, new items 
     # make a list of store categories, register them as literals in the pydantic models, these categories live inside store_entry, they need to be categories you would sensibly imagine seeing in a store, aisles names, not just item types. Unique to store_entry, only affects Auction House. Rename to online store. Maybe store types with different lists of categories? 
     # New items are good to have but not necessary (add a tick, and after a long time run an AI in the background that creates a few items, maybe every... from 2 to 10 hours? maybe more? based on ticks... need to refactor tick manager for that)
-    def __init__(self, state_manager):
-        self.item_store = ItemStore()
+    def __init__(self, state_manager, item_store):
+        self.item_store = item_store # for later update
         self.state_manager : InventoryHouseManager = state_manager
 
         self.price_ranges = {

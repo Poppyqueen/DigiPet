@@ -90,6 +90,10 @@ from .my_tools import (
 from .tool_availability import make_toolset_checker
 
 
+from inventory_items.items_validation.item_pydantic_models import get_base_item_types, get_mcp_item_types
+
+from inventory_items.items_provider.item_store import ItemStore
+
 import sys
 import os
 
@@ -119,15 +123,29 @@ class ToolRegistry:
             get_context_fn: Zero-arg callable → (room_types, ItemContext).
                             Provided by FunctionBuilder so the toolset_checker
                             always reads live state. Must be bound before passing.
+
         """
+        self._subdirectory = subdirectory
         self._signal = signal
         self._get_context = get_context_fn
 
         crafter_config_model = config_manager.get_config("AI","cook_model")
         crafter_selected_config_client = config_manager.get_config("AI","cook_provider")
 
-        self.items_crafter = ItemsCrafter(provider=crafter_selected_config_client, model=crafter_config_model)
 
+        # agent config was already cloned by BaseChatbot — just read it
+        agent_config_path = os.path.join(subdirectory, 'mcp_config.json')
+        _base_types = get_base_item_types()
+        _mcp_types  = get_mcp_item_types(config_path=agent_config_path)
+        _agent_valid_types = _base_types + [t for t in _mcp_types if t not in _base_types]
+
+        self.item_store = ItemStore(valid_types=_agent_valid_types)
+
+        self.items_crafter = ItemsCrafter(
+            provider=crafter_selected_config_client,
+            model=crafter_config_model,
+            valid_types=_agent_valid_types,
+        )
         # --- Feature flags ---
         self.youtube_enabled       = config_manager.get_config("Tools", "enable_youtube")
         self.discogs_enabled       = config_manager.get_config("Tools", "enable_discogs")
@@ -145,8 +163,8 @@ class ToolRegistry:
         self.room_tools     = main_tools_handle(state_manager, signal, memory_manager, config_manager, open_meteo)
         self.garden_manager = GardenController(state_manager, signal, open_meteo)
         self.images_lab     = ImagesLab(subdirectory)
-        self.dispenser_tools = DispenserTools(state_manager, signal)
-        self.auction_house  = AuctionHouse(state_manager)
+        self.dispenser_tools = DispenserTools(state_manager, signal, self.item_store)
+        self.auction_house = AuctionHouse(state_manager, item_store=self.item_store)
         self.maze           = MazeEnvironment(state_manager, signal)
         self.A_Life         = ALifeController(state_manager=state_manager, signal=signal, base_path=subdirectory)
         self.book_tools     = BookTools(state_manager, signal)
@@ -154,7 +172,7 @@ class ToolRegistry:
 
         self.tv_controller     = TVController(state_manager, signal, config_manager)
         self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
-        self.comfort = ComfortAffordances(state_manager, signal, memory_manager, self.items_crafter)
+        self.comfort = ComfortAffordances(state_manager, signal, memory_manager, self.items_crafter, self.item_store)
 
         self.water_points = WaterInstallation(state_manager, signal)
 
@@ -196,6 +214,7 @@ class ToolRegistry:
             open_meteo,
             is_toolset_available=self.toolset_checker,
             base_path=subdirectory,
+            item_store=self.item_store
         )
         self._add_lighthouse_tools()
 
@@ -221,7 +240,9 @@ class ToolRegistry:
     def _connect_mcp(self) -> None:
         from pygame_runtime.async_loop import mcp_loop
 
-        server_cfgs, affordance_cfgs = load_json_configs()
+        
+        agent_config_path = os.path.join(self._subdirectory, 'mcp_config.json')
+        server_cfgs, affordance_cfgs = load_json_configs(config_path=agent_config_path)
 
         if not server_cfgs:
             self.mcp_registry = None
@@ -788,117 +809,3 @@ class ToolRegistry:
         #     "use_level": "dual_use",
         # }
         print("DEBUG: ToolRegistry: Lighthouse tools added.")
-
-    # ------------------------------------------------------------------
-    # _get_mcp_server_configs  — one entry per physical server
-    # ------------------------------------------------------------------
-
-    def _get_mcp_server_configs(self) -> list[MCPServerConfig]:
-        """
-        Declare physical MCP server connections.
-
-        Rules
-        -----
-        - One MCPServerConfig per server process. Never duplicate a server_key.
-        - Guard each entry with a config flag so servers can be toggled
-        without touching code (same pattern as _add_conditional_tools).
-        - command is resolved OS-safely by MCPServerConfig.resolved_command;
-        bare names like "npx" work on all platforms without extra handling.
-
-        External / npm-based servers (e.g. myinstants via npx)
-        -------------------------------------------------------
-        These require Node.js and npx to be installed on the host machine.
-        The -y flag auto-installs the package on first run.
-        See MCP_SERVERS.md for per-server prerequisites.
-        """
-        configs = []
-
-        # --- myinstants soundboard (npm / npx) ---
-        # Requires: Node.js + npx (https://nodejs.org)
-        # Package:  myinstants-mcp  (auto-installed via -y on first run)
-        # Conditionally load myinstants based on config flag AND system dependency
-        if self.mcp_myinstants_enabled:
-            if shutil.which("npx"):
-                configs.append(MCPServerConfig(
-                    server_key = "myinstants",
-                    transport  = "stdio",
-                    command    = "npx",
-                    args       =["-y", "myinstants-mcp@latest"],
-                    env        = {"MYINSTANTS_VOLUME": "0.8"},
-                ))
-            else:
-                print("[MCP ALERT] Requested myinstants but skipping: 'npx' is not found on this system.")
-
-        if self.mcp_test_enabled: # Test custom MCP server in servers/test_server.py:
-            configs.append(MCPServerConfig(
-                server_key = "mcp_test",
-                transport  = "stdio",
-                command    = sys.executable,
-                args       = [
-                    os.path.join(os.path.dirname(__file__), "..", "..", "servers", "test_server.py")
-                ],
-            ))
-
-        return configs
-
-
-    # ------------------------------------------------------------------
-    # _get_mcp_affordance_configs  — one entry per tool_definitions slot
-    # ------------------------------------------------------------------
-
-    def _get_mcp_affordance_configs(self) -> list[MCPAffordanceConfig]:
-        """
-        Declare affordances over connected MCP servers.
-
-        Multiple affordances may share a server_key — no extra connection cost.
-
-        Availability keys (item_types, room_types, use_level) work identically
-        to hand-written tool_definitions entries.
-
-        Tool filtering
-        --------------
-        Omit include_tools / exclude_tools entirely (or leave as []) to expose
-        all tools the server advertises. Add include_tools to narrow the set
-        an item exposes, or exclude_tools to hide specific ones.
-        """
-        configs = []
-
-        if self.mcp_myinstants_enabled:
-            configs.append(MCPAffordanceConfig(
-                registry_key = "myinstants",
-                server_key   = "myinstants",
-                use_level    = "inventory_only",
-                item_types   = ["sound_effects_apparatus"],
-                # include_tools / exclude_tools omitted → all myinstants tools exposed
-            ))
-
-        #if self.mcp_test_enabled: # Example of splitting an MCP server into different item types
-        if self.mcp_test_enabled:
-            configs.append(MCPAffordanceConfig(
-                registry_key = "mcp_test_ping",
-                server_key   = "mcp_test",
-                use_level    = "dual_use",
-                item_types   = ["_test_point_ping"],
-                include_tools= ["ping"]
-            ))
-
-            configs.append(MCPAffordanceConfig(
-                registry_key = "mcp_test_add",
-                server_key   = "mcp_test",
-                use_level    = "inventory_only",
-                item_types   = ["_test_point_add"],
-                include_tools= ["add_numbers"]
-            ))
-
-            configs.append(MCPAffordanceConfig(
-                registry_key = "mcp_test_awareness",
-                server_key   = "mcp_test",
-                use_level    = "inventory_only",
-                item_types   = ["_test_point_awareness"],
-                exclude_tools= ["add_numbers", "ping"], # Ignore the basic tools
-                # No tools included — the prompt is exposed as agent_information instead, to be used as a system prompt for the agent when using the item
-                prompt_tools= ["say_hello"], # This will inject the prompt template as a tool, as it has arguments.
-                inject_prompts= ["daily_reminder"] # This will inject the prompt template as agent context, as it has no arguments and is meant to be used as a system prompt.
-            ))
-
-        return configs

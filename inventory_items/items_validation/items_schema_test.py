@@ -6,11 +6,11 @@ import json
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 
-client=AIConfiguration(provider="openai",model="gpt-5-nano",mode="simple_ai").get_client()
+client=AIConfiguration(provider="openai",model="gpt-5-mini",mode="simple_ai").get_client()
 select_types = ["toggleable", "tamagotchi_device"]
 test_base = build_llm_schema_for_types(select_types)
 
-# print(json.dumps(test_base.model_json_schema(), indent=2))
+print(json.dumps(test_base.model_json_schema(), indent=2))
 
 
 response = client.structured_output(system=f"Please return structured responses using all the following types or type: #### {select_types} #### Always generate only 1 item.", user="One example of this item. Portable Gadget. Tamagotchi.", structure=test_base)

@@ -10,20 +10,22 @@ from inventory_items.items_validation.ai_schema_builder import build_llm_schema_
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
 # Build once at import time — the cook only ever produces consumables.
-_COOK_SCHEMA = build_llm_schema_for_types(["consumable"])
+# _COOK_SCHEMA = build_llm_schema_for_types(["consumable"])
 MAX_RETRIES = 4 # 4!!!
 
 # TODO: Update this to use utils/ai_items_crafter.py and help the AI calculate the resulting stats for an item instead of letting it decide.
 
+
 class cook:
-
     def __init__(self, config_manager):
-
-        config_model = config_manager.get_config("AI","cook_model")
-        selected_config_client = config_manager.get_config("AI","cook_provider")
-
-        self.client=AIConfiguration(provider=selected_config_client,model=config_model,mode="simple_ai").get_client()
-
+        config_model = config_manager.get_config("AI", "cook_model")
+        selected_config_client = config_manager.get_config("AI", "cook_provider")
+        self.client = AIConfiguration(
+            provider=selected_config_client, model=config_model, mode="simple_ai"
+        ).get_client()
+        # Build once per instance, not at module import time.
+        # cook only ever produces consumables so no agent-specific types needed.
+        self._cook_schema = build_llm_schema_for_types(["consumable"])
     def prepare_food(self, items: List[str], process: str) -> List[Dict[str, Any]]: # TODO: improve this prompt
  
         system=f"""You are a cooking AI, given a set of items and a cooking related process, you will return a single
@@ -67,7 +69,7 @@ class cook:
             response = self.client.structured_output(
                 system=system,
                 user=process_prompt + retry_note,
-                structure=_COOK_SCHEMA
+                structure=self._cook_schema
             )
 
             if response is None:

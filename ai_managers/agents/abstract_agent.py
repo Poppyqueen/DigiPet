@@ -24,6 +24,9 @@ from tts_providers.macos_say_provider import MacOSSaiProvider
 from tts_providers.espeak_ng_provider import ESpeakNGProvider
 from tts_providers.piper_provider import PiperTTSProvider
 
+import shutil
+
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -111,8 +114,15 @@ class BaseChatbot(ABC):
             config_manager       = config_manager,
         )
 
+        agent_config_path = os.path.join(sub_directory, 'mcp_config.json')
+        root_config_path  = os.path.join(os.getcwd(), 'mcp_config.json')
+        if not os.path.exists(agent_config_path) and os.path.exists(root_config_path):
+            shutil.copy2(root_config_path, agent_config_path)
+            print(f"[{type(self).__name__}] Created agent-local MCP config snapshot at '{agent_config_path}'.")
+
+
         self.state_manager = InventoryHouseManager(
-            inventory_filepath, self._signal_callback, config_manager
+            inventory_filepath, self._signal_callback, config_manager, agent_config_path=agent_config_path
         )
 
 
@@ -122,25 +132,6 @@ class BaseChatbot(ABC):
         self.functions_builder = None
         self._config_manager_ref = config_manager   # kept for create()
 
-        # ── AI client + ai_bot ────────────────────────────────────────
-        provider    = config_manager.get_config("AI", "general_ai_provider")
-        model_name  = config_manager.get_config("AI", "general_model")
-
-        llm_client = AIConfiguration(
-            provider = provider,
-            model    = model_name,
-            mode     = "agent",
-        ).get_client()
-
-        # self.ai = ai_bot(
-        #     data_filepath     = ai_data_filepath,
-        #     act_model         = model_name,
-        #     functions_builder = self.functions_builder,
-        #     state_manager     = self.state_manager,
-        #     signal            = self._signal_callback,
-        #     memory_manager    = self.memory,
-        #     llm_client        = llm_client,
-        # )
 
         # ── Chain-depth guard ─────────────────────────────────────────
         self.max_recursion_depth: int = 8 # TODO: make this configurable

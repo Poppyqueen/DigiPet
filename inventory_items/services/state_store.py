@@ -9,24 +9,38 @@ except ImportError:
     print("Error: generic_json_tool.py not found. Make sure it's in the same directory or PYTHONPATH.")
     import sys; sys.exit(1)
 
-from inventory_items.items_validation.item_pydantic_models import validate_item_dict
+from inventory_items.items_validation.item_pydantic_models import (
+    validate_item_dict,
+    get_base_item_types,
+    get_mcp_item_types)
 from inventory_items.items_validation.room_pydantic_models import validate_room_dict
 
+
+import os
+
 class StateStore(GenericJsonTool):
-    ITEM_ID_START_COUNTER = 1 # Re-define constants here or pass from config
+    ITEM_ID_START_COUNTER = 1
     ROOM_ID_START_COUNTER = 1
 
-    def __init__(self, base_path, default_state): # Removed config_manager, will get default_state directly
+    def __init__(self, base_path, default_state, agent_config_path: str | None = None):
         self.json_filename = 'house_inventory_state_id.json'
-        # Use deepcopy to ensure modifications to _state don't affect original default_state dict
         self._default_state = copy.deepcopy(default_state)
-        super().__init__(base_path) # Loads/creates self._state
 
-        # Perform initial state integrity checks and ID assignments
+        # print(f"[StateStore] agent_config_path received: {agent_config_path}")
+        # print(f"[StateStore] agent_config_path exists: {os.path.exists(agent_config_path) if agent_config_path else 'N/A'}")
+
+        base = get_base_item_types()
+        mcp  = get_mcp_item_types(config_path=agent_config_path) if agent_config_path else []
+        
+        # print(f"[StateStore] base types count: {len(base)}")
+        # print(f"[StateStore] mcp types found: {mcp}")
+        # print(f"[StateStore] total valid types: {len(base) + len(mcp)}")
+        
+        self._valid_types = set(base + mcp)
+
+        super().__init__(base_path)
         self._assign_missing_ids()
         self._post_init_state_validation()
-
-        # Ensure save after initial setup/validation
         self._write_json(self._state)
 
 
@@ -138,6 +152,13 @@ class StateStore(GenericJsonTool):
         if needs_save:
             print("Finished assigning missing IDs and setting initial room if needed. Saving state.")
             self.save_state()
+
+    def _is_item_valid_for_this_agent(self, item: dict, check_id: bool) -> tuple[bool, str | None]:
+        item_types = item.get("type", [])
+        unknown_types = [t for t in item_types if t not in self._valid_types]
+        if unknown_types:
+            return False, f"Item has types {unknown_types} not valid for this agent."
+        return validate_item_dict(item, check_id=check_id)
 
     def _post_init_state_validation(self):
         # This method needs to *modify* self._state.
@@ -260,8 +281,8 @@ class StateStore(GenericJsonTool):
             original_item_count = len(room.get("items", []))
             valid_room_items = []
             for item in room.get("items", []):
-                item_result, item_error = validate_item_dict(item, check_id=True)
-                if item_result is None:
+                item_valid, item_error = self._is_item_valid_for_this_agent(item, check_id=True)
+                if not item_valid:
                     print(f"Validation Warning: Item in room ID {room_id} — {item_error}. Removing.")
                     needs_save = True
                     continue
@@ -301,8 +322,8 @@ class StateStore(GenericJsonTool):
         if isinstance(inventory_list_to_validate, list):
             original_inventory_count = len(inventory_list_to_validate)
             for item in inventory_list_to_validate:
-                result, error = validate_item_dict(item, check_id=True)
-                if result is None:  # invalid
+                item_valid, error = self._is_item_valid_for_this_agent(item, check_id=True)
+                if not item_valid:
                     print(f"... {error}. Removing.")
                     needs_save = True
                     continue

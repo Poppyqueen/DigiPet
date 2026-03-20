@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 
 from tools.tools_folder.tools_helpers.lighthouse.lighthouse_state_manager import LighthouseManager
 
-from inventory_items.items_provider.item_store import ItemStore
-
 from tools.tools_folder.tools_helpers.lighthouse.models import ActionInternalResponse
 
 
@@ -85,11 +83,11 @@ OIL_PUMP_RATE = .005 # of max 1.0
 SPIRIT_CONSUME_RATE = .05
 
 class LighthouseController:
-    def __init__(self, state_manager, signal, open_meteo_handle, is_toolset_available, base_path: str = None):
+    def __init__(self, state_manager, signal, open_meteo_handle, is_toolset_available, base_path: str = None, item_store = None):
         self.state_manager : InventoryHouseManager = state_manager
         self._signal_callback = signal
 
-        self.item_store = ItemStore()
+        self.item_store = item_store
         self.is_toolset_available = is_toolset_available # New, method to check if a string matches a toolset or affordance block currently active based on the game state. 
 
         self.lighthouse_manager = LighthouseManager(open_meteo_handle, self.is_toolset_available, base_path)

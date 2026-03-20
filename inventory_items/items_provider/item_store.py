@@ -4,30 +4,45 @@ from pathlib import Path
 import re
 
 class ItemStore:
-    def __init__(self, root_dir_path: str= "inventory_items/items_provider/items_data"):
+    def __init__(
+        self,
+        root_dir_path: str = "inventory_items/items_provider/items_data",
+        valid_types: list[str] | None = None,  # NEW
+    ):
         self._items = {}
         self._item_to_file_map = {}
-        self._root_dir = Path(root_dir_path) # Store the root directory as a Path object
+        self._root_dir = Path(root_dir_path)
+        # None means "accept everything" — existing behavior preserved
+        self._valid_types: set[str] | None = set(valid_types) if valid_types is not None else None
         self._load_items()
 
+    def _item_passes_type_filter(self, item_data: dict) -> bool:
+        """
+        Returns True if this item's types are all within the valid set,
+        or if no filter is active (valid_t ypes was None).
+        Items with no type tag always pass.
+        """
+        if self._valid_types is None:
+            return True
+        item_types = item_data.get("type", [])
+        if not item_types:
+            return True
+        return all(t in self._valid_types for t in item_types)
+
     def _load_items(self):
-        """Recursively loads items from all JSON files in a given directory."""
         if not self._root_dir.is_dir():
             print(f"Warning: '{self._root_dir}' is not a valid directory.")
             return
 
-        json_files = self._root_dir.rglob('*.json')
-        
-        for path in json_files:
+        for path in self._root_dir.rglob('*.json'):
             try:
                 with open(path, 'r') as f:
                     data = json.load(f)
                     if not isinstance(data, list):
                         data = [data]
-
                     for item_data in data:
                         item_name = item_data.get('name')
-                        if item_name:
+                        if item_name and self._item_passes_type_filter(item_data):  # NEW check
                             self._items[item_name] = item_data
                             self._item_to_file_map[item_name] = str(path)
             except (IOError, json.JSONDecodeError) as e:

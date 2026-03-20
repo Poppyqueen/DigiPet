@@ -113,12 +113,8 @@ def _connection_fingerprint(entry: dict) -> str:
 def load_json_configs(
     config_path: str | Path | None = None,
 ) -> tuple[list[MCPServerConfig], list[MCPAffordanceConfig]]:
-    if config_path is None:
-        this_dir     = Path(__file__).resolve().parent
-        project_root = this_dir.parent.parent
-        config_path  = project_root / "mcp_config.json"
-
     config_path = Path(config_path)
+
     if not config_path.exists():
         return [], []
 
