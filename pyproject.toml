@@ -24,6 +24,10 @@ google = ["google-genai>=1.29.0"]
 ollama = ["ollama>=0.5.3", "tokenizers>=0.21.2"]
 groq = ["instructor[groq]==1.10.0", "tokenizers>=0.21.2"]
 openrouter = ["openai>=1.70.0", "google-genai>=1.29.0", "tokenizers>=0.21.2", "tiktoken>=0.11.0", "instructor==1.10.0"]
+
+# For MCP optional
+mcp = ["mcp[cli]>=1.26.0"]
+
 # API Provider Extras
 youtube = ["google-api-python-client>=2.171.0", "google-auth-oauthlib>=1.2.2", "google-auth-httplib2>=0.2.0"]
 bluesky = ["atproto>=0.0.61", "grapheme>=0.6.0", "pillow>=11.2.1", "cairosvg>=2.8.2"]
@@ -31,6 +35,7 @@ musicbrainz = ["musicbrainzngs>=0.7.1"]
 discogs = ["python3-discogs-client>=2.8"]
 searxng = ["trafilatura>=2.0.0"]
 piper = ["piper-tts>=1.3.0", "sounddevice>=0.5.3"]
+
 all = [
-    ".[openai,google,ollama,groq,youtube,bluesky,musicbrainz,discogs,searx,piper,openrouter]",
+    ".[openai,google,ollama,groq,youtube,bluesky,musicbrainz,discogs,searx,piper,openrouter,mcp]",
 ]

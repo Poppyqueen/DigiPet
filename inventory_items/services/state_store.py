@@ -38,6 +38,10 @@ class StateStore(GenericJsonTool):
         
         self._valid_types = set(base + mcp)
 
+        json_path = os.path.join(str(base_path), self.json_filename)
+        self._is_fresh_state = not os.path.exists(json_path)
+
+
         super().__init__(base_path)
         self._assign_missing_ids()
         self._post_init_state_validation()
@@ -153,11 +157,29 @@ class StateStore(GenericJsonTool):
             print("Finished assigning missing IDs and setting initial room if needed. Saving state.")
             self.save_state()
 
+    # def _is_item_valid_for_this_agent(self, item: dict, check_id: bool) -> tuple[bool, str | None]:
+    #     item_types = item.get("type", [])
+    #     unknown_types = [t for t in item_types if t not in self._valid_types]
+    #     if unknown_types:
+    #         return False, f"Item has types {unknown_types} not valid for this agent."
+    #     return validate_item_dict(item, check_id=check_id)
+
     def _is_item_valid_for_this_agent(self, item: dict, check_id: bool) -> tuple[bool, str | None]:
         item_types = item.get("type", [])
         unknown_types = [t for t in item_types if t not in self._valid_types]
+        
         if unknown_types:
-            return False, f"Item has types {unknown_types} not valid for this agent."
+            if self._is_fresh_state:
+                # Items came from default state template — reject unknown types,
+                # they shouldn't be in the template if the server isn't connected.
+                return False, f"Item has unknown types {unknown_types} — cannot create."
+            else:
+                # Loaded from existing saved state — quarantine.
+                # Could be a disconnected MCP server.
+                print(f"Info: Item '{item.get('name', '?')}' has unrecognized types {unknown_types}. "
+                    f"Keeping (types may belong to a disconnected MCP server).")
+                return True, None
+        
         return validate_item_dict(item, check_id=check_id)
 
     def _post_init_state_validation(self):
@@ -273,7 +295,7 @@ class StateStore(GenericJsonTool):
             # Validate room structure and type-specific contracts via pydantic.
             result, error = validate_room_dict(room, check_id=True)
             if result is None:
-                print(f"Validation Warning: Room (ID:{room.get('id', 'unknown')}) failed validation — {error}. Removing.")
+                print(f"Validation Warning: Room (ID:{room.get('id', 'unknown')}) failed validation — {error}.")
                 needs_save = True
                 continue
 
@@ -283,7 +305,7 @@ class StateStore(GenericJsonTool):
             for item in room.get("items", []):
                 item_valid, item_error = self._is_item_valid_for_this_agent(item, check_id=True)
                 if not item_valid:
-                    print(f"Validation Warning: Item in room ID {room_id} — {item_error}. Removing.")
+                    print(f"Validation Warning: Item in room ID {room_id} — {item_error}.")
                     needs_save = True
                     continue
                 valid_room_items.append(item)

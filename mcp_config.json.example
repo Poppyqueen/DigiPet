@@ -1,12 +1,25 @@
 {
     "_comment": [
-        " Make or rename this file for 'mcp_config.json'.",
+        "Rename or copy this file for the gitignored 'mcp_config.json' on root.",
+
         "",
+        "HOW AND WHAT TO CONFIGURE",
+        "-------",
+        "Each time a new agent is created, it will clone this config into its own directory",
+        "Subsequently, all MCP behavior for that agent is directly controlled by its own file instead of root.",
+
+        "IMPORTANT:",
+        "-------",
+        "You can quickly define item types in these, valid item types consist of the base game types,", 
+        "and whatever you add in the item_types lists of these definitions.",
+
+
         "FORMAT",
         "-------",
         "Compatible with Claude Desktop and Cursor out of the box.",
         "Copy an existing mcpServers block from those clients and it will work.",
         "",
+
         "OPTIONAL 'affordance' BLOCK",
         "----------------------------",
         "Add an 'affordance' block to any server entry to control how its tools",
@@ -23,11 +36,15 @@
         "  inject_prompts: list[str]  parameterless prompts only — rendered at context-build time as agent_information",
         "  prompt_tools:   list[str]  prompts WITH arguments — exposed as callable tools the agent can invoke",
         "",
+
+        "Reserve 'always_available' for unique MCPs like memory, otherwise define a level type and item types!",
+
         "PRIORITY",
         "--------",
         "Python-declared servers/affordances in tool_registry.py always take",
         "precedence over entries here if registry keys clash.",
         "",
+
         "EXTERNAL RUNTIMES",
         "-----------------",
         "stdio servers that use 'npx' require Node.js to be installed.",
@@ -35,6 +52,24 @@
     ],
 
     "mcpServers": {
+        "austenstone_myinstants": {
+            "_comment": ["'austenstone/myinstants-mcp' Requires Node.js + npx installed.", 
+                        "see https://github.com/austenstone/myinstants-mcp for details.",
+
+                        "Package auto-installs on first run via -y flag. See MCP_SERVERS.md."
+                        ],
+
+            "command": "npx",
+            "args": ["-y", "myinstants-mcp@latest"],
+            "env": {
+                "MYINSTANTS_VOLUME": "0.8"
+            },
+            "affordance": {
+                "use_level": "inventory_only",
+                "item_types": ["sound_effects_apparatus"]
+            }
+        },
+
         "google_colab": {
             "_comment": ["Simple example, uses a new 'mcp_colab' server by Google. Just the command needed, will resolve to .venv bin path.",
                         "see https://github.com/googlecolab/colab-mcp for details.",
@@ -42,7 +77,7 @@
                         "Install in project root: pip install git+https://github.com/googlecolab/colab-mcp",
                         "command gets resolved to the executable in your Python environment."],
 
-            "command": "mcp_colab",
+            "command": "colab-mcp",
             "affordance": {
                 "_comment": "Needs an item either in the room or inventory with type 'colab_endpoint' to access tools.",
                 "use_level":  "dual_use",
@@ -56,7 +91,8 @@
 
                         "Required to set GitHub token in .env file, 'GITHUB_PERSONAL_ACCESS_TOKEN', scope its permissions, preferably create it to read-only access, here a server is initialized with Read-Only functions.",
                         "We take no responsibility for how you set up your token or Github permissions, be careful!",
-                        "Just make sure you set your token, Docker is running, and the server will get ready on first load."],
+                        "Just make sure you set your token, Docker is running, and the server will get ready on first load.",
+                        "Also check your `.env` file — the GITHUB_PERSONAL_ACCESS_TOKEN should contain no quotes, it should be a plain KEY=VALUE"],
 
             "command": "docker",
             "args": [
@@ -84,21 +120,6 @@
             "affordance": {
                 "use_level": "inventory_only",
                 "item_types": ["tamagotchi_device"]
-            }
-        },
-
-        "myinstants": {
-            "_comment": ["Requires Node.js + npx installed. Package auto-installs on first run via -y flag. See MCP_SERVERS.md.",
-                        "see https://github.com/austenstone/myinstants-mcp for details."],
-
-            "command": "npx",
-            "args": ["-y", "myinstants-mcp@latest"],
-            "env": {
-                "MYINSTANTS_VOLUME": "0.8"
-            },
-            "affordance": {
-                "use_level": "inventory_only",
-                "item_types": ["sound_effects_apparatus"]
             }
         },
 

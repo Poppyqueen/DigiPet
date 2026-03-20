@@ -28,11 +28,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from mcp.client.streamable_http import streamablehttp_client
-
-from pygame_runtime.async_loop import mcp_loop
+try:
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    from mcp.client.streamable_http import streamablehttp_client
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    print("[MCP] 'mcp' library not found, MCP support disabled.")
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +230,9 @@ class MCPRegistry:
     """
 
     def __init__(self) -> None:
+
+        if not MCP_AVAILABLE:
+            raise RuntimeError("MCP library not available")
         self._exit_stack:     AsyncExitStack             = AsyncExitStack()
         self._sessions:       dict[str, ClientSession]   = {}
         self._tool_cache:     dict[str, list]            = {}

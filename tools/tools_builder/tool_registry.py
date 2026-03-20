@@ -46,12 +46,6 @@ from tools.tools_folder.wikipedia_controller import WikipediaController
 from utils.ai_items_crafter import ItemsCrafter
 
 
-from .mcp_registry import (
-    MCPRegistry,
-    MCPServerConfig,
-    MCPAffordanceConfig,
-    load_json_configs,
-)
 
 
 from .my_tools import (
@@ -240,6 +234,10 @@ class ToolRegistry:
     def _connect_mcp(self) -> None:
         from pygame_runtime.async_loop import mcp_loop
 
+        from .mcp_registry import MCPRegistry, load_json_configs, MCP_AVAILABLE
+        if not MCP_AVAILABLE:
+            self.mcp_registry = None
+            return
         
         agent_config_path = os.path.join(self._subdirectory, 'mcp_config.json')
         server_cfgs, affordance_cfgs = load_json_configs(config_path=agent_config_path)

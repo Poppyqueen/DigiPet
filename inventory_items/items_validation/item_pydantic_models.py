@@ -31,8 +31,6 @@ import json
 
 # 1. Load the MCP Config from root
 
-# this is a mess 
-# the issue is that these are shared for agents, so if you change your config, a previously configured world without the item types will delete items with those types from the state, because they won't validate anymore. The idea would be for each agent to own its own config, maybe cloned from the existing file in root, however, that would mess up all the initialization of this, requiring passing configs to know what agent we are loading, and this validation service is initiazed and imported across the codebase liberally.
 def get_mcp_item_types(config_path: str | None = None) -> list[str]:
     """
     Load MCP item types from a specific config path, or the root
@@ -129,15 +127,6 @@ item_types.extend(lighthouse_items)
 
 ItemType = Literal[tuple(item_types)]
 
-
-def get_base_item_types() -> list[str]:
-    """
-    Returns the full list of hardcoded item types known to this module.
-    Use this to build per-agent valid type sets rather than importing
-    item_types directly (which is a module-level list, not a copy).
-    """
-    return list(item_types)
-
 # =============================================================================
 # TV TYPES REGISTRY
 # =============================================================================
@@ -169,6 +158,14 @@ OutdoorsType = Literal[_outdoors_type_keys]  # type: ignore[valid-type]
 outdoors_type_names = ", ".join(_outdoors_type_keys)
 # Go to OUTDOORS_TYPES and add new outdoors types! Provider based system with an Abstract Class.
 
+
+def get_base_item_types() -> list[str]:
+    """
+    Returns the full list of hardcoded item types known to this module.
+    Use this to build per-agent valid type sets rather than importing
+    item_types directly (which is a module-level list, not a copy).
+    """
+    return list(item_types)
 # =============================================================================
 # SHARED SUB-MODELS
 # Named nested types used by mixins. Being explicit BaseModel subclasses means

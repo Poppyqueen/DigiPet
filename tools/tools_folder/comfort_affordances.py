@@ -149,7 +149,7 @@ class ComfortAffordances:
 
         self._signal_callback({"type": "show_message_popup", "message": f"Looking for something hidden..."})
 
-        if not check_one_in(1): # magic number 45
+        if not check_one_in(45): # magic number 45
             return f"You squeeze your hand and arm and reach for the cranny in the {item_name}, you flail in search for a while, however you can't find anything but dust bunnies."
 
         # all_items = self.item_store.get_items_by_type("dust_bunnied_gleaning")
