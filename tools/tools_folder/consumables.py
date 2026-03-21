@@ -24,9 +24,8 @@ class ConsumablesTools:
             except Exception as e:
                 print(f"Error sending signal from ConsumablesTools: {e}")
 
-    def _item_display(self, item_data: dict, item_id: int) -> str:
-        name = item_data.get("name", "Unknown")
-        return f"'{name}' (ID: {item_id})"
+    def _item_display(self, item_data: dict) -> str:
+        return self.state_manager.format_item_for_display(item_data)
 
     def consume_item(self, item_id: int, uses: int = 1) -> str:
         if not isinstance(item_id, int):
@@ -39,7 +38,7 @@ class ConsumablesTools:
             return f"Failed to consume: {result.error} {result.message}"
 
         item_data = result.item_data
-        display = self._item_display(item_data, item_id)
+        display = self._item_display(item_data)
 
         uses_left = item_data.get("consume_uses_left", 1)
         if uses_left < uses:
@@ -115,7 +114,7 @@ class ConsumablesTools:
         for consumable in consumables:
             item_id = consumable.item_id
             uses_left = consumable.item_data.get("consume_uses_left", 1)
-            entry = f"Consumables in your inventory: \n - {item_id}: {consumable.item_data.get('name', 'Unknown')} (Uses left: {uses_left})\n"
+            entry = f"Consumables in your inventory: \n - {item_id}: {self._item_display(consumable.item_data)} (Uses left: {uses_left})\n"
             parts.append(entry)
 
         return "".join(parts)

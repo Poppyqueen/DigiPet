@@ -114,12 +114,12 @@ class ComfortAffordances:
 
         # Safe to access item_data only after success check
         item_details = item_object.item_data
-        item_name = item_details.get("name", "")
+        display_item_name = self.state_manager.format_item_for_display(item_details, False)
         item_desc = self._get_item_text(item_details, "descriptions")
         item_phenom = self._get_item_text(item_details, SEAT_NARRATIVE)
         edit = 1
 
-        self._signal_callback({"type": "show_message_popup", "message": f"Sat on {item_name}!"})
+        self._signal_callback({"type": "show_message_popup", "message": f"Sat on {display_item_name}!"})
 
         message = f"You sit down for a while, you feel like you are sinking as you relax. Gained {edit} energy points."
         if check_one_in(10): # magic number
@@ -130,7 +130,7 @@ class ComfortAffordances:
 
         
         # TODO: Add icon pop-up signal and image to assets
-        return f"You take a seat on the {item_name}\n{item_desc}\n{item_phenom}\n{message}"
+        return f"You take a seat on the {display_item_name}\n{item_desc}\n{item_phenom}\n{message}"
 
     def reach_into_item_crevice(self, item_id):
         lookup = self.state_manager.find_item(
@@ -143,7 +143,7 @@ class ComfortAffordances:
 
         item_data = lookup.item_data
 
-        item_name = item_data.get("name", "Unnamed")
+        item_name = self.state_manager.format_item_for_display(item_data, False)
         item_descs = item_data.get("descriptions", [])
         item_desc = self._get_item_text(item_data, "descriptions")
 
@@ -171,9 +171,9 @@ class ComfortAffordances:
             select_types=found_item_types
         )
         messages = []
-        for item_data in items:
-            messages.append(f"{item_data['name']}! You take a close look at it, {'\n'.join(item_data['descriptions'])}")
-            result = self.state_manager.create_item("inventory", None, item_data)
+        for created_data in items:
+            messages.append(f"{self.state_manager.format_item_for_display(created_data)}! You take a close look at it, {'\n'.join(created_data['descriptions'])}")
+            result = self.state_manager.create_item("inventory", None, created_data)
             if result.error:
                 print(result.error)
                 return f"You spend a good effort while fishing under the {item_name}, for a moment you think you had found something, but you realize it was just a mirage."
@@ -195,7 +195,7 @@ class ComfortAffordances:
 
         item_data = lookup.item_data
 
-        item_name = item_data.get("name", "Unnamed")
+        item_name = self.state_manager.format_item_for_display(item_data, False)
         item_desc = self._get_item_text(item_data, "descriptions")
         item_phenom = self._get_item_text(item_data, SLEEP_NARRATIVE)# **second-person, present tense** narrative of the experience of laying down and sleeping on this item.
 
@@ -230,7 +230,7 @@ class ComfortAffordances:
 
         item_data = lookup.item_data
 
-        item_name = item_data.get("name", "")
+        item_name = self.state_manager.format_item_for_display(item_data, False)
         item_desc = self._get_item_text(item_data, "descriptions")
 
         item_phenom = self._get_item_text(item_data, NARRATIVE_HUG)

@@ -34,9 +34,8 @@ class BookTools:
     # ------------------------------------------------------------------
 
     def _item_display(self, item_data: dict, item_id: int) -> str:
-        """Inline display string for error messages. Replaces _format_item_for_display()."""
-        name = item_data.get("name", "Unknown")
-        return f"'{name}' (ID: {item_id})"
+        """Inline display string for error messages."""
+        return self.state_manager.format_item_for_display(item_data,True)
 
     def _fetch_book(self, book_item_id: int) -> tuple[dict | None, str | None]:
         """

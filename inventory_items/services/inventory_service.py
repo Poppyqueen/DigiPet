@@ -152,23 +152,23 @@ class InventoryService:
             return False, error
         return True, ""
 
-
-    def _format_item_for_display(self, item_dict, show_quantity=True):
+    @staticmethod
+    def _format_item_for_display(item_dict: dict, show_quantity: bool = True) -> str:
         if not isinstance(item_dict, dict):
             return "Invalid Item Data"
+        
         item_id = item_dict.get('id', -1)
         item_name = item_dict.get('name', 'Unnamed Item')
+        
         if not isinstance(item_id, int):
             return f"{item_name} (ID:INVALID)"
         
-        # Only show quantity if requested and conditions are met
         quantity = item_dict.get('quantity', 1)
         if show_quantity and item_dict.get('stackable', False) and quantity > 1:
             return f"{item_name} (ID:{item_id:06d}) x{quantity}"
         
         return f"{item_name} (ID:{item_id:06d})"
-
-    # --- Public Inventory Methods --- # Ourdated comments
+    
 
     def _inventory_can_accept(self, item_data: dict, current_list: list | None = None) -> bool:
         """

@@ -377,7 +377,7 @@ class RoomDataResult(BaseModel):
             extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},
         )
 
-class SetItemAttributeResult(BaseModel):
+class SetItemAttributeResult(BaseModel): # TODO: Thos should return the item data object (copy) after changes.
     """
     The single return type for all set_item_attribute operations.
 

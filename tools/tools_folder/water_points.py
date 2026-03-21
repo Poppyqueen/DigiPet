@@ -33,7 +33,7 @@ class WaterInstallation:
 
         item_details = lookup.item_data
         
-        name = item_details["name"]
+        name = self.state_manager.format_item_for_display(item_details)
         desc = self._get_item_text(item_details, "descriptions")
         phenom = self._get_item_text(item_details, DRINKING_FROM_NARRATIVE)
 
@@ -58,7 +58,7 @@ class WaterInstallation:
             return lookup.error
 
         item_details = lookup.item_data
-        item_name = item_details['name']
+        item_name = self.state_manager.format_item_for_display(item_details)
         desc = self._get_item_text(item_details, "descriptions")
         phenom = self._get_item_text(item_details, WASH_SELF_NARRATIVE
         )

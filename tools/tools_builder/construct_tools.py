@@ -367,7 +367,7 @@ class FunctionBuilder:
             return item_object.error
         data = item_object.item_data
 
-        item_display = self.state_manager.inventory_service._format_item_for_display(data)
+        item_display = self.state_manager.format_item_for_display(data,True)
         descriptions = data.get("descriptions", [])
 
         output = f"{item_display}\n\n"
@@ -394,6 +394,6 @@ class FunctionBuilder:
         if tools:
             output += f"\n\nProvides tools: {', '.join(tools)}"
         elif info["has_power_switch"] and not info["is_powered_on"]:
-            output += "\n\nTurn the power on to use this item's tools."
+            output += "\n\nToggle to use this item's tools."
 
         return output

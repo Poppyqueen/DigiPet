@@ -177,21 +177,25 @@ class OutdoorsPerception:
         descriptions = item_details.get("descriptions", [])
         accessibility_flag = item_details.get("accessible", True)
 
+        item_name = self.state_manager.format_item_for_display(item_details, False)
+
+
         # Resolve outdoors_type: item first, then room, then default.
         if "outdoors_type" in item_details:
             outdoors_types = self._get_outdoors_types_from_item(item_details)
         else:
             outdoors_types = self._get_outdoors_types_from_room()
 
+
         if accessibility_flag:
             weather_info = self._collect_perception(outdoors_types, level="full")
-            accessibility_message = f"You walk right besides the {item_details["name"]}, standing there it allows you to see everything outside, with clarity"
+            accessibility_message = f"You walk right besides the {item_name}, standing there it allows you to see everything outside, with clarity"
         else:
             weather_info = self._collect_perception(outdoors_types, level="limited")
-            accessibility_message = f"You can't walk close enough to the {item_details["name"]}, however you focus all your attention into it for a second,"
+            accessibility_message = f"You can't walk close enough to the {item_name}, however you focus all your attention into it for a second,"
 
         message = "\n".join([
-            f"You get as close as you can to the {item_details["name"]};",
+            f"You move towards the views of the {item_name};",
             accessibility_message,
             "\n".join(descriptions),
             "As you peer outwards, you notice the outside world with absolute precision:",

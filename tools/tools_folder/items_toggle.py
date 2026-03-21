@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager, InventoryStateResult, InventoryItemEntry
 
-# TODO: Important, this has a bug, tick is duplicating items when trying to tick last, i never see the items reach limit
+
 class ItemToggleTool:
     def __init__(self, state_manager, signal):
         self.state_manager: InventoryHouseManager = state_manager
@@ -40,9 +40,10 @@ class ItemToggleTool:
         if turn_on and uses_left is not None and uses_left <= 0:
             return f"The {item_name} has no uses left."
 
-        self.state_manager.set_item_attribute(
+        change_object = self.state_manager.set_item_attribute(
             item_id, "toggle_state", "on" if turn_on else "off", path=["toggle_state"]
         )
+        change_message = change_object.message
         self._send_signal({
             "type": "show_message_popup",
             "message": f"{'Turned on' if turn_on else 'Turned off'} {item_name}"
@@ -54,7 +55,9 @@ class ItemToggleTool:
         sequence = ts.get(sequence_key, "")
         description = ts.get(description_key, "")
 
-        return "\n".join(part for part in [sequence, description] if part) or f"The {item_name} changed state."
+        output_parts = [change_message, sequence, description]
+
+        return "\n".join(part for part in output_parts if part) or f"The {item_name} changed state."
 
     def toggle_item_power_auto(self, item_id: int) -> str:
         """Toggle — determines on/off from current state and flips it."""
@@ -68,10 +71,12 @@ class ItemToggleTool:
             return ts
 
         current_on = ts.get("toggle_state") == "on"
+
+        
         return self._toggle_item(item_id, not current_on)
 
     def get_access_toggles(self):
-        inventory : InventoryStateResult = self.state_manager.get_inventory_state()
+        inventory: InventoryStateResult = self.state_manager.get_inventory_state()
 
         check_all = inventory.inventory_items + inventory.room_items
 
@@ -90,21 +95,20 @@ class ItemToggleTool:
             if not ok:
                 continue
 
-            info_string += f"  {item_name} ID: {item_id}\n"
+            info_string += f"{self.state_manager.format_item_for_display(item_data, True)}\n"
             if ts.get("toggle_uses_left") is not None:
                 total_potential = ts.get("toggle_uses_left", 0) * ts.get("ticks_lasting", 1)
                 remaining_lifespan = total_potential - ts.get("ticks_elapsed", 0)
                 info_string += f"  Remaining lifespan: {remaining_lifespan} ticks\n"
-            
+
             if ts.get("toggle_state") == "on":
                 info_string += f" {ts.get('on_description', '')}\n"
                 info_string += "=" * 30 + "\n"
             else:
                 info_string += f" {ts.get('off_description', '')}\n"
                 info_string += "=" * 30 + "\n"
-        
-        return info_string
 
+        return info_string
 
     def tick(self) -> str:
         """
@@ -135,8 +139,9 @@ class ItemToggleTool:
             ticks_lasting = ts.get("ticks_lasting")
             if ticks_lasting:
                 ticks_elapsed = ts.get("ticks_elapsed", 0) + 1
-                self.state_manager.set_item_attribute(
-                    item_id, "ticks_elapsed", ticks_elapsed, path=["toggle_state"]
+                self.state_manager.set_item_attribute( # Using 'quantity' argument with 0, it affects all items in a stack. This is a curious case, all items managed by a tick that could be stacked by an item fingerprint need to be handled this way. Compare to planter pots, which are also ticked, however they are uniquely fingerprinted items (their tick state contains unique IDs), so stack modification is not required. 
+                    item_id, "ticks_elapsed", ticks_elapsed, path=["toggle_state"],
+                    quantity=0  # affect the whole stack, never split it
                 )
                 if ticks_elapsed % ticks_lasting != 0:
                     continue  # cycle not complete yet, don't drain
@@ -145,17 +150,19 @@ class ItemToggleTool:
             new_uses = uses_left - 1
 
             if new_uses <= 0 and ts.get("perishable", False):
-                self.state_manager.remove_item(item_id)
+                self.state_manager.remove_item(item_id, quantity=0)
                 off_seq = ts.get("off_sequence", f"The {item_name} has been spent.")
-                lines.append(f"{item_name}: {off_seq}")
+                lines.append(f"{item_name}")
                 self._send_signal({"type": "show_message_popup", "message": f"{item_name} fully consumed!"})
             else:
                 self.state_manager.set_item_attribute(
-                    item_id, "toggle_uses_left", new_uses, path=["toggle_state"]
+                    item_id, "toggle_uses_left", new_uses, path=["toggle_state"],
+                    quantity=0  # affect the whole stack, never split it
                 )
                 if new_uses <= 0:
                     self.state_manager.set_item_attribute(
-                        item_id, "toggle_state", "off", path=["toggle_state"]
+                        item_id, "toggle_state", "off", path=["toggle_state"],
+                        quantity=0  # affect the whole stack, never split it
                     )
                     off_seq = ts.get("off_sequence", f"The {item_name} switches off.")
                     lines.append(f"{item_name}: {off_seq}")

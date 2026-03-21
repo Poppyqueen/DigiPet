@@ -134,6 +134,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
     # Public Methods verified for tools to use. (Public API of InventoryHouseManager)
     # ============================================================= #
 
+    format_item_for_display = staticmethod(InventoryService._format_item_for_display)
 
     def get_emotes_data(self) -> EmotesResult:
         return self.pet_state_manager.get_emotes_data() # Only used in initialization for now, however it could be used by tools.

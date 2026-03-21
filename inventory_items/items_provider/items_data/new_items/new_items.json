@@ -459,7 +459,8 @@
         "max_stack_size": null,
         "accessible": true,
         "outdoors_type": [
-            "earth-weather"
+            "earth-weather",
+            "ocean-views"
         ],
         "toggle_state": {
             "toggle_state": "off",

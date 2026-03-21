@@ -128,7 +128,7 @@ class CookingApparatus:
         item_details = [f"{name}: {desc}" for name, desc in created_objects.items()]
 
         return (
-            f"You walk to the {capp_name}, {capp_desc}\n"
+            f"You interact with the {capp_name}, {capp_desc}\n"
             f"{capp_phenom}\n"
             f"Preparation successful! Created:\n" + "\n".join(item_details)
         )

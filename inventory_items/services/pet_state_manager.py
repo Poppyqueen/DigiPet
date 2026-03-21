@@ -67,7 +67,7 @@ class PetStateManager:
             "emote_name": emote_name,
             "sound_path": f"style/sounds/{emote_name.lower()}.mp3"
         })
-        return f"You are feeling '{emote_name}'! {emote_description}"
+        return f"You are '{emote_name}'! {emote_description}"
 
         #     self._send_signal({
         #         "type": "emote_changed",

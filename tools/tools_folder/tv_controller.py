@@ -117,14 +117,14 @@ class TVController:
 
             flag, state = self._get_tv_state(tv_id)
             if not flag:
-                display_string += f"  {tv_name} (ID: {tv_id}) — unavailable: {state}\n"
+                display_string += f"  {self.state_manager.format_item_for_display(tv)}  — unavailable: {state}\n"
                 display_string += "=" * 30 + "\n"
                 continue
 
             tv_type = state["tv_type"]
             current_channel = state["current_channel"]
 
-            display_string += f"  {tv_name} (ID: {tv_id})\n"
+            display_string += f"  {self.state_manager.format_item_for_display(tv)}\n"
             result = self.tv_manager.get_current_section(tv_type, current_channel, blocking=blocking)
             program_info = self._format_on_screen(current_channel, *result) if result else ""
             display_string += f"Currently playing: {program_info}\n"
