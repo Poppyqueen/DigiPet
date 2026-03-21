@@ -621,9 +621,9 @@
     {
       "name": "Clockwork Aeolophone Musicbox",
       "descriptions": [
-        "A palm-sized, late-Victorian musicbox that blends gilt brass clockwork with a tiny luminous speaker — an anachronistic toy that hints at futures the Victorians might have imagined.",
-        "Its case is carved oak with inlaid mother-of-pearl stars; a small winding key and an ebony stop lever sit beside a perforated brass horn that throws sound with curious, metallic shimmer.",
-        "Wound, it plays a short, otherworldly mechanical melody interlaced with faint electric tinkles; unwound, it is compact and cool, like a pocket relic from a clockwork salon."
+        "A palm-sized, late-Victorian musicbox that blends gilt brass clockwork with a tiny luminous speaker and many intricate tiny levers and buttons — a toy that hints at futures the Victorians might have imagined.",
+        "Its case is carved oak with inlaid mother-of-pearl stars; a small winding key and an ebony stop lever sit beside a perforated brass horn that transmits any sound the user instructs it with, pure magic!",
+        "Wound, it quetly hums with twists and turns comming from the mechanisms in its interior, light manages to scape from the inside through its seams, it is expectant of input and to be used.; unwound, it is compact and cool, like a pocket relic from a clockwork salon."
       ],
       "static": false,
       "type": [
@@ -636,10 +636,10 @@
       "toggle_state": {
         "toggle_state": "off",
         "toggle_uses_left": 6,
-        "on_description": "The musicbox is playing a bright, metallic melody through its tiny brass horn.",
+        "on_description": "The musicbox is spinning and clicking in its interiors, ready to be used.",
         "off_description": "The musicbox is silent, its gears at rest and the little horn cold to the touch.",
-        "on_sequence": "You turn the brass key and feel the mainspring bite; gears click in a neat cascade, a soft electric whisper wells beneath the teeth, and a crystalline, clockwork tune unfurls from the horn.",
-        "off_sequence": "You flip the ebony stop lever; the melody winds down to a gentle mechanical sigh as gears coast to stillness and the faint glow in the speaker gutters.",
+        "on_sequence": "You turn the brass key and feel the mainspring bite; gears click in a neat cascade, a soft electric whisper wells beneath the teeth, and a crystalline, buttons and corners light up with a soft warm white glow.",
+        "off_sequence": "You flip the ebony stop lever; the gears and spinners wind down to a gentle mechanical sigh as brass coast to stillness and the faint glow in the apparatus gutters.",
         "perishable": false,
         "ticks_lasting": 6,
         "ticks_elapsed": 0
