@@ -35,7 +35,7 @@ class ConsumablesTools:
         # replaces _find_item_info_by_id, _is_valid_item_data, and the location guard.
         result = self.state_manager.find_item(item_id, required_location="inventory", required_type="consumable")
         if not result.success:
-            return f"Failed to consume: {result.error} {result.message}"
+            return f"Failed to consume: {result.error}"
 
         item_data = result.item_data
         display = self._item_display(item_data)
