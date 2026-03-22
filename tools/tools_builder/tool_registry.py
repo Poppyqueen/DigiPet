@@ -580,7 +580,7 @@ class ToolRegistry:
                 #"definitions": garden_room_tools,
                 "room_types": ["outdoors_area"], # soft link with garden manager, it is looking for room with this type and watering plants that are in them
                 "display_information": self.outdoors_perception.outdoors_perception,
-                "agent_information": self.outdoors_perception.outdoors_perception,
+                "agent_information": self.outdoors_perception.outdoors_perception_text_only,
             },
             # ----------------------------------------------------------------
             # Special toggle, internal, do not touch!

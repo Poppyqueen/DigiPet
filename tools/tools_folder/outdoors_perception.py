@@ -24,17 +24,16 @@ class OutdoorsPerception:
             state_manager  : InventoryHouseManager
             signal         : optional signal callback
             open_meteo     : OpenMeteoLoc instance (for earth-weather provider)
-            xeno_canto     : XenoCantoLoc instance (for xeno-canto provider)
-                            If None, the xeno-canto provider is not registered.
         """
         self._signal_callback = signal
         self.state_manager    = state_manager
         self.open_meteo       = open_meteo
+        self.config_manager   = config_manager
 
-        self.config_manager = config_manager
+        self._tick_count: int = 0
 
         # Load config
-        self.lat  = config_manager.get_config("location", "latitude") # TODO: Cloned code from BaseChatbot, fix this, share it somehow, original in 'ai_managers/agents/abstract_agent.py'
+        self.lat  = config_manager.get_config("location", "latitude")
         self.long = config_manager.get_config("location", "longitude")
         _env_lat  = os.getenv("LATITUDE")
         _env_long = os.getenv("LONGITUDE")
@@ -45,8 +44,6 @@ class OutdoorsPerception:
 
         self._register_provider(EarthWeatherProvider(open_meteo))
         self._register_provider(MarineWeatherProvider(open_meteo))
-
-        #self.xeno_canto_enabled = True # config_manager.get_config("OutdoorsPerception", "enable_xeno_canto") # TODO: Add config screen or toggle, this flag does nothing right now
 
         self._load_conditionals()
 
@@ -62,8 +59,7 @@ class OutdoorsPerception:
     # ------------------------------------------------------------------
 
     def _load_conditionals(self):
-        #if self.xeno_canto_enabled:
-        canto_key = os.getenv("XENO_CANTO_API_KEY") # Change this for a toggle on config GUI screen 'xeno_canto_enabled'
+        canto_key = os.getenv("XENO_CANTO_API_KEY")
         if canto_key:
             from utils.xeno_canto_api import XenoCantoLoc
             from tools.tools_folder.tools_helpers.outdoors_helpers.xeno_canto_prov import XenoCantoProvider
@@ -79,6 +75,31 @@ class OutdoorsPerception:
         pairs. Unknown types get None so callers can emit an inline note.
         """
         return [(t, self._providers.get(t)) for t in outdoors_types]
+
+    # ------------------------------------------------------------------
+    # Tick
+    # ------------------------------------------------------------------
+
+    def tick(self) -> None:
+        """
+        Called by reg.outdoors.tick() on every outdoors tick interval.
+
+        Increments the global tick counter then delegates to each registered
+        provider whose tick_every cadence aligns with the current count.
+        Providers without meaningful tick behaviour inherit the base no-op.
+        """
+        self._tick_count += 1
+        for provider in self._providers.values():
+            if self._tick_count % provider.tick_every == 0:
+                try:
+                    provider.tick()
+                except Exception as e:
+                    print(f"[OutdoorsPerception] tick error in "
+                          f"'{provider.outdoors_type}': {e}")
+
+    # ------------------------------------------------------------------
+    # Perception collection
+    # ------------------------------------------------------------------
 
     def _collect_perception(
         self,
@@ -103,7 +124,6 @@ class OutdoorsPerception:
                 if level == "limited":
                     text, popup = provider.get_limited_perception()
                 else:
-                    # _collect_perception
                     text, popup, audio = provider.get_full_perception()
                     if audio:
                         audio_bytes, sample_rate = audio
@@ -115,7 +135,6 @@ class OutdoorsPerception:
                         })
                     if popup:
                         self._send_signal({"type": "show_message_popup", "message": popup})
-
 
                 parts.append(text)
 
@@ -159,7 +178,27 @@ class OutdoorsPerception:
     # ------------------------------------------------------------------
     # Public perception methods
     # ------------------------------------------------------------------
+    def outdoors_perception_text_only(self) -> str:
+        """
+        Full perception of the outdoors, text only.
+        Same as outdoors_perception but suppresses all play_sound
+        and show_message_popup signals — returns plain text only.
+        """
+        outdoors_types = self._get_outdoors_types_from_room()
+        parts: list[str] = []
 
+        for type_name, provider in self._resolve_providers(outdoors_types):
+            if provider is None:
+                parts.append(f"[Perception source '{type_name}' is currently unavailable.]")
+                continue
+            try:
+                text, _popup, _audio = provider.get_full_perception()
+                parts.append(text)
+            except Exception as e:
+                parts.append(f"[Perception source '{type_name}' encountered an error: {e}]")
+
+        return _PROVIDER_SEPARATOR.join(parts) if parts else "[No perception available.]"
+    
     def outdoors_perception(self) -> str:
         """
         Full perception of the outdoors. Used for environment awareness in
@@ -191,12 +230,12 @@ class OutdoorsPerception:
         ]
 
         if not windows:
-            return ""  # No windows in room — caller should not be invoking this
+            return ""
 
         parts = []
         for window in windows:
-            outdoors_types  = self._get_outdoors_types_from_item(window.item_data)
-            perception = self._collect_perception(outdoors_types, level="limited")
+            outdoors_types = self._get_outdoors_types_from_item(window.item_data)
+            perception     = self._collect_perception(outdoors_types, level="limited")
             parts.append(perception)
 
         return _PROVIDER_SEPARATOR.join(parts)
@@ -259,7 +298,6 @@ class OutdoorsPerception:
             weather_info,
         ])
 
-        # Always fire the icon popup.
         self._send_signal({
             "type":      "show_icon_popup",
             "icon_path": "style/images/action_icons/window_icon.png",
