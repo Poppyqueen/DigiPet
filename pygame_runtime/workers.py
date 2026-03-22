@@ -112,9 +112,8 @@ def start_chatbot_request(
 _lore_worker_in_flight = False
 
 def _lore_refresh_worker(chatbot_instance) -> None:
-    global _lore_worker_in_flight
-    if _lore_worker_in_flight:
-        return
+    global _lore_worker_in_flight  # missing this
+
     _lore_worker_in_flight = True
 
     def _post(room_data):
@@ -131,14 +130,8 @@ def _lore_refresh_worker(chatbot_instance) -> None:
         _lore_worker_in_flight = False
 
 def start_lore_panel_refresh(*, chatbot) -> None:
-    """
-    Spawn a background thread to refresh the lore panel content.
-
-    Called when the user opens the lore panel so the content is always
-    up to date.  Fire-and-forget: no gate checks needed since this is
-    a read-only data fetch that doesn't affect the chatbot's state.
-    """
-    if not chatbot:
+    global _lore_worker_in_flight
+    if not chatbot or _lore_worker_in_flight:
         return
     thread = threading.Thread(
         target=_lore_refresh_worker,

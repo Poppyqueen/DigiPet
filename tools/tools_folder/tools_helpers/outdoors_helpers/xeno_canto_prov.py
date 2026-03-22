@@ -214,13 +214,13 @@ _TIME_PREFERENCES: dict[str, dict[str, float]] = {
 # ---------------------------------------------------------------------------
 
 _ACTIVITY_THRESHOLD_FULL: dict[str, float] = {
-    "late night":     1 / 4,
-    "early morning":  1 / 2,
-    "morning":        1 / 2,
-    "noon":           1 / 4,
-    "afternoon":      1 / 3,
-    "late afternoon": 1 / 2,
-    "night":          1 / 3,
+    "late night":     1 / 3,
+    "early morning":  1 / 1,
+    "morning":        1 / 1,
+    "noon":           1 / 3,
+    "afternoon":      1 / 2,
+    "late afternoon": 1 / 1,
+    "night":          2 / 3,
 }
 
 _ACTIVITY_THRESHOLD_LIMITED: dict[str, float] = {
@@ -445,9 +445,15 @@ class XenoCantoProvider(OutdoorsProvider):
 
             if self._ticks_on_current >= allotted:
                 self._ticks_on_current = 0
-                self._selection_index  = (self._selection_index + 1) % len(selection)
+                if len(selection) > 1:
+                    # Pick a random index, avoiding the exact same one back-to-back
+                    choices = [i for i in range(len(selection)) if i != self._selection_index]
+                    self._selection_index = random.choice(choices)
+                else:
+                    self._selection_index = 0
+                
                 next_rec = selection[self._selection_index]
-                print(f"[XenoCantoProvider] Index advanced → {self._selection_index} "
+                print(f"[XenoCantoProvider] Index randomly changed → {self._selection_index} "
                       f"(XC{next_rec.get('id')} — {next_rec.get('en', '?')})")
 
             # Roll activity level for this tick — perception methods read this.
@@ -497,7 +503,7 @@ class XenoCantoProvider(OutdoorsProvider):
             self._evict_selection_audio(old_selection)
             with self._lock:
                 self._active_selection = restored
-                self._selection_index  = 0
+                self._selection_index  = random.randrange(len(restored)) if restored else 0
                 self._ticks_on_current = 0
                 self._active_time_tag  = time_tag
             print(f"[XenoCantoProvider] Restored selection from disk — "
@@ -514,7 +520,7 @@ class XenoCantoProvider(OutdoorsProvider):
 
         with self._lock:
             self._active_selection = selection
-            self._selection_index  = 0
+            self._selection_index  = random.randrange(len(selection)) if selection else 0
             self._ticks_on_current = 0
             self._active_time_tag  = time_tag
 

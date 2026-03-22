@@ -6,6 +6,7 @@
 
 # --- Core Game State & Flow ---
 # Variables controlling the overall game flow, timing, and activity.
+lore_panel_dirty: bool = False
 
 last_activity_time = 0 # Initialize timer at start - will be set after pygame.init()
 autonomous_action_paused_until_ms = 0 # Time in milliseconds until the autonomous action/input lock is paused.

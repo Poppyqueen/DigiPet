@@ -37,31 +37,6 @@ from pygame_int.main_digipet import animation, gui
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-_lore_update_in_flight = False
-
-def _trigger_lore_panel_update(chatbot) -> None:
-    global _lore_update_in_flight
-    if _lore_update_in_flight:
-        return
-    _lore_update_in_flight = True
-
-    def _post(room_data):
-        pygame.event.post(
-            pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_data)
-        )
-
-    def _stream():
-        global _lore_update_in_flight
-        try:
-            asyncio.run(
-                chatbot.functions_builder.get_current_tools_info_streaming(_post)
-            )
-        except Exception as exc:
-            print(f"[signal] lore update error: {type(exc).__name__}: {exc}")
-        finally:
-            _lore_update_in_flight = False
-
-    threading.Thread(target=_stream, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
@@ -313,7 +288,6 @@ def make_signal_handler(chatbot_ref: list, music_player_ref: list):
             return
 
         # Every signal triggers a lore panel refresh.
-        _trigger_lore_panel_update(chatbot)
 
         action_type = signal_data.get("type")
         handler     = _SIGNAL_HANDLERS.get(action_type)

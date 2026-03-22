@@ -84,10 +84,9 @@ def calculate_lore_body_height(prepared_content_dict: dict) -> int:
 # ---------------------------------------------------------------------------
 
 def draw_lore_panel(screen: pygame.Surface) -> None:
-    """
-    Draw the full-screen modal lore panel.
-    Only call when state.lore_panel_visible is True.
-    """
+    if state.lore_panel_dirty:
+        state.lore_panel_dirty = False
+
     font = gui_core.get_font()
     lore_rects = gui_core.get_lore_panel_rects()
     if font is None or not lore_rects:

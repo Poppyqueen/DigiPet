@@ -199,7 +199,7 @@ def _load_initial_game_state(chatbot: BaseChatbot) -> None:
 # reg contains all the initialized tool services from tools/tools_builder/tool_registry.py
 
 def _build_tick_registry(chatbot,) -> TickRegistry:
-    registry = TickRegistry(chatbot)
+    registry = TickRegistry()
     fb = chatbot.functions_builder
     reg = fb.registry
 
@@ -210,10 +210,11 @@ def _build_tick_registry(chatbot,) -> TickRegistry:
     registry.register("lighthouse",  reg.lighthouse.lighthouse_tick, interval_ms=idle_ms * 0.6) # each 60% of idle timeout
     registry.register("tv",          reg.tv_controller.tv_tick,      interval_ms=idle_ms * 1.5) # each 150% of idle timeout
     registry.register("item_toggle", reg.item_toggle.tick,           interval_ms=idle_ms * 2.2) # 2.2, each 220% of idle timeout
-    registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=idle_ms * 1.8)
+    registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=idle_ms * 1.5)
 
     return registry
-def _splash(screen: pygame.Surface) -> None:
+
+def _splash() -> None:
     """Play intro sound and show the splash image popup."""
     if pygame.mixer.get_init():
         try:
@@ -261,7 +262,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     _load_initial_game_state(chatbot)
     tick_registry        = _build_tick_registry(chatbot)
     state.current_emote  = chatbot.state_manager.get_emotes_data().current_emote
-    _splash(screen)
+    _splash()
     state.last_activity_time = pygame.time.get_ticks()
     return GameContext(
         screen            = screen,

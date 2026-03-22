@@ -28,8 +28,7 @@ from pygame_int.juke_box import jukebox
 from pygame_runtime.signal_handler import make_signal_handler
 from pygame_runtime.initializer    import initialize
 from pygame_runtime.event_handler  import handle_custom_events, handle_input_events, update_scroll_clamp, update_cursor_lock
-from pygame_runtime.workers        import start_chatbot_request
-
+from pygame_runtime.workers import start_chatbot_request, start_lore_panel_refresh
 
 
 # ---------------------------------------------------------------------------
@@ -224,9 +223,13 @@ def main() -> None:
 
         # --- Update phase (logic that must run before rendering) ---
         is_input_locked = state.agent_sleeping or state.chatbot_is_processing
-        update_scroll_clamp()            # Keeps state.scroll_y in bounds — not draw_gui's job
-        update_cursor_lock(is_input_locked)  # Hides cursor when locked — not draw_gui's job
-        gui.gui_clock.update_sleep_countdown()   
+        update_scroll_clamp()
+        update_cursor_lock(is_input_locked)
+        gui.gui_clock.update_sleep_countdown()
+
+        if state.lore_panel_visible and state.lore_panel_dirty:
+            state.lore_panel_dirty = False
+            start_lore_panel_refresh(chatbot=ctx.chatbot)
 
         # --- Draw ---
         gui.draw_gui(screen=ctx.screen, current_time_ms=current_time_ms, is_input_locked=is_input_locked)

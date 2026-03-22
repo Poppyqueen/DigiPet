@@ -81,21 +81,19 @@ class OutdoorsPerception:
     # ------------------------------------------------------------------
 
     def tick(self) -> None:
-        """
-        Called by reg.outdoors.tick() on every outdoors tick interval.
-
-        Increments the global tick counter then delegates to each registered
-        provider whose tick_every cadence aligns with the current count.
-        Providers without meaningful tick behaviour inherit the base no-op.
-        """
         self._tick_count += 1
         for provider in self._providers.values():
             if self._tick_count % provider.tick_every == 0:
                 try:
                     provider.tick()
                 except Exception as e:
-                    print(f"[OutdoorsPerception] tick error in "
-                          f"'{provider.outdoors_type}': {e}")
+                    print(f"[OutdoorsPerception] tick error in '{provider.outdoors_type}': {e}")
+        self.tick_audio()
+                    
+    def tick_audio(self) -> None:
+        """Fire audio/popup signals for the current room — called from tick, independent of lore panel."""
+        outdoors_types = self._get_outdoors_types_from_room()
+        self._collect_perception(outdoors_types, level="full")
 
     # ------------------------------------------------------------------
     # Perception collection

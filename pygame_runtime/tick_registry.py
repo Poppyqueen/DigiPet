@@ -9,50 +9,48 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import pygame
-
 from pygame_int import config, state
 
 
 @dataclass
 class _ServiceEntry:
-    name:           str
-    fn:             Callable[[], None]
-    interval_ms:    float
-    next_tick_ms:   float = 0.0
-    enabled:        bool  = True
+    name:        str
+    callback:    Callable
+    interval_ms: float
+    next_tick_ms: float = 0
+    enabled:     bool   = True
 
 
 class TickRegistry:
 
-    def __init__(self, chatbot) -> None:
+    def __init__(self):
         self._services: dict[str, _ServiceEntry] = {}
-        self._chatbot = chatbot
 
-    def register(self, name, fn, interval_ms, *, start_delay_ms=0.0, enabled=True):
-        now = pygame.time.get_ticks()
+    def register(self, name: str, callback: Callable, interval_ms: float, enabled: bool = True):
         self._services[name] = _ServiceEntry(
             name         = name,
-            fn           = fn,
+            callback     = callback,
             interval_ms  = interval_ms,
-            next_tick_ms = now + interval_ms + start_delay_ms,
             enabled      = enabled,
         )
 
-    def unregister(self, name):  self._services.pop(name, None)
-    def enable(self, name):
-        if name in self._services: self._services[name].enabled = True
-    def disable(self, name):
-        if name in self._services: self._services[name].enabled = False
-    def set_interval(self, name, interval_ms):
-        if name in self._services: self._services[name].interval_ms = interval_ms
+    def unregister(self, name):
+        self._services.pop(name, None)
 
-    # ------------------------------------------------------------------
-    # Per-frame update — MUST stay cheap; never block here
-    # ------------------------------------------------------------------
+    def enable(self, name):
+        if name in self._services:
+            self._services[name].enabled = True
+
+    def disable(self, name):
+        if name in self._services:
+            self._services[name].enabled = False
+
+    def set_interval(self, name, interval_ms):
+        if name in self._services:
+            self._services[name].interval_ms = interval_ms
 
     def tick(self, current_time_ms, chatbot_is_processing, agent_sleeping) -> None:
         any_fired = False
-
         for entry in self._services.values():
             if not entry.enabled:
                 continue
@@ -60,46 +58,20 @@ class TickRegistry:
                 continue
             if chatbot_is_processing and not agent_sleeping:
                 continue
-
             self._fire(entry, current_time_ms)
             any_fired = True
 
         if any_fired:
-            self._post_lore_update()
+            pygame.event.post(pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT))
 
     def _fire(self, entry: _ServiceEntry, current_time_ms: int) -> None:
         entry.next_tick_ms = current_time_ms + entry.interval_ms
-        print(f"[TickRegistry] Firing '{entry.name}'")
 
         def _worker():
             try:
-                entry.fn()
+                print(f"[TickRegistry] Firing '{entry.name}'")
+                entry.callback()
             except Exception as exc:
                 print(f"[TickRegistry] {entry.name} error: {type(exc).__name__}: {exc}")
 
         threading.Thread(target=_worker, daemon=True, name=f"tick-{entry.name}").start()
-
-    def _post_lore_update(self) -> None:
-        from pygame_runtime.async_loop import mcp_loop
-
-        if getattr(self, '_lore_update_in_flight', False):
-            return
-        self._lore_update_in_flight = True
-
-        def _worker():
-            try:
-                future = mcp_loop.run(
-                    self._chatbot.functions_builder.get_current_tools_info()
-                )
-                room_info = future.result(timeout=30)
-                if not isinstance(room_info, dict):
-                    room_info = {}
-                pygame.event.post(
-                    pygame.event.Event(config.UPDATE_LORE_DISPLAY_EVENT, room_data=room_info)
-                )
-            except Exception as exc:
-                print(f"[TickRegistry] lore post error: {type(exc).__name__}: {exc}")
-            finally:
-                self._lore_update_in_flight = False
-
-        threading.Thread(target=_worker, daemon=True, name="tick-lore-update").start()

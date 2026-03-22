@@ -89,17 +89,16 @@ def _on_chatbot_response(event, chatbot, current_time_ms: int) -> None:
 
 
 def _on_update_lore_display(event) -> None:
-    room_data  = getattr(event, "room_data", {})
-    lore_title = room_data.get("title", "Info Title Not Found")
-    lore_body  = room_data.get("body",  "No content received.")
-
-    print(f"[event] UPDATE_LORE_DISPLAY — title: {lore_title}")
-    state.lore_panel_content = gui_lore_panel.prepare_lore_content_data(
-        lore_title, lore_body
-    )
-    if state.lore_panel_visible:
-        state.lore_panel_scroll_y = 0
-
+    room_data = getattr(event, "room_data", None)
+    if room_data:
+        lore_title = room_data.get("title", "")
+        lore_body  = room_data.get("body", "")
+        print(f"[event] UPDATE_LORE_DISPLAY — title: {lore_title}")
+        state.lore_panel_content = gui_lore_panel.prepare_lore_content_data(
+            lore_title, lore_body
+        )
+    else:
+        state.lore_panel_dirty = True
 
 def _on_room_inventory(event) -> None:
     item_list = getattr(event, "item_list", None)
