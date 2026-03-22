@@ -460,7 +460,8 @@
         "accessible": true,
         "outdoors_type": [
             "earth-weather",
-            "ocean-views"
+            "ocean-views",
+            "xeno-canto"
         ],
         "toggle_state": {
             "toggle_state": "off",

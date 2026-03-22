@@ -148,6 +148,21 @@ class ToolRegistry:
         self.wikipedia_enabled     = config_manager.get_config("Tools", "enable_wikipedia")
         self.searxng_enabled       = config_manager.get_config("Tools", "enable_searxng")
 
+        # self.xeno_canto_enabled = True # config_manager.get_config("OutdoorsPerception", "enable_xeno_canto") # TODO: Add config screen or toggle, this flag does nothing right now
+
+        # self.lat  = config_manager.get_config("location", "latitude") # TODO: Cloned code from BaseChatbot, fix this, share it somehow, original in 'ai_managers/agents/abstract_agent.py'
+        # self.long = config_manager.get_config("location", "longitude")
+        # _env_lat  = os.getenv("LATITUDE") 
+        # _env_long = os.getenv("LONGITUDE")
+        # if not self.lat or not self.long:
+        #     self.lat, self.long  = _env_lat, _env_long
+
+        # self.xeno_canto = None
+        # #if self.xeno_canto_enabled:
+        # canto_key = os.getenv("XENO_CANTO_API_KEY") # Change this for a toggle on config GUI screen
+        # if canto_key:
+        #     self.xeno_canto = XenoCantoLoc(self.lat, self.long, api_key=canto_key)
+
 
 
         # =================================================================
@@ -165,7 +180,7 @@ class ToolRegistry:
         self.consumables_tools = ConsumablesTools(state_manager, signal)
 
         self.tv_controller     = TVController(state_manager, signal, config_manager)
-        self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo)
+        self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo, config_manager)
         self.comfort = ComfortAffordances(state_manager, signal, memory_manager, self.items_crafter, self.item_store)
 
         self.water_points = WaterInstallation(state_manager, signal)

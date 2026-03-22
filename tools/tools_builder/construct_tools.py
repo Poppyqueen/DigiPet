@@ -79,14 +79,14 @@ class FunctionBuilder:
         instance = cls(
             state_manager=state_manager, signal=signal,
             subdirectory=subdirectory, memory_manager=memory_manager,
-            config_manager=config_manager, open_meteo=open_meteo,
+            config_manager=config_manager, open_meteo=open_meteo
         )
         # ToolRegistry.create() is now sync — no await needed
         instance.registry = ToolRegistry.create(
             state_manager=state_manager, signal=signal,
             subdirectory=subdirectory, memory_manager=memory_manager,
             config_manager=config_manager, open_meteo=open_meteo,
-            get_context_fn=instance._get_current_context,
+            get_context_fn=instance._get_current_context
         )
         instance.tool_definitions = instance.registry.tool_definitions
         instance.tool_definitions["base_functions"]["functions"]["examine_item"] = (

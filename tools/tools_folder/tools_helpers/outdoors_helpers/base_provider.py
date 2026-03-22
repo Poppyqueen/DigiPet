@@ -42,3 +42,7 @@ class OutdoorsProvider(ABC):
         the aperture is accessible.
         """
         ...
+
+
+    def get_sound_bytes(self) -> tuple[bytes, int] | None:
+        return None

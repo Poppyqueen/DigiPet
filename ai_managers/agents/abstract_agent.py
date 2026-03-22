@@ -11,6 +11,7 @@ from typing import Optional
 
 from utils.capture_text import TextCapture
 from utils.open_meteo_handle import OpenMeteoLoc
+
 from utils.loc_datetime import datetime as loc_datetime
 
 from inventory_items.inventory_manager import InventoryHouseManager
@@ -25,6 +26,7 @@ from tts_providers.espeak_ng_provider import ESpeakNGProvider
 from tts_providers.piper_provider import PiperTTSProvider
 
 import shutil
+
 
 
 from dotenv import load_dotenv
@@ -83,20 +85,20 @@ class BaseChatbot(ABC):
         self.text_capture = TextCapture(filepath=ai_data_filepath)
 
         # ── Location ─────────────────────────────────────────────────
-        lat  = config_manager.get_config("location", "latitude")
-        long = config_manager.get_config("location", "longitude")
+        self.lat  = config_manager.get_config("location", "latitude")
+        self.long = config_manager.get_config("location", "longitude")
         _env_lat  = os.getenv("LATITUDE")
         _env_long = os.getenv("LONGITUDE")
 
-        location_source = "config"
-        if not lat or not long:
-            lat, long  = _env_lat, _env_long
-            location_source = "environment variables"
+        if not self.lat or not self.long:
+            self.lat, self.long  = _env_lat, _env_long
 
-        self.open_meteo = OpenMeteoLoc(long=long, lat=lat)
-        loc_datetime.set_coordinates(lat, long)
+        
 
-        print(f"[{type(self).__name__}] Location ({location_source}): {lat}, {long}")
+        self.open_meteo = OpenMeteoLoc(long=self.long, lat=self.lat)
+        loc_datetime.set_coordinates(self.lat, self.long)
+
+        print(f"[{type(self).__name__}]: {self.lat}, {self.long}")
         print(f"  Timezone: {self.open_meteo.get_timezone()}")
         print(f"  Weather : {self.open_meteo.get_full_weather()}")
 

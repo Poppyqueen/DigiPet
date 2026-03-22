@@ -236,48 +236,59 @@ class jukebox:
              print(f"An unexpected error occurred playing sound effect '{sound_path}': {e}")
 
 
-    def play_raw_sound_effect(self, raw_audio_data):
-        """
-        Loads and plays a sound effect from raw in-memory audio data
-        without stopping background music.
-        If a sound effect was previously started by this method (or play_sound_effect)
-        and is still playing, it will be stopped before the new sound effect is played.
-        Applies the stored SFX volume to the sound.
-
-        Args:
-            raw_audio_data (bytes or bytearray or file-like object):
-                The audio data in a format supported by pygame.mixer.Sound(),
-                e.g., bytes content of a .wav, .ogg, or .mp3 file, or an
-                io.BytesIO object wrapping such data.
-        """
+    def play_raw_sound_effect(self, raw_audio_data, sample_rate: int = 44100):
         if not self.initialized:
-            print("Error: Jukebox not initialized. Cannot play raw sound effect.")
+            print("[Jukebox] play_raw_sound_effect: not initialized, skipping.")
             return
 
+        print(f"[Jukebox] play_raw_sound_effect called. "
+            f"Type: {type(raw_audio_data)}, "
+            f"Length: {len(raw_audio_data) if raw_audio_data else 'None'}")
+
         if not raw_audio_data:
-            print("Error: No raw audio data provided to play_raw_sound_effect.")
+            print("[Jukebox] play_raw_sound_effect: empty data, skipping.")
             return
 
         try:
-            # Stop the previously tracked sound effect channel if it's busy
+            import miniaudio
+            import io
+
+            # Log the first bytes to check the format header
+            header = raw_audio_data[:4] if len(raw_audio_data) >= 4 else raw_audio_data
+            print(f"[Jukebox] Audio header bytes: {header.hex()} "
+                f"(expected MP3: 49 44 33 or ff fb, "
+                f"WAV: 52 49 46 46)")
+
+            # Ensure we have plain bytes — requests_cache may return memoryview
+            if not isinstance(raw_audio_data, (bytes, bytearray)):
+                print(f"[Jukebox] Converting {type(raw_audio_data)} → bytes")
+                raw_audio_data = bytes(raw_audio_data)
+
+            print("[Jukebox] Attempting miniaudio.decode()...")
+            decoded = miniaudio.decode(
+                raw_audio_data,
+                output_format=miniaudio.SampleFormat.SIGNED16,
+                nchannels=2,
+                sample_rate=sample_rate,   # use actual rate from recording
+            )
+
+            # Pass raw PCM bytes directly — no BytesIO wrapper
+            raw_pcm = bytes(decoded.samples)
+            print(f"[Jukebox] PCM bytes: {len(raw_pcm)}, "
+                f"frames: {decoded.num_frames}, "
+                f"channels: {decoded.nchannels}, "
+                f"rate: {decoded.sample_rate}")
+
+            sound = pygame.mixer.Sound(buffer=raw_pcm)
+            sound.set_volume(self.sfx_volume)
+
             if self.current_sfx_channel and self.current_sfx_channel.get_busy():
                 self.current_sfx_channel.stop()
 
-            # Pygame's Sound constructor can take bytes, bytearray, or file-like objects
-            # If `raw_audio_data` is just bytes (e.g., from reading a file with .read()),
-            # you can pass it directly. If it's a very large string or something
-            # that needs to be treated as a file, io.BytesIO is useful.
-            # Assuming raw_audio_data is the full content of a sound file (e.g., WAV, OGG).
-            sfx_sound = pygame.mixer.Sound(raw_audio_data)
+            self.current_sfx_channel = sound.play()
+            print(f"[Jukebox] Playing on channel: {self.current_sfx_channel}")
 
-            # Apply the stored SFX volume directly to the Sound object
-            sfx_sound.set_volume(self.sfx_volume)
-
-            # Play the sound effect and store the channel
-            self.current_sfx_channel = sfx_sound.play()
-            print(f"Playing raw sound effect (Volume: {self.sfx_volume:.2f})")
-
-        except pygame.error as e:
-            print(f"Error loading or playing raw sound effect: {e}")
         except Exception as e:
-             print(f"An unexpected error occurred playing raw sound effect: {e}")
+            import traceback
+            print(f"[Jukebox] Failed to play raw sound: {e}")
+            traceback.print_exc()
