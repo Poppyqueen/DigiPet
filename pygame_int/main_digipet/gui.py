@@ -185,12 +185,6 @@ def draw_gui(screen: pygame.Surface, current_time_ms: int, is_input_locked: bool
         print("[gui] draw_gui called before font is initialised.")
         return
 
-    # ---- Splash phase: only draw image popups ----
-    if state.is_initial_popup_phase:
-        gui_popups.draw_active_image_popups(screen)
-        gui_popups.draw_popups(screen)
-        return
-
     # ---- Background ----
     if state.background_image:
         screen.blit(state.background_image, (0, 0))

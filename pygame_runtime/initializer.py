@@ -60,17 +60,15 @@ class GameContext:
     tick_registry:       TickRegistry
 
 def _init_jukebox_silent(chatbot: BaseChatbot) -> Optional[jukebox]:
-    """
-    Initialise the jukebox immediately so sound effects work from frame one,
-    but pause music until the splash clears.
-    """
+    # Name is now a misnomer — rename to _init_jukebox if you like.
+    # Splash is done by the time this runs, so start music immediately.
     if not pygame.mixer.get_init():
         return None
     try:
-        room_data    = chatbot.state_manager.get_current_room_data()
-        player       = jukebox(f"style/sounds/music/rooms/{room_data.music}.mp3")
-        player.stop()   # silence music — splash hasn't cleared yet
-        print("[init] Jukebox ready (music paused until splash clears).")
+        room_data = chatbot.state_manager.get_current_room_data()
+        player    = jukebox(f"style/sounds/music/rooms/{room_data.music}.mp3")
+        player.play_new_song(f"style/sounds/music/rooms/{room_data.music}.mp3")
+        print("[init] Jukebox ready and playing.")
         return player
     except Exception as exc:
         print(f"[init] Jukebox init failed: {exc}")
@@ -214,8 +212,21 @@ def _build_tick_registry(chatbot,) -> TickRegistry:
 
     return registry
 
-def _splash() -> None:
-    """Play intro sound and show the splash image popup."""
+# Replace the existing _splash() function entirely:
+
+def _splash(screen: pygame.Surface, font: pygame.font.Font) -> None:
+    """
+    True blocking intro screen. Runs its own tight event loop so the
+    game world (chatbot, ticks, signals) doesn't exist yet.
+    Exits on timer expiry OR any key/mouse press.
+    """
+    try:
+        image = pygame.image.load("style/images/house_splash_v2.png").convert_alpha()
+        image = pygame.transform.scale(image, (200, 200))
+    except pygame.error as exc:
+        print(f"[init] Splash image load failed: {exc}")
+        image = None
+
     if pygame.mixer.get_init():
         try:
             sound = pygame.mixer.Sound("style/sounds/intro.mp3")
@@ -224,9 +235,42 @@ def _splash() -> None:
         except pygame.error as exc:
             print(f"[init] Could not play intro sound: {exc}")
 
-    gui.gui_popups.show_image_popup(
-        "style/images/house_splash_v2.png", 5000, 1000, 3000, popup_type=0
-    )
+    DURATION_MS = 5000
+    FADE_IN_MS  = 1000
+    FADE_OUT_MS = 3000
+    start_ms    = pygame.time.get_ticks()
+    clock       = pygame.time.Clock()
+
+    while True:
+        now     = pygame.time.get_ticks()
+        elapsed = now - start_ms
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                return   # Skip splash on any input
+
+        if elapsed >= DURATION_MS:
+            return
+
+        # Alpha calculation: fade in → hold → fade out
+        if elapsed < FADE_IN_MS:
+            alpha = int(255 * elapsed / FADE_IN_MS)
+        elif elapsed > DURATION_MS - FADE_OUT_MS:
+            alpha = int(255 * (DURATION_MS - elapsed) / FADE_OUT_MS)
+        else:
+            alpha = 255
+
+        screen.fill((0, 0, 0))
+        if image:
+            image.set_alpha(alpha)
+            rect = image.get_rect(center=screen.get_rect().center)
+            screen.blit(image, rect)
+
+        pygame.display.flip()
+        clock.tick(60)
 
 
 def _calculate_sized_by_steps(
@@ -246,13 +290,16 @@ def _calculate_sized_by_steps(
 
 
 def initialize(game_mode: str, signal_callback) -> GameContext:
-    # No longer async — MCP connections happen on mcp_loop synchronously
     InitialStateConst()
     bots_archive_dir = f"data_archive/{game_mode}/"
     screen, font     = _init_pygame()
     config_manager   = _load_config(bots_archive_dir, screen, font)
     _apply_theme_and_settings(config_manager)
-    idle_time_mins   = (
+
+    # ✅ Splash runs HERE — before chatbot, ticks, or signals exist
+    _splash(screen, font)
+
+    idle_time_mins = (
         config_manager.get_config("game_settings", "idle_time_minutes")
         or config.IDLE_TIMEOUT_MINUTES
     )
@@ -260,10 +307,10 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
         game_mode, bots_archive_dir, config_manager, signal_callback
     )
     _load_initial_game_state(chatbot)
-    tick_registry        = _build_tick_registry(chatbot)
-    state.current_emote  = chatbot.state_manager.get_emotes_data().current_emote
-    _splash()
+    tick_registry       = _build_tick_registry(chatbot)
+    state.current_emote = chatbot.state_manager.get_emotes_data().current_emote
     state.last_activity_time = pygame.time.get_ticks()
+
     return GameContext(
         screen            = screen,
         font              = font,

@@ -273,7 +273,7 @@ def draw_active_image_popups(screen: pygame.Surface) -> None:
     # Draw type-0 splash background first.
     if 0 in _active_image_popups:
         p = _active_image_popups[0]
-        if p.visible and p.background_surface and state.is_initial_popup_phase:
+        if p.visible and p.background_surface:
             screen.blit(p.background_surface, (0, 0))
 
     for popup in _active_image_popups.values():

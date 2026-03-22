@@ -11,7 +11,6 @@ lore_panel_dirty: bool = False
 last_activity_time = 0 # Initialize timer at start - will be set after pygame.init()
 autonomous_action_paused_until_ms = 0 # Time in milliseconds until the autonomous action/input lock is paused.
 chatbot_is_processing = False # Indicates if the chatbot is currently generating a response.
-is_initial_popup_phase = True # Flag for displaying initial game information popups.
 
 agent_sleeping = False
 

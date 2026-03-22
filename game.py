@@ -83,25 +83,6 @@ def add_items(items_list: list, room_id: str) -> None:
     gui.gui_text_utils.add_message_to_history("Items added successfully!", "system")
 
 
-def _maybe_start_music_after_splash() -> None:
-    """
-    Called once per frame during the splash phase.
-    Once the splash clears, start playing music on the already-initialised player.
-    """
-    if gui.gui_popups.is_any_image_popup_currently_active():
-        return  # Splash still showing — do nothing.
-
-    state.is_initial_popup_phase = False
-    music_player = ctx.music_player_ref[0]
-    if music_player:
-        try:
-            room_data = ctx.chatbot.state_manager.get_current_room_data()
-            music_player.play_new_song(
-                f"style/sounds/music/rooms/{room_data.music}.mp3"
-            )
-            print("[game] Music started after splash cleared.")
-        except Exception as exc:
-            print(f"[game] Could not start music after splash: {exc}")
 
 
 def _trigger_autonomous_action(current_time_ms: int) -> None:
@@ -234,9 +215,6 @@ def main() -> None:
         # --- Draw ---
         gui.draw_gui(screen=ctx.screen, current_time_ms=current_time_ms, is_input_locked=is_input_locked)
 
-        # --- Init jukebox once splash clears ---
-        if state.is_initial_popup_phase:
-            _maybe_start_music_after_splash()
 
         pygame.display.flip()
 
