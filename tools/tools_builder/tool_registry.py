@@ -479,16 +479,6 @@ class ToolRegistry:
                 "use_level": "dual_use"
                 # No perception tools
             },
-            "fenestration_apertures": { # Windows, Light wells, portholes
-                "definitions": fenestration_apertures_tools,
-                "item_types": ["fenestration_aperture"],
-                "use_level": "room_only",
-                "functions": {
-                    "look_outdoors_through_fenestration": self.outdoors_perception.look_through_aperture
-                },
-                "display_information": self.outdoors_perception.window_perception,
-                "agent_information": self.outdoors_perception.window_perception,
-            },
             "nook_item": { # Beds, tents, sofas and other places to sleep on
                 "functions": {
                     "sleep_on_item":        self.comfort.sleep_on_item,
@@ -568,6 +558,17 @@ class ToolRegistry:
                 "display_information": self.garden_manager.get_current_accessible_garden_gui,
                 "agent_information": self.garden_manager.get_current_accessible_garden_gui,
             },
+
+            "fenestration_apertures": { # Windows, Light wells, portholes
+                "definitions": fenestration_apertures_tools,
+                "item_types": ["fenestration_aperture"],
+                "use_level": "room_only",
+                "functions": {
+                    "look_outdoors_through_fenestration": self.outdoors_perception.look_through_aperture
+                },
+                "display_information": self.outdoors_perception.window_perception,
+                "agent_information": self.outdoors_perception.window_perception,
+            },
             # ----------------------------------------------------------------
             # Information-only entries (no functions key — availability-gated
             # agent_information sources, not action tools)
@@ -579,8 +580,8 @@ class ToolRegistry:
                 # because is_tool_available only None-checks values that exist.
                 #"definitions": garden_room_tools,
                 "room_types": ["outdoors_area"], # soft link with garden manager, it is looking for room with this type and watering plants that are in them
-                "display_information": self.outdoors_perception.outdoors_perception,
-                "agent_information": self.outdoors_perception.outdoors_perception_text_only,
+                "display_information": self.outdoors_perception.gui_outdoors_perception,
+                "agent_information": self.outdoors_perception.outdoors_perception,
             },
             # ----------------------------------------------------------------
             # Special toggle, internal, do not touch!

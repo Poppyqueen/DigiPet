@@ -208,7 +208,7 @@ def _build_tick_registry(chatbot,) -> TickRegistry:
     registry.register("lighthouse",  reg.lighthouse.lighthouse_tick, interval_ms=idle_ms * 0.6) # each 60% of idle timeout
     registry.register("tv",          reg.tv_controller.tv_tick,      interval_ms=idle_ms * 1.5) # each 150% of idle timeout
     registry.register("item_toggle", reg.item_toggle.tick,           interval_ms=idle_ms * 2.2) # 2.2, each 220% of idle timeout
-    registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=idle_ms * 1.5)
+    registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=idle_ms * 0.75)
 
     return registry
 
@@ -249,8 +249,8 @@ def _splash(screen: pygame.Surface, font: pygame.font.Font) -> None:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 raise SystemExit
-            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
-                return   # Skip splash on any input
+            # if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+            #     return   # Skip splash on any input
 
         if elapsed >= DURATION_MS:
             return

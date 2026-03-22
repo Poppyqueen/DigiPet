@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager  # just for typing
@@ -74,10 +74,10 @@ class OutdoorsPerception:
         Walk the outdoors_type list and return (type_name, provider_or_None)
         pairs. Unknown types get None so callers can emit an inline note.
         """
-        return [(t, self._providers.get(t)) for t in outdoors_types]
+        return[(t, self._providers.get(t)) for t in outdoors_types]
 
     # ------------------------------------------------------------------
-    # Tick
+    # Tick & Audio
     # ------------------------------------------------------------------
 
     def tick(self) -> None:
@@ -88,16 +88,53 @@ class OutdoorsPerception:
                     provider.tick()
                 except Exception as e:
                     print(f"[OutdoorsPerception] tick error in '{provider.outdoors_type}': {e}")
-        self.tick_audio()
+        self.ambient_audio_play()
                     
-    def tick_audio(self) -> None:
-        """Fire audio/popup signals for the current room — called from tick, independent of lore panel."""
-        outdoors_types = self._get_outdoors_types_from_room()
-        self._collect_perception(outdoors_types, level="full")
+    def ambient_audio_play(self, outdoors_types: list[str] | None = None) -> None:
+        """
+        Fire audio signals for the given outdoors_types.
+        If none are provided, falls back to the current room's environment.
+        This handles all outdoors audio concerns independently from the text perception.
+        """
+        if outdoors_types is None:
+            outdoors_types = self._get_outdoors_types_from_room()
+        
+        for _text, _popup, audio in self._gather_provider_outputs(outdoors_types, level="full"):
+            if audio:
+                audio_bytes, sample_rate = audio
+                self._send_signal({
+                    "type":           "play_sound",
+                    "raw_audio_data": audio_bytes,
+                    "sample_rate":    sample_rate,
+                    "override":       False,
+                })
 
     # ------------------------------------------------------------------
-    # Perception collection
+    # Perception collection & Centralized Helpers
     # ------------------------------------------------------------------
+
+    def _gather_provider_outputs(
+        self, outdoors_types: list[str], level: str
+    ) -> Generator[tuple[str, str | None, tuple | None], None, None]:
+        """
+        Helper generator that centralizes the fetching of perception data.
+        Yields (text, popup, audio). For level='limited', audio is always None.
+        """
+        for type_name, provider in self._resolve_providers(outdoors_types):
+            if provider is None:
+                yield f"[Perception source '{type_name}' is currently unavailable.]", None, None
+                continue
+            
+            try:
+                if level == "limited":
+                    text, popup = provider.get_limited_perception()
+                    audio = None
+                else:
+                    text, popup, audio = provider.get_full_perception()
+                yield text, popup, audio
+            except Exception as e:
+                yield f"[Perception source '{type_name}' encountered an error: {e}]", None, None
+
 
     def _collect_perception(
         self,
@@ -109,35 +146,15 @@ class OutdoorsPerception:
         the given level ("limited" or "full"). Unknown types produce an inline
         note. Perception texts are joined with a separator.
 
-        At the "full" level, also fires play_sound and show_message_popup
-        signals for any provider that returns audio or a popup string.
+        Fires show_message_popup signals for any provider that returns a popup.
+        Audio is deliberately ignored here, as it's handled by ambient_audio_play.
         """
-        parts: list[str] = []
+        parts: list[str] =[]
 
-        for type_name, provider in self._resolve_providers(outdoors_types):
-            if provider is None:
-                parts.append(f"[Perception source '{type_name}' is currently unavailable.]")
-                continue
-            try:
-                if level == "limited":
-                    text, popup = provider.get_limited_perception()
-                else:
-                    text, popup, audio = provider.get_full_perception()
-                    if audio:
-                        audio_bytes, sample_rate = audio
-                        self._send_signal({
-                            "type":           "play_sound",
-                            "raw_audio_data": audio_bytes,
-                            "sample_rate":    sample_rate,
-                            "override":       False,
-                        })
-                    if popup:
-                        self._send_signal({"type": "show_message_popup", "message": popup})
-
-                parts.append(text)
-
-            except Exception as e:
-                parts.append(f"[Perception source '{type_name}' encountered an error: {e}]")
+        for text, popup, _audio in self._gather_provider_outputs(outdoors_types, level):
+            if popup:
+                self._send_signal({"type": "show_message_popup", "message": popup})
+            parts.append(text)
 
         return _PROVIDER_SEPARATOR.join(parts) if parts else "[No perception available.]"
 
@@ -176,37 +193,27 @@ class OutdoorsPerception:
     # ------------------------------------------------------------------
     # Public perception methods
     # ------------------------------------------------------------------
-    def outdoors_perception_text_only(self) -> str:
-        """
-        Full perception of the outdoors, text only.
-        Same as outdoors_perception but suppresses all play_sound
-        and show_message_popup signals — returns plain text only.
-        """
-        outdoors_types = self._get_outdoors_types_from_room()
-        parts: list[str] = []
 
-        for type_name, provider in self._resolve_providers(outdoors_types):
-            if provider is None:
-                parts.append(f"[Perception source '{type_name}' is currently unavailable.]")
-                continue
-            try:
-                text, _popup, _audio = provider.get_full_perception()
-                parts.append(text)
-            except Exception as e:
-                parts.append(f"[Perception source '{type_name}' encountered an error: {e}]")
+    def gui_outdoors_perception(self) -> str:
+        self.ambient_audio_play()
+        return self.outdoors_perception()
 
-        return _PROVIDER_SEPARATOR.join(parts) if parts else "[No perception available.]"
     
     def outdoors_perception(self) -> str:
         """
         Full perception of the outdoors. Used for environment awareness in
-        outdoors_area rooms, and as the backing call for look_through_aperture
-        when the aperture is accessible.
-
-        Reads outdoors_type from the current room's extra_data.
+        outdoors_area rooms. 
+        
+        Returns purely textual perception data without triggering any side-effects 
+        (no pop-ups, no audio).
         """
         outdoors_types = self._get_outdoors_types_from_room()
-        return self._collect_perception(outdoors_types, level="full")
+        parts: list[str] =[]
+
+        for text, _popup, _audio in self._gather_provider_outputs(outdoors_types, level="full"):
+            parts.append(text)
+
+        return _PROVIDER_SEPARATOR.join(parts) if parts else "[No perception available.]"
 
     def window_perception(self) -> str:
         """
@@ -222,7 +229,7 @@ class OutdoorsPerception:
         """
         inventory = self.state_manager.get_inventory_state()
 
-        windows = [
+        windows =[
             item for item in inventory.room_items
             if "fenestration_aperture" in item.item_data.get("type", [])
         ]
@@ -230,7 +237,7 @@ class OutdoorsPerception:
         if not windows:
             return ""
 
-        parts = []
+        parts =[]
         for window in windows:
             outdoors_types = self._get_outdoors_types_from_item(window.item_data)
             perception     = self._collect_perception(outdoors_types, level="limited")
@@ -250,10 +257,8 @@ class OutdoorsPerception:
         outdoors_type is read as a flat key from the aperture's item_data,
         falling back to the room's extra_data value, then to the default.
 
-        At the "full" level, _collect_perception fires play_sound signals for
-        any provider that returns audio bytes, and any popup strings (e.g.
-        Xeno-canto recording attribution) are fired as show_message_popup
-        signals — one per provider. Neither fires for inaccessible apertures.
+        Will fire show_message_popup signals for providers that return them 
+        if accessible, but audio is ignored.
         """
         item_object = self.state_manager.find_item(
             item_id=aperture_id,
@@ -264,7 +269,7 @@ class OutdoorsPerception:
             return item_object.error
 
         item_details       = item_object.item_data
-        descriptions       = item_details.get("descriptions", [])
+        descriptions       = item_details.get("descriptions",[])
         accessibility_flag = item_details.get("accessible", True)
 
         item_name = self.state_manager.format_item_for_display(item_details, False)
@@ -281,6 +286,8 @@ class OutdoorsPerception:
                 f"You walk right besides the {item_name}, standing there it allows "
                 f"you to see everything outside, with clarity"
             )
+            # Pass the item-specific outdoors_types so the correct audio is played
+            self.ambient_audio_play(outdoors_types)
         else:
             weather_info = self._collect_perception(outdoors_types, level="limited")
             accessibility_message = (

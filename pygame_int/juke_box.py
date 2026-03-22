@@ -12,6 +12,8 @@ class jukebox:
         # Attribute to track the last SFX channel (still needed for stopping previous SFX)
         self.current_sfx_channel = None
 
+        self.current_sfx_hash = None
+
         self.initialized = False # Start as not initialized
 
         # Check and initialize mixer
@@ -237,32 +239,27 @@ class jukebox:
 
 
     def play_raw_sound_effect(self, raw_audio_data, sample_rate: int = 44100, override: bool = True):
-        if not self.initialized:
-            print("[Jukebox] play_raw_sound_effect: not initialized, skipping.")
+        if not self.initialized or not raw_audio_data:
             return
 
-        print(f"[Jukebox] play_raw_sound_effect called. "
-            f"Type: {type(raw_audio_data)}, "
-            f"Length: {len(raw_audio_data) if raw_audio_data else 'None'}, "
-            f"Override: {override}")
+        # 1. Generate a unique hash for this specific audio data
+        # Using hash() is fast for bytes/bytearrays in Python
+        incoming_hash = hash(raw_audio_data)
 
-        if not raw_audio_data:
-            print("[Jukebox] play_raw_sound_effect: empty data, skipping.")
-            return
+        # 2. Check if this exact sound is already playing
+        if self.current_sfx_channel and self.current_sfx_channel.get_busy():
+            if incoming_hash == self.current_sfx_hash:
+                # It's the same sound and it hasn't finished yet. 
+                # We skip to prevent "stacking" the same audio.
+                return 
 
         try:
             import miniaudio
 
-            header = raw_audio_data[:4] if len(raw_audio_data) >= 4 else raw_audio_data
-            print(f"[Jukebox] Audio header bytes: {header.hex()} "
-                f"(expected MP3: 49 44 33 or ff fb, "
-                f"WAV: 52 49 46 46)")
-
             if not isinstance(raw_audio_data, (bytes, bytearray)):
-                print(f"[Jukebox] Converting {type(raw_audio_data)} → bytes")
                 raw_audio_data = bytes(raw_audio_data)
 
-            print("[Jukebox] Attempting miniaudio.decode()...")
+            # Decode the audio
             decoded = miniaudio.decode(
                 raw_audio_data,
                 output_format=miniaudio.SampleFormat.SIGNED16,
@@ -271,24 +268,25 @@ class jukebox:
             )
 
             raw_pcm = bytes(decoded.samples)
-            print(f"[Jukebox] PCM bytes: {len(raw_pcm)}, "
-                f"frames: {decoded.num_frames}, "
-                f"channels: {decoded.nchannels}, "
-                f"rate: {decoded.sample_rate}")
-
             sound = pygame.mixer.Sound(buffer=raw_pcm)
             sound.set_volume(self.sfx_volume)
 
+            # 3. Handle Playback Logic
             if override:
+                # Stop whatever was playing (even if it was a different sound)
                 if self.current_sfx_channel and self.current_sfx_channel.get_busy():
                     self.current_sfx_channel.stop()
+                
                 self.current_sfx_channel = sound.play()
+                self.current_sfx_hash = incoming_hash # Update the hash
             else:
-                sound.play()
-
-            print(f"[Jukebox] Playing on channel: {self.current_sfx_channel if override else '(untracked)'}")
+                # If override is False, we only play if it's a DIFFERENT sound 
+                # (The duplicate check above already handled the "same sound" case)
+                temp_channel = sound.play()
+                
+                # We still update these so the *next* call knows what is currently "active"
+                self.current_sfx_channel = temp_channel
+                self.current_sfx_hash = incoming_hash
 
         except Exception as e:
-            import traceback
             print(f"[Jukebox] Failed to play raw sound: {e}")
-            traceback.print_exc()

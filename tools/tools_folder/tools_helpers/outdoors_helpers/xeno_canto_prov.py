@@ -59,7 +59,7 @@ import time
 
 
 _SELECTION_CACHE_PATH = ".cache/xeno_canto_selection.json"
-_SELECTION_TTL        = 86400  # 24 hours — matches metadata cache
+_SELECTION_TTL        = 21600  # 6 hours 
 
 # ---------------------------------------------------------------------------
 # Tick constants
@@ -68,7 +68,9 @@ _SELECTION_TTL        = 86400  # 24 hours — matches metadata cache
 # Scaling divisor for converting recording length (seconds) into a tick count.
 # Tune this to control how many ticks a typical recording occupies —
 # lower = more ticks per recording, higher = fewer.
-_SECONDS_PER_TICK: int = 60
+#_SECONDS_PER_TICK: int = 60
+_SECONDS_PER_TICK: int = 120
+
 
 # Fallback tick count when a recording has no parseable length field.
 _DEFAULT_TICKS_PER_RECORDING: int = 3
@@ -157,8 +159,8 @@ _TIME_BLACKLIST: dict[str, set[str]] = {
 _TIME_PREFERENCES: dict[str, dict[str, float]] = {
     "late night": {
         "nocturnal flight call": 1.5,
-        "call":                  0.5,
-        "social call":           0.3,
+        "call":                  0.2,
+        "social call":           0.2,
         "echolocation":          0.8,
         "feeding buzz":          0.6,
     },
@@ -420,7 +422,7 @@ class XenoCantoProvider(OutdoorsProvider):
            length field), the index advances to the next recording in the
            selection and the counter resets.
 
-        2. Rolls a fresh _activity_level float in [0, 1) and snapshots the
+        2. Rolls a fresh _activity_level float in[0, 1) and snapshots the
            current time tag into _active_time_tag_for_activity. Perception
            methods read these values to decide whether wildlife is perceptible
            without performing any roll themselves.
@@ -446,20 +448,38 @@ class XenoCantoProvider(OutdoorsProvider):
             if self._ticks_on_current >= allotted:
                 self._ticks_on_current = 0
                 if len(selection) > 1:
-                    # Pick a random index, avoiding the exact same one back-to-back
-                    choices = [i for i in range(len(selection)) if i != self._selection_index]
-                    self._selection_index = random.choice(choices)
+                    # Initialize tracking if missing, or if the selection list was refreshed
+                    if not hasattr(self, '_seen_indices') or getattr(self, '_selection_id', None) != id(selection):
+                        self._seen_indices = set()
+                        self._selection_id = id(selection)
+                    
+                    # Mark the current recording as seen
+                    self._seen_indices.add(self._selection_index)
+                    
+                    # Gather all indices that haven't been seen yet
+                    unseen =[i for i in range(len(selection)) if i not in self._seen_indices]
+                    
+                    # If the bag is empty (all have been seen), reset it
+                    if not unseen:
+                        self._seen_indices.clear()
+                        # Add the current index back in so we don't repeat it back-to-back across resets
+                        self._seen_indices.add(self._selection_index)
+                        unseen =[i for i in range(len(selection)) if i != self._selection_index]
+                    
+                    # Draw randomly from the unseen bag
+                    self._selection_index = random.choice(unseen)
                 else:
                     self._selection_index = 0
                 
                 next_rec = selection[self._selection_index]
-                print(f"[XenoCantoProvider] Index randomly changed → {self._selection_index} "
+                bag_status = f"({len(self._seen_indices)}/{len(selection)} seen)" if hasattr(self, '_seen_indices') else ""
+                print(f"[XenoCantoProvider] Index randomly changed {bag_status} → {self._selection_index} "
                       f"(XC{next_rec.get('id')} — {next_rec.get('en', '?')})")
 
             # Roll activity level for this tick — perception methods read this.
-            time_tag                          = get_time_tag_from_now() or "morning"
+            time_tag                           = get_time_tag_from_now() or "morning"
             self._active_time_tag_for_activity = time_tag
-            self._activity_level              = random.random()
+            self._activity_level               = random.random()
 
             threshold_full    = _ACTIVITY_THRESHOLD_FULL.get(time_tag, 1 / 4)
             threshold_limited = _ACTIVITY_THRESHOLD_LIMITED.get(time_tag, 1 / 6)
