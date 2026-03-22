@@ -29,13 +29,7 @@ class MarineWeatherProvider(OutdoorsProvider):
             f"Wave height: {structure_marine["wave_height"]:.2f} m",
             f"Wave period: {structure_marine["wave_period"]:.2f} s",
         ])
-        return message
+        return message, None
 
-    def get_full_perception(self) -> str:
-        """
-        Complete weather perception.
-        Used when the agent actively looks through an accessible aperture or
-        is standing in an outdoors_area room — mirrors the original
-        outdoors_perception() output.
-        """
-        return self.open_meteo.get_full_marine() # Get marine weather data in full detail as a string
+    def get_full_perception(self) -> tuple[str, str | None, bool]:
+        return self.open_meteo.get_full_marine(), None, None

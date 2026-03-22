@@ -8,8 +8,6 @@ from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import Outd
 from tools.tools_folder.tools_helpers.outdoors_helpers.earth_weather_prov import EarthWeatherProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.marine_weather_prov import MarineWeatherProvider
 
- 
-
 from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 
 import os
@@ -38,28 +36,27 @@ class OutdoorsPerception:
         # Load config
         self.lat  = config_manager.get_config("location", "latitude") # TODO: Cloned code from BaseChatbot, fix this, share it somehow, original in 'ai_managers/agents/abstract_agent.py'
         self.long = config_manager.get_config("location", "longitude")
-        _env_lat  = os.getenv("LATITUDE") 
+        _env_lat  = os.getenv("LATITUDE")
         _env_long = os.getenv("LONGITUDE")
         if not self.lat or not self.long:
-            self.lat, self.long  = _env_lat, _env_long
-    
+            self.lat, self.long = _env_lat, _env_long
+
         self._providers: dict[str, OutdoorsProvider] = {}
-    
+
         self._register_provider(EarthWeatherProvider(open_meteo))
         self._register_provider(MarineWeatherProvider(open_meteo))
-    
+
         #self.xeno_canto_enabled = True # config_manager.get_config("OutdoorsPerception", "enable_xeno_canto") # TODO: Add config screen or toggle, this flag does nothing right now
 
         self._load_conditionals()
 
-    
         for type_name in OUTDOORS_TYPES:
             if type_name not in self._providers:
                 print(
                     f"[OutdoorsPerception] WARNING: outdoors_type '{type_name}' "
                     f"is defined but has no registered provider."
                 )
-    
+
     # ------------------------------------------------------------------
     # Provider registry
     # ------------------------------------------------------------------
@@ -83,28 +80,45 @@ class OutdoorsPerception:
         """
         return [(t, self._providers.get(t)) for t in outdoors_types]
 
-    def _collect_perception(self, outdoors_types: list[str], level: str) -> str:
+    def _collect_perception(
+        self,
+        outdoors_types: list[str],
+        level: str,
+    ) -> str:
         """
         Walk all requested providers and collect their perception output at
         the given level ("limited" or "full"). Unknown types produce an inline
-        note. Outputs are joined with a separator.
+        note. Perception texts are joined with a separator.
 
-        Parameters
-        ----------
-        outdoors_types : list of outdoors_type strings read from item/room data.
-        level          : "limited" → get_limited_perception()
-                         "full"    → get_full_perception()
+        At the "full" level, also fires play_sound and show_message_popup
+        signals for any provider that returns audio or a popup string.
         """
-        parts = []
+        parts: list[str] = []
+
         for type_name, provider in self._resolve_providers(outdoors_types):
             if provider is None:
                 parts.append(f"[Perception source '{type_name}' is currently unavailable.]")
                 continue
             try:
                 if level == "limited":
-                    parts.append(provider.get_limited_perception())
+                    text, popup = provider.get_limited_perception()
                 else:
-                    parts.append(provider.get_full_perception())
+                    # _collect_perception
+                    text, popup, audio = provider.get_full_perception()
+                    if audio:
+                        audio_bytes, sample_rate = audio
+                        self._send_signal({
+                            "type":           "play_sound",
+                            "raw_audio_data": audio_bytes,
+                            "sample_rate":    sample_rate,
+                            "override":       False,
+                        })
+                    if popup:
+                        self._send_signal({"type": "show_message_popup", "message": popup})
+
+
+                parts.append(text)
+
             except Exception as e:
                 parts.append(f"[Perception source '{type_name}' encountered an error: {e}]")
 
@@ -143,7 +157,7 @@ class OutdoorsPerception:
         return _DEFAULT_OUTDOORS_TYPE
 
     # ------------------------------------------------------------------
-    # Public perception methods  (same surface as before)
+    # Public perception methods
     # ------------------------------------------------------------------
 
     def outdoors_perception(self) -> str:
@@ -181,29 +195,28 @@ class OutdoorsPerception:
 
         parts = []
         for window in windows:
-            outdoors_types = self._get_outdoors_types_from_item(window.item_data)
+            outdoors_types  = self._get_outdoors_types_from_item(window.item_data)
             perception = self._collect_perception(outdoors_types, level="limited")
             parts.append(perception)
 
         return _PROVIDER_SEPARATOR.join(parts)
 
-
     def look_through_aperture(self, aperture_id: int) -> str:
         """
         Returns a string describing what the agent perceives by looking through
         a specific fenestration aperture.
-    
+
         The aperture's own `accessible` flag determines whether the agent gets
         full or limited perception — inaccessible apertures (glass ceilings,
         high windows) still only yield limited perception regardless of type.
-    
+
         outdoors_type is read as a flat key from the aperture's item_data,
         falling back to the room's extra_data value, then to the default.
-    
-        If a XenoCantoProvider is among the resolved providers, its current
-        sound bytes are fetched (from requests_cache) and played via the
-        TTS_AUDIO signal → jukebox.play_raw_sound_effect(). Only fires on
-        accessible apertures.
+
+        At the "full" level, _collect_perception fires play_sound signals for
+        any provider that returns audio bytes, and any popup strings (e.g.
+        Xeno-canto recording attribution) are fired as show_message_popup
+        signals — one per provider. Neither fires for inaccessible apertures.
         """
         item_object = self.state_manager.find_item(
             item_id=aperture_id,
@@ -212,19 +225,19 @@ class OutdoorsPerception:
         )
         if not item_object.success:
             return item_object.error
-    
-        item_details = item_object.item_data
-        descriptions = item_details.get("descriptions", [])
+
+        item_details       = item_object.item_data
+        descriptions       = item_details.get("descriptions", [])
         accessibility_flag = item_details.get("accessible", True)
-    
+
         item_name = self.state_manager.format_item_for_display(item_details, False)
-    
+
         # Resolve outdoors_type: item first, then room, then default.
         if "outdoors_type" in item_details:
             outdoors_types = self._get_outdoors_types_from_item(item_details)
         else:
             outdoors_types = self._get_outdoors_types_from_room()
-    
+
         if accessibility_flag:
             weather_info = self._collect_perception(outdoors_types, level="full")
             accessibility_message = (
@@ -237,7 +250,7 @@ class OutdoorsPerception:
                 f"You can't walk close enough to the {item_name}, however you focus "
                 f"all your attention into it for a second,"
             )
-    
+
         message = "\n".join([
             f"You move towards the views of the {item_name};",
             accessibility_message,
@@ -245,30 +258,11 @@ class OutdoorsPerception:
             "As you peer outwards, you notice the outside world with absolute precision:",
             weather_info,
         ])
-    
-        # Always fire the icon popup
+
+        # Always fire the icon popup.
         self._send_signal({
             "type":      "show_icon_popup",
             "icon_path": "style/images/action_icons/window_icon.png",
         })
-    
-        # Fire a sound if it is present and aperture
-        # is accessible. Inaccessible apertures (high windows etc.) stay silent —
-        # the agent can't open them to hear properly.
-        # Audio bytes are served — no file paths involved.
-        if accessibility_flag:
-            for type_name, provider in self._resolve_providers(outdoors_types):
-                if provider is None:
-                    continue
-                result = provider.get_sound_bytes()
-                if result:
-                    audio_bytes, sample_rate = result
-                    self._send_signal({
-                        "type":           "play_sound",
-                        "raw_audio_data": audio_bytes,
-                        "sample_rate":    sample_rate,
-                    })
-                    break  # one sound at a time
-    
+
         return message
-    

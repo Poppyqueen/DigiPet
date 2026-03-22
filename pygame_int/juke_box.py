@@ -236,14 +236,15 @@ class jukebox:
              print(f"An unexpected error occurred playing sound effect '{sound_path}': {e}")
 
 
-    def play_raw_sound_effect(self, raw_audio_data, sample_rate: int = 44100):
+    def play_raw_sound_effect(self, raw_audio_data, sample_rate: int = 44100, override: bool = True):
         if not self.initialized:
             print("[Jukebox] play_raw_sound_effect: not initialized, skipping.")
             return
 
         print(f"[Jukebox] play_raw_sound_effect called. "
             f"Type: {type(raw_audio_data)}, "
-            f"Length: {len(raw_audio_data) if raw_audio_data else 'None'}")
+            f"Length: {len(raw_audio_data) if raw_audio_data else 'None'}, "
+            f"Override: {override}")
 
         if not raw_audio_data:
             print("[Jukebox] play_raw_sound_effect: empty data, skipping.")
@@ -251,15 +252,12 @@ class jukebox:
 
         try:
             import miniaudio
-            import io
 
-            # Log the first bytes to check the format header
             header = raw_audio_data[:4] if len(raw_audio_data) >= 4 else raw_audio_data
             print(f"[Jukebox] Audio header bytes: {header.hex()} "
                 f"(expected MP3: 49 44 33 or ff fb, "
                 f"WAV: 52 49 46 46)")
 
-            # Ensure we have plain bytes — requests_cache may return memoryview
             if not isinstance(raw_audio_data, (bytes, bytearray)):
                 print(f"[Jukebox] Converting {type(raw_audio_data)} → bytes")
                 raw_audio_data = bytes(raw_audio_data)
@@ -269,10 +267,9 @@ class jukebox:
                 raw_audio_data,
                 output_format=miniaudio.SampleFormat.SIGNED16,
                 nchannels=2,
-                sample_rate=sample_rate,   # use actual rate from recording
+                sample_rate=sample_rate,
             )
 
-            # Pass raw PCM bytes directly — no BytesIO wrapper
             raw_pcm = bytes(decoded.samples)
             print(f"[Jukebox] PCM bytes: {len(raw_pcm)}, "
                 f"frames: {decoded.num_frames}, "
@@ -282,11 +279,14 @@ class jukebox:
             sound = pygame.mixer.Sound(buffer=raw_pcm)
             sound.set_volume(self.sfx_volume)
 
-            if self.current_sfx_channel and self.current_sfx_channel.get_busy():
-                self.current_sfx_channel.stop()
+            if override:
+                if self.current_sfx_channel and self.current_sfx_channel.get_busy():
+                    self.current_sfx_channel.stop()
+                self.current_sfx_channel = sound.play()
+            else:
+                sound.play()
 
-            self.current_sfx_channel = sound.play()
-            print(f"[Jukebox] Playing on channel: {self.current_sfx_channel}")
+            print(f"[Jukebox] Playing on channel: {self.current_sfx_channel if override else '(untracked)'}")
 
         except Exception as e:
             import traceback

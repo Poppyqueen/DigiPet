@@ -241,8 +241,9 @@ def _on_show_message_popup(signal_data: dict, **_kwargs) -> None:
 
 
 def _on_play_sound(signal_data: dict, music_player, **_kwargs) -> None:
-    sound_path  = signal_data.get("sound_path")
-    raw_audio   = signal_data.get("raw_audio_data")
+    sound_path = signal_data.get("sound_path")
+    raw_audio  = signal_data.get("raw_audio_data")
+    override   = signal_data.get("override", True)  # default True = old behaviour
 
     if not music_player:
         print("[signal] play_sound — music_player not ready.")
@@ -250,10 +251,10 @@ def _on_play_sound(signal_data: dict, music_player, **_kwargs) -> None:
 
     if sound_path:
         print(f"[signal] play_sound → {sound_path}")
-        music_player.play_sound_effect(sound_path)
+        music_player.play_sound_effect(sound_path, override=override)
     elif raw_audio:
         sample_rate = signal_data.get("sample_rate", 44100)
-        music_player.play_raw_sound_effect(raw_audio, sample_rate=sample_rate)
+        music_player.play_raw_sound_effect(raw_audio, override=override, sample_rate=sample_rate)
     else:
         print("[signal] play_sound — missing both sound_path and raw_audio_data.")
 

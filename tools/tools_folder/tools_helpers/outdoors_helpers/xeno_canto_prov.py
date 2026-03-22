@@ -12,7 +12,7 @@ Responsibilities
 - Maintain an active selection of N recordings (randomly weighted by time of day)
 - Track a playback index so each look_through_aperture call plays a different sound
 - Provide get_limited_perception() and get_full_perception() text
-- Expose get_sound_bytes() for look_through_aperture to fire play_sound signal
+- get_full_perception() returns audio bytes directly — no separate get_sound_bytes()
 
 Cache behaviour
 ---------------
@@ -40,6 +40,9 @@ from utils.time_manager import get_time_tag_from_now
 import json
 import time
 
+from utils.misc import check_one_in
+
+
 _SELECTION_CACHE_PATH = ".cache/xeno_canto_selection.json"
 _SELECTION_TTL = 86400  # 24 hours — matches metadata cache
 
@@ -63,9 +66,9 @@ def _load_selection(current_time_tag: str) -> list[dict] | None:
     try:
         with open(_SELECTION_CACHE_PATH) as f:
             payload = json.load(f)
-        age     = time.time() - payload.get("saved_at", 0)
-        tag     = payload.get("time_tag")
-        saved   = payload.get("selection", [])
+        age   = time.time() - payload.get("saved_at", 0)
+        tag   = payload.get("time_tag")
+        saved = payload.get("selection", [])
 
         if age > _SELECTION_TTL:
             print("[XenoCantoProvider] Persisted selection expired.")
@@ -85,6 +88,7 @@ def _load_selection(current_time_tag: str) -> list[dict] | None:
     except Exception as e:
         print(f"[XenoCantoProvider] Could not load persisted selection: {e}")
         return None
+
 
 # ---------------------------------------------------------------------------
 # Selection parameters
@@ -169,6 +173,29 @@ _TIME_PREFERENCES: dict[str, dict[str, float]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Wildlife activity odds — 1-in-N chance of hearing something.
+# Higher N = quieter / less likely to catch a sound.
+# "full" uses the base directly; "limited" adds an offset (always quieter).
+# ---------------------------------------------------------------------------
+
+_ACTIVITY_ODDS: dict[str, int] = {
+    "late night":     4,   # very quiet — rare nocturnal sounds
+    "early morning":  2,   # dawn chorus — almost always something
+    "morning":        2,   # active and vocal
+    "noon":           4,   # midday lull
+    "afternoon":      3,   # picking back up
+    "late afternoon": 2,   # second activity peak
+    "night":          3,   # mostly quiet, occasional call
+}
+
+_ACTIVITY_ODDS_LIMITED_OFFSET = 2   # limited always N + this
+
+
+def _activity_odds(time_tag: str, full: bool) -> int:
+    base = _ACTIVITY_ODDS.get(time_tag, 4)
+    return base if full else base + _ACTIVITY_ODDS_LIMITED_OFFSET
+
 
 # ---------------------------------------------------------------------------
 # Weighting helpers
@@ -177,7 +204,6 @@ _TIME_PREFERENCES: dict[str, dict[str, float]] = {
 def _score_recording(recording: dict, time_tag: str) -> float:
     base = 1.0
 
-    # Type-based preference bump (existing)
     sound_type = recording.get("type", "").lower()
     preferred  = _TIME_PREFERENCES.get(time_tag, {})
     base += preferred.get(sound_type, 0.0)
@@ -237,7 +263,7 @@ def _weighted_sample(recordings: list[dict], time_tag: str, k: int) -> list[dict
 
     # random.choices allows replacement — oversample then deduplicate
     oversample = random.choices(recordings, weights=weights, k=k * 4)
-    seen:   set[str]  = set()
+    seen:   set[str]   = set()
     result: list[dict] = []
     for r in oversample:
         rid = r.get("id", "")
@@ -259,6 +285,29 @@ def _weighted_sample(recordings: list[dict], time_tag: str, k: int) -> list[dict
     return result
 
 
+def _build_grp_hint(selection: list[dict]) -> str:
+    """
+    Build a short natural-language group hint from the selection,
+    e.g. 'birds', 'birds and bats', 'birds, bats, and grasshoppers'.
+    Returns an empty string if no group info is available.
+    """
+    seen:   set[str]  = set()
+    groups: list[str] = []
+    for r in selection:
+        grp = r.get("grp", "").strip().lower()
+        if grp and grp not in seen:
+            seen.add(grp)
+            groups.append(grp)
+
+    if not groups:
+        return ""
+    if len(groups) == 1:
+        return groups[0]
+    if len(groups) == 2:
+        return f"{groups[0]} and {groups[1]}"
+    return ", ".join(groups[:-1]) + f", and {groups[-1]}"
+
+
 # ---------------------------------------------------------------------------
 # Provider
 # ---------------------------------------------------------------------------
@@ -269,11 +318,12 @@ class XenoCantoProvider(OutdoorsProvider):
 
     outdoors_type identifier: "xeno-canto"
 
-    get_limited_perception()  — short ambient text, no sound played
-    get_full_perception()     — species list with sound type detail
-    get_sound_bytes()         — returns audio bytes for the current selection
-                                index; advances the index. Overrides the ABC
-                                default (returns None) to provide actual audio.
+    get_limited_perception()  — short ambient text, no sound played.
+    get_full_perception()     — returns (text, popup, audio) where audio is
+                                (bytes, sample_rate) or None. The odds roll,
+                                text, popup, and audio fetch all happen together
+                                so they are guaranteed to describe the same
+                                recording.
     """
 
     outdoors_type = "xeno-canto"
@@ -283,7 +333,7 @@ class XenoCantoProvider(OutdoorsProvider):
         self._loc                          = xeno_canto_loc
         self._active_selection: list[dict] = []
         self._selection_index: int         = 0
-        self._active_time_tag: str | None  = None   # tracks last draw's time tag
+        self._active_time_tag: str | None  = None
         self._lock                         = threading.Lock()
         print(f"[XenoCantoProvider] Ready. lat={xeno_canto_loc.lat}, "
               f"lon={xeno_canto_loc.lon}")
@@ -297,7 +347,6 @@ class XenoCantoProvider(OutdoorsProvider):
         Explicitly evict audio cache entries for the given selection.
         Called before overwriting _active_selection so stale audio bytes
         are freed immediately rather than waiting for the 24-hour TTL.
-        Safe to call with an empty list — the guard handles it cleanly.
         """
         if not selection:
             return
@@ -331,7 +380,7 @@ class XenoCantoProvider(OutdoorsProvider):
                 self._selection_index  = 0
                 self._active_time_tag  = time_tag
             print(f"[XenoCantoProvider] Restored selection from disk — "
-                f"skipping fresh draw and prefetch.")
+                  f"skipping fresh draw and prefetch.")
             return
 
         # No valid persisted selection — do a fresh draw
@@ -348,16 +397,15 @@ class XenoCantoProvider(OutdoorsProvider):
             self._selection_index  = 0
             self._active_time_tag  = time_tag
 
-        # Persist the new selection so restarts can reuse it
         _save_selection(selection, time_tag)
 
         if selection:
             print(f"[XenoCantoProvider] New selection ({len(selection)} recordings) "
-                f"for time_tag={time_tag!r}:")
+                  f"for time_tag={time_tag!r}:")
             for r in selection:
                 print(f"  XC{r.get('id')} — {r.get('en', '?')} "
-                    f"({r.get('gen', '')} {r.get('sp', '')}) "
-                    f"type={r.get('type', '?')} q={r.get('q', '?')}")
+                      f"({r.get('gen', '')} {r.get('sp', '')}) "
+                      f"type={r.get('type', '?')} q={r.get('q', '?')}")
             self._prefetch_audio_async(selection)
         else:
             print("[XenoCantoProvider] Selection is empty — no recordings available.")
@@ -397,14 +445,33 @@ class XenoCantoProvider(OutdoorsProvider):
                   f"index={self._selection_index})")
 
     # ------------------------------------------------------------------
+    # Private audio fetch
+    # ------------------------------------------------------------------
+
+    def _fetch_sound_bytes(self, recording: dict) -> tuple[bytes, int] | None:
+        """
+        Fetch audio bytes for a specific recording dict.
+        Pure fetch — no index logic, no state mutation.
+        Returns (audio_bytes, sample_rate) or None if unavailable.
+        """
+        audio_bytes = download_audio(recording)
+        smp         = int(recording.get("smp", 44100))
+        if audio_bytes:
+            print(f"[XenoCantoProvider] Audio ready: {len(audio_bytes)} bytes.")
+            return audio_bytes, smp
+        print(f"[XenoCantoProvider] Audio unavailable for XC{recording.get('id')}.")
+        return None
+
+    # ------------------------------------------------------------------
     # OutdoorsProvider interface
     # ------------------------------------------------------------------
 
-    def get_limited_perception(self) -> str:
+    def get_limited_perception(self) -> tuple[str, str | None]:
         """
         Short ambient text for window_perception().
         The agent is near a window but has not actively looked through it.
         Returns a brief sense of wildlife presence without species detail.
+        No popup and no audio at this level.
         """
         print("[XenoCantoProvider] get_limited_perception() called.")
         self._ensure_selection()
@@ -413,85 +480,107 @@ class XenoCantoProvider(OutdoorsProvider):
             selection = list(self._active_selection)
 
         if not selection:
-            return "The outside world sounds quiet — no wildlife stirs near this opening."
+            return (
+                "The outside world sounds quiet — no wildlife stirs near this opening.",
+                None,
+            )
 
-        time_tag     = get_time_tag_from_now() or "morning"
-        species_hint = _build_species_hint(selection)
-        mood         = _TIME_MOOD.get(time_tag, "alive with the sounds of nature")
+        time_tag = get_time_tag_from_now() or "morning"
 
-        result = (
+        if not check_one_in(_activity_odds(time_tag, full=False)):
+            print(f"[XenoCanto] Limited activity check missed.")
+            return "Coming from the outdoors is the stillness of animals, insects and other living creatures.", None
+
+        grp_hint = _build_grp_hint(selection)
+        mood     = _TIME_MOOD.get(time_tag, "alive with the sounds of nature")
+
+        text = (
             f"Through the opening, the outside world feels {mood}. "
             f"You catch a fleeting impression of wildlife nearby"
-            + (f" — {species_hint}" if species_hint else "")
+            + (f" — {grp_hint}" if grp_hint else "")
             + "."
         )
-        print(f"[XenoCantoProvider] Limited perception: {result[:80]}...")
-        return result
+        print(f"[XenoCantoProvider] Limited perception: {text[:80]}...")
+        return text, None
 
-    def get_full_perception(self) -> str:
+    def get_full_perception(self) -> tuple[str, str | None, tuple[bytes, int] | None]:
+        """
+        Detailed perception for look_through_aperture / outdoors_area rooms.
+
+        The odds roll, recording selection, text, popup, and audio fetch all
+        use the same recording — they are atomically tied. The index is
+        advanced here before any work is done so the state mutation is visible
+        and not hidden inside a helper.
+
+        Returns (perception_text, popup_text, audio) where:
+          - popup_text is a recordist attribution string, or None
+          - audio is (bytes, sample_rate) if a sound should play, or None
+        """
         self._ensure_selection()
 
         with self._lock:
             selection = list(self._active_selection)
             index     = self._selection_index
+            if selection:
+                self._selection_index = (index + 1) % len(selection)
 
         if not selection:
-            return "No wildlife sounds are detectable in this area."
+            return "No wildlife sounds are detectable in this area.", None, None
 
-        r          = selection[index % len(selection)]
-        name       = r.get("en") or f"{r.get('gen', '')} {r.get('sp', '')}".strip()
+        time_tag = get_time_tag_from_now() or "morning"
+        if not check_one_in(_activity_odds(time_tag, full=True)):
+            print(f"[XenoCanto] Full activity check missed.")
+            return "You wait and expect to catch the sounds of wild beasts around, but they seem to be quiet right now.", None, None
+
+        # All three outputs (text, popup, audio) are built from this one recording
+        r = selection[index % len(selection)]
+
+        en_name    = r.get("en") or ""
+        gen        = r.get("gen", "").strip()
+        sp         = r.get("sp", "").strip()
+        sci_name   = f"{gen} {sp}".strip() if (gen or sp) else ""
+        name       = en_name or sci_name or "Unknown species"
         sound_type = r.get("type", "unknown")
         grp        = r.get("grp", "")
+        rec        = r.get("rec", "").strip()
+        length     = r.get("length", "")
+        seen       = r.get("animal-seen", "")
+        also       = r.get("also", [])
         group_note = f" [{grp}]" if grp and grp != "birds" else ""
 
-        return f"Nearby you can hear a {name}{group_note} — {sound_type}."
+        # Frequency from first annotation, if present
+        freq_note   = ""
+        ann_set     = r.get("annotation-set")
+        annotations = ann_set.get("annotations", []) if isinstance(ann_set, dict) else []
+        if annotations:
+            first  = annotations[0]
+            f_low  = first.get("frequency_low")
+            f_high = first.get("frequency_high")
+            if f_low is not None and f_high is not None:
+                freq_note = f", freq {f_low}–{f_high} Hz"
 
-    # ------------------------------------------------------------------
-    # Sound playback — overrides OutdoorsProvider.get_sound_bytes()
-    # ------------------------------------------------------------------
+        # Build main text
+        parts = [f"Nearby you can hear a {name}{group_note}"]
+        if sci_name and en_name:
+            parts[0] += f" ({sci_name})"
+        parts.append(f"{sound_type}")
+        if length:
+            parts.append(f"length {length}")
+        if seen.lower() in ("yes", "no"):
+            parts.append(f"animal {'seen' if seen.lower() == 'yes' else 'not seen'}")
+        text = f"{parts[0]} — {', '.join(parts[1:])}{freq_note}."
 
-    def get_sound_bytes(self) -> bytes | None:
-        """
-        Return the raw MP3 bytes for the current selection index,
-        then advance the index (cycling with wraparound).
+        if also:
+            also_str = ", ".join(also[:5])
+            text += f" Also audible in the background: {also_str}."
 
-        Overrides the ABC default (returns None) to provide actual audio.
-        Audio is served from requests_cache — no manual file management.
-        Returns None if the selection is empty or the fetch fails.
+        # Popup attribution
+        popup = f"Listening to '{name}' recorded by '{rec}'" if rec else f"Listening to '{name}'"
 
-        Called exclusively from OutdoorsPerception.look_through_aperture().
-        """
-        print("[XenoCantoProvider] get_sound_bytes() called.")
-        self._ensure_selection()
+        # Audio — same recording, pure fetch
+        audio = self._fetch_sound_bytes(r)
 
-        with self._lock:
-            selection = list(self._active_selection)
-            index     = self._selection_index
-
-        if not selection:
-            print("[XenoCantoProvider] get_sound_bytes: selection empty, returning None.")
-            return None
-
-        recording  = selection[index % len(selection)]
-        next_index = (index + 1) % len(selection)
-
-        with self._lock:
-            self._selection_index = next_index
-
-        print(f"[XenoCantoProvider] get_sound_bytes: fetching index {index} → "
-              f"XC{recording.get('id')} — {recording.get('en', '?')} "
-              f"({recording.get('type', '?')}). "
-              f"Next index will be {next_index}.")
-
-        audio_bytes = download_audio(recording)
-        smp = int(recording.get("smp", 44100))
-
-        if audio_bytes:
-            print(f"[XenoCantoProvider] Audio ready: {len(audio_bytes)} bytes.")
-        else:
-            print(f"[XenoCantoProvider] Audio unavailable for "
-                  f"XC{recording.get('id')} — skipping sound.")
-        return audio_bytes, smp
+        return text, popup, audio
 
 
 # ---------------------------------------------------------------------------

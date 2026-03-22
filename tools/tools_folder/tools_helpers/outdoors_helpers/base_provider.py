@@ -25,24 +25,21 @@ class OutdoorsProvider(ABC):
 
     outdoors_type: str  # Subclasses must set this at class level.
 
+
     @abstractmethod
-    def get_limited_perception(self) -> str:
+    def get_limited_perception(self) -> tuple[str, str | None]:
         """
-        Return a short, ambient perception string.
+        Return (perception_text, popup_text).
         Called by window_perception() — the agent is near a window but has
-        not actively looked through it.
+        not actively looked through it. popup_text is usually None here.
         """
         ...
 
     @abstractmethod
-    def get_full_perception(self) -> str:
+    def get_full_perception(self) -> tuple[str, str | None, tuple[bytes, int] | None]:        
         """
-        Return a complete, detailed perception string.
-        Called by outdoors_perception() and by look_through_aperture() when
-        the aperture is accessible.
+        Return (perception_text, popup_text, play_sound).
+        play_sound signals whether audio should be fetched and fired.
+        Providers without audio should always return False.
         """
         ...
-
-
-    def get_sound_bytes(self) -> tuple[bytes, int] | None:
-        return None
