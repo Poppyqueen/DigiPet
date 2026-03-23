@@ -232,6 +232,7 @@ class XenoCantoProvider(OutdoorsProvider):
         smp         = int(recording.get("smp", 44100))
         if audio_bytes:
             print(f"[XenoCantoProvider] Audio ready: {len(audio_bytes)} bytes.")
+            self._display_attribution_message(recording=recording)
             return audio_bytes, smp
             
         print(f"[XenoCantoProvider] Audio unavailable for XC{recording.get('id')}.")
@@ -336,6 +337,6 @@ class XenoCantoProvider(OutdoorsProvider):
 
         popup = f"Listening to '{name}' recorded by '{rec}'" if rec else f"Listening to '{name}'"
         audio = self._fetch_sound_bytes(r)
-        self._display_attribution_message(recording=r)
+        
 
         return text, popup, audio
