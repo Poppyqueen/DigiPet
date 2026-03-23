@@ -64,7 +64,7 @@ class OutdoorsPerception:
             from utils.xeno_canto_api import XenoCantoLoc
             from tools.tools_folder.tools_helpers.outdoors_helpers.xeno_canto_prov import XenoCantoProvider
             self.xeno_canto = XenoCantoLoc(self.lat, self.long, api_key=canto_key)
-            self._register_provider(XenoCantoProvider(self.xeno_canto))
+            self._register_provider(XenoCantoProvider(self.xeno_canto, self.open_meteo))
 
     def _register_provider(self, provider: OutdoorsProvider) -> None:
         self._providers[provider.outdoors_type] = provider
@@ -88,7 +88,8 @@ class OutdoorsPerception:
                     provider.tick()
                 except Exception as e:
                     print(f"[OutdoorsPerception] tick error in '{provider.outdoors_type}': {e}")
-        self.ambient_audio_play()
+        self.ambient_audio_play() # play sounds
+        self._collect_perception(self._get_outdoors_types_from_room(),level="full") # show popups 
                     
     def ambient_audio_play(self, outdoors_types: list[str] | None = None) -> None:
         """

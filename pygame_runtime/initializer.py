@@ -296,8 +296,7 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     config_manager   = _load_config(bots_archive_dir, screen, font)
     _apply_theme_and_settings(config_manager)
 
-    # ✅ Splash runs HERE — before chatbot, ticks, or signals exist
-    _splash(screen, font)
+
 
     idle_time_mins = (
         config_manager.get_config("game_settings", "idle_time_minutes")
@@ -310,6 +309,10 @@ def initialize(game_mode: str, signal_callback) -> GameContext:
     tick_registry       = _build_tick_registry(chatbot)
     state.current_emote = chatbot.state_manager.get_emotes_data().current_emote
     state.last_activity_time = pygame.time.get_ticks()
+
+
+        # ✅ Splash runs HERE — before chatbot, ticks, or signals exist
+    _splash(screen, font)
 
     return GameContext(
         screen            = screen,
