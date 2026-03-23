@@ -46,29 +46,9 @@ class FunctionBuilder:
         self._signal_callback = signal
         self.open_meteo = open_meteo
 
-        # ToolRegistry handles all service init and tool_definitions construction.
-        # We pass _get_current_context as the live context provider so the
-        # toolset_checker inside ToolRegistry always reads current state.
-        print(f"DEBUG: FunctionBuilder: Initializing ToolRegistry")
-        self.registry = ToolRegistry(
-            state_manager=state_manager,
-            signal=signal,
-            subdirectory=subdirectory,
-            memory_manager=memory_manager,
-            config_manager=config_manager,
-            open_meteo=open_meteo,
-            get_context_fn=self._get_current_context,
-        )
-
-        # Convenient aliases — FunctionBuilder code reads these directly
-        self.tool_definitions = self.registry.tool_definitions
-
-        # Wire the self-referential function that couldn't be set in ToolRegistry
-        # (examine_item needs get_item_details_with_tools which lives here)
-        self.tool_definitions["base_functions"]["functions"]["examine_item"] = (
-            self.get_item_details_with_tools
-        )
-
+        # Registry and tool_definitions are set by create() — not here.
+        self.registry = None
+        self.tool_definitions = {}
         self.function_map = {}
 
 

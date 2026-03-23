@@ -89,7 +89,7 @@ from __future__ import annotations
 import random
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime
+from utils.loc_datetime import datetime
 
 from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import OutdoorsProvider
 from utils.xeno_canto_api import (
@@ -100,6 +100,10 @@ from utils.xeno_canto_api import (
 from utils.time_manager import get_time_tag_from_now
 import json
 import time
+
+import os
+import json
+import glob
 
 
 _SELECTION_CACHE_PATH = ".cache/xeno_canto_selection.json"
@@ -121,11 +125,11 @@ _MAX_TICKS_PER_RECORDING: int     = 5
 
 # Base selection size by time tag — dawn chorus warrants a larger pool.
 _SELECTION_SIZE_BY_TAG: dict[str, int] = {
-    "early morning": 12,
-    "morning":       10,
-    "late afternoon": 12,
+    "morning": 13,
+    "noon": 4,
+    "late_afternoon": 10
 }
-_SELECTION_SIZE_DEFAULT: int = 8
+_SELECTION_SIZE_DEFAULT: int = 10
 
 # How much bad weather can shrink the selection (proportional to conditions).
 # Rain or strong wind mean fewer species are audible, so a smaller pool
@@ -191,14 +195,17 @@ _ALWAYS_EXCLUDE_TOKENS: set[str] = {
 # ---------------------------------------------------------------------------
 
 _TIME_BLACKLIST: dict[str, set[str]] = {
-    "late night":     set(),
+    "late night":     {"dawn song"},
     "early morning":  {"nocturnal flight call"},
     "morning":        {"nocturnal flight call"},
     "noon":           {"nocturnal flight call", "dawn song"},
     "afternoon":      {"nocturnal flight call", "dawn song"},
     "late afternoon": {"nocturnal flight call"},
-    "night":          set(),
+    "night":         {"dawn song"}
 }
+
+
+_TIME_PROXIMITY_WEIGHT = 5.0
 
 # ---------------------------------------------------------------------------
 # Time-of-day preference weights
@@ -409,10 +416,10 @@ def _apply_condition_modifier(
 # ---------------------------------------------------------------------------
 
 _ACTIVITY_THRESHOLD_FULL: dict[str, float] = {
-    "late night":     1 / 4,
+    "late night":     2 / 4,
     "early morning":  9 / 10,
-    "morning":        4 / 5,
-    "noon":           2 / 5,
+    "morning":        3 / 5,
+    "noon":           3 / 5,
     "afternoon":      1 / 2,
     "late afternoon": 3 / 4,
     "night":          2 / 3,
@@ -459,7 +466,54 @@ def _threshold_for(
 
     return threshold
 
+def _purge_expired_filesystem_cache(cache_dir: str) -> int:
+    import glob
+    from datetime import datetime, timezone
 
+    print(f"[CachePurge] Starting purge for dir: {cache_dir!r}")
+
+    if not os.path.isdir(cache_dir):
+        print(f"[CachePurge] Directory does not exist: {cache_dir!r} — skipping.")
+        return 0
+
+    all_files = glob.glob(os.path.join(cache_dir, "*.json"))
+    print(f"[CachePurge] Found {len(all_files)} .json files")
+
+    if not all_files:
+        print("[CachePurge] No files to process.")
+        return 0
+
+    deleted = 0
+    now = datetime.now(timezone.utc)
+
+    for path in all_files:
+        filename = os.path.basename(path)
+        try:
+            with open(path) as f:
+                data = json.load(f)
+
+            expires_raw = data.get("expires")
+            if expires_raw is None:
+                print(f"[CachePurge] {filename} — no expiry field, skipping.")
+                continue
+
+            expires = datetime.fromisoformat(expires_raw)
+            if expires < now:
+                os.remove(path)
+                deleted += 1
+                print(f"[CachePurge] DELETED: {filename} (expired {(now - expires).seconds}s ago)")
+            else:
+                print(f"[CachePurge] {filename} — still valid for {(expires - now).seconds}s")
+
+        except json.JSONDecodeError as e:
+            print(f"[CachePurge] Could not parse {filename}: {e}")
+        except OSError as e:
+            print(f"[CachePurge] Could not delete {filename}: {e}")
+        except Exception as e:
+            print(f"[CachePurge] Unexpected error for {filename}: {e} (type={type(e).__name__})")
+
+    print(f"[CachePurge] Done. Deleted {deleted}/{len(all_files)} files.")
+    return deleted
 # ---------------------------------------------------------------------------
 # Weather context
 # ---------------------------------------------------------------------------
@@ -605,36 +659,56 @@ def _score_recording(
          so rain boosts frogs and penalises warblers rather than treating
          all recordings identically.
     """
+    
     base = 1.0
 
     tokens    = _tokenise_type(recording.get("type", ""))
     preferred = _TIME_PREFERENCES.get(time_tag, {})
     if tokens:
-        base += max((preferred.get(tok, 0.0) for tok in tokens), default=0.0)
+        # type_bonus  0–4.0 — best-matching token from _TIME_PREFERENCES
+        type_bonus = max((preferred.get(tok, 0.0) for tok in tokens), default=0.0)
+        base += type_bonus
 
-    rec_time = recording.get("time", "")
+    rec_time = recording.get("time", "") # At what time was this recording made.
     if rec_time:
         try:
             now_hour = datetime.now().hour
             rec_hour = int(rec_time.split(":")[0])
             distance = min(abs(now_hour - rec_hour), 24 - abs(now_hour - rec_hour))
-            base += max(0.0, 1.0 - (distance / 12.0))
-        except Exception:
-            pass
+            
+            # time_prox 0–1.0 — how close the recording's time-of-day is to now
+            # This creates a steep drop-off and a hard penalty for being 'late'
+            time_factor = max(0.0, 1.0 - (distance / 3.0)**2) 
+            prox_bonus = time_factor * _TIME_PROXIMITY_WEIGHT
+            base += prox_bonus
+            
+        except Exception as e:
+            print(f"  [Time Prox]: Error calculating proximity: {e}")
 
-    base += {"A": 0.25, "B": 0.0}.get(recording.get("q", ""), 0.0)
-    base += min(len(recording.get("also", [])), 3) * 0.05
+    # quality +0.25 for grade A, 0 for B
+    q_val = {"A": 0.25, "B": 0.0}.get(recording.get("q", ""), 0.0)
+    base += q_val
+
+    # also_rich 0–0.15 — bonus for background species richness
+    richness_bonus = min(len(recording.get("also", [])), 3) * 0.05
+    base += richness_bonus
+
 
     if weather:
-        # Layer 1: global wind floor
+        # Layer 1: Global wind multiplier (WeatherContext.score_multiplier)
+        # scales the whole score — a broad floor that affects everything in high wind.
+        old_base = base
         base *= weather.score_multiplier
 
-        # Layer 2: per-type binary condition modifiers
+        # Layer 2: Per-type binary condition modifiers (_RAIN_SCORE_MODIFIERS,
+        # _WIND_SCORE_MODIFIERS) are applied via _apply_condition_modifier()
         if weather.is_raining:
-            base *= _apply_condition_modifier(tokens, _RAIN_SCORE_MODIFIERS)
+            rain_mod = _apply_condition_modifier(tokens, _RAIN_SCORE_MODIFIERS)
+            base *= rain_mod
 
         if (weather.wind_speed or 0.0) > _SELECTION_SIZE_WIND_THRESHOLD:
-            base *= _apply_condition_modifier(tokens, _WIND_SCORE_MODIFIERS)
+            wind_mod = _apply_condition_modifier(tokens, _WIND_SCORE_MODIFIERS)
+            base *= wind_mod
 
     return base
 
@@ -778,21 +852,8 @@ def _load_selection(current_time_tag: str) -> list[dict] | None:
 # ---------------------------------------------------------------------------
 
 def _evict_audio_for_selection(selection: list[dict]) -> None:
-    """
-    Evict audio cache entries for a given selection.
-
-    requests_cache's filesystem backend does NOT support delete(urls=[...])
-    — that API is SQLite-only and silently no-ops on filesystem. The correct
-    approach is to derive the cache key for each URL using create_key() and
-    delete entries individually.
-    """
     if not selection:
         return
-
-    try:
-        _audio_cache.cache.delete(expired=True)
-    except Exception as e:
-        print(f"[XenoCantoProvider] Expired audio sweep error (non-fatal): {e}")
 
     from requests import Request
 
@@ -822,7 +883,13 @@ def _build_grp_hint(selection: list[dict]) -> str:
     seen:   set[str]  = set()
     groups: list[str] = []
     for r in selection:
-        grp = r.get("grp", "").strip().lower()
+        # The crash happens here because r.get("grp") returns None for a record in the list
+        val = r.get("grp")
+        if val is None:
+            # We skip the debug print to keep it clean, just default to empty
+            val = ""
+            
+        grp = val.strip().lower()
         if grp and grp not in seen:
             seen.add(grp)
             groups.append(grp)
@@ -886,6 +953,8 @@ class XenoCantoProvider(OutdoorsProvider):
         self._seen_indices: set[int]            = set()
         self._selection_id: int                 = 0
         self._lock                              = threading.Lock()
+
+        _purge_expired_filesystem_cache(".cache/xeno_canto_audio")
         print(f"[XenoCantoProvider] Ready. lat={xeno_canto_loc.lat}, "
               f"lon={xeno_canto_loc.long}, "
               f"weather={'yes' if open_meteo else 'no'}")
@@ -988,6 +1057,7 @@ class XenoCantoProvider(OutdoorsProvider):
 
     def _refresh_selection(self) -> None:
         self._refresh_weather()
+        _purge_expired_filesystem_cache(".cache/xeno_canto_audio")
 
         time_tag = get_time_tag_from_now() or "morning"
         print(f"[XenoCantoProvider] Refreshing selection for time_tag={time_tag!r}")
@@ -1087,7 +1157,6 @@ class XenoCantoProvider(OutdoorsProvider):
     # ------------------------------------------------------------------
     # OutdoorsProvider interface
     # ------------------------------------------------------------------
-
     def get_limited_perception(self) -> tuple[str, str | None]:
         """
         Short ambient text for window_perception().
@@ -1113,7 +1182,14 @@ class XenoCantoProvider(OutdoorsProvider):
 
         w          = self._weather_context
         r          = selection[index % len(selection)]
-        tokens     = _tokenise_type(r.get("type", ""))
+        
+        # DEBUG: Check if 'type' is None before tokenizing
+        raw_type = r.get("type")
+        if raw_type is None:
+            print(f"[DEBUG] Record XC{r.get('id')} has None 'type'. Using empty string.")
+            raw_type = ""
+            
+        tokens     = _tokenise_type(raw_type)
         threshold  = _threshold_for(
             _ACTIVITY_THRESHOLD_LIMITED, time_tag, 1/6, tokens, w
         )
@@ -1133,10 +1209,18 @@ class XenoCantoProvider(OutdoorsProvider):
                 None,
             )
 
-        grp_hint = _build_grp_hint(selection)
+        # DEBUG: Catch crash in _build_grp_hint
+        try:
+            grp_hint = _build_grp_hint(selection)
+        except AttributeError as e:
+            print(f"[DEBUG] _build_grp_hint CRASHED. Checking selection groups...")
+            for i, rec in enumerate(selection):
+                print(f"  Index {i} (ID: {rec.get('id')}): grp={repr(rec.get('grp'))}")
+            raise e
+
         mood     = _TIME_MOOD.get(time_tag, "alive with the sounds of nature")
 
-        if w.wind_speed > 20:
+        if (w.wind_speed or 0) > 20:
             mood = "alive with sound, though the wind carries it in broken gusts"
 
         text = (
@@ -1202,7 +1286,7 @@ class XenoCantoProvider(OutdoorsProvider):
         sci_name   = f"{gen} {sp}".strip() if (gen or sp) else ""
         name       = en_name or sci_name or "Unknown species"
         sound_type = r.get("type", "").strip() or "call"
-        grp        = r.get("grp", "")
+        grp = (r.get("grp") or "").strip()
         rec        = r.get("rec", "").strip()
         length     = r.get("length", "")
         seen       = r.get("animal-seen", "")

@@ -260,11 +260,13 @@ class jukebox:
                 raw_audio_data = bytes(raw_audio_data)
 
             # Decode the audio
+# THE FIX: Force miniaudio to output EXACTLY what 
+            # the Jukebox was initialized with (44100, 16-bit, Stereo)
             decoded = miniaudio.decode(
                 raw_audio_data,
-                output_format=miniaudio.SampleFormat.SIGNED16,
-                nchannels=2,
-                sample_rate=sample_rate,
+                output_format=miniaudio.SampleFormat.SIGNED16, # Matches size=-16
+                nchannels=2,                                   # Matches channels=2
+                sample_rate=44100                              # Matches frequency=44100
             )
 
             raw_pcm = bytes(decoded.samples)
