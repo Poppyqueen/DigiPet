@@ -130,7 +130,6 @@ class OutdoorsPerception:
     # ------------------------------------------------------------------
     # Tick & ambient audio
     # ------------------------------------------------------------------
-
     def tick(self) -> None:
         self._tick_count += 1
         for provider in self._providers.values():
@@ -141,8 +140,8 @@ class OutdoorsPerception:
                     print(f"[OutdoorsPerception] tick error in '{provider.outdoors_type}': {e}")
 
         outdoors_types = self._get_outdoors_types_from_room()
-        self._play_audio(outdoors_types)
-        self._collect_with_popups(outdoors_types, level="full")
+        # This replaces the separate _play_audio and _collect_with_popups calls
+        self._process_full_perception(outdoors_types)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -168,14 +167,42 @@ class OutdoorsPerception:
             return raw
         return _DEFAULT_OUTDOORS_TYPE
 
+# ------------------------------------------------------------------
+    # The "Single-Pass" Helper
+    # ------------------------------------------------------------------
+    def _process_full_perception(self, outdoors_types: list[str]) -> str:
+        """
+        Unified loop that handles text, popups, and audio in a single pass
+        to prevent redundant provider calls.
+        """
+        text_parts = []
+        for result in self._gather_provider_outputs(outdoors_types, level="full"):
+            # 1. Handle Audio Side Effect
+            if result.audio:
+                audio_bytes, sample_rate = result.audio
+                self._send_signal({
+                    "type":           "play_sound",
+                    "raw_audio_data": audio_bytes,
+                    "sample_rate":    sample_rate,
+                    "override":       False,
+                })
+
+            # 2. Handle Popup Side Effect
+            if result.popup:
+                self._send_signal({"type": "show_message_popup", "message": result.popup})
+
+            # 3. Accumulate Text
+            text_parts.append(result.text)
+
+        return _PROVIDER_SEPARATOR.join(text_parts) if text_parts else "[No perception available.]"
     # ------------------------------------------------------------------
     # Public perception methods
     # ------------------------------------------------------------------
 
     def gui_outdoors_perception(self) -> str:
+        """Called by the GUI. Triggers audio/popups once and returns text."""
         outdoors_types = self._get_outdoors_types_from_room()
-        self._play_audio(outdoors_types)
-        return self._collect_with_popups(outdoors_types, level="full")
+        return self._process_full_perception(outdoors_types)
 
     def outdoors_perception(self) -> str:
         """
@@ -228,8 +255,7 @@ class OutdoorsPerception:
         )
 
         if accessibility_flag:
-            weather_info = self._collect_with_popups(outdoors_types, level="full")
-            self._play_audio(outdoors_types)
+            weather_info = self._process_full_perception(outdoors_types)
             accessibility_message = (
                 f"You walk right besides the {item_name}, standing there it allows "
                 f"you to see everything outside, with clarity"
