@@ -14,13 +14,16 @@ stale entries accumulated from previous runs.
 
 Pagination
 ----------
-Rather than fetching all available pages at once, each daily pull fetches
-a fixed window of pages (_PAGES_PER_DAY, default 2) starting from a
-persisted cursor in .cache/xeno_canto_page_cursor_<lat>_<lon>.json. After
-each pull the cursor advances by _PAGES_PER_DAY and wraps back to 1 when
-the end of the available pages is reached. This gives a fresh pool of up to
-200 recordings per day that cycles through the full catalogue over time,
-without ever pulling more than needed in a single call.
+Recording metadata is fetched once per day in a "daily pool" of
+_PAGES_PER_DAY consecutive pages from the xeno-canto catalogue. The pool
+is persisted to .cache/xeno_canto_pool_<lat>_<lon>.json and reused for
+all time-tag refreshes within the same day — morning, afternoon, night all
+read from the same pool file without re-fetching.
+
+The page cursor (which page to start from next) lives inside the pool file
+itself under the "next_page" key. It advances once per daily refresh and
+wraps back to 1 when the end of the catalogue is reached. There is no
+separate cursor file.
 
 Query building
 --------------
@@ -38,7 +41,6 @@ cache hit. This removes unnecessary latency when audio is already cached.
 from __future__ import annotations
 
 import json
-import logging
 import os
 import time as _time
 
@@ -46,7 +48,6 @@ import requests_cache
 from requests import Request
 from retry_requests import retry
 
-logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Cache setup
@@ -54,11 +55,16 @@ logger = logging.getLogger(__name__)
 
 os.makedirs(".cache", exist_ok=True)
 
+_DAILY_POOL_CACHE_DIR = ".cache"
+_DAILY_POOL_TTL: int = 86400  # 24 hours — how long a fetched metadata pool is considered fresh
+
+
+
 # Metadata session — JSON API responses, 24-hour expiry.
 _meta_cache = requests_cache.CachedSession(
     ".cache/xeno_canto_meta",
     backend="filesystem",
-    expire_after=86400,
+    expire_after=_DAILY_POOL_TTL,
 )
 _meta_cache.cache.delete(expired=True)
 _meta_session = retry(_meta_cache, retries=5, backoff_factor=0.2)
@@ -94,6 +100,66 @@ _PAGES_PER_DAY = 2
 # Coordinate rounding for stable cache keys (~11 km precision).
 _LAT_LON_ROUND_PRECISION = 1
 
+
+def _pool_path(lat: float, long: float) -> str:
+    return os.path.join(
+        _DAILY_POOL_CACHE_DIR,
+        f"xeno_canto_pool_{_round_coord(lat)}_{_round_coord(long)}.json"
+    )
+
+
+def _save_pool(recordings: list[dict], next_page: int, lat: float, long: float) -> None:
+    """
+    Persist today's recording pool and the cursor for the next daily refresh.
+    next_page is the page the NEXT refresh should start from.
+    """
+    path = _pool_path(lat, long)
+    try:
+        payload = {
+            "saved_at":   _time.time(),
+            "next_page":  next_page,
+            "recordings": recordings,
+        }
+        with open(path, "w") as f:
+            json.dump(payload, f)
+        print(f"[XenoCantoAPI] Daily pool saved: {len(recordings)} recordings, "
+              f"next_page={next_page} → {path}")
+    except Exception as e:
+        print(f"[XenoCantoAPI] Could not save daily pool: {e}")
+
+
+def _load_pool(lat: float, long: float) -> tuple[list[dict], int] | tuple[None, int]:
+    """
+    Load today's recording pool from disk.
+
+    Returns (recordings, next_page) if the pool exists and is less than 24h old.
+    Returns (None, 1) if missing, expired, or unreadable — caller should refresh.
+    The next_page value is the cursor: which page to start from on the next refresh.
+    """
+    path = _pool_path(lat, long)
+    try:
+        with open(path) as f:
+            payload = json.load(f)
+
+        age        = _time.time() - payload.get("saved_at", 0)
+        recordings = payload.get("recordings", [])
+        next_page  = max(1, int(payload.get("next_page", 1)))
+
+        if age > _DAILY_POOL_TTL:
+            print(f"[XenoCantoAPI] Daily pool expired ({age/3600:.1f}h old) — refresh needed.")
+            return None, next_page  # Pass cursor forward even on expiry
+
+        print(f"[XenoCantoAPI] Daily pool loaded: {len(recordings)} recordings, "
+              f"{age/3600:.1f}h old, next_page={next_page}.")
+        return recordings, next_page
+
+    except FileNotFoundError:
+        print(f"[XenoCantoAPI] No daily pool file found at {path} — refresh needed.")
+        return None, 1
+    except Exception as e:
+        print(f"[XenoCantoAPI] Could not load daily pool: {e}")
+        return None, 1
+
 # ---------------------------------------------------------------------------
 # Query helpers
 # ---------------------------------------------------------------------------
@@ -101,30 +167,10 @@ _LAT_LON_ROUND_PRECISION = 1
 def _round_coord(value: float) -> float:
     return round(value, _LAT_LON_ROUND_PRECISION)
 
-def _cursor_path(lat: float, long: float) -> str:
-    return f".cache/xeno_canto_page_cursor_{_round_coord(lat)}_{_round_coord(long)}.json"
 
 # ---------------------------------------------------------------------------
 # Page cursor — persists the sliding window across daily pulls
 # ---------------------------------------------------------------------------
-
-def _read_cursor(lat: float, long: float) -> int:
-    """Return the next starting page to fetch (1-based). Defaults to 1."""
-    try:
-        with open(_cursor_path(lat, long)) as f:
-            return max(1, int(json.load(f).get("next_page", 1)))
-    except Exception:
-        return 1
-
-
-def _write_cursor(lat: float, long: float, next_page: int) -> None:
-    """Persist the next starting page for tomorrow's pull."""
-    try:
-        with open(_cursor_path(lat, long), "w") as f:
-            json.dump({"next_page": next_page}, f)
-    except Exception as e:
-        logger.warning("Could not write page cursor to %s: %s", _cursor_path(lat, long), e)
-
 
 def _build_lat_lon_query(lat: float, long: float, sound_type: str | None = None) -> str:
     """
@@ -168,7 +214,7 @@ def download_audio(recording: dict) -> bytes | None:
     file_url     = recording.get("file", "")
 
     if not recording_id or not file_url:
-        logger.warning("Recording %r has no file URL.", recording_id)
+        print(f"[XenoCantoAPI] Warning: recording {recording_id!r} has no file URL — skipping.")
         return None
 
     if file_url.startswith("//"):
@@ -180,7 +226,7 @@ def download_audio(recording: dict) -> bytes | None:
         cache_key = _audio_cache.cache.create_key(req)
         if _audio_cache.cache.contains(cache_key):
             response = _audio_session.get(file_url, timeout=15)
-            logger.debug("Audio XC%s [cached]", recording_id)
+            print(f"[XenoCantoAPI] Audio XC{recording_id} [cached]")
             return response.content
     except Exception:
         pass  # Fall through to live fetch below
@@ -190,10 +236,10 @@ def download_audio(recording: dict) -> bytes | None:
     try:
         response = _audio_session.get(file_url, timeout=15)
         response.raise_for_status()
-        logger.debug("Audio XC%s [live]", recording_id)
+        print(f"[XenoCantoAPI] Audio XC{recording_id} [live]")
         return response.content
     except Exception as e:
-        logger.error("Failed to fetch audio for XC%s: %s", recording_id, e)
+        print(f"[XenoCantoAPI] Failed to fetch audio for XC{recording_id}: {e}")
         return None
 
 
@@ -227,18 +273,18 @@ def _fetch_page(
         data = response.json()
 
         if "error" in data:
-            logger.error("API error on page %d: %s", page, data["error"])
+            print(f"[XenoCantoAPI] API error on page {page}: {data['error']}")
             return [], 0
 
         recordings = data.get("recordings", [])
         num_pages  = int(data.get("numPages", 1))
         cached     = "[cached]" if getattr(response, "from_cache", False) else "[live]"
 
-        logger.debug("Page %d/%d: %d recordings %s", page, num_pages, len(recordings), cached)
+        print(f"[XenoCantoAPI] Page {page}/{num_pages}: {len(recordings)} recordings {cached}")
         return recordings, num_pages
 
     except Exception as e:
-        logger.error("Request failed on page %d: %s", page, e)
+        print(f"[XenoCantoAPI] Request failed on page {page}: {e}")
         return [], 0
 
 
@@ -268,10 +314,7 @@ def _fetch_pages(
 
         # Don't request past the last known page
         if page > num_pages_total and offset > 0:
-
-            # In _fetch_pages(), replace logger.debug with:
-            # print(f"[XenoCantoAPI] Page {page}/{num_pages_total}: {len(recordings)} recordings {'[cached]' if ... else '[live]'}")
-            # print(f"[XenoCantoAPI] Early stop: page returned {len(recordings)} < per_page {per_page}")
+            print(f"[XenoCantoAPI] Early stop: page {page} exceeds catalogue total ({num_pages_total}), stopping.")
             break
 
         recordings, num_pages_total = _fetch_page(
@@ -299,15 +342,15 @@ class XenoCantoLoc:
     """
     Fetches and caches xeno-canto recording metadata for a lat/lon location.
 
-    Both metadata (24 h) and audio (6 h) are cached via requests_cache
-    filesystem sessions. Expiry and cleanup are handled entirely by the
-    library — no manual purge logic required here.
+    Metadata is fetched in a daily pool — a fixed window of pages from the
+    xeno-canto catalogue, persisted to disk and reused across all time-tag
+    refreshes within the same day. The pool is only re-fetched when it
+    expires (24h) or is missing.
 
-    Pagination
-    ----------
-    get_recordings() fetches _PAGES_PER_DAY pages per call, returning up to
-    _PAGES_PER_DAY × per_page deduplicated recordings. The full result set
-    is cached at the page level — repeated calls within 24 hours cost nothing.
+    The page cursor advances once per daily pool refresh, cycling through
+    the full catalogue over time. It never advances mid-session.
+
+    Audio (6h) is cached separately via requests_cache.
     """
 
     def __init__(self, lat: float, long: float, api_key: str):
@@ -315,41 +358,29 @@ class XenoCantoLoc:
         self.long    = float(long)
         self.api_key = api_key
 
-    # ------------------------------------------------------------------
-    # Metadata fetch — paginated
-    # ------------------------------------------------------------------
-    def get_recordings(
+    def refresh_daily_pool(
         self,
         sound_type:    str | None = None,
         per_page:      int = 100,
         pages_per_day: int = _PAGES_PER_DAY,
     ) -> list[dict]:
         """
-        Fetch today's window of recordings for this location.
+        Fetch a fresh window of recording metadata and persist it as today's pool.
 
-        Each daily pull fetches pages_per_day consecutive pages starting
-        from the cursor stored in .cache/xeno_canto_page_cursor_<lat>_<lon>.json.
-        After fetching, the cursor advances by pages_per_day and wraps back
-        to 1 when the end of the available pages is reached — so each day's
-        pool is a fresh slice of the full xeno-canto catalogue for this location.
+        This is the ONLY place the page cursor advances. Called at most once
+        per day — get_recordings() handles that gate automatically.
 
-        Example with pages_per_day=2 and 5 total pages available:
-        Day 1: pages 1–2  → cursor written as 3
-        Day 2: pages 3–4  → cursor written as 5
-        Day 3: page  5    → cursor wraps, written as 1
-        Day 4: pages 1–2  → cursor written as 3  (cycle repeats)
-
-        If no recordings are found, the search is retried with a wider geographic
-        radius (~110 km vs ~11 km) to ensure something is always returned.
-
-        Results are deduplicated by recording id before returning.
-        Returns a list of recording dicts, or [] on error / no results.
+        Reads the current cursor from the pool file itself (no separate cursor
+        file), fetches pages_per_day consecutive pages, advances the cursor,
+        wraps to 1 at end of catalogue, and writes the pool file.
         """
-        query      = _build_lat_lon_query(self.lat, self.long, sound_type)
-        start_page = _read_cursor(self.lat, self.long)
+        # Read cursor from pool file — no separate cursor file needed
+        _, start_page = _load_pool(self.lat, self.long)
 
-        # print(f"[XenoCantoAPI] Daily pull: lat={self.lat}, long={self.long} — pages {start_page}..{start_page + pages_per_day - 1}")
+        query = _build_lat_lon_query(self.lat, self.long, sound_type)
 
+        print(f"[XenoCantoAPI] Daily refresh: lat={self.lat}, long={self.long} "
+            f"— pages {start_page}..{start_page + pages_per_day - 1}")
 
         all_recordings, num_pages_total = _fetch_pages(
             query=query,
@@ -360,7 +391,7 @@ class XenoCantoLoc:
         )
 
         if not all_recordings:
-            logger.warning("No results for lat=%s, lon=%s — widening search. ~110 km", self.lat, self.long)
+            print(f"[XenoCantoAPI] No results — widening search to ~110km radius.")
             fallback_query = (
                 f"lat:{round(self.lat)}+lon:{round(self.long)}"
                 f'+q:"{_QUALITY_FILTER}"+len:"{_LEN_MIN}"+len:"{_LEN_MAX}"'
@@ -373,9 +404,21 @@ class XenoCantoLoc:
         next_page = start_page + pages_per_day
         if next_page > num_pages_total:
             next_page = 1
-            logger.info("Page cursor wrapped back to 1 (total pages: %d).", num_pages_total)
-        _write_cursor(self.lat, self.long, next_page)
+            print(f"[XenoCantoAPI] Cursor wrapped to 1 "
+                f"(catalogue has {num_pages_total} page(s)).")
 
-        # print(f"[XenoCantoAPI] Daily pool: {len(all_recordings)} recordings (next pull starts at page {next_page})")
-
+        _save_pool(all_recordings, next_page, self.lat, self.long)
         return all_recordings
+
+    def get_recordings(self) -> list[dict]:
+        """
+        Return today's pool of recording metadata.
+
+        Loads from the pool file if fresh (< 24h). Triggers a full daily
+        refresh if missing or expired. Pure read from the provider's perspective
+        — no cursor logic, no pagination, no side effects on a cache hit.
+        """
+        recordings, _ = _load_pool(self.lat, self.long)
+        if recordings is None:
+            recordings = self.refresh_daily_pool()
+        return recordings

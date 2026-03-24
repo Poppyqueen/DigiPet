@@ -4,7 +4,6 @@ _SELECTION_CACHE_PATH = ".cache/xeno_canto_selection.json"
 _SELECTION_TTL        = 21600  # 6 hours
 
 _SELECTION_CACHE_DIR = ".cache"
-_SELECTION_TTL       = 21600  # 6 hours
 # ---------------------------------------------------------------------------
 # Tick constants
 # ---------------------------------------------------------------------------

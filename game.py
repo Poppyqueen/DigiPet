@@ -21,9 +21,8 @@ import sys
 
 import pygame
 
-from pygame_int import config, state
+from pygame_int import state
 from pygame_int.main_digipet import gui
-from pygame_int.juke_box import jukebox
 
 from pygame_runtime.signal_handler import make_signal_handler
 from pygame_runtime.initializer    import initialize
