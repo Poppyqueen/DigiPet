@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 import random
 from utils.loc_datetime import datetime
-
+import math
 
 
 from .config import (_DEFAULT_TICKS_PER_RECORDING, 
                      _SECONDS_PER_TICK, _MIN_TICKS_PER_RECORDING, 
                      _MAX_TICKS_PER_RECORDING, _RAIN_THRESHOLD_MODIFIERS,
                      _SELECTION_SIZE_WIND_THRESHOLD, _WIND_THRESHOLD_MODIFIERS,
-                     _TIME_PREFERENCES, _TIME_PROXIMITY_WEIGHT,
+                     _TIME_PREFERENCES,
                      _RAIN_SCORE_MODIFIERS, _WIND_SCORE_MODIFIERS,
                      _ALWAYS_EXCLUDE_TOKENS, _TIME_BLACKLIST,
                      _SELECTION_SIZE_BY_TAG, _SELECTION_SIZE_DEFAULT,
-                     _SELECTION_SIZE_RAIN_FACTOR, _SELECTION_SIZE_WIND_FACTOR)
+                     _SELECTION_SIZE_RAIN_FACTOR, _SELECTION_SIZE_WIND_FACTOR,
+                     _NO_TIME_PENALTY, _TIME_PROXIMITY_SIGMOID_K, _TIME_PROXIMITY_GATE_HOURS)
 
 @dataclass
 class WeatherContext:
@@ -113,6 +114,78 @@ def _ticks_for_recording(recording: dict) -> int:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Time proximity — PRIMARY scoring signal
+# ---------------------------------------------------------------------------
+
+def _time_proximity_multiplier(recording: dict, time_tag: str) -> float:
+    """
+    Returns a [0.0, 1.0] multiplicative weight expressing how well the
+    recording's clock time matches the current moment.
+
+    Curve: sigmoid centred on 0h distance, reflected so that:
+      - 0h distance  → 1.0   (perfect match)
+      - 2h distance  → ~0.05 (hard gate, effectively excluded)
+      - 4h distance  → ~0.00
+
+    Formula: 1 / (1 + exp(k * (distance - gate)))
+      k    = _TIME_PROXIMITY_SIGMOID_K   (steepness)
+      gate = _TIME_PROXIMITY_GATE_HOURS  (inflection point)
+
+    Missing or unparseable time → _NO_TIME_PENALTY with a printed warning.
+    No silent fallbacks — bad formats surface here.
+    """
+    xc_id    = recording.get("id", "?")
+    raw_time = recording.get("time", "")
+
+    if not raw_time:
+        # print(f"  [TimePrx] XC{xc_id}: NO time field in metadata "
+        #       f"→ penalty ×{_NO_TIME_PENALTY}")
+        return _NO_TIME_PENALTY
+
+    # Parse — no try/except swallowing: we want to see exactly what breaks
+    parts = raw_time.strip().split(":")
+    if len(parts) < 2:
+        # print(f"  [TimePrx] XC{xc_id}: UNEXPECTED time format {raw_time!r} "
+        #       f"(expected HH:MM, got {len(parts)} part(s)) "
+        #       f"→ penalty ×{_NO_TIME_PENALTY}")
+        return _NO_TIME_PENALTY
+
+    try:
+        rec_hour = int(parts[0])
+        rec_min  = int(parts[1])
+    except ValueError as e:
+        # print(f"  [TimePrx] XC{xc_id}: NON-INTEGER in time {raw_time!r} ({e}) "
+        #       f"→ penalty ×{_NO_TIME_PENALTY}")
+        return _NO_TIME_PENALTY
+
+    if not (0 <= rec_hour <= 23) or not (0 <= rec_min <= 59):
+        # print(f"  [TimePrx] XC{xc_id}: OUT-OF-RANGE time {raw_time!r} "
+        #       f"(hour={rec_hour}, min={rec_min}) "
+        #       f"→ penalty ×{_NO_TIME_PENALTY}")
+        return _NO_TIME_PENALTY
+
+    now         = datetime.now()
+    now_decimal = now.hour + now.minute / 60.0
+    rec_decimal = rec_hour + rec_min / 60.0
+
+    # Circular distance on 24h clock — always the shorter arc
+    raw_dist = abs(now_decimal - rec_decimal)
+    distance = min(raw_dist, 24.0 - raw_dist)
+
+    # Sigmoid gate: 1 / (1 + exp(k * (distance - gate)))
+    k          = _TIME_PROXIMITY_SIGMOID_K
+    gate       = _TIME_PROXIMITY_GATE_HOURS
+    multiplier = 1.0 / (1.0 + math.exp(k * (distance - gate)))
+
+    # print(f"  [TimePrx] XC{xc_id}: rec={raw_time} "
+    #       f"now={now.strftime('%H:%M')} "
+    #       f"dist={distance:.2f}h "
+    #       f"gate=±{gate}h k={k} "
+    #       f"→ ×{multiplier:.4f}")
+
+    return multiplier
+
 
 def _apply_condition_modifier(
     tokens: list[str],
@@ -164,82 +237,97 @@ def _threshold_for(
 
     return threshold
 
+
 def _score_recording(
     recording: dict,
     time_tag: str,
     weather: WeatherContext | None = None,
 ) -> float:
     """
-    Compute a weighted score for a recording at the given time tag.
+    Score a recording for selection at the current time_tag.
 
-    Components (all additive before weather multipliers):
-      base        1.0  — always
-      type_bonus  0–4.0 — best-matching token from _TIME_PREFERENCES
-      time_prox   0–1.0 — how close the recording's time-of-day is to now
-      quality     +0.25 for grade A, 0 for B
-      also_rich   0–0.15 — bonus for background species richness
+    Signal priority (explicit, not buried in an additive sum):
 
-    Weather is then applied in two layers:
-      1. Global wind multiplier (WeatherContext.score_multiplier) scales the
-         whole score — a broad floor that affects everything in high wind.
-      2. Per-type binary condition modifiers (_RAIN_SCORE_MODIFIERS,
-         _WIND_SCORE_MODIFIERS) are applied via _apply_condition_modifier(),
-         so rain boosts frogs and penalises warblers rather than treating
-         all recordings identically.
+      1. TIME PROXIMITY — multiplicative gate applied first.
+         A recording made at the wrong hour cannot be rescued by good type
+         tokens. Uses a sigmoid with a hard gate at ±2h. If this returns
+         near-zero the function exits early — no wasted computation.
+
+      2. ADDITIVE BASE — quality, richness, type affinity.
+         Type preferences compressed to [0.0, 0.5] max bonus so they inform
+         but cannot overpower a poor time match.
+
+      3. WEATHER multipliers — global wind floor + per-type rain/wind
+         modifiers. Applied last, unchanged from before.
+
+    Every component is printed so the selection reasoning is fully observable.
     """
-    
+    xc_id = recording.get("id", "?")
+    en    = recording.get("en") or recording.get("gen", "?")
+    #print(f"  [Score] ── XC{xc_id} ({en}) tag={time_tag!r}")
+
+    # ── 1. TIME PROXIMITY (primary gate) ────────────────────────────────────
+    time_mult = _time_proximity_multiplier(recording, time_tag)
+
+    # Early exit — saves scoring overhead for recordings that won't be picked
+    if time_mult < 0.02:
+        # print(f"  [Score] XC{xc_id}: gated out (time_mult={time_mult:.4f} < 0.02) → 0.0")
+        return 0.0
+
+    # ── 2. ADDITIVE BASE ────────────────────────────────────────────────────
     base = 1.0
 
+    # Type affinity — max bonus compressed to 0.5 (was 4.0)
+    # Type prefs are secondary: they inform within a valid time window,
+    # they do not create one.
     tokens    = _tokenise_type(recording.get("type", ""))
     preferred = _TIME_PREFERENCES.get(time_tag, {})
     if tokens:
-        # type_bonus  0–4.0 — best-matching token from _TIME_PREFERENCES
-        type_bonus = max((preferred.get(tok, 0.0) for tok in tokens), default=0.0)
-        base += type_bonus
+        raw_bonus  = max((preferred.get(tok, 0.0) for tok in tokens), default=0.0)
+        type_bonus = (raw_bonus / 4.0) * 0.5   # compress [0–4] → [0–0.5]
+        base      += type_bonus
+        # print(f"  [Score] XC{xc_id}: tokens={tokens} "
+        #       f"raw_pref={raw_bonus:.2f} → type_bonus={type_bonus:.3f}")
+    # else:
+    #     print(f"  [Score] XC{xc_id}: no type tokens — no type bonus")
 
-    rec_time = recording.get("time", "") # At what time was this recording made.
-    if rec_time:
-        try:
-            now_hour = datetime.now().hour
-            rec_hour = int(rec_time.split(":")[0])
-            distance = min(abs(now_hour - rec_hour), 24 - abs(now_hour - rec_hour))
-            
-            # time_prox 0–1.0 — how close the recording's time-of-day is to now
-            # This creates a steep drop-off and a hard penalty for being 'late'
-            time_factor = max(0.0, 1.0 - (distance / 3.0)**2) 
-            prox_bonus = time_factor * _TIME_PROXIMITY_WEIGHT
-            base += prox_bonus
-            
-        except Exception as e:
-            print(f"  [Time Prox]: Error calculating proximity: {e}")
-
-    # quality +0.25 for grade A, 0 for B
-    q_val = {"A": 0.25, "B": 0.0}.get(recording.get("q", ""), 0.0)
+    # Quality
+    q_raw = recording.get("q", "")
+    q_val = {"A": 0.25, "B": 0.0}.get(q_raw, 0.0)
     base += q_val
+    # print(f"  [Score] XC{xc_id}: quality={q_raw!r} → q_bonus={q_val}")
 
-    # also_rich 0–0.15 — bonus for background species richness
-    richness_bonus = min(len(recording.get("also", [])), 3) * 0.05
-    base += richness_bonus
+    # Species richness
+    also          = recording.get("also", [])
+    richness_bonus = min(len(also), 3) * 0.05
+    base          += richness_bonus
+    # print(f"  [Score] XC{xc_id}: also={len(also)} species → richness_bonus={richness_bonus:.2f}")
 
+    # Apply time gate to base
+    score = base * time_mult
+    # print(f"  [Score] XC{xc_id}: base={base:.3f} × time_mult={time_mult:.4f} = {score:.4f}")
 
+    # ── 3. WEATHER ──────────────────────────────────────────────────────────
     if weather:
-        # Layer 1: Global wind multiplier (WeatherContext.score_multiplier)
-        # scales the whole score — a broad floor that affects everything in high wind.
-        old_base = base
-        base *= weather.score_multiplier
+        pre_weather = score
+        score      *= weather.score_multiplier
+        # print(f"  [Score] XC{xc_id}: wind_multiplier={weather.score_multiplier:.3f} "
+        #       f"→ {score:.4f}")
 
-        # Layer 2: Per-type binary condition modifiers (_RAIN_SCORE_MODIFIERS,
-        # _WIND_SCORE_MODIFIERS) are applied via _apply_condition_modifier()
         if weather.is_raining:
             rain_mod = _apply_condition_modifier(tokens, _RAIN_SCORE_MODIFIERS)
-            base *= rain_mod
+            score   *= rain_mod
+            # print(f"  [Score] XC{xc_id}: rain_mod={rain_mod:.3f} → {score:.4f}")
 
         if (weather.wind_speed or 0.0) > _SELECTION_SIZE_WIND_THRESHOLD:
             wind_mod = _apply_condition_modifier(tokens, _WIND_SCORE_MODIFIERS)
-            base *= wind_mod
+            score   *= wind_mod
+            # print(f"  [Score] XC{xc_id}: wind_mod={wind_mod:.3f} → {score:.4f}")
 
-    return base
+        # print(f"  [Score] XC{xc_id}: post-weather {pre_weather:.4f} → {score:.4f}")
 
+    # print(f"  [Score] XC{xc_id}: ══ FINAL = {score:.4f}")
+    return score
 
 
 # ---------------------------------------------------------------------------

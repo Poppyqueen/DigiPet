@@ -17,6 +17,8 @@ from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import Outd
 from utils.xeno_canto_api import XenoCantoLoc, download_audio
 from utils.time_manager import get_time_tag_from_now
 
+from utils.loc_datetime import datetime
+
 # import traceback
 
 # --- Import our clean sub-modules ---
@@ -68,42 +70,56 @@ class XenoCantoProvider(OutdoorsProvider):
         
     def _display_attribution_message(self, recording: dict) -> None:
         """Prints a beautifully formatted, clickable attribution block to the terminal."""
-        # print(f"--- DEBUG: Calling attribution for {recording.get('id')} ---")
-        # traceback.print_stack()
-        # 1. Format the species name
+        # 1. Extraction
         en_name  = recording.get("en", "Unknown species")
         gen      = recording.get("gen", "")
         sp       = recording.get("sp", "")
         sci_name = f"{gen} {sp}".strip()
         name     = f"{en_name} ({sci_name})" if sci_name else en_name
-
-        # 2. Format the location
+        
         loc      = recording.get("loc", "")
         cnt      = recording.get("cnt", "")
         location = ", ".join(filter(None, [loc, cnt])) or "Unknown Location"
-
-        # 3. Get the recordist
+        
         rec      = recording.get("rec", "Unknown Recordist")
+        xc_id    = recording.get("id", "Unknown ID")
+        sound_type = recording.get("type", "")
 
-        # 4. Format the URLs (Xeno-canto API returns URLs starting with "//")
+        raw_time = recording.get("time", "")
+        try:
+            # Parse "14:10" and format to "2:10 PM"
+            formatted_time = datetime.strptime(raw_time, "%H:%M").strftime("%I:%M %p").lstrip('0')
+        except (ValueError, TypeError):
+            formatted_time = "Unknown time"
+        # 2. URL Formatting
+        # We ensure the URL has https: so the terminal identifies it as a clickable link.
         raw_url  = recording.get("url", "")
         url      = f"https:{raw_url}" if raw_url.startswith("//") else raw_url
+        
+        # We strip the protocol only for display if we want, but for CLICKABILITY, 
+        # it is safer to leave the protocol or ensure it starts with 'www.'
+        clickable_url = url if url else "https://www.xeno-canto.org"
 
         raw_lic  = recording.get("lic", "")
         lic      = f"https:{raw_lic}" if raw_lic.startswith("//") else raw_lic
 
-        # 5. Print the terminal block
-        print()
+
+
+        # 3. The Print Block
+        
         print("======================================================================")
-        print("🎵 NOW PLAYING (via Xeno-canto)")
+        print("NOW PLAYING (via xeno-canto)")
         print("----------------------------------------------------------------------")
+        print(f"Citation:\n{rec}, XC{xc_id}. Accessible at {clickable_url}\n")
+        print("----------------------------------------------------------------------")
+        print(f"Recordist : {rec}")
+        print(f"Time of day for recording : {formatted_time}")
         print(f"Species  : {name}")
+        print(f"Sound type : {sound_type}")
         print(f"Location : {location}")
-        print(f"Recordist: {rec}")
         print(f"License  : {lic}")
-        print(f"Link     : {url}")
         print()
-        print("🙏 Audio provided by Xeno-canto, sharing wildlife sounds from")
+        print("Audio provided by xeno-canto, sharing wildlife sounds from")
         print("   around the world. Explore more at: https://xeno-canto.org")
         print("======================================================================")
         print()

@@ -268,7 +268,10 @@ def _fetch_pages(
 
         # Don't request past the last known page
         if page > num_pages_total and offset > 0:
-            logger.debug("Reached last page (%d), stopping early.", num_pages_total)
+
+            # In _fetch_pages(), replace logger.debug with:
+            # print(f"[XenoCantoAPI] Page {page}/{num_pages_total}: {len(recordings)} recordings {'[cached]' if ... else '[live]'}")
+            # print(f"[XenoCantoAPI] Early stop: page returned {len(recordings)} < per_page {per_page}")
             break
 
         recordings, num_pages_total = _fetch_page(
@@ -282,7 +285,7 @@ def _fetch_pages(
                 all_recordings.append(r)
 
         # Short page means we've hit the end
-        if len(recordings) < per_page:
+        if len(recordings) == 0:
             break
 
     return all_recordings, num_pages_total
@@ -345,12 +348,8 @@ class XenoCantoLoc:
         query      = _build_lat_lon_query(self.lat, self.long, sound_type)
         start_page = _read_cursor(self.lat, self.long)
 
-        logger.info(
-            "Daily pull: lat=%s, long=%s%s — pages %d..%d",
-            self.lat, self.long,
-            f" type={sound_type}" if sound_type else "",
-            start_page, start_page + pages_per_day - 1,
-        )
+        # print(f"[XenoCantoAPI] Daily pull: lat={self.lat}, long={self.long} — pages {start_page}..{start_page + pages_per_day - 1}")
+
 
         all_recordings, num_pages_total = _fetch_pages(
             query=query,
@@ -377,8 +376,6 @@ class XenoCantoLoc:
             logger.info("Page cursor wrapped back to 1 (total pages: %d).", num_pages_total)
         _write_cursor(self.lat, self.long, next_page)
 
-        logger.info(
-            "Daily pool: %d recordings (next pull starts at page %d).",
-            len(all_recordings), next_page,
-        )
+        # print(f"[XenoCantoAPI] Daily pool: {len(all_recordings)} recordings (next pull starts at page {next_page})")
+
         return all_recordings

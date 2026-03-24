@@ -34,6 +34,27 @@ _SELECTION_SIZE_RAIN_FACTOR: float = 0.6    # e.g. 10 → 6 in rain
 _SELECTION_SIZE_WIND_THRESHOLD: float = 25.0  # km/h above which wind shrinks pool
 _SELECTION_SIZE_WIND_FACTOR: float = 0.75   # e.g. 10 → 7-8 in strong wind
 
+
+# ---------------------------------------------------------------------------
+# Time proximity — primary scoring signal
+# ---------------------------------------------------------------------------
+
+# Sigmoid steepness. Higher = harder gate. At k=3.0 a recording 2h away
+# scores ~0.05, which is effectively excluded from weighted_sample.
+_TIME_PROXIMITY_SIGMOID_K: float = 3.0
+
+# The ±h window around now where a recording is considered "on time".
+# Beyond this the sigmoid is already near zero.
+_TIME_PROXIMITY_GATE_HOURS: float = 2.0
+
+# Multiplier given to recordings with no time metadata at all.
+# Clearly sub-par but not zero — it exists for a reason, we just can't place it.
+_NO_TIME_PENALTY: float = 0.30
+
+# REMOVED: _TIME_PROXIMITY_WEIGHT = 1.0
+# Time is no longer an additive bonus — it is a multiplicative gate.
+# Deleting this constant so nothing silently imports a stale value.
+
 # ---------------------------------------------------------------------------
 # xeno-canto core type vocabulary
 #
@@ -101,7 +122,6 @@ _TIME_BLACKLIST: dict[str, set[str]] = {
 }
 
 
-_TIME_PROXIMITY_WEIGHT = 5.0
 
 # ---------------------------------------------------------------------------
 # Perception text helpers
