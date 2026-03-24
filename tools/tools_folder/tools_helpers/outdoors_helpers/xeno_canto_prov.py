@@ -108,7 +108,7 @@ class XenoCantoProvider(OutdoorsProvider):
         # 3. The Print Block
         
         print("======================================================================")
-        print("NOW PLAYING (via xeno-canto)")
+        print(f"NOW PLAYING WILDLIFE (provided by xeno-canto)")
         print("----------------------------------------------------------------------")
         print(f"Citation:\n{rec}, XC{xc_id}. Accessible at {clickable_url}\n")
         print("----------------------------------------------------------------------")

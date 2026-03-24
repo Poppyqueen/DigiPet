@@ -48,6 +48,13 @@ import requests_cache
 from requests import Request
 from retry_requests import retry
 
+# Set to True to prevent downloading sounds that don't allow derivative works (CC BY-ND)
+# You can set this to false if using the application eniterly for personal use without redistributing the output.
+FILTER_NO_DERIVATIVES = True 
+
+# Set to True to prevent downloading sounds that forbid commercial use (CC BY-NC)
+FILTER_NON_COMMERCIAL = False
+
 
 # ---------------------------------------------------------------------------
 # Cache setup
@@ -323,10 +330,16 @@ def _fetch_pages(
 
         for r in recordings:
             rid = r.get("id", "")
-            if rid and rid not in seen_ids:
-                seen_ids.add(rid)
-                all_recordings.append(r)
+            lic = r.get("lic", "").lower()
+            if not rid or rid in seen_ids:
+                continue
+            if FILTER_NO_DERIVATIVES and ("-nd" in lic or "/nd/" in lic):
+                continue
+            if FILTER_NON_COMMERCIAL and ("-nc" in lic or "/nc/" in lic):
+                continue
 
+            seen_ids.add(rid)
+            all_recordings.append(r)
         # Short page means we've hit the end
         if len(recordings) == 0:
             break
