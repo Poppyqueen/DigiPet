@@ -22,6 +22,8 @@ data_archive/
 *mcp_config.json
 *glance.txt 
 
+*local_data/
+
 # ------------------------------------
 # 3. Build & Packaging Artifacts
 # ------------------------------------
