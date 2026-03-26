@@ -9,7 +9,8 @@ from skyfield.api import Star, load, wgs84, Loader
 from skyfield import almanac
 from skyfield.magnitudelib import planetary_magnitude
 
-from .types import StarResult, PlanetResult, MoonResult
+from .types import StarResult, PlanetResult, MoonResult, SunResult, TwilightPhase
+from .atmosphere import sun_magnitude_loss
 
 # ---------------------------------------------------------------------------
 # Data paths
@@ -56,27 +57,22 @@ class AstroProvider: # Not sure if this is following the types we have
         print(f"[Astro] Ready. {len(self._star_df)} IAU-verified stars loaded.")
 
     def _setup_stars(self) -> pd.DataFrame:
-        """
-        Downloads HYG v4.2, filters to naked-eye stars, and saves as a 
-        derivative work under CC BY-SA 4.0.
-        """
+        """Downloads v4.2 from Codeberg if needed and filters to naked-eye stars."""
         if not _HYG_LOCAL_FILTERED.exists():
-            print(f"[Astro] Initializing stellar database...")
-            print(f"[Astro] Source: HYG Database v4.2 by David Nash (astronexus.com)")
-            print(f"[Astro] License: CC BY-SA 4.0 (Attribution-ShareAlike)")
-            print(f"[Astro] Downloading and filtering ~120,000 stars...")
-
+            print(f"[Astro] Downloading HYG v4.2 from Codeberg (~15MB compressed)...")
             try:
-                # 1. Download and read original into memory (discarded after)
+                # Pandas handles the .gz decompression automatically
                 df = pd.read_csv(_HYG_URL, compression='gzip', low_memory=False)
                 
-                # 2. Filter to stars visible to the human eye (Mag <= 6.5)
-                # and keep only the columns required for our simulation
+                # Filter to stars visible to the human eye (Mag <= 6.5)
+                # This reduces the ~120,000 stars to a manageable ~9,000
                 df = df[df['mag'] <= 6.5].copy()
+                
+                # Keep only the essential columns for our simulation
                 cols = ['proper', 'mag', 'ra', 'dec', 'con', 'bf']
                 df = df[cols]
                 
-                # 3. Save the derivative dataset
+                # Save the filtered version so we never have to download 15MB again
                 df.to_csv(_HYG_LOCAL_FILTERED, index=False)
 
                 # 4. Create a persistent License/Attribution file in the data folder
@@ -94,7 +90,6 @@ class AstroProvider: # Not sure if this is following the types we have
                     
                 print(f"[Astro] Local cache created: {len(df)} naked-eye stars saved.")
                 return df
-
             except Exception as e:
                 print(f"[Astro] Critical Error downloading star catalog: {e}")
                 raise
@@ -148,16 +143,36 @@ class AstroProvider: # Not sure if this is following the types we have
     # ------------------------------------------------------------------
 
     def get_moon(self, dt: datetime) -> MoonResult:
-        t = self._to_skyfield_time(dt) # Use the helper
+        t = self._to_skyfield_time(dt)
         astrometric = self._observer.at(t).observe(self._eph['moon'])
         alt, az, _ = astrometric.apparent().altaz()
         phase_angle = almanac.moon_phase(self._eph, t)
+
+        illumination = (1 + math.cos(math.radians(phase_angle.degrees))) / 2.0
+
+        # Days into synodic month (new moon = 0, full = ~14.77, back to new = 29.53)
+        SYNODIC_MONTH = 29.530588
+        days_from_new = (phase_angle.degrees / 360.0) * SYNODIC_MONTH
+
+        # Determine waxing vs waning by sampling one hour ahead
+        t_ahead = self._to_skyfield_time(dt.replace(tzinfo=dt.tzinfo) if dt.tzinfo else dt)
+        from datetime import timedelta as _td
+        dt_ahead = dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        dt_ahead = dt_ahead + _td(hours=1)
+        t_ahead = self._to_skyfield_time(dt_ahead)
+        phase_ahead = almanac.moon_phase(self._eph, t_ahead)
+        illum_ahead = (1 + math.cos(math.radians(phase_ahead.degrees))) / 2.0
+        waxing = illum_ahead > illumination
+
         return MoonResult(
             phase_angle=phase_angle.degrees,
-            phase_name=self._moon_phase_name(phase_angle.degrees),
-            illumination=(1 + math.cos(math.radians(phase_angle.degrees))) / 2.0,
-            azimuth=az.degrees % 360, altitude=alt.degrees,
-            above_horizon=alt.degrees > 0, magnitude_impact=0.0
+            illumination=illumination,
+            days_from_new=days_from_new,
+            waxing=waxing,
+            azimuth=az.degrees % 360,
+            altitude=alt.degrees,
+            above_horizon=alt.degrees > 0,
+            magnitude_impact=0.0,
         )
 
     def get_planets(self, dt: datetime) -> list[tuple]:
@@ -175,20 +190,40 @@ class AstroProvider: # Not sure if this is following the types we have
             except: continue
         return results # not returning our object
 
-    def get_sun_altitude(self, dt: datetime) -> float:
-        t = self._to_skyfield_time(dt) # Use the helper
+    def get_sun(self, dt: datetime) -> SunResult:
+        """
+        Return the Sun's full observational state at the given moment.
+        This is the authoritative source for day/night and twilight logic.
+        """
+        t = self._to_skyfield_time(dt)
         astrometric = self._observer.at(t).observe(self._eph['sun'])
-        alt, _, _ = astrometric.apparent().altaz()
-        return alt.degrees # is this the correct way?
+        alt, az, _ = astrometric.apparent().altaz()
+        altitude = alt.degrees
+        azimuth  = az.degrees % 360
 
-    def _moon_phase_name(self, phase_angle_deg: float) -> str: # should change to intensity? angle? event? 
-        a = phase_angle_deg % 360 # return sometihing else? more detiled and acurate or reflective of reality.
-        if a < 22.5: return "new moon"
-        if a < 67.5: return "waxing crescent"
-        if a < 112.5: return "first quarter"
-        if a < 157.5: return "waxing gibbous"
-        if a < 202.5: return "full moon"
-        if a < 247.5: return "waning gibbous"
-        if a < 292.5: return "last quarter"
-        if a < 337.5: return "waning crescent"
-        return "new moon"
+        # Classify twilight phase
+        if altitude >= 18.0:
+            phase = TwilightPhase.DAY
+        elif altitude >= 0.0:
+            phase = TwilightPhase.CIVIL_TWILIGHT
+        elif altitude >= -6.0:
+            phase = TwilightPhase.NAUTICAL_TWILIGHT
+        elif altitude >= -18.0:
+            phase = TwilightPhase.ASTRO_TWILIGHT
+        else:
+            phase = TwilightPhase.NIGHT
+
+
+        mag_impact = sun_magnitude_loss(altitude)
+
+        return SunResult(
+            azimuth=azimuth,
+            altitude=altitude,
+            above_horizon=altitude > 0.0,
+            twilight_phase=phase,
+            magnitude_impact=mag_impact,
+        )
+
+    def get_sun_altitude(self, dt: datetime) -> float:
+        """Convenience accessor — returns just the altitude in degrees."""
+        return self.get_sun(dt).altitude

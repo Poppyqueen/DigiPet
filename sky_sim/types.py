@@ -96,16 +96,21 @@ class WeatherSnapshot:
 # Individual celestial objects
 # ---------------------------------------------------------------------------
 
+class VisibilityState(str, Enum):
+    VISIBLE      = "visible"       # passes all checks
+    CLOUDED      = "clouded"       # cloud opacity blocks it
+    BELOW_LIMIT  = "below_limit"   # too faint given conditions
+
 @dataclass
 class StarResult:
-    name:               str
-    magnitude:          float
-    azimuth:            float        # degrees
-    altitude:           float        # degrees above horizon
-    effective_magnitude: float       # after all losses applied
-    visible:            bool
-    obscured_by_cloud:  bool = False
-    constellation:      Optional[str] = None
+    name:                str
+    magnitude:           float
+    azimuth:             float
+    altitude:            float
+    effective_magnitude: float
+    constellation:       Optional[str] = None
+    visibility:          VisibilityState = VisibilityState.BELOW_LIMIT
+    cloud_opacity:       float = 0.0    # raw opacity, useful for clustering
 
 
 @dataclass
@@ -115,20 +120,44 @@ class PlanetResult:
     azimuth:            float
     altitude:           float
     effective_magnitude: float
-    visible:            bool
-    obscured_by_cloud:  bool = False
-    angular_diameter:   Optional[float] = None  # arcseconds
+    visibility:         VisibilityState = VisibilityState.BELOW_LIMIT
+    cloud_opacity:      float = 0.0
+    angular_diameter:   Optional[float] = None
 
 
 @dataclass
 class MoonResult:
-    phase_angle:        float        # degrees 0–360
-    phase_name:         str          # "waxing crescent" etc.
-    illumination:       float        # 0.0–1.0
+    phase_angle:        float        # degrees 0–360 (elongation Sun–Moon from Earth)
+    illumination:       float        # 0.0–1.0  (fraction of disc illuminated)
+    days_from_new:      float        # 0–29.53  (position in synodic month)
+    waxing:             bool         # True = growing, False = shrinking
     azimuth:            float
     altitude:           float
     above_horizon:      bool
     magnitude_impact:   float        # how many magnitudes it washes out sky
+
+
+class TwilightPhase(str, Enum):
+    """Named phases of the solar day, from the observer's perspective."""
+    DAY               = "day"               # sun > +18°
+    CIVIL_TWILIGHT    = "civil_twilight"    # 0° to +18°  — horizon glow, no stars
+    NAUTICAL_TWILIGHT = "nautical_twilight" # -6° to 0°   — sea-horizon lit
+    ASTRO_TWILIGHT    = "astro_twilight"    # -18° to -6° — faint sky glow
+    NIGHT             = "night"             # sun < -18°  — full astronomical dark
+
+
+@dataclass
+class SunResult:
+    """
+    The Sun's position and its sky-brightness contribution.
+    Always computed, regardless of whether the Sun is above the horizon.
+    This is the authoritative day/night signal for the whole simulation.
+    """
+    azimuth:            float          # degrees 0–360
+    altitude:           float          # degrees (negative = below horizon)
+    above_horizon:      bool
+    twilight_phase:     TwilightPhase
+    magnitude_impact:   float          # mag loss imposed on the limiting magnitude
 
 
 # ---------------------------------------------------------------------------
@@ -143,12 +172,17 @@ class AtmosphereScores:
     fog_risk:           float   # probability of fog forming (dew point spread)
 
     # Raw magnitude losses applied globally (not from clouds)
-    visibility_mag_loss:    float
-    light_pollution_mag_loss: float
-    moon_mag_loss:          float
+    visibility_mag_loss:      float
+    #light_pollution_mag_loss: float
+    moon_mag_loss:            float
+    sun_mag_loss:             float   # twilight / daytime sky brightness loss
+    sun_altitude:             float   # degrees; negative = below horizon
 
     @property
     def overall_quality(self) -> float:
+        # Sun washes out the sky entirely when above astronomical twilight
+        if self.sun_altitude > -18.0:
+            return 0.0
         return (self.transparency * 0.5 + self.seeing * 0.3 +
                 (1.0 - self.fog_risk) * 0.2)
 
@@ -173,13 +207,14 @@ class SkySnapshot:
     weather:            WeatherSnapshot
     atmosphere:         AtmosphereScores
     moon:               MoonResult
+    sun:                SunResult
     bortle_class:       BortleClass
     limiting_magnitude: float        # effective — after all losses
 
     # Objects
-    stars_visible:      list[StarResult]
-    stars_obscured:     list[StarResult]
-    planets:            list[PlanetResult]
+    stars:                list[StarResult]   # all above horizon, classified
+    stars_above_horizon:  int                # len(stars) — no recomputation needed
+    planets:              list[PlanetResult]
 
     # Simulation state
     simulation_tick:    int          # how many ticks have elapsed
@@ -189,9 +224,17 @@ class SkySnapshot:
     condition:          SkyConditionNarrative
 
     @property
-    def total_stars_visible(self) -> int:
-        return len(self.stars_visible)
+    def stars_visible(self) -> list[StarResult]:
+        return [s for s in self.stars if s.visibility == VisibilityState.VISIBLE]
 
     @property
-    def planets_visible(self) -> list[PlanetResult]:
-        return [p for p in self.planets if p.visible]
+    def stars_clouded(self) -> list[StarResult]:
+        return [s for s in self.stars if s.visibility == VisibilityState.CLOUDED]
+
+    @property
+    def stars_below_limit(self) -> list[StarResult]:
+        return [s for s in self.stars if s.visibility == VisibilityState.BELOW_LIMIT]
+
+    @property
+    def total_stars_visible(self) -> int:
+        return sum(1 for s in self.stars if s.visibility == VisibilityState.VISIBLE)

@@ -19,6 +19,8 @@ from .types        import (
     StarResult,
     PlanetResult,
     MoonResult,
+    SunResult,
+    TwilightPhase,
     AtmosphereScores,
     BortleClass,
     DarkAdaptation,
@@ -33,9 +35,10 @@ __all__ = [
     "StarResult",
     "PlanetResult",
     "MoonResult",
+    "SunResult",
+    "TwilightPhase",
     "AtmosphereScores",
     "BortleClass",
     "DarkAdaptation",
     "SkyConditionNarrative",
-    "visualize_math_sky"
 ]

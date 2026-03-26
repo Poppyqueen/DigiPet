@@ -11,14 +11,14 @@ from typing import Optional
 
 from .types import (
     SkySnapshot, WeatherSnapshot, AtmosphereScores,
-    StarResult, PlanetResult, MoonResult,
-    BortleClass, DarkAdaptation, SkyConditionNarrative,
+    StarResult, PlanetResult, MoonResult, SunResult, TwilightPhase,
+    BortleClass, DarkAdaptation, SkyConditionNarrative, VisibilityState,
 )
 from .cloud_sim  import CloudSimulation
 from .atmosphere import (
     score_atmosphere, atmospheric_extinction,
     cloud_opacity_to_magnitude_loss, visibility_to_magnitude_loss,
-    moon_magnitude_loss,
+    moon_magnitude_loss, sun_magnitude_loss,
 )
 from .astro import AstroProvider
 from datetime import datetime, timezone, timedelta
@@ -37,7 +37,8 @@ _DARK_ADAPTATION_BONUS = {
 
 _MIN_ALTITUDE_DEG = 5.0
 
-# Hardcoded light pollution limits based on Bortle Class (no GeoTIFF needed)
+# Bortle limiting magnitude — these already encode light pollution for that sky class.
+# Do NOT subtract an additional LP loss from these values.
 _BORTLE_LIMITING_MAG = {
     BortleClass.PRISTINE:       7.0,
     BortleClass.TRULY_DARK:     6.8,
@@ -48,18 +49,6 @@ _BORTLE_LIMITING_MAG = {
     BortleClass.SUBURBAN_URBAN: 4.5,
     BortleClass.CITY:           4.0,
     BortleClass.INNER_CITY:     3.0,
-}
-
-_BORTLE_MAG_LOSS = {
-    BortleClass.PRISTINE:       0.0,
-    BortleClass.TRULY_DARK:     0.2,
-    BortleClass.RURAL:          0.5,
-    BortleClass.RURAL_SUBURBAN: 1.0,
-    BortleClass.SUBURBAN:       1.5,
-    BortleClass.BRIGHT_SUBURBAN:2.0,
-    BortleClass.SUBURBAN_URBAN: 2.5,
-    BortleClass.CITY:           3.0,
-    BortleClass.INNER_CITY:     4.0,
 }
 
 # ---------------------------------------------------------------------------
@@ -82,6 +71,7 @@ class NightSkySimulator:
         self.lat = lat
         self.lon = lon
         self.elevation_m = elevation_m
+        print(f"elevation: {self.elevation_m}")
 
         # --- Timezone Integration ---
         # Initialize your coordinate-aware clock
@@ -97,7 +87,6 @@ class NightSkySimulator:
         self._weather_refresh_interval = weather_refresh_minutes
 
         self._bortle = BortleClass(bortle_class)
-        self._lp_mag_loss = _BORTLE_MAG_LOSS[self._bortle]
         self._base_limiting_mag = _BORTLE_LIMITING_MAG[self._bortle]
 
         print(f"[NightSky] Initialising astronomy engine for {self._coord_clock.timezone_info['name']}...")
@@ -130,54 +119,58 @@ class NightSkySimulator:
         return self._maybe_refresh_weather(force=True)
 
     def snapshot(self) -> SkySnapshot:
-        dt_utc = self._simulated_time
+        dt_utc  = self._simulated_time
         weather = self._last_weather
-
         local_dt = dt_utc.astimezone(self._coord_clock.timezone)
-
 
         if weather is None:
             raise RuntimeError("No weather data available.")
 
-        # Moon
+        # --- Sun (authoritative day/night signal) ---
+        sun = self._astro.get_sun(dt_utc)
+
+        # --- Moon ---
         moon = self._astro.get_moon(dt_utc)
         moon_loss = moon_magnitude_loss(moon.illumination, moon.altitude)
         moon.magnitude_impact = moon_loss
 
-        # Atmosphere
+        # --- Atmosphere (now includes sun altitude) ---
         atm = score_atmosphere(
             weather=weather,
             bortle=self._bortle,
             moon_illumination=moon.illumination,
             moon_altitude=moon.altitude,
-            light_pollution_mag_loss=self._lp_mag_loss,
+            #light_pollution_mag_loss=0.0,   # LP is already baked into _base_limiting_mag
+            sun_altitude=sun.altitude,
         )
 
         limiting_mag = self._compute_limiting_magnitude(atm)
 
-        # Stars & Planets
-        raw_stars = self._astro.get_stars(dt_utc)
-        star_results = self._evaluate_stars(raw_stars, atm, limiting_mag)
-        visible_stars   =[s for s in star_results if s.visible] 
-        obscured_stars  =[s for s in star_results if not s.visible and s.altitude >= _MIN_ALTITUDE_DEG] # We need to trace this, debug acts weird and not sure I understand what it is meant to represent, but it is important. "obscured by cloud", seems straightforward, what weirds me out in the logs is that the STARS VISIBLE and OBSCURED BY CLOUD changes do not correlate nor agree. 
+        # --- Stars ---
+        raw_stars    = self._astro.get_stars(dt_utc)
+        print(f"DEBUG SIMULATOR: RAW STARS COUNT {len(raw_stars)}")
+        star_results = self._evaluate_stars(raw_stars, atm, limiting_mag, sun.altitude)
 
-        raw_planets  = self._astro.get_planets(dt_utc)
-        planet_results = self._evaluate_planets(raw_planets, atm, limiting_mag) # Planets needs to change
+        # --- Planets ---
+        raw_planets    = self._astro.get_planets(dt_utc)
+        print(f"SIMULATOR DEBUG, RAW PLANETS: \n {raw_planets}")
+        planet_results = self._evaluate_planets(raw_planets, atm, limiting_mag)
 
         cloud_coverage = self._clouds.simulated_cloud_coverage(samples=200)
 
         return SkySnapshot(
             latitude=self.lat,
             longitude=self.lon,
-            local_time=local_dt.isoformat(), # Now shows the correct local time!
+            local_time=local_dt.isoformat(),
             timezone=self._coord_clock.timezone_info['name'],
             weather=weather,
             atmosphere=atm,
             moon=moon,
+            sun=sun,
             bortle_class=self._bortle,
             limiting_magnitude=limiting_mag,
-            stars_visible=visible_stars,
-            stars_obscured=obscured_stars, # OBSCURED BY CLOUD  (275) in BortleClass.CITY this doesn't seem right if you think these are only the total pool of visible by the naked eye
+            stars=star_results,
+            stars_above_horizon=len(star_results),
             planets=planet_results,
             simulation_tick=self._tick_count,
             cloud_coverage_simulated=cloud_coverage,
@@ -189,53 +182,89 @@ class NightSkySimulator:
     # ------------------------------------------------------------------
 
     def _compute_limiting_magnitude(self, atm: AtmosphereScores) -> float:
+        """
+        The faintest magnitude a fully dark-adapted observer can see under
+        current conditions at this Bortle class.
+
+        _base_limiting_mag already encodes light pollution for this Bortle class,
+        so we only subtract additional sky-brightness losses on top of that:
+          - dark adaptation bonus (negative = reduces limit for unadapted eyes)
+          - haze / aerosol visibility loss
+          - moon sky-glow
+          - sun / twilight sky-glow  (dominant signal during the day)
+        """
         adaptation_bonus = _DARK_ADAPTATION_BONUS[self._dark_adaptation]
+        
         limiting = (
             self._base_limiting_mag
             + adaptation_bonus
             - atm.visibility_mag_loss
-            - atm.light_pollution_mag_loss * 1 # I changed this from 0, before it was doing nothing, but not sure why it was like that... 
             - atm.moon_mag_loss
-            # can we add sun intesnity limiting?
+            - atm.sun_mag_loss
         )
-        return max(limiting, 1.0)
 
-    def _effective_magnitude(self, magnitude: float, altitude: float, azimuth: float, atm: AtmosphereScores) -> float:
+        # DYNAMIC FLOOR:
+        # If it's day (sun_mag_loss > 1.0), we allow the limit to drop deep 
+        # into the negatives. If it's night, we keep the 0.5/1.0 comfort floor.
+        if atm.sun_mag_loss > 1.0:
+            return max(limiting, -4.5) # Only Moon and Venus survive
+        
+        return max(limiting, 0.5)
+
+    def _effective_magnitude(self, magnitude: float, altitude: float,
+                             azimuth: float, atm: AtmosphereScores) -> float:
+        """
+        Apparent magnitude of a single object after all per-object losses:
+        atmospheric extinction (airmass), haze, and local cloud opacity.
+        Sky background losses (moon, sun, LP) live in limiting_mag instead.
+        """
         ext     = atmospheric_extinction(altitude)
         haze    = atm.visibility_mag_loss * 0.5
         opacity = self._clouds.opacity_at(azimuth, altitude)
         cloud   = cloud_opacity_to_magnitude_loss(opacity)
-        return magnitude + ext + haze + cloud
+        return magnitude + ext + haze # + cloud
 
-    def _evaluate_stars(self, raw_stars: list, atm: AtmosphereScores, limiting_mag: float) -> list[StarResult]:
-        results =[]
+    # HYG v4.2 includes Sol (the Sun) as a star with magnitude ~-26.7.
+    # We never want it to appear in star lists — it is handled via SunResult.
+    _SOL_NAMES = {"sol", "sun"}
+
+    def _classify_visibility(self, mag, alt, az, atm, limiting_mag) -> tuple[VisibilityState, float]:
+        opacity    = self._clouds.opacity_at(az, alt)
+        cloud_loss = cloud_opacity_to_magnitude_loss(opacity)
+        eff_mag    = self._effective_magnitude(mag, alt, az, atm)
+
+        if eff_mag > limiting_mag:
+            return VisibilityState.BELOW_LIMIT, opacity
+        if cloud_loss > 2.0:
+            return VisibilityState.CLOUDED, opacity
+        return VisibilityState.VISIBLE, opacity
+
+    def _evaluate_stars(self, raw_stars, atm, limiting_mag, sun_altitude) -> list[StarResult]:
+        results = []
         for name, mag, az, alt, const in raw_stars:
-            if alt < _MIN_ALTITUDE_DEG: continue
-            opacity      = self._clouds.opacity_at(az, alt)
-            cloud_loss   = cloud_opacity_to_magnitude_loss(opacity)
-            eff_mag      = self._effective_magnitude(mag, alt, az, atm)
-            visible      = eff_mag <= limiting_mag
-
+            if alt < _MIN_ALTITUDE_DEG:
+                continue
+            if str(name).lower() in self._SOL_NAMES:
+                continue
+            state, opacity = self._classify_visibility(mag, alt, az, atm, limiting_mag)
+            eff_mag = self._effective_magnitude(mag, alt, az, atm)
             results.append(StarResult(
                 name=name, magnitude=mag, azimuth=az, altitude=alt,
-                effective_magnitude=eff_mag, visible=visible,
-                obscured_by_cloud=cloud_loss > 2.0, constellation=const,
+                effective_magnitude=eff_mag, constellation=const,
+                visibility=state, cloud_opacity=opacity,
             ))
         return results
 
-    def _evaluate_planets(self, raw_planets: list, atm: AtmosphereScores, limiting_mag: float) -> list[PlanetResult]:
-        results =[] # Is this the best, standard, professional way of doing this?
+    def _evaluate_planets(self, raw_planets, atm, limiting_mag) -> list[PlanetResult]:
+        results = []
         for name, mag, az, alt in raw_planets:
-            if alt < _MIN_ALTITUDE_DEG: continue
-            opacity    = self._clouds.opacity_at(az, alt)
-            cloud_loss = cloud_opacity_to_magnitude_loss(opacity)
-            eff_mag    = self._effective_magnitude(mag, alt, az, atm)
-            visible    = eff_mag <= limiting_mag
-
+            if alt < _MIN_ALTITUDE_DEG:
+                continue
+            state, opacity = self._classify_visibility(mag, alt, az, atm, limiting_mag)
+            eff_mag = self._effective_magnitude(mag, alt, az, atm)
             results.append(PlanetResult(
                 name=name, magnitude=mag, azimuth=az, altitude=alt,
-                effective_magnitude=eff_mag, visible=visible,
-                obscured_by_cloud=cloud_loss > 2.0,
+                effective_magnitude=eff_mag, visibility=state, cloud_opacity=opacity,
             ))
         return results
 
@@ -245,9 +274,7 @@ class NightSkySimulator:
 
     def _maybe_refresh_weather(self, force: bool = False, initial: bool = False) -> Optional[WeatherSnapshot]:
         if not force and self._minutes_since_weather_refresh < self._weather_refresh_interval:
-            print("DEBUG SIMULATOR, REFRESH WEATHER FAILED")
             return self._last_weather
-        print("DEBUG SIMULATOR REFRESH WEATHER CHECK PASSED")
 
         try:
             print(f"[NightSky] Fetching weather at tick {self._tick_count}...")

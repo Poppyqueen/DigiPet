@@ -12,6 +12,9 @@ cache_session = requests_cache.CachedSession(
     '.cache/openmeteo',
     backend='filesystem',
     expire_after=900,
+    urls_expire_after={
+    '*/elevation*': 2592000, # 30 days   
+}
 )
 
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
@@ -19,6 +22,8 @@ openmeteo = openmeteo_requests.Client(session=retry_session)
 
 _WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 _MARINE_URL  = "https://marine-api.open-meteo.com/v1/marine"
+
+_ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"
 
 
 def _safe(value) -> float | None:
@@ -115,6 +120,25 @@ class OpenMeteoLoc:
             "timezone":              response.Timezone(),
             "timezone_abbreviation": response.TimezoneAbbreviation(),
         }
+    
+    def get_elevation(self) -> float | None:
+        """Fetch terrain elevation for the current coordinates."""
+        try:
+            response = retry_session.get(
+                _ELEVATION_URL,
+                params={"latitude": self.lat, "longitude": self.long}
+            )
+            response.raise_for_status()
+            data = response.json()
+            value = data["elevation"][0]
+            return _safe(value)
+        except Exception as e:
+            print("=" * 60)
+            print(f"Open-Meteo Elevation API error")
+            print(f"Coords: ({self.lat}, {self.long})")
+            print(f"Error: {e}")
+            print("-" * 60)
+            raise
 
     # ------------------------------------------------------------------
     # Weather

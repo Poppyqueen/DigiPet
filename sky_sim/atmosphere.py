@@ -145,6 +145,28 @@ def moon_magnitude_loss(illumination: float, altitude_deg: float) -> float:
     return illumination * 2.5 * altitude_factor
 
 
+def sun_magnitude_loss(sun_altitude_deg: float) -> float:
+    """
+    Realistic sky-glow scaling. 
+    At midday (high sun), the sky is roughly 10-12 magnitudes brighter 
+    than a dark night sky.
+    """
+    if sun_altitude_deg <= -18.0:
+        return 0.0
+    
+    # We use a smooth ramp. 
+    # At 0° (Sunset), loss is ~5.0. 
+    # At 45° (Midday), loss plateaus around 11.0 - 13.0.
+    if sun_altitude_deg > 0:
+        # Logistic-style curve to simulate Rayleigh scattering saturation
+        # This keeps the 'loss' in a range where Venus (-4) can still beat it.
+        return 5.0 + (8.0 * (math.atan(sun_altitude_deg / 15.0) / (math.pi / 2)))
+    
+    # Twilight ramp (-18 to 0)
+    t = (sun_altitude_deg + 18.0) / 18.0
+    return t * 5.0
+
+
 # ---------------------------------------------------------------------------
 # Cloud opacity → magnitude loss
 # ---------------------------------------------------------------------------
@@ -175,12 +197,16 @@ def score_atmosphere(weather: WeatherSnapshot,
                      bortle: BortleClass,
                      moon_illumination: float,
                      moon_altitude: float,
-                     light_pollution_mag_loss: float) -> AtmosphereScores:
+                     #light_pollution_mag_loss: float,
+                     sun_altitude: float = -90.0) -> AtmosphereScores:
     """
     Derive all atmosphere scores from weather + location data.
+    sun_altitude should be provided from AstroProvider.get_sun_altitude().
+    Defaults to -90 (full night) if not supplied.
     """
     vis_loss  = visibility_to_magnitude_loss(weather.visibility_m)
     moon_loss = moon_magnitude_loss(moon_illumination, moon_altitude)
+    s_loss    = sun_magnitude_loss(sun_altitude)
 
     return AtmosphereScores(
         transparency=transparency_score(
@@ -191,9 +217,9 @@ def score_atmosphere(weather: WeatherSnapshot,
         seeing=seeing_score(weather.cape, weather.wind_speed_120m),
         fog_risk=fog_risk_score(weather.dew_point_spread, weather.humidity),
 
-        # add sun here? make sure it is location aware and correctly implemented
-
         visibility_mag_loss=vis_loss,
-        light_pollution_mag_loss=light_pollution_mag_loss,
+        #light_pollution_mag_loss=light_pollution_mag_loss,
         moon_mag_loss=moon_loss,
+        sun_mag_loss=s_loss,
+        sun_altitude=sun_altitude,
     )

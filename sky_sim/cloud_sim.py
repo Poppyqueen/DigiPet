@@ -59,7 +59,7 @@ LERP_RATE_COVER   = 0.04   # cloud cover changes slowly
 LERP_RATE_WIND    = 0.06   # wind direction changes a bit faster
 
 # How fast cloud shapes morph (noise time axis, arbitrary units / minute)
-MORPH_RATE        = 0.2 # 0.003
+MORPH_RATE        = 0.0475 # 0.2 # 0.003
 
 # Smoothstep edge width for cloud boundary (in noise units)
 CLOUD_EDGE_WIDTH  = 0.15
