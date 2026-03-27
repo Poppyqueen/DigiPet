@@ -173,6 +173,11 @@ def create_cloud_surface(sim, grid_res=80):
     C_MID  = (210, 210, 210) 
     C_LOW  = (120, 120, 130) 
 
+
+    C_HIGH = (0, 100, 255)   # Vibrant Blue
+    C_MID  = (255, 215, 0)   # Golden Yellow
+    C_LOW  = (200, 30, 30)   # Deep Red
+
     for i, x in enumerate(x_range):
         for j, y in enumerate(y_range):
             if np.sqrt(x**2 + y**2) <= 1.0:

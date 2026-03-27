@@ -17,19 +17,7 @@ Two clocks:
   tick()            — called every N minutes by the simulator
                       lerps current state toward targets, advances offsets
 """
-# DEBUG SIMULATOR, REFRESH WEATHER FAILED 
-# it worries me that if we don't get the fresh weather we might not be advancing the sim tick? not sure why it is a 'maybe' function, it should... just get what it needs whenever it wants to.
 
-# maybe we can make it so cloud density in the simulation always matches perfectly to the given density automatically knowing how many ticks it will take?
-
-# the current maybe update has a 15 minutes window, this correlates to our weather provider cache, not sure how strict we need to be about that, however, the cache won't change rate. 
-
-# i think it should morph freely the noise, however the density should be strategically targetted to match reality in a fluid way if necesary but matching it at the exact points 
-
-# DEBUG SIMULATOR, REFRESH WEATHER FAILED 
-# this message was added to track the behavior expected from the ticks, it works as expected, a "failed" is not a runtime failure, but just a time comparison fail which is expected form the current structure and system, the failed states match the timing expected.
-
-# Not sure, 
 from __future__ import annotations
 import math
 from dataclasses import dataclass, field
@@ -59,7 +47,7 @@ LERP_RATE_COVER   = 0.04   # cloud cover changes slowly
 LERP_RATE_WIND    = 0.06   # wind direction changes a bit faster
 
 # How fast cloud shapes morph (noise time axis, arbitrary units / minute)
-MORPH_RATE        = 0.0475 # 0.2 # 0.003
+MORPH_RATE        = 0.2# 0.0475 # 0.2 # 0.003
 
 # Smoothstep edge width for cloud boundary (in noise units)
 CLOUD_EDGE_WIDTH  = 0.15
@@ -165,17 +153,6 @@ class _NoiseLayer:
         """Instantly fast-forwards the current simulation state to the targets."""
         self.current_cover = self.target_cover
 
-    def get_telemetry(self) -> dict: # DEBUG METHOD
-        """Returns the raw scalar values for this specific layer."""
-        # Sample noise at a fixed point (0,0) to see morphing/movement
-        nx, ny = self.offset.x * self._scale, self.offset.y * self._scale
-        raw_val = (self._noise.noise3(nx, ny, self.morph_time) + 1.0) * 0.5
-        
-        return {
-            "val": raw_val,
-            "dist": math.sqrt(self.offset.x**2 + self.offset.y**2),
-            "cover": self.current_cover
-        }
 
 # ---------------------------------------------------------------------------
 # Public cloud simulation
@@ -204,68 +181,6 @@ class CloudSimulation:
 
         self._prev_telemetry = None # DEBUG UTILITY
 
-    
-    def print_heartbeat(self, prev_data: dict | None): # DEBUG METHOD
-        """Prints a high-density single-line heartbeat of the simulation."""
-        if prev_data is None:
-            print(f"Tick {self.tick_count:03d} | [Initializing Telemetry...]")
-            return
-
-        output = f"Tick {self.tick_count:03d} | "
-        
-        # Mapping our internal layer objects to the names used in the dictionary
-        mapping = [("L", self._low), ("M", self._mid), ("H", self._high)]
-        
-        for name, layer in mapping:
-            curr = layer.get_telemetry()
-            # Ensure the key exists in prev_data (using full names if that's how you stored them)
-            # If you used "Low", "Mid", "High" in the dict, change "L", "M", "H" here.
-            p_layer = prev_data.get(name) 
-            
-            if not p_layer:
-                output += f"{name}[---] "
-                continue
-
-            d_morph = curr['val'] - p_layer['val']
-            d_wind  = curr['dist'] - p_layer['dist']
-            
-            m_sym = "↑" if d_morph > 0.0001 else "↓" if d_morph < -0.0001 else "•"
-            w_sym = "»" if d_wind > 0.00001 else "•"
-            
-            output += f"{name}[C:{curr['cover']:.2f} M:{m_sym}{abs(d_morph):.4f} W:{w_sym}{d_wind:.5f}]  "
-        
-        print(output)
-
-    def get_telemetry_report(self) -> str: # DEBUG METHOD
-        """Calculates and formats a scannable table of deltas."""
-        layers = {"Low": self._low, "Mid": self._mid, "High": self._high}
-        current = {name: l.get_telemetry() for name, l in layers.items()}
-        
-        report_lines = []
-        
-        # Header logic
-        if self._tick_count % 20 == 1 or self._prev_telemetry is None:
-            header = f"\n{'Layer':<6} | {'Cover':<6} | {'RawVal':<8} | {'Δ Morph':<8} | {'Δ Wind':<8}"
-            report_lines.append(header)
-            report_lines.append("-" * 55)
-
-        for name, data in current.items():
-            delta_m = 0.0
-            delta_w = 0.0
-            
-            if self._prev_telemetry:
-                delta_m = data['val'] - self._prev_telemetry[name]['val']
-                delta_w = data['dist'] - self._prev_telemetry[name]['dist']
-
-            # Create a string for this layer
-            m_dir = "↑" if delta_m > 0 else "↓"
-            line = (f"{name:<6} | {data['cover']:>6.3f} | {data['val']:>8.4f} | "
-                    f"{m_dir}{abs(delta_m):>7.5f} | {delta_w:>8.5f}")
-            report_lines.append(line)
-
-        self._prev_telemetry = current
-        return "\n".join(report_lines)
-
     # ------------------------------------------------------------------
     # Weather clock
     # ------------------------------------------------------------------
@@ -289,10 +204,6 @@ class CloudSimulation:
     def tick(self, delta_minutes: float = 1.0) -> None:
         """Advance simulation by delta_minutes. Typically 1–10 minutes."""
 
-        # DEBUG UTILITIES
-        layers = {"L": self._low, "M": self._mid, "H": self._high}
-        prev_state = {n: l.get_telemetry() for n, l in layers.items()}
-
 
         lr = LERP_RATE_COVER
         wr = LERP_RATE_WIND
@@ -308,10 +219,6 @@ class CloudSimulation:
         self._high.tick(delta_minutes, self._wind_high, morph * 0.5, lr)
 
         self._tick_count += 1
-
-        # DEBUG 
-        print(self.get_telemetry_report())
-        self.print_heartbeat(prev_state)
 
 
     # ------------------------------------------------------------------
