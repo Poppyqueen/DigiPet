@@ -151,7 +151,6 @@ class NightSkySimulator:
         moon_loss             = moon_magnitude_loss(moon.illumination, moon.altitude, eclipse)
         moon.magnitude_impact = moon_loss
 
-
         # --- Atmosphere (now includes sun altitude) ---
         atm = score_atmosphere(
             weather=weather,
@@ -164,6 +163,31 @@ class NightSkySimulator:
         )
 
         limiting_mag = self._compute_limiting_magnitude(atm)
+
+        # --- Moon & Sun cloud visibility ---
+        # Same pipeline as stars/planets: cloud opacity at their position drives
+        # effective_magnitude and visibility state. BELOW_LIMIT is astronomically
+        # impossible for the Sun (-26.74) and extremely unlikely for the Moon, but
+        # the logic doesn't need special-casing — it just works.
+        if moon.above_horizon:
+            moon_vis, moon_opacity = self._classify_visibility(
+                moon.magnitude, moon.altitude, moon.azimuth, atm, limiting_mag
+            )
+            moon.effective_magnitude = self._effective_magnitude(
+                moon.magnitude, moon.altitude, moon.azimuth, atm
+            )
+            moon.visibility    = moon_vis
+            moon.cloud_opacity = moon_opacity
+
+        if sun.above_horizon:
+            sun_vis, sun_opacity = self._classify_visibility(
+                sun.magnitude, sun.altitude, sun.azimuth, atm, limiting_mag
+            )
+            sun.effective_magnitude = self._effective_magnitude(
+                sun.magnitude, sun.altitude, sun.azimuth, atm
+            )
+            sun.visibility    = sun_vis
+            sun.cloud_opacity = sun_opacity
 
         # --- Stars ---
         raw_stars    = self._astro.get_stars(dt_utc)

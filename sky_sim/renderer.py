@@ -69,6 +69,8 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
     sun = snap.sun
     sun_phase = sun.twilight_phase.value.replace('_', ' ').title()
     w(f"  Sun: {_format_pos(sun.azimuth,sun.altitude)} ({sun_phase})")
+    w(f"{sun.visibility}")
+    w(f"{sun.cloud_opacity}")
     if sun.magnitude_impact > 0.1:
         w(f"  ⚠ Sky Glow    +{sun.magnitude_impact:.1f} mag loss from sunlight")
     
@@ -91,6 +93,8 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
     moon = snap.moon
     moon_vis = "ABOVE HORIZON" if moon.above_horizon else "BELOW HORIZON"
     w(f"MOON {moon_vis}")
+    w(f"{moon.visibility}")
+
     
     trend = "Waxing" if moon.waxing else "Waning"
     w(f"  {trend} Phase — {moon.illumination * 100:.1f}% illuminated")

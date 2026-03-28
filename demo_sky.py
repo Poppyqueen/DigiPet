@@ -439,7 +439,7 @@ def run_pygame_expedition(name, info):
         # 5. Sun
 # --- 2. ENHANCED SUN RENDERING ---
         sun = snap.sun
-        if sun.altitude > -2: 
+        if sun.altitude > -2 and sun.visibility == VisibilityState.VISIBLE: 
             s_pos = sky_to_pixel(sun.azimuth, sun.altitude)
             e = snap.eclipse
             
@@ -469,7 +469,7 @@ def run_pygame_expedition(name, info):
         # 6. Moon
 # --- 3. ENHANCED MOON RENDERING (Lunar Eclipse) ---
         m = snap.moon
-        if m.above_horizon:
+        if m.above_horizon and m.visibility == VisibilityState.VISIBLE:
             m_pos = sky_to_pixel(m.azimuth, m.altitude)
             
             # Atmospheric reddening at low altitude OR Lunar Eclipse depth

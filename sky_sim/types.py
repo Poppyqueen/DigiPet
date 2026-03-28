@@ -134,6 +134,10 @@ class MoonResult:
     altitude:           float
     above_horizon:      bool
     magnitude_impact:   float        # how many magnitudes it washes out sky
+    magnitude:          float = 0.0          # apparent magnitude from Skyfield (~-12.7 full → ~-5 crescent)
+    effective_magnitude: float = 0.0         # after atmospheric extinction + cloud loss
+    visibility:         VisibilityState = VisibilityState.VISIBLE
+    cloud_opacity:      float = 0.0
 
 
 class TwilightPhase(str, Enum):
@@ -157,6 +161,10 @@ class SunResult:
     above_horizon:      bool
     twilight_phase:     TwilightPhase
     magnitude_impact:   float          # mag loss imposed on the limiting magnitude
+    magnitude:          float = -26.74         # apparent magnitude (~-26.74, fixed)
+    effective_magnitude: float = -26.74        # after atmospheric extinction + cloud loss
+    visibility:         VisibilityState = VisibilityState.VISIBLE
+    cloud_opacity:      float = 0.0
 
 
 

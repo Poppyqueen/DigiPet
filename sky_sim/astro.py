@@ -38,7 +38,7 @@ _HYG_LOCAL_FILTERED = _DATA_DIR / "hyg_v42_naked_eye.csv"
 # AstroProvider
 # ---------------------------------------------------------------------------
 
-class AstroProvider: # Not sure if this is following the types we have 
+class AstroProvider:
     def __init__(self, lat: float, lon: float, elevation_m: float = 0.0):
         self.lat = lat
         self.lon = lon
@@ -80,7 +80,7 @@ class AstroProvider: # Not sure if this is following the types we have
                 # Save the filtered version so we never have to download 15MB again
                 df.to_csv(_HYG_LOCAL_FILTERED, index=False)
 
-                # 4. Create a persistent License/Attribution file in the data folder
+                # Create a persistent License/Attribution file in the data folder
                 # This ensures anyone finding the CSV knows its origin and license.
                 attribution_path = _DATA_DIR / "HYG_LICENSE.txt"
                 with open(attribution_path, "w") as f:
@@ -105,20 +105,16 @@ class AstroProvider: # Not sure if this is following the types we have
     def _to_skyfield_time(self, dt: datetime):
         """Helper to ensure any datetime is converted to Skyfield-compatible UTC."""
         if dt.tzinfo is None:
-            # If naive, assume UTC (or you could assume Local, but UTC is safer for astro)
             return self._ts.from_datetime(dt.replace(tzinfo=timezone.utc))
         return self._ts.from_datetime(dt.astimezone(timezone.utc))
     
     def get_stars(self, dt: datetime) -> list:
         """Vectorized calculation of star positions."""
-        t = self._to_skyfield_time(dt) # Use the helper
+        t = self._to_skyfield_time(dt)
 
-            
         astrometric = self._observer.at(t).observe(self._star_objects)
         alt, az, _ = astrometric.apparent().altaz()
 
-        # Map the results to our internal StarResult format
-        # We prioritize 'proper' name, then Bayer/Flamsteed 'bf'
         names = self._star_df['proper'].values
         bfs   = self._star_df['bf'].values
         mags  = self._star_df['mag'].values
@@ -126,7 +122,6 @@ class AstroProvider: # Not sure if this is following the types we have
 
         results = []
         for i in range(len(mags)):
-            # Human-readable name logic
             if pd.notna(names[i]):
                 label = names[i]
             elif pd.notna(bfs[i]):
@@ -141,7 +136,7 @@ class AstroProvider: # Not sure if this is following the types we have
                 float(alt.degrees[i]),
                 str(cons[i])
             ))
-        return results # 
+        return results
 
     # ------------------------------------------------------------------
     # Standard Observers
@@ -150,7 +145,8 @@ class AstroProvider: # Not sure if this is following the types we have
     def get_moon(self, dt: datetime) -> MoonResult:
         t = self._to_skyfield_time(dt)
         astrometric = self._observer.at(t).observe(self._eph['moon'])
-        alt, az, _ = astrometric.apparent().altaz()
+        apparent = astrometric.apparent()
+        alt, az, _ = apparent.altaz()
         phase_angle = almanac.moon_phase(self._eph, t)
 
         illumination = (1 - math.cos(math.radians(phase_angle.degrees))) / 2.0
@@ -160,14 +156,20 @@ class AstroProvider: # Not sure if this is following the types we have
         days_from_new = (phase_angle.degrees / 360.0) * SYNODIC_MONTH
 
         # Determine waxing vs waning by sampling one hour ahead
-        t_ahead = self._to_skyfield_time(dt.replace(tzinfo=dt.tzinfo) if dt.tzinfo else dt)
-        from datetime import timedelta as _td
-        dt_ahead = dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
-        dt_ahead = dt_ahead + _td(hours=1)
+        dt_ahead = (dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)) + timedelta(hours=1)
         t_ahead = self._to_skyfield_time(dt_ahead)
         phase_ahead = almanac.moon_phase(self._eph, t_ahead)
         illum_ahead = (1 - math.cos(math.radians(phase_ahead.degrees))) / 2.0
-        waxing = illum_ahead > illumination  # still correct — both samples use same formula, relative ordering preserved
+        waxing = illum_ahead > illumination
+
+        # Apparent magnitude — Skyfield computes this from phase angle and distance.
+        # Ranges from ~-12.7 (full moon) down to ~-2.5 (thin crescent).
+        try:
+            mag = apparent.magnitude()
+        except Exception:
+            # Fallback: approximate from illumination if Skyfield can't compute it
+            # Full moon ~ -12.7, new moon ~ -2.5, linear in between is a rough but safe fallback
+            mag = -2.5 + (-12.7 - (-2.5)) * illumination
 
         return MoonResult(
             phase_angle=phase_angle.degrees,
@@ -177,12 +179,14 @@ class AstroProvider: # Not sure if this is following the types we have
             azimuth=az.degrees % 360,
             altitude=alt.degrees,
             above_horizon=alt.degrees > 0,
-            magnitude_impact=0.0,
+            magnitude_impact=0.0,   # filled in by simulator after eclipse is known
+            magnitude=float(mag),
+            # effective_magnitude, visibility, cloud_opacity filled in by simulator
         )
 
     def get_planets(self, dt: datetime) -> list[tuple]:
-        t = self._to_skyfield_time(dt) # Use the helper
-        keys = ["mercury", "venus", "mars", "jupiter barycenter", "saturn barycenter"]
+        t = self._to_skyfield_time(dt)
+        keys  = ["mercury", "venus", "mars", "jupiter barycenter", "saturn barycenter"]
         names = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
         results = []
         for i, key in enumerate(keys):
@@ -192,8 +196,9 @@ class AstroProvider: # Not sure if this is following the types we have
                 alt, az, _ = astrometric.apparent().altaz()
                 mag = planetary_magnitude(astrometric.apparent())
                 results.append((names[i], mag, az.degrees % 360, alt.degrees))
-            except: continue
-        return results # not returning our object
+            except:
+                continue
+        return results
 
     def get_sun(self, dt: datetime) -> SunResult:
         """
@@ -202,7 +207,8 @@ class AstroProvider: # Not sure if this is following the types we have
         """
         t = self._to_skyfield_time(dt)
         astrometric = self._observer.at(t).observe(self._eph['sun'])
-        alt, az, _ = astrometric.apparent().altaz()
+        apparent = astrometric.apparent()
+        alt, az, _ = apparent.altaz()
         altitude = alt.degrees
         azimuth  = az.degrees % 360
 
@@ -210,18 +216,22 @@ class AstroProvider: # Not sure if this is following the types we have
         if altitude >= 18.0:
             phase = TwilightPhase.DAY
         elif altitude >= 0.0:
-            phase = TwilightPhase.CIVIL_TWILIGHT      # 0° to +18° is actually just "day" but sun near horizon
+            phase = TwilightPhase.CIVIL_TWILIGHT
         elif altitude >= -6.0:
-            phase = TwilightPhase.CIVIL_TWILIGHT      # -6° to 0°
+            phase = TwilightPhase.CIVIL_TWILIGHT
         elif altitude >= -12.0:
-            phase = TwilightPhase.NAUTICAL_TWILIGHT   # -12° to -6°
+            phase = TwilightPhase.NAUTICAL_TWILIGHT
         elif altitude >= -18.0:
-            phase = TwilightPhase.ASTRO_TWILIGHT      # -18° to -12°
+            phase = TwilightPhase.ASTRO_TWILIGHT
         else:
             phase = TwilightPhase.NIGHT
 
-
         mag_impact = sun_magnitude_loss(altitude)
+
+        # The Sun's apparent magnitude is essentially fixed at -26.74.
+        # Skyfield can compute it but it barely varies, so we use the constant
+        # and let the cloud sim do its work on effective_magnitude in the simulator.
+        SUN_APPARENT_MAGNITUDE = -26.74
 
         return SunResult(
             azimuth=azimuth,
@@ -229,12 +239,13 @@ class AstroProvider: # Not sure if this is following the types we have
             above_horizon=altitude > 0.0,
             twilight_phase=phase,
             magnitude_impact=mag_impact,
+            magnitude=SUN_APPARENT_MAGNITUDE,
+            # effective_magnitude, visibility, cloud_opacity filled in by simulator
         )
 
     def get_sun_altitude(self, dt: datetime) -> float:
         """Convenience accessor — returns just the altitude in degrees."""
         return self.get_sun(dt).altitude
-
 
     def get_next_visible_eclipse(self, dt: datetime, eclipse_type: EclipseType = None) -> EclipseResult:
         """
