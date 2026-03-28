@@ -11,7 +11,7 @@ one magnitude fainter than it would in vacuum.
 
 from __future__ import annotations
 import math
-from .types import WeatherSnapshot, AtmosphereScores, BortleClass
+from .types import WeatherSnapshot, AtmosphereScores, BortleClass, EclipseType, EclipsePhase
 
 
 # ---------------------------------------------------------------------------
@@ -130,41 +130,47 @@ def atmospheric_extinction(altitude_deg: float) -> float:
 # Moon sky brightness impact
 # ---------------------------------------------------------------------------
 
-def moon_magnitude_loss(illumination: float, altitude_deg: float) -> float:
-    """
-    How many magnitudes the moon washes out the sky.
-    Full moon near zenith: ~2.5 mag loss. Crescent low: negligible.
-    """
+def moon_magnitude_loss(illumination: float, altitude_deg: float, eclipse=None) -> float:
     if altitude_deg <= 0:
-        return 0.0   # moon below horizon — no effect
+        return 0.0
 
-    # Scale by altitude (moon low on horizon affects sky less)
+    effective_illumination = illumination
+
+    if eclipse is not None and eclipse.eclipse_type == EclipseType.LUNAR:
+        if eclipse.phase == EclipsePhase.TOTAL:
+            # Moon turns deep red — maybe 1-2% of normal brightness survives
+            effective_illumination *= 0.02
+        elif eclipse.phase == EclipsePhase.PARTIAL:
+            # Linear reduction by how much is in umbra
+            effective_illumination *= (1.0 - eclipse.obscuration * 0.95)
+        elif eclipse.phase == EclipsePhase.PENUMBRAL:
+            # Barely perceptible — at most ~10% dimming at deep penumbral contact
+            depth = min(1.0, eclipse.magnitude)
+            effective_illumination *= (1.0 - depth * 0.10)
+
     altitude_factor = min(1.0, altitude_deg / 45.0)
-
-    # Full moon = 2.5 mag loss, scales roughly linearly with illumination
-    return illumination * 2.5 * altitude_factor
+    return effective_illumination * 2.5 * altitude_factor
 
 
-def sun_magnitude_loss(sun_altitude_deg: float) -> float:
-    """
-    Realistic sky-glow scaling. 
-    At midday (high sun), the sky is roughly 10-12 magnitudes brighter 
-    than a dark night sky.
-    """
+def sun_magnitude_loss(sun_altitude_deg: float, eclipse=None) -> float:
     if sun_altitude_deg <= -18.0:
         return 0.0
-    
-    # We use a smooth ramp. 
-    # At 0° (Sunset), loss is ~5.0. 
-    # At 45° (Midday), loss plateaus around 11.0 - 13.0.
+
+    # Base loss from altitude (unchanged)
     if sun_altitude_deg > 0:
-        # Logistic-style curve to simulate Rayleigh scattering saturation
-        # This keeps the 'loss' in a range where Venus (-4) can still beat it.
-        return 5.0 + (8.0 * (math.atan(sun_altitude_deg / 15.0) / (math.pi / 2)))
-    
-    # Twilight ramp (-18 to 0)
-    t = (sun_altitude_deg + 18.0) / 18.0
-    return t * 5.0
+        base = 5.0 + (8.0 * (math.atan(sun_altitude_deg / 15.0) / (math.pi / 2)))
+    else:
+        t = (sun_altitude_deg + 18.0) / 18.0
+        base = t * 5.0
+
+    # Solar eclipse dims the Sun's contribution proportionally to obscuration.
+    # Total eclipse (obscuration=1.0) → factor=0.0 → sky goes dark.
+    # Annular eclipse never reaches full obscuration even at magnitude>1
+    # because the ring of photosphere remains exposed.
+    if eclipse is not None and eclipse.eclipse_type == EclipseType.SOLAR:
+        base *= (1.0 - eclipse.obscuration)
+
+    return base
 
 
 # ---------------------------------------------------------------------------
@@ -198,15 +204,18 @@ def score_atmosphere(weather: WeatherSnapshot,
                      moon_illumination: float,
                      moon_altitude: float,
                      #light_pollution_mag_loss: float,
-                     sun_altitude: float = -90.0) -> AtmosphereScores:
+                     eclipse: EclipseType,
+                     sun_altitude: float = -90.0,
+                     ) -> AtmosphereScores:
     """
     Derive all atmosphere scores from weather + location data.
     sun_altitude should be provided from AstroProvider.get_sun_altitude().
     Defaults to -90 (full night) if not supplied.
     """
     vis_loss  = visibility_to_magnitude_loss(weather.visibility_m)
-    moon_loss = moon_magnitude_loss(moon_illumination, moon_altitude)
-    s_loss    = sun_magnitude_loss(sun_altitude)
+    moon_loss = moon_magnitude_loss(moon_illumination, moon_altitude, eclipse)
+    s_loss    = sun_magnitude_loss(sun_altitude, eclipse)
+
 
     return AtmosphereScores(
         transparency=transparency_score(

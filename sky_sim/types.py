@@ -91,7 +91,6 @@ class WeatherSnapshot:
         if c >= 10:    return SkyConditionNarrative.MOSTLY_CLEAR
         return SkyConditionNarrative.CLEAR
 
-
 # ---------------------------------------------------------------------------
 # Individual celestial objects
 # ---------------------------------------------------------------------------
@@ -160,6 +159,36 @@ class SunResult:
     magnitude_impact:   float          # mag loss imposed on the limiting magnitude
 
 
+
+# Eclipse
+
+class EclipseType(str, Enum):
+    NONE    = "none"
+    SOLAR   = "solar"
+    LUNAR   = "lunar"
+
+class EclipsePhase(str, Enum):
+    NONE        = "none"
+    PENUMBRAL   = "penumbral"   # lunar only — barely perceptible
+    PARTIAL     = "partial"
+    ANNULAR     = "annular"     # solar only — ring of fire
+    TOTAL       = "total"
+    HYBRID      = "hybrid"      # solar only — annular+total along path
+
+@dataclass
+class EclipseResult:
+    eclipse_type:       EclipseType
+    phase:              EclipsePhase
+    magnitude:          float        # 0 = no eclipse, 1.0 = totality begins, >1 = deep total
+    obscuration:        float        # 0.0–1.0, fraction of solar/lunar disc covered
+    separation_deg:     float        # angular separation Sun–Moon in degrees
+    umbral_depth:       float        # signed: >0 = in umbra, 0–1 penumbral, <0 = outside
+    visible_from_here:  bool         # True if above horizon at observer's location
+    saros_series:       Optional[int]   # Saros cycle number if known
+    gamma:              Optional[float] # closest approach to shadow axis (solar eclipses)
+    note:               str          # human-readable summary for the astronomer
+    
+
 # ---------------------------------------------------------------------------
 # Atmosphere derived scores
 # ---------------------------------------------------------------------------
@@ -219,6 +248,8 @@ class SkySnapshot:
     # Simulation state
     simulation_tick:    int          # how many ticks have elapsed
     cloud_coverage_simulated: float  # 0–1, actual simulated sky coverage
+
+    eclipse: EclipseResult
 
     # Narrative
     condition:          SkyConditionNarrative

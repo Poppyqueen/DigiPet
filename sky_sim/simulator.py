@@ -13,6 +13,7 @@ from .types import (
     SkySnapshot, WeatherSnapshot, AtmosphereScores,
     StarResult, PlanetResult, MoonResult, SunResult, TwilightPhase,
     BortleClass, DarkAdaptation, SkyConditionNarrative, VisibilityState,
+    EclipseType
 )
 from .cloud_sim  import CloudSimulation
 from .atmosphere import (
@@ -25,6 +26,8 @@ from datetime import datetime, timezone, timedelta
 # Import your custom utility
 from utils.loc_datetime import CoordinateDateTime 
 
+ECLIPSE_LOOKUP = False # DEBUG FLAG
+ECLIPSE_TARGET = EclipseType.LUNAR
 # ---------------------------------------------------------------------------
 # Constants & Mappings
 # ---------------------------------------------------------------------------
@@ -93,6 +96,18 @@ class NightSkySimulator:
         self._astro = AstroProvider(lat, lon, elevation_m)
         self._clouds = CloudSimulation(seed=noise_seed)
 
+        if ECLIPSE_LOOKUP: # DEBUG TO MOVE INTO AN ECLIPSE
+
+            future_eclipse_time = self._astro.get_next_visible_eclipse(self._simulated_time, ECLIPSE_TARGET)
+            if future_eclipse_time:
+                self._simulated_time = future_eclipse_time
+                print(f"Found eclipse for selected location! {future_eclipse_time}. Simulation set to the future!")
+            else:
+                print(f"Couldn't find {ECLIPSE_TARGET}")
+                
+        
+            
+
         self._tick_count = 0
         self._minutes_since_weather_refresh = 9999.0
         self._last_weather = None
@@ -130,9 +145,12 @@ class NightSkySimulator:
         sun = self._astro.get_sun(dt_utc)
 
         # --- Moon ---
-        moon = self._astro.get_moon(dt_utc)
-        moon_loss = moon_magnitude_loss(moon.illumination, moon.altitude)
+        moon    = self._astro.get_moon(dt_utc)
+        eclipse = self._astro.get_eclipse(dt_utc)
+
+        moon_loss             = moon_magnitude_loss(moon.illumination, moon.altitude, eclipse)
         moon.magnitude_impact = moon_loss
+
 
         # --- Atmosphere (now includes sun altitude) ---
         atm = score_atmosphere(
@@ -142,6 +160,7 @@ class NightSkySimulator:
             moon_altitude=moon.altitude,
             #light_pollution_mag_loss=0.0,   # LP is already baked into _base_limiting_mag
             sun_altitude=sun.altitude,
+            eclipse = eclipse
         )
 
         limiting_mag = self._compute_limiting_magnitude(atm)
@@ -173,6 +192,7 @@ class NightSkySimulator:
             simulation_tick=self._tick_count,
             cloud_coverage_simulated=cloud_coverage,
             condition=weather.condition_narrative,
+            eclipse=eclipse,
         )
 
     # ------------------------------------------------------------------

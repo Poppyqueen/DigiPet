@@ -5,7 +5,7 @@ import time
 
 from sky_sim import NightSkySimulator, render_snapshot, SkyLogger
 from sky_sim.cloud_sim import _sky_to_xy
-from sky_sim.types import SkySnapshot, VisibilityState, TwilightPhase
+from sky_sim.types import SkySnapshot, VisibilityState, TwilightPhase, EclipseType, EclipsePhase
 
 from utils.open_meteo_handle import OpenMeteoLoc
 import math
@@ -103,8 +103,21 @@ LOCATIONS = {
         "lat": 89.999, 
         "lon": 0.0000, 
         "bortle": 1  # Total darkness (during polar night), no local light pollution
-    }
+    },
+    "Asturias, Spain":
+    {
+        "lat": 43.250476,
+        "lon": -5.983295,
+        "bortle": 3
 
+# 65.502707°N 24.531688°W
+    },
+    "Látrabjarg, Iceland":
+    {
+        "lat": 65.502707,
+        "lon": -24.531688,
+        "bortle": 1
+    }
 }
 
 WIDTH, HEIGHT = 600, 600
@@ -120,6 +133,13 @@ CLOUD_WHITE = (200, 200, 220)
 
 UI_GREEN = (0, 255, 0)
 UI_BLUE = (0, 200, 255)
+
+
+# --- Enhanced Color Palette ---
+ECLIPSE_GOLD = (255, 255, 180)
+BLOOD_MOON = (138, 3, 3)      # Deep umbral red
+PENUMBRA_GRAY = (100, 100, 110)
+HUD_ALERT = (255, 100, 0)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -228,15 +248,62 @@ def create_cloud_surface(sim, grid_res=80):
                         
     return surf
 
-def get_moon_phase_name(angle: float) -> str:
-    if angle < 1 or angle >= 359: return "New Moon"
-    if angle < 89: return "Waxing Crescent"
-    if angle < 91: return "First Quarter"
-    if angle < 179: return "Waxing Gibbous"
-    if angle < 181: return "Full Moon"
-    if angle < 269: return "Waning Gibbous"
-    if angle < 271: return "Last Quarter"
-    return "Waning Crescent"
+def get_eclipse_color(base_color, eclipse_res):
+    """Calculates the Moon's color based on its depth into Earth's shadow."""
+    if eclipse_res.eclipse_type != EclipseType.LUNAR:
+        return base_color
+    
+    # umbral_depth > 0 means we are in the dark part of the shadow
+    # 0.0 to 1.0+ is the transition from 'bite taken out' to 'Blood Moon'
+    if eclipse_res.umbral_depth <= 0:
+        return base_color
+    
+    # Blend between white and deep red based on umbral depth
+    lerp = min(1.0, eclipse_res.umbral_depth)
+    r = base_color[0] + (BLOOD_MOON[0] - base_color[0]) * lerp
+    g = base_color[1] + (BLOOD_MOON[1] - base_color[1]) * lerp
+    b = base_color[2] + (BLOOD_MOON[2] - base_color[2]) * lerp
+    return (int(r), int(g), int(b))
+
+def render_eclipse_hud(screen, font, snap: SkySnapshot):
+    """Draws a detailed technical readout when an eclipse is active."""
+    e = snap.eclipse
+    if e.eclipse_type == EclipseType.NONE or not e.visible_from_here:
+        return
+    
+    hud_y = screen.get_height() - 80
+
+    # Create a blinking alert effect
+    alpha = int(155 + 100 * math.sin(pygame.time.get_ticks() * 0.005))
+    alert_color = (*HUD_ALERT, alpha)
+    
+    header = f"*** {e.eclipse_type.value.upper()} ECLIPSE DETECTED ***"
+    phase_str = f"Phase: {e.phase.value.title()} | Obscuration: {e.obscuration*100:.1f}%"
+    note_str = f"Note: {e.note}"
+
+    # Draw background plate for readability
+    overlay = pygame.Surface((350, 80), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 160))
+    screen.blit(overlay, (WIDTH // 2 - 175, hud_y))
+
+    render_h = font.render(header, True, HUD_ALERT)
+    render_p = font.render(phase_str, True, (255, 255, 255))
+    render_n = font.render(note_str, True, (200, 200, 200))
+
+# Draw text relative to hud_y (offsetting by 5, 25, and 45 pixels)
+    screen.blit(render_h, (WIDTH // 2 - render_h.get_width() // 2, hud_y + 5))
+    screen.blit(render_p, (WIDTH // 2 - render_p.get_width() // 2, hud_y + 25))
+    screen.blit(render_n, (WIDTH // 2 - render_n.get_width() // 2, hud_y + 45))
+
+# def get_moon_phase_name(angle: float) -> str:
+#     if angle < 1 or angle >= 359: return "New Moon"
+#     if angle < 89: return "Waxing Crescent"
+#     if angle < 91: return "First Quarter"
+#     if angle < 179: return "Waxing Gibbous"
+#     if angle < 181: return "Full Moon"
+#     if angle < 269: return "Waning Gibbous"
+#     if angle < 271: return "Last Quarter"
+#     return "Waning Crescent"
 
 def print_extensive_report(name, snap: SkySnapshot):
     print(f"\n{'-'*60}")
@@ -312,18 +379,23 @@ def run_pygame_expedition(name, info):
 
         # --- DYNAMIC BACKGROUND (Using New SunResult/TwilightPhase Enum) ---
         phase = snap.sun.twilight_phase
-        if phase == TwilightPhase.DAY:
-            bg_color = (135, 206, 235)  # Sky blue
-        elif phase == TwilightPhase.CIVIL_TWILIGHT:
-            bg_color = (70, 100, 160)   # Light twilight
-        elif phase == TwilightPhase.NAUTICAL_TWILIGHT:
-            bg_color = (30, 40, 80)     # Darker blue
-        elif phase == TwilightPhase.ASTRO_TWILIGHT:
-            bg_color = (15, 20, 40)     # Very dark blue
-        else: # TwilightPhase.NIGHT
-            bg_color = (11, 13, 23)     # Space black
 
-        screen.fill(bg_color)
+        # Base background selection
+        if phase == TwilightPhase.DAY: bg_color = [135, 206, 235]
+        elif phase == TwilightPhase.CIVIL_TWILIGHT: bg_color = [70, 100, 160]
+        elif phase == TwilightPhase.NAUTICAL_TWILIGHT: bg_color = [30, 40, 80]
+        else: bg_color = [11, 13, 23]
+
+        # Solar Eclipse "False Night" effect
+        if snap.eclipse.eclipse_type == EclipseType.SOLAR and snap.eclipse.obscuration > 0:
+            # As obscuration reaches 1.0, sky color lerps toward Night (Space Black)
+            obs = snap.eclipse.obscuration
+            target = [11, 13, 23]
+            bg_color[0] += (target[0] - bg_color[0]) * (obs ** 2) # Exponential darkening
+            bg_color[1] += (target[1] - bg_color[1]) * (obs ** 2)
+            bg_color[2] += (target[2] - bg_color[2]) * (obs ** 2)
+
+        screen.fill(tuple(bg_color))
 
         # 1. Background Stars (Too dim/limit)
         for s in snap.stars_below_limit:
@@ -365,22 +437,53 @@ def run_pygame_expedition(name, info):
                 # Optional: Draw a very faint dot for planets that are up but too dim
                 pygame.draw.circle(screen, (40, 40, 40), pos, 1)
         # 5. Sun
+# --- 2. ENHANCED SUN RENDERING ---
         sun = snap.sun
         if sun.altitude > -2: 
             s_pos = sky_to_pixel(sun.azimuth, sun.altitude)
-            pygame.draw.circle(screen, (255, 220, 100), s_pos, 20)
-            pygame.draw.circle(screen, (255, 255, 200), s_pos, 16)
+            e = snap.eclipse
+            
+            if e.eclipse_type == EclipseType.SOLAR:
+                # Draw the Corona (Glow)
+                corona_size = 22 + int(5 * math.sin(pygame.time.get_ticks() * 0.01))
+                pygame.draw.circle(screen, (255, 255, 255, 100), s_pos, corona_size)
+                
+                # Draw the Sun base
+                pygame.draw.circle(screen, (255, 220, 100), s_pos, 20)
+                
+                # Draw the Moon "Shadow" blocking the sun
+                # We offset it based on separation_deg (scaled for pixels)
+                # 0.5 degrees is roughly the diameter of the sun
+                offset_px = (e.separation_deg / 0.5) * 20 
+                # For simplicity, we assume the moon is moving horizontally across the sun
+                m_shadow_pos = (s_pos[0] + offset_px, s_pos[1])
+                pygame.draw.circle(screen, tuple(bg_color), m_shadow_pos, 20)
+                
+                # Total Eclipse "Diamond Ring" / Baily's Beads effect
+                if e.phase == EclipsePhase.TOTAL:
+                    pygame.draw.circle(screen, (255, 255, 255), s_pos, 21, 2)
+            else:
+                pygame.draw.circle(screen, (255, 220, 100), s_pos, 20)
+                pygame.draw.circle(screen, (255, 255, 200), s_pos, 16)
 
         # 6. Moon
+# --- 3. ENHANCED MOON RENDERING (Lunar Eclipse) ---
         m = snap.moon
         if m.above_horizon:
             m_pos = sky_to_pixel(m.azimuth, m.altitude)
-            # Atmospheric reddening at low altitude
-            moon_color = (240, 240, 240) if m.altitude > 15 else (255, 180, 100)
-            pygame.draw.circle(screen, moon_color, m_pos, 12)
             
-            phase_name = get_moon_phase_name(m.phase_angle)
-            moon_lbl = font.render(f"{phase_name} ({int(m.illumination*100)}%)", True, moon_color)
+            # Atmospheric reddening at low altitude OR Lunar Eclipse depth
+            base_moon = (240, 240, 240) if m.altitude > 15 else (255, 180, 100)
+            final_moon_color = get_eclipse_color(base_moon, snap.eclipse)
+            
+            pygame.draw.circle(screen, final_moon_color, m_pos, 12)
+            
+            # Label
+            trend = "Waxing" if m.waxing else "Waining"
+            if snap.eclipse.eclipse_type == EclipseType.LUNAR:
+                trend = f"ECLIPSED {trend}"
+            
+            moon_lbl = font.render(f"{trend} ({int(m.illumination*100)}%)", True, final_moon_color)
             screen.blit(moon_lbl, (m_pos[0] + 15, m_pos[1] - 10))
 
         # 7. Cloud Overlay
@@ -390,6 +493,7 @@ def run_pygame_expedition(name, info):
         center, radius = (WIDTH // 2, HEIGHT // 2), int(WIDTH / 2.5)
         pygame.draw.circle(screen, HORIZON_CYAN, center, radius, 1)
         draw_cardinal_labels(screen, font)
+        render_eclipse_hud(screen, font, snap)
 
 
         # Legend/Stats

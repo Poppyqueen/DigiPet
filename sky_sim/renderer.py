@@ -7,7 +7,7 @@ Updated to work with the new visibility properties and SunResult structure.
 
 from __future__ import annotations
 from collections import Counter
-from .types import SkySnapshot, SkyConditionNarrative, BortleClass, TwilightPhase, VisibilityState
+from .types import SkySnapshot, SkyConditionNarrative, BortleClass, TwilightPhase, VisibilityState, EclipseType
 from .clustering import fold_stars
 
 
@@ -68,7 +68,7 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
     # Sun Status (using explicit SunResult)
     sun = snap.sun
     sun_phase = sun.twilight_phase.value.replace('_', ' ').title()
-    w(f"  Sun Altitude  {sun.altitude:+.1f}° ({sun_phase})")
+    w(f"  Sun: {_format_pos(sun.azimuth,sun.altitude)} ({sun_phase})")
     if sun.magnitude_impact > 0.1:
         w(f"  ⚠ Sky Glow    +{sun.magnitude_impact:.1f} mag loss from sunlight")
     
@@ -100,6 +100,12 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
         if moon.magnitude_impact > 0.5:
             w(f"  ⚠ Lunar Glow  +{moon.magnitude_impact:.1f} mag wash-out")
     w("")
+
+    # --- Eclipse ----
+
+    eclipse = snap.eclipse
+    if not eclipse.eclipse_type == EclipseType.NONE and eclipse.visible_from_here == True:
+        w(f"Eclipse info: {eclipse.note}\nObscuration: {eclipse.obscuration}")
 
 # --- PLANETS ---
     if snap.planets:
