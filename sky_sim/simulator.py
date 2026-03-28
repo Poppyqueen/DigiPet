@@ -148,12 +148,10 @@ class NightSkySimulator:
 
         # --- Stars ---
         raw_stars    = self._astro.get_stars(dt_utc)
-        print(f"DEBUG SIMULATOR: RAW STARS COUNT {len(raw_stars)}")
         star_results = self._evaluate_stars(raw_stars, atm, limiting_mag, sun.altitude)
 
         # --- Planets ---
         raw_planets    = self._astro.get_planets(dt_utc)
-        print(f"SIMULATOR DEBUG, RAW PLANETS: \n {raw_planets}")
         planet_results = self._evaluate_planets(raw_planets, atm, limiting_mag)
 
         cloud_coverage = self._clouds.simulated_cloud_coverage(samples=200)
@@ -211,34 +209,32 @@ class NightSkySimulator:
         
         return max(limiting, 0.5)
 
-    def _effective_magnitude(self, magnitude: float, altitude: float,
-                             azimuth: float, atm: AtmosphereScores) -> float:
-        """
-        Apparent magnitude of a single object after all per-object losses:
-        atmospheric extinction (airmass), haze, and local cloud opacity.
-        Sky background losses (moon, sun, LP) live in limiting_mag instead.
-        """
-        ext     = atmospheric_extinction(altitude)
-        haze    = atm.visibility_mag_loss * 0.5
-        opacity = self._clouds.opacity_at(azimuth, altitude)
-        cloud   = cloud_opacity_to_magnitude_loss(opacity)
-        return magnitude + ext + haze # + cloud
 
     # HYG v4.2 includes Sol (the Sun) as a star with magnitude ~-26.7.
     # We never want it to appear in star lists — it is handled via SunResult.
     _SOL_NAMES = {"sol", "sun"}
 
-    def _classify_visibility(self, mag, alt, az, atm, limiting_mag) -> tuple[VisibilityState, float]:
-        opacity    = self._clouds.opacity_at(az, alt)
+    def _full_effective_magnitude(self, mag, alt, az, atm):
+        ext = atmospheric_extinction(alt)
+        haze = atm.visibility_mag_loss * 0.5
+        opacity = self._clouds.opacity_at(az, alt)
         cloud_loss = cloud_opacity_to_magnitude_loss(opacity)
-        eff_mag    = self._effective_magnitude(mag, alt, az, atm)
+        return mag + ext + haze + cloud_loss, opacity
 
-        if eff_mag > limiting_mag:
-            return VisibilityState.BELOW_LIMIT, opacity
-        if cloud_loss > 2.0:
+    def _classify_visibility(self, mag, alt, az, atm, limiting_mag):
+        eff_mag, opacity = self._full_effective_magnitude(mag, alt, az, atm)
+        if eff_mag <= limiting_mag:
+            return VisibilityState.VISIBLE, opacity
+        # Diagnose
+        eff_no_cloud = eff_mag - cloud_opacity_to_magnitude_loss(opacity)
+        if eff_no_cloud <= limiting_mag:
             return VisibilityState.CLOUDED, opacity
-        return VisibilityState.VISIBLE, opacity
+        return VisibilityState.BELOW_LIMIT, opacity
 
+    def _effective_magnitude(self, mag, alt, az, atm):
+        eff, _ = self._full_effective_magnitude(mag, alt, az, atm)
+        return eff
+    
     def _evaluate_stars(self, raw_stars, atm, limiting_mag, sun_altitude) -> list[StarResult]:
         results = []
         for name, mag, az, alt, const in raw_stars:

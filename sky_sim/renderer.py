@@ -103,7 +103,6 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
 
 # --- PLANETS ---
     if snap.planets:
-        print(f"RENDERER DEBUG RAW PLANETS:\n {snap.planets}")
         w("PLANETS")
         for p in snap.planets:
             # Determine primary status string
@@ -134,6 +133,7 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
         if clusters:
             w("  STAR GROUPS & FORMATIONS")
             for c in clusters:
+                # 1. Handle the names and metadata line
                 lead_names = [s.name or "Unnamed" for s in c.leads]
                 if len(lead_names) > 1:
                     names_str = ", ".join(lead_names[:-1]) + f", & {lead_names[-1]}"
@@ -147,21 +147,40 @@ def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
                     max_mag = max(s.magnitude for s in followers)
                     follower_text = f" (+{len(followers)} others, mag {min_mag:.1f} to {max_mag:.1f})"
 
-                # Detect dominant constellation in group
                 consts = [s.constellation for s in c.stars if s.constellation and str(s.constellation).lower() != 'nan']
                 const_tag = ""
                 if consts:
-                    top_const, count = Counter(consts).most_common(1)[0]
+                    top_const, _ = Counter(consts).most_common(1)[0]
                     const_tag = f" [{top_const}]"
-                
+
+                # Output Header Line
                 w(f"    • {names_str}{follower_text}{const_tag}")
-                w(f"      Center: {_format_pos(c.center_az, c.center_alt)} | Span: {c.width:.1f}°W × {c.height:.1f}°H")
+
+                # 2. Add the Lead Star Position Line (First lead only)
+                first_lead = c.leads[0]
+                w(f"      {first_lead.name or 'Star'}: {_format_pos(first_lead.azimuth, first_lead.altitude)}")
+
+                # 3. Add the Shorthand Center/Span Line
+                # Format: (CARDINAL ALT°)
+                center_short = f"({_cardinal(c.center_az)} {c.center_alt:.0f}°)"
+                w(f"      Center: {center_short} | Span: {c.width:.1f}°W × {c.height:.1f}°H")
 
         if lonely:
             w("\n  ISOLATED BRIGHT POINTS")
             # Show top brightest lonely stars
             for s in sorted(lonely, key=lambda x: x.magnitude)[:8]:
-                w(f"    • {s.name or 'Star'} — {s.magnitude:+.2f} mag in the {_cardinal(s.azimuth)}")
+                # Line 1: Name and Magnitude
+                name = s.name or 'Unnamed Star'
+                w(f"    • {name} — {s.magnitude:+.2f} mag")
+                
+                # Line 2: Full Position Notation
+                # Format: SW (az 214°, alt 22°)
+                pos_line = _format_pos(s.azimuth, s.altitude)
+                
+                # Include Constellation if known
+                const_tag = f" [{s.constellation}]" if s.constellation and str(s.constellation).lower() != 'nan' else ""
+                
+                w(f"      {pos_line}{const_tag}")
     else:
         # Narrative context for why nothing is visible
         if snap.sun.above_horizon:

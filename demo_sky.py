@@ -3,11 +3,22 @@ import numpy as np
 import random
 import time
 
-from sky_sim import NightSkySimulator, render_snapshot
+from sky_sim import NightSkySimulator, render_snapshot, SkyLogger
 from sky_sim.cloud_sim import _sky_to_xy
 from sky_sim.types import SkySnapshot, VisibilityState, TwilightPhase
 
 from utils.open_meteo_handle import OpenMeteoLoc
+import math
+import os
+
+def clear_screen():
+    # For Windows (os.name is 'nt')
+    if os.name == 'nt':
+        _ = os.system('cls')
+    # For macOS and Linux (os.name is 'posix')
+    else:
+        _ = os.system('clear')
+
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -16,7 +27,7 @@ LOCATIONS = {
     "Anacapa Island, USA": {
         "lat": 34.0167, 
         "lon": -119.45, 
-        "bortle": 2
+        "bortle": 3
     },
     "Mexico City": {
         "lat": 19.4326,
@@ -92,7 +103,7 @@ LOCATIONS = {
         "lat": 89.999, 
         "lon": 0.0000, 
         "bortle": 1  # Total darkness (during polar night), no local light pollution
-    },
+    }
 
 }
 
@@ -163,27 +174,41 @@ def draw_cardinal_labels(screen, font):
         screen.blit(lbl, rect)
 
 def create_cloud_surface(sim, grid_res=80):
-    """Generates a semi-transparent cloud overlay from simulation noise."""
+    """Generates a semi-transparent cloud overlay correctly mapped to the sky dome projection."""
     surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    cell_size = WIDTH // grid_res
-    x_range = np.linspace(-1.1, 1.1, grid_res)
-    y_range = np.linspace(-1.1, 1.1, grid_res)
     
-    C_HIGH = (230, 240, 255) 
-    C_MID  = (210, 210, 210) 
-    C_LOW  = (120, 120, 130) 
-
-
+    # Calculate float cell sizes and use ceil to prevent visual seams 
+    # (WIDTH // grid_res leaves a blank margin if WIDTH doesn't divide perfectly)
+    cell_w = WIDTH / grid_res
+    cell_h = HEIGHT / grid_res
+    
     C_HIGH = (0, 100, 255)   # Vibrant Blue
     C_MID  = (255, 215, 0)   # Golden Yellow
     C_LOW  = (200, 30, 30)   # Deep Red
 
-    for i, x in enumerate(x_range):
-        for j, y in enumerate(y_range):
-            if np.sqrt(x**2 + y**2) <= 1.0:
-                low = sim._clouds._low.opacity_at(x, y)
-                mid = sim._clouds._mid.opacity_at(x, y)
-                high = sim._clouds._high.opacity_at(x, y)
+    for i in range(grid_res):
+        for j in range(grid_res):
+            # 1. Find the center pixel coordinate of this grid cell
+            px = i * cell_w + cell_w / 2
+            py = j * cell_h + cell_h / 2
+            
+            # 2. Invert the sky_to_pixel() mapping logic
+            # px = WIDTH / 2 + screen_x * (WIDTH / 2.5) -> Solve for screen_x
+            screen_x = (px - WIDTH / 2) / (WIDTH / 2.5)
+            screen_y = (py - HEIGHT / 2) / (HEIGHT / 2.5)
+            
+            # 3. Invert the 90° rotation and mirroring from sky_to_pixel()
+            # screen_x = -sy  =>  sy = -screen_x
+            # screen_y = -sx  =>  sx = -screen_y
+            sx = -screen_y
+            sy = -screen_x
+            
+            # 4. The sky dome is a circle of radius 1.0; only process inside it
+            if (sx**2 + sy**2) <= 1.0:
+                # Sample using the correctly projected Cartesian coordinates
+                low = sim._clouds._low.opacity_at(sx, sy)
+                mid = sim._clouds._mid.opacity_at(sx, sy)
+                high = sim._clouds._high.opacity_at(sx, sy)
                 
                 total = low + mid + high
                 if total > 0:
@@ -191,11 +216,16 @@ def create_cloud_surface(sim, grid_res=80):
                     g = (C_HIGH[1]*high + C_MID[1]*mid + C_LOW[1]*low) / total
                     b = (C_HIGH[2]*high + C_MID[2]*mid + C_LOW[2]*low) / total
                     
+                    # Compute combined opacity exactly like the simulation's classifier
                     opacity = 1.0 - (1.0 - low) * (1.0 - mid) * (1.0 - high)
+                    
                     if opacity > 0.1:
                         alpha = int(opacity * 180)
-                        pygame.draw.rect(surf, (int(r), int(g), int(b), alpha), 
-                                        (i * cell_size, (grid_res - j - 1) * cell_size, cell_size, cell_size))
+                        # Draw cleanly on the surface
+                        rect = pygame.Rect(int(i * cell_w), int(j * cell_h), 
+                                           math.ceil(cell_w), math.ceil(cell_h))
+                        pygame.draw.rect(surf, (int(r), int(g), int(b), alpha), rect)
+                        
     return surf
 
 def get_moon_phase_name(angle: float) -> str:
@@ -251,9 +281,16 @@ def run_pygame_expedition(name, info):
     )
     
     # Initialize snapshot and cloud texture
+# 1. Initialize the logger
+    logger = SkyLogger(name)
+    
+    # Initialize snapshot
     snap = sim.snapshot()
     cloud_tex = create_cloud_surface(sim)
-    print_extensive_report(name, snap)
+    
+    # 2. Log the initial state
+    #print_extensive_report(name, snap) # Keep console print if you like
+    logger.log_snapshot(name, snap)    # Write to file
     
     last_tick_time = pygame.time.get_ticks()
     running = True
@@ -265,10 +302,12 @@ def run_pygame_expedition(name, info):
 
         now = pygame.time.get_ticks()
         if now - last_tick_time > REAL_TIME_WAIT:
+            #clear_screen()
             sim.tick(minutes=SIM_TICK_TIME)
             snap = sim.snapshot() 
             cloud_tex = create_cloud_surface(sim)
-            print_extensive_report(name, snap)
+            logger.log_snapshot(name, snap)
+            #print_extensive_report(name, snap)
             last_tick_time = now
 
         # --- DYNAMIC BACKGROUND (Using New SunResult/TwilightPhase Enum) ---
@@ -369,18 +408,70 @@ def run_pygame_expedition(name, info):
 
     pygame.quit()
 
-
 def select_location():
-    print("--- AVAILABLE OBSERVATORIES ---")
     loc_list = list(LOCATIONS.keys())
-    for i, name in enumerate(loc_list, 1):
-        print(f"[{i}] {name}")
-    try:
-        choice = int(input("\nSelect a location number: "))
-        return loc_list[choice-1], LOCATIONS[loc_list[choice-1]]
-    except (ValueError, IndexError):
-        print("Invalid choice, defaulting to first location.")
-        return loc_list[0], LOCATIONS[loc_list[0]]
+    page_size = 7
+    current_page = 0
+    total_pages = (len(loc_list) + page_size - 1) // page_size
+
+    while True:
+        clear_screen()
+        print(f"\n--- AVAILABLE OBSERVATORIES (Page {current_page + 1}/{total_pages}) ---")
+        
+        # Calculate start and end indices for the current page
+        start = current_page * page_size
+        end = start + page_size
+        page_items = loc_list[start:end]
+
+        for i, name in enumerate(page_items, 1):
+            print(f"[{i}] {name}")
+
+        print("-" * 30)
+        print("[N] Next Page  |  [P] Previous Page")
+        print("[C] Add Custom Location")
+        
+        choice = input("\nSelect a number, navigate, or add custom: ").strip().upper()
+
+        # 1. Handle Navigation
+        if choice == 'N':
+            if current_page < total_pages - 1:
+                current_page += 1
+            else:
+                print(">> You are on the last page.")
+            continue
+        
+        if choice == 'P':
+            if current_page > 0:
+                current_page -= 1
+            else:
+                print(">> You are on the first page.")
+            continue
+
+        # 2. Handle Custom Entry
+        if choice == 'C':
+            try:
+                print("\n--- CONSTRUCT CUSTOM ENTRY ---")
+                name = input("Location Name: ")
+                lat = float(input("Latitude: "))
+                lon = float(input("Longitude: "))
+                bortle = int(input("Bortle Scale (1-9): "))
+                
+                custom_data = {"lat": lat, "lon": lon, "bortle": bortle}
+                return name, custom_data
+            except ValueError:
+                print("Invalid input. Returning to menu.")
+                continue
+
+        # 3. Handle Numeric Selection
+        try:
+            idx = int(choice)
+            if 1 <= idx <= len(page_items):
+                selected_name = page_items[idx - 1]
+                return selected_name, LOCATIONS[selected_name]
+            else:
+                print("Number out of range for this page.")
+        except ValueError:
+            print("Invalid input. Please choose a number, N, P, or C.")
 
 
 if __name__ == "__main__":

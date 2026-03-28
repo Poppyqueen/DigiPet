@@ -26,6 +26,7 @@ from .types        import (
     DarkAdaptation,
     SkyConditionNarrative,
 )
+from .sky_logger import SkyLogger
 
 __all__ = [
     "NightSkySimulator",
