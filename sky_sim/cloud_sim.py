@@ -37,9 +37,9 @@ import random
 # ---------------------------------------------------------------------------
 
 # Noise spatial scale per layer — controls patch size on sky dome
-LOW_NOISE_SCALE   = 1.8
-MID_NOISE_SCALE   = 2.8
-HIGH_NOISE_SCALE  = 4.5
+LOW_NOISE_SCALE   = 2.5
+MID_NOISE_SCALE   = 2.5
+HIGH_NOISE_SCALE  = 2.5
 
 # Max opacity contribution per layer (transmittance ceiling)
 LOW_MAX_OPACITY   = 1.00
@@ -56,16 +56,16 @@ HIGH_OPACITY_BIAS  = 0.8   # cirrus: thin and translucent throughout
 # Edge sharpness — multiplier on edge_width per layer.
 # < 1.0 = narrower transition zone (crisper boundary)
 # > 1.0 = wider transition zone (softer, more diffuse boundary)
-LOW_EDGE_SHARPNESS   = 0.7   # stratus: hard-edged patches
-MID_EDGE_SHARPNESS   = 1.0   # altostratus: neutral
-HIGH_EDGE_SHARPNESS  = 1.4   # cirrus: wide, feathered edges
+LOW_EDGE_SHARPNESS   = 0.35   # stratus: hard-edged patches
+MID_EDGE_SHARPNESS   = 0.95   # altostratus: neutral
+HIGH_EDGE_SHARPNESS  = 1.45   # cirrus: wide, feathered edges
 
 # How fast simulated values chase weather targets (fraction per minute)
 LERP_RATE_COVER   = 0.04
 LERP_RATE_WIND    = 0.06
 
 # How fast cloud shapes morph (noise time axis, arbitrary units / minute)
-MORPH_RATE        = 0.2 # 0.0475
+MORPH_RATE        = 0.02375 # 0.2 # 0.0475
 
 # Smoothstep edge width for cloud boundary (in noise units)
 CLOUD_EDGE_WIDTH  = 0.15

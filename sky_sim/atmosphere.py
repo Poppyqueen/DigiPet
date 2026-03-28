@@ -149,7 +149,7 @@ def moon_magnitude_loss(illumination: float, altitude_deg: float, eclipse=None) 
             effective_illumination *= (1.0 - depth * 0.10)
 
     altitude_factor = min(1.0, altitude_deg / 45.0)
-    return effective_illumination * 2.5 * altitude_factor
+    return effective_illumination * 1.0 * altitude_factor
 
 
 def sun_magnitude_loss(sun_altitude_deg: float, eclipse=None) -> float:
