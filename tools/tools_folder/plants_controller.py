@@ -30,7 +30,7 @@ from tools.tools_folder.tools_helpers.garden_helpers.garden_manager import Garde
 
 if TYPE_CHECKING:
     from inventory_items.inventory_manager import InventoryHouseManager
-    from inventory_items.services.return_objects import ItemLookupResult
+    from inventory_items.services.return_objects import ItemLookupResult, SetItemAttributeResult
 
 
 # ---------------------------------------------------------------------------
@@ -129,9 +129,9 @@ class GardenController:
 
         return True, pot_state
 
-    def _save_pot_state(self, pot_id: int, pot_state: dict) -> None:
+    def _save_pot_state(self, pot_id: int, pot_state: dict) -> SetItemAttributeResult:
         """Write the updated pot_state back onto the inventory item."""
-        self.state_manager.set_item_attribute(
+        return self.state_manager.set_item_attribute(
             item_id=pot_id,
             key="pot_state",
             value=pot_state,
@@ -147,10 +147,10 @@ class GardenController:
                     uids.add(uid)
         return uids
 
-    def _maybe_save_pot(self, pot_id: int, updated: dict | None) -> None:
+    def _maybe_save_pot(self, pot_id: int, updated: dict | None) -> SetItemAttributeResult:
         """Write pot_state back to the item only if the manager returned one."""
         if updated is not None:
-            self._save_pot_state(pot_id, updated)
+            return self._save_pot_state(pot_id, updated)
 
     # -----------------------------------------------------------------------
     # Game loop
@@ -248,7 +248,10 @@ class GardenController:
             return msg
 
         if pot_id is not None:
-            self._maybe_save_pot(pot_id, updated)
+            response = self._maybe_save_pot(pot_id, updated)
+            if not response.success:
+                return response.error
+            msg += response.message
 
         self.state_manager.remove_item(seed_id)
         stats = self._adjust_stats(PLANT_SEED_COSTS)

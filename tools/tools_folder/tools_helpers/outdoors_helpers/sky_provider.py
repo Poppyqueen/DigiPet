@@ -23,7 +23,7 @@ class EarthAstroViews(OutdoorsProvider):
 
         self.pet_dna = config.get_config("AI", "pet_dna")
         # Remove colons and dots, then convert to int
-        clean_dna = self.pet_dna.replace(":", "").replace(".", "")
+        clean_dna = "".join(char for char in self.pet_dna if char.isdigit())
         dna_int = int(clean_dna) # Use this for a seed in the noise
 
         self._tick_interval_minutes: float = 15.0  # default, overridden below
