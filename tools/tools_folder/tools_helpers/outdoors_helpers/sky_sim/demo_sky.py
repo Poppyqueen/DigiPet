@@ -1,11 +1,15 @@
+# tools/tools_folder/tools_helpers/outdoors_helpers/sky_sim/demo_sky.py
+# python -m tools.tools_folder.tools_helpers.outdoors_helpers.sky_sim.demo_sky
+# !!!!
+
 import pygame
 import numpy as np
 import random
 import time
 
-from sky_sim import NightSkySimulator, render_snapshot, SkyLogger
-from sky_sim.cloud_sim import _sky_to_xy
-from sky_sim.types import SkySnapshot, VisibilityState, TwilightPhase, EclipseType, EclipsePhase
+from . import NightSkySimulator, render_snapshot, SkyLogger
+from .cloud_sim import _sky_to_xy
+from .types import SkySnapshot, VisibilityState, TwilightPhase, EclipseType, EclipsePhase
 
 from utils.open_meteo_handle import OpenMeteoLoc
 import math
