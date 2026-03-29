@@ -62,6 +62,10 @@ class OutdoorsPerception:
             self.xeno_canto = XenoCantoLoc(self.lat, self.long, api_key=canto_key)
             self._register_provider(XenoCantoProvider(self.xeno_canto, self.open_meteo))
 
+        if True: # Add flag or something for the sky thing
+            from .tools_helpers.outdoors_helpers.sky_provider import EarthAstroViews
+            self._register_provider(EarthAstroViews(self.open_meteo, self.config_manager, self.lat, self.long))
+
     def _register_provider(self, provider: OutdoorsProvider) -> None:
         self._providers[provider.outdoors_type] = provider
 

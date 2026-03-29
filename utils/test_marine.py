@@ -14,8 +14,8 @@ terrible_tilly_long = "-124.0189"
 anacapa_island_lat = "34.0167"
 anacapa_island_long = "-119.45"
 
-boston_light_lat = "42.361145"
-boston_light_long = "-71.006139"
+boston_light_lat = "42.3279"
+boston_light_long = "-70.8902"
 
 cape_spencer_lat = "58.19722"
 cape_spencer_long = "-136.63936"

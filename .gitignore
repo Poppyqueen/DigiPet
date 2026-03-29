@@ -20,7 +20,12 @@ data_archive/
 
 # MCP Configs These are private, selected MCP configs for you to set.
 *mcp_config.json
+
+
 *glance.txt 
+*sky_logs/
+
+*local_data/
 
 # ------------------------------------
 # 3. Build & Packaging Artifacts

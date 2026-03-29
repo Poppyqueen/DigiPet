@@ -340,6 +340,16 @@ def _fetch_pages(
 
             seen_ids.add(rid)
             all_recordings.append(r)
+            lic = r.get("lic", "").lower()
+            if not rid or rid in seen_ids:
+                continue
+            if FILTER_NO_DERIVATIVES and ("-nd" in lic or "/nd/" in lic):
+                continue
+            if FILTER_NON_COMMERCIAL and ("-nc" in lic or "/nc/" in lic):
+                continue
+
+            seen_ids.add(rid)
+            all_recordings.append(r)
         # Short page means we've hit the end
         if len(recordings) == 0:
             break
