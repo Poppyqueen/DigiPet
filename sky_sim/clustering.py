@@ -25,13 +25,28 @@ Performance notes (numpy rewrite):
   - Component extraction (BFS/union-find) still has a Python loop over
     components, but n ≲ 9 000 naked-eye stars and the graph is very sparse,
     so this is not a bottleneck.
+
+Changes from previous version:
+  - Fix: StarCluster.stars now holds only the follower stars (comp[num_leads:]),
+    so leads and followers are disjoint. Previously leads were a subset of stars,
+    causing every lead to appear twice in renders.
+  - Fix: MERGE_RADIUS_DEG is now computed adaptively from star density, so a
+    rich Bortle-1 sky (500+ visible stars) collapses into a small number of
+    grand regions rather than 20+ small clusters.
+  - New: minimum cluster size gate — tiny components with no anchor are demoted
+    to lonely stars after the merge pass.
+  - New: forced-merge cap — after all adaptive merging, if the cluster count
+    still exceeds max_clusters the two closest-center clusters are merged
+    repeatedly until the cap is satisfied.
+  - New: fold_stars() accepts a max_clusters parameter (default 8) exposed all
+    the way up to the renderer.
 """
 
 import math
 import numpy as np
 from dataclasses import dataclass
 from typing import List, Tuple
-from .types import StarResult
+from .types import StarResult, StarCluster
 
 # ---------------------------------------------------------------------------
 # Tuning constants
@@ -39,30 +54,20 @@ from .types import StarResult
 
 _BASE_RADIUS_DEG: float    = 2.0
 _BRIGHT_ANCHOR_MAG: float  = 1.5
-_MERGE_RADIUS_DEG: float   = 18.0
 _LONE_ANCHOR_MAG: float    = -0.5
 
+# Adaptive merge radius: linearly interpolated between these two anchor points.
+#   ≤ _DENSITY_LOW stars  → _MERGE_RADIUS_SPARSE
+#   ≥ _DENSITY_HIGH stars → _MERGE_RADIUS_DENSE
+_DENSITY_LOW: int         = 50
+_DENSITY_HIGH: int        = 400
+_MERGE_RADIUS_SPARSE: float = 18.0   # degrees — matches previous fixed value
+_MERGE_RADIUS_DENSE: float  = 42.0   # degrees — large enough to fold a rich Bortle-1 sky
 
-# ---------------------------------------------------------------------------
-# Data type
-# ---------------------------------------------------------------------------
-
-@dataclass
-class StarCluster:
-    stars:      List[StarResult]
-    leads:      List[StarResult]
-    center_az:  float
-    center_alt: float
-    width:      float
-    height:     float
-
-    @property
-    def total_count(self) -> int:
-        return len(self.stars)
-
-    @property
-    def brightest_magnitude(self) -> float:
-        return self.leads[0].magnitude if self.leads else 99.0
+# A component is only kept as a cluster if it has at least this many members
+# OR contains a star bright enough to anchor it relative to the sky.
+# The anchor threshold is computed dynamically — see _anchor_mag_threshold().
+_MIN_CLUSTER_SIZE: int       = 4
 
 
 # ---------------------------------------------------------------------------
@@ -117,7 +122,6 @@ def _pairwise_angular_distance(xyz: np.ndarray) -> np.ndarray:
     Returns symmetric (n, n) matrix in degrees.
     Uses the identity: angle = arccos(dot(u, v)).
     """
-    # dot products via matrix multiplication: (n, 3) @ (3, n) → (n, n)
     dots = np.clip(xyz @ xyz.T, -1.0, 1.0)
     return np.degrees(np.arccos(dots))           # (n, n), symmetric, zero diagonal
 
@@ -125,15 +129,13 @@ def _pairwise_angular_distance(xyz: np.ndarray) -> np.ndarray:
 def _connection_radius_matrix(mags: np.ndarray) -> np.ndarray:
     """
     Vectorized connection radii for every pair (i, j).
-    The brighter of the two drives the threshold — same formula as before.
+    The brighter of the two drives the threshold.
     Returns (n, n) symmetric matrix in degrees.
     """
-    # brightest of each pair: min(mags[i], mags[j])
     m_i = mags[:, np.newaxis]                    # (n, 1)
     m_j = mags[np.newaxis, :]                    # (1, n)
     brightest = np.minimum(m_i, m_j)            # (n, n)
 
-    # Two regimes, vectorized
     bright_mask = brightest < _BRIGHT_ANCHOR_MAG
     radius = np.where(
         bright_mask,
@@ -163,7 +165,6 @@ def _gnomonic_span(stars: List[StarResult],
     """
     Project all stars onto the tangent plane at (center_az, center_alt) using
     gnomonic projection, then return (width_deg, height_deg).
-    Uses numpy for the projection dot products.
     """
     if len(stars) < 2:
         return 0.0, 0.0
@@ -171,7 +172,6 @@ def _gnomonic_span(stars: List[StarResult],
     cx, cy, cz = _star_to_xyz(center_az, center_alt)
     c = np.array([cx, cy, cz])
 
-    # Tangent-plane axes
     if abs(center_alt) > 89.5:
         east_hat  = np.array([1.0, 0.0, 0.0])
         north_hat = np.array([0.0, 1.0, 0.0])
@@ -186,12 +186,11 @@ def _gnomonic_span(stars: List[StarResult],
             return 0.0, 0.0
         north_hat = north / nn
 
-    # Vectorized projection for all stars at once
     azimuths  = np.array([s.azimuth  for s in stars])
     altitudes = np.array([s.altitude for s in stars])
     xyz = _stars_to_xyz_array(azimuths, altitudes)   # (n, 3)
 
-    denom = xyz @ c                                   # (n,)  dot with centre
+    denom = xyz @ c                                   # (n,)
     valid = denom > 1e-6
     if not valid.any():
         return 0.0, 0.0
@@ -220,28 +219,89 @@ def _cluster_center(stars: List[StarResult]) -> Tuple[float, float]:
 
 
 # ---------------------------------------------------------------------------
-# Main entry point
+# Adaptive merge radius
 # ---------------------------------------------------------------------------
 
+def _adaptive_merge_radius(n_stars: int) -> float:
+    """
+    Return a merge radius (degrees) scaled to the number of visible stars.
+
+    The intuition: in a dense sky the proximity graph produces many small
+    components that a human eye would perceive as one large region.  A larger
+    merge radius collapses these into a small number of grand clusters.
+
+    The function is a simple linear ramp clamped at the two anchor points:
+      n ≤ _DENSITY_LOW  → _MERGE_RADIUS_SPARSE (18°)
+      n ≥ _DENSITY_HIGH → _MERGE_RADIUS_DENSE  (42°)
+    """
+    if n_stars <= _DENSITY_LOW:
+        return _MERGE_RADIUS_SPARSE
+    if n_stars >= _DENSITY_HIGH:
+        return _MERGE_RADIUS_DENSE
+    t = (n_stars - _DENSITY_LOW) / (_DENSITY_HIGH - _DENSITY_LOW)
+    return _MERGE_RADIUS_SPARSE + t * (_MERGE_RADIUS_DENSE - _MERGE_RADIUS_SPARSE)
+
+
+# ---------------------------------------------------------------------------
+# Adaptive anchor magnitude threshold
+# ---------------------------------------------------------------------------
+
+def _anchor_mag_threshold(stars: List[StarResult]) -> float:
+    """
+    Return the magnitude threshold below which a single bright star is
+    considered enough to anchor a small (< _MIN_CLUSTER_SIZE) component.
+
+    The key insight: in a rich Bortle-1 sky with 500+ visible stars, mag 4
+    is unremarkable — a random pair of mag-4 stars near each other isn't a
+    meaningful cluster.  In a Bortle-3 moon-washed sky with 40 visible stars,
+    mag 2.5 IS remarkable — Castor and Pollux at the zenith absolutely deserve
+    to be called a cluster.
+
+    We set the threshold at the 30th percentile of the visible star magnitudes.
+    This means: a small component is anchored if its brightest star is in the
+    top 30% of tonight's visible stars.  The threshold naturally tightens in
+    rich skies (where the 30th-pct is dim) and relaxes in sparse skies (where
+    even the 30th-pct is a first-magnitude star).
+
+    An absolute floor of mag 1.5 is applied so that even in the densest sky a
+    genuinely prominent pair (e.g. Castor + Pollux) is never discarded.
+    """
+    if not stars:
+        return 1.5
+    mags = sorted(s.magnitude for s in stars)
+    idx  = max(0, int(len(mags) * 0.30) - 1)
+    return max(1.5, mags[idx])
+
 def fold_stars(stars: List[StarResult],
-               max_leads: int = 3) -> Tuple[List[StarCluster], List[StarResult]]:
+               max_leads: int = 3,
+               max_clusters: int = 8) -> Tuple[List[StarCluster], List[StarResult]]:
     """
     Group visible stars into perceptual clusters.
 
     Returns (clusters, lonely_stars) both sorted brightest-first.
 
-    Performance path:
-      - Stage 1 builds the full pairwise adjacency in one numpy broadcast.
-      - Stages 2-3 still use Python loops over *components* (≪ n), which is
-        fast enough since the merge pass works on O(k²) cluster pairs, not
-        O(n²) star pairs.
+    Parameters
+    ----------
+    stars        : visible StarResult objects (above horizon, visibility == VISIBLE)
+    max_leads    : brightest stars shown individually per cluster (default 3)
+    max_clusters : hard cap on the number of clusters returned.  After adaptive
+                   merging, any excess clusters are force-merged into their nearest
+                   neighbour until the count is ≤ max_clusters (default 8).
+
+    Pipeline
+    --------
+    Stage 1  — vectorized proximity graph → Union-Find components
+    Stage 2  — adaptive merge pass (merge radius scales with star density)
+    Stage 2b — minimum-size gate (demote tiny, dim components to lonely)
+    Stage 2c — forced-merge cap (collapse closest-pair until ≤ max_clusters)
+    Stage 3  — build StarCluster output objects
     """
     n = len(stars)
     if n == 0:
         return [], []
 
     # ------------------------------------------------------------------
-    # Pre-compute numpy arrays once — reused in Stage 1 and gnomonic spans
+    # Pre-compute numpy arrays once
     # ------------------------------------------------------------------
     azimuths  = np.array([s.azimuth  for s in stars], dtype=np.float64)
     altitudes = np.array([s.altitude for s in stars], dtype=np.float64)
@@ -254,15 +314,13 @@ def fold_stars(stars: List[StarResult],
     dist_matrix   = _pairwise_angular_distance(xyz)        # (n, n) degrees
     radius_matrix = _connection_radius_matrix(mags)        # (n, n) degrees
 
-    # Adjacency: connected if distance ≤ threshold (and not self)
     connected = (dist_matrix <= radius_matrix) & ~np.eye(n, dtype=bool)
 
-    # Union-Find for connected components (faster than BFS for dense graphs)
     parent = np.arange(n)
 
     def find(i: int) -> int:
         while parent[i] != i:
-            parent[i] = parent[parent[i]]   # path compression
+            parent[i] = parent[parent[i]]
             i = parent[i]
         return i
 
@@ -275,7 +333,6 @@ def fold_stars(stars: List[StarResult],
     for i, j in zip(rows.tolist(), cols.tolist()):
         union(i, j)
 
-    # Group stars by root
     from collections import defaultdict
     root_to_indices: dict = defaultdict(list)
     for i in range(n):
@@ -286,8 +343,10 @@ def fold_stars(stars: List[StarResult],
     ]
 
     # ------------------------------------------------------------------
-    # Stage 2: merge pass (operates on components, not individual stars)
+    # Stage 2: adaptive merge pass
     # ------------------------------------------------------------------
+    merge_radius = _adaptive_merge_radius(n)
+
     def _comp_brightest(comp: List[StarResult]) -> float:
         return min(s.magnitude for s in comp)
 
@@ -314,7 +373,7 @@ def fold_stars(stars: List[StarResult],
 
                 az_b, alt_b = _cluster_center(base)
                 az_o, alt_o = _cluster_center(other)
-                if angular_distance(az_b, alt_b, az_o, alt_o) <= _MERGE_RADIUS_DEG:
+                if angular_distance(az_b, alt_b, az_o, alt_o) <= merge_radius:
                     base    = base + other
                     used[j] = True
                     changed = True
@@ -324,10 +383,68 @@ def fold_stars(stars: List[StarResult],
         components = new_comps
 
     # ------------------------------------------------------------------
+    # Stage 2b: minimum-size gate
+    # Demote components that are too small and too dim to deserve a cluster
+    # entry.  The anchor threshold is computed relative to tonight's visible
+    # stars so the gate tightens in rich skies and relaxes in sparse ones.
+    #
+    # A component is kept if ANY of these hold:
+    #   (a) It has enough members to be meaningful (_MIN_CLUSTER_SIZE).
+    #   (b) Its brightest star is in the top 30% of tonight's sky — i.e. it
+    #       is a genuinely prominent pair or triplet (Castor+Pollux, the
+    #       Gemini twins, the Pointers, etc.).
+    #
+    # Note: we deliberately do NOT require has_followers (len > max_leads).
+    # A 2-star cluster with both stars as leads is still a valid cluster —
+    # the renderer already handles the zero-follower case gracefully.
+    # ------------------------------------------------------------------
+    anchor_thresh = _anchor_mag_threshold(stars)
+
+    kept:    List[List[StarResult]] = []
+    demoted: List[StarResult]       = []
+
+    for comp in components:
+        brightest       = _comp_brightest(comp)
+        has_enough_size = len(comp) >= _MIN_CLUSTER_SIZE
+        has_anchor      = brightest <= anchor_thresh
+        if has_enough_size or has_anchor:
+            kept.append(comp)
+        else:
+            demoted.extend(comp)
+
+    components = kept
+
+    # ------------------------------------------------------------------
+    # Stage 2c: forced-merge cap
+    # If we still have more clusters than max_clusters, repeatedly merge
+    # the pair of clusters whose centres are closest until we hit the cap.
+    # ------------------------------------------------------------------
+    while len(components) > max_clusters:
+        # Find the closest pair of cluster centres
+        centers = [_cluster_center(c) for c in components]
+        best_dist  = math.inf
+        best_i = 0
+        best_j = 1
+
+        for i in range(len(components)):
+            for j in range(i + 1, len(components)):
+                az_i, alt_i = centers[i]
+                az_j, alt_j = centers[j]
+                d = angular_distance(az_i, alt_i, az_j, alt_j)
+                if d < best_dist:
+                    best_dist = d
+                    best_i, best_j = i, j
+
+        # Merge j into i (remove j, expand i)
+        merged = components[best_i] + components[best_j]
+        components = [c for k, c in enumerate(components) if k != best_i and k != best_j]
+        components.append(merged)
+
+    # ------------------------------------------------------------------
     # Stage 3: build output objects
     # ------------------------------------------------------------------
     clusters: List[StarCluster] = []
-    lonely:   List[StarResult]  = []
+    lonely:   List[StarResult]  = list(demoted)   # start with demoted stars
 
     for comp in components:
         comp.sort(key=lambda s: s.magnitude)
@@ -339,10 +456,12 @@ def fold_stars(stars: List[StarResult],
         az_c, alt_c   = _cluster_center(comp)
         width, height = _gnomonic_span(comp, az_c, alt_c)
         num_leads     = min(max_leads, len(comp))
+        leads         = comp[:num_leads]
+        followers     = comp[num_leads:]          # disjoint from leads — FIX
 
         clusters.append(StarCluster(
-            stars=comp,
-            leads=comp[:num_leads],
+            stars=followers,
+            leads=leads,
             center_az=az_c,
             center_alt=alt_c,
             width=width,

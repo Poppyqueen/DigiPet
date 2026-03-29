@@ -8,7 +8,7 @@ No logic here — just shapes of data.
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 
 # ---------------------------------------------------------------------------
@@ -111,6 +111,23 @@ class StarResult:
     visibility:          VisibilityState = VisibilityState.BELOW_LIMIT
     cloud_opacity:       float = 0.0    # raw opacity, useful for clustering
 
+@dataclass
+class StarCluster:
+    stars:      List[StarResult]
+    leads:      List[StarResult]
+    center_az:  float
+    center_alt: float
+    width:      float
+    height:     float
+
+
+    @property
+    def total_count(self) -> int:
+        return len(self.stars) + len(self.leads)
+
+    @property
+    def brightest_magnitude(self) -> float:
+        return self.leads[0].magnitude if self.leads else 99.0
 
 @dataclass
 class PlanetResult:

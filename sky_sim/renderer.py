@@ -7,7 +7,22 @@ Updated to work with the new visibility properties and SunResult structure.
 
 from __future__ import annotations
 from collections import Counter
-from .types import SkySnapshot, SkyConditionNarrative, BortleClass, TwilightPhase, VisibilityState, EclipseType
+
+from typing import List
+from enum import Enum
+import re
+
+
+
+from .types import (SkySnapshot, 
+                    WeatherSnapshot, SkyConditionNarrative,
+                    VisibilityState, AtmosphereScores, BortleClass,
+                    MoonResult, SunResult, TwilightPhase, 
+                    EclipseResult, EclipsePhase, EclipseType,
+                    PlanetResult, 
+                    StarResult, StarCluster
+
+                    )
 from .clustering import fold_stars
 
 
@@ -17,6 +32,22 @@ from .clustering import fold_stars
 
 _CARDINAL = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
              "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+class StarLevel(str, Enum):
+    FULL = "Full"
+    COMPACT = "Compact"
+# Formatting
+
+def _format_pct(val: float, precision: int = 0) -> str:
+    """Converts a 0-1 float to a percentage string."""
+    return f"{val:.{precision}%}"
+
+def _humanize(text: str) -> str:
+    """Converts snake_case or CamelCase into 'Title Case Text'."""
+    # Split camelCase and replace underscores with spaces
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', text)
+    s2 = re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1)
+    return s2.replace('_', ' ').title().strip()
 
 def _cardinal(deg: float) -> str:
     """Converts degrees to a 16-point cardinal direction string."""
@@ -32,193 +63,174 @@ def _format_pos(az: float, alt: float) -> str:
     """Standard format for Azimuth and Altitude."""
     return f"{_cardinal(az)} (az {az:.0f}°, alt {alt:.0f}°)"
 
+def _format_shorthand(az: float, alt: float) -> str:
+    return  f"({_cardinal(az)} {alt:.0f}°)"
+
+# Rendering
+
+def _star_vis(obj: StarResult, level: StarLevel) -> str:
+
+    if obj.visibility == VisibilityState.VISIBLE:
+        if level == StarLevel.FULL:
+            return f"Pos: {_format_pos(obj.azimuth,obj.altitude)}, Mag: {obj.magnitude}"
+        else:
+            return f"Pos: {_format_shorthand(obj.azimuth, obj.altitude)}, Mag: {obj.magnitude}"
+
+
+def _obj_vis(obj: PlanetResult | MoonResult | SunResult) -> str:
+    strings = []
+
+    if obj.visibility == VisibilityState.CLOUDED:
+        strings.append(f"   - Clouded")
+        strings.append(f"   - Position: {_format_shorthand(obj.azimuth, obj.altitude)}")
+
+    elif obj.visibility == VisibilityState.VISIBLE:
+        strings.append(f"   - Visible")
+        strings.append(f"   - Effective Magnitude: {obj.effective_magnitude:.2f}.")
+        strings.append(f"   - Position: {_format_pos(obj.azimuth,obj.altitude)}")
+
+    strings.append(f"   - Cloud Occlusion: {_format_pct(obj.cloud_opacity)}")
+
+    return '\n'.join(strings)
+
+def _render_atmosphere(snap: SkySnapshot) -> str:
+    atmos : AtmosphereScores = snap.atmosphere
+    wx : WeatherSnapshot = snap.weather
+
+    strings = []
+    strings.append(f"Atmosphere Quality: {_format_pct(atmos.overall_quality)}")
+    strings.append(f"Local cloud coverage: {_format_pct(snap.cloud_coverage_simulated)}")
+    strings.append(f"Cloud Layers\n     - Low {wx.cloud_cover_low:.0f}% | Mid {wx.cloud_cover_mid:.0f}% | High {wx.cloud_cover_high:.0f}%")
+    return '\n'.join(strings)
+
+def _render_snm(snap: SkySnapshot) -> str:
+    s = snap.sun
+    m = snap.moon
+    strings = []
+
+    # Sun display
+    if s.above_horizon:
+        strings.append(f"The sun is {_obj_vis(s)}")
+
+        if s.visibility == VisibilityState.VISIBLE:
+            strings.append(f"Twilight Phase: {_humanize(s.twilight_phase)}")
+
+    # Moon display
+    if m.above_horizon:
+        strings.append(f"The moon is {_obj_vis(m)}")
+
+        if m.visibility == VisibilityState.VISIBLE:
+            trend = "Waxing" if m.waxing else "Waning"
+            strings.append(f"Moon Phase Trend: {trend}")
+            strings.append(f"Moon current illumination: {_format_pct(m.illumination)}")
+            if m.magnitude_impact > 0.5:
+                strings.append(f"  ⚠ Lunar Glow  +{m.magnitude_impact:.1f} mag wash-out")
+    return '\n'.join(strings)
+
+def _render_eclipse(snap: SkySnapshot) -> str:
+    eclipse : EclipseResult = snap.eclipse
+    strings = []
+    if not eclipse.eclipse_type == EclipseType.NONE and eclipse.visible_from_here == True:
+        strings.append(f"Eclipse event!")
+        strings.append(f"Eclipse info: {eclipse.note}\nObscuration: {eclipse.obscuration}")
+
+    return '\n'.join(strings)
+
+
+def _render_planets(snap: SkySnapshot) -> str:
+    strings = []
+    planets = snap.planets
+    
+    is_any_visible = any(p.visibility == VisibilityState.VISIBLE for p in planets)
+    
+    if is_any_visible:
+        strings.append("Visible Planets:")
+        
+        for p in planets:
+            if p.visibility == VisibilityState.VISIBLE:
+                strings.append(f"{_humanize(p.name)} is visible!")
+                strings.append(f"{_obj_vis(p)}")
+
+    return '\n'.join(strings)
+
+def _render_lonely(lonely_stars: List[StarResult]) -> str:
+    strings = []
+
+    is_any_visible = any(s.visibility == VisibilityState.VISIBLE for s in lonely_stars)
+    
+    if is_any_visible:
+        strings.append("Lonely Stars Visible:")
+        for s in lonely_stars:
+            if s.visibility == VisibilityState.VISIBLE:
+                strings.append(f"{s.name} {_star_vis(s, StarLevel.FULL)}")
+
+    return '\n'.join(strings)
+
+def _render_cluster(star_cluster: StarCluster) -> str:
+    strings = []
+
+    leads : List[StarResult] = star_cluster.leads
+    followers : List[StarResult] = star_cluster.stars
+
+    bag = leads + followers
+
+    is_any_visible = any(s.visibility == VisibilityState.VISIBLE for s in bag)
+
+    if is_any_visible:
+        strings.append(f"Cluster | Total Stars: {star_cluster.total_count} | Center: {_format_shorthand(star_cluster.center_az, star_cluster.center_alt)} | Span: {star_cluster.width:.1f}°W × {star_cluster.height:.1f}°H")
+
+        if leads:
+            strings.append(f"Cluster Star Leads:")
+            for l in leads:
+                strings.append(f"   {l.name} {_star_vis(l, StarLevel.FULL)}")
+
+        if followers:
+            strings.append(f"Cluster Followers:")
+            LIMIT = 5
+            for f in followers[:LIMIT]:
+                strings.append(f"   {f.name}, {_star_vis(f, StarLevel.COMPACT)}")
+            if len(followers) > LIMIT:
+                strings.append(f"   ... and {len(followers) - LIMIT} more followers.")
+
+    return '\n'.join(strings)
+    
+    
+def _render_stars(snap: SkySnapshot) -> str:
+    total_visible = snap.total_stars_visible
+    visible_stars = snap.stars_visible
+
+    strings = []
+
+    if visible_stars:
+        strings.append(f"Total Visible Stars: {total_visible}")
+        clusters, lonely = fold_stars(visible_stars)
+
+        if clusters:
+            for c in clusters:
+                strings.append(_render_cluster(c))
+        if lonely:
+            strings.append(_render_lonely(lonely))
+
+    return '\n'.join(strings)
 
 # ---------------------------------------------------------------------------
 # Main Render Function
 # ---------------------------------------------------------------------------
 
+
 def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
-    lines = []
-    w = lines.append   # Shorthand helper
-
-    # --- HEADER ---
-    w("=" * 65)
-    w(f"  NIGHT SKY  |  {snap.latitude:.4f}°, {snap.longitude:.4f}° ({snap.timezone})")
-    w(f"  {snap.local_time}")
-    w("=" * 65)
-
-    # --- CONDITIONS ---
-    w("")
-    w("CONDITIONS")
-    # condition is now a SkyConditionNarrative Enum
-    status_text = snap.condition.value.replace('_', ' ').title()
-    w(f"  Status:       {status_text}")
-    w(f"  Bortle Class: {snap.bortle_class.value} ({snap.bortle_class.name.replace('_', ' ').title()})")
-    w(f"  Limit Mag:    {snap.limiting_magnitude:.2f}  (Sky Coverage: {snap.cloud_coverage_simulated * 100:.0f}%)")
-    w("")
-
-    # --- ATMOSPHERE QUALITY ---
-    atm = snap.atmosphere
-    w("ATMOSPHERE QUALITY")
-    w(f"  Transparency  {_quality_bar(atm.transparency)}  {atm.transparency:.2f}")
-    w(f"  Seeing        {_quality_bar(atm.seeing)}  {atm.seeing:.2f}")
-    w(f"  Fog Risk      {_quality_bar(atm.fog_risk)}  {atm.fog_risk:.2f}  "
-      f"{'⚠ DEW/FOG FORMING' if atm.fog_risk > 0.6 else ''}")
+    """The high-level orchestrator."""
+    sections = [
+        _render_atmosphere(snap),
+        "",
+        _render_snm(snap),
+        "",
+        _render_eclipse(snap),
+        f"Final Effective MAG: {snap.limiting_magnitude:.2f} limit",
+        _render_planets(snap),
+        "",
+        _render_stars(snap)
+    ]
     
-    # Sun Status (using explicit SunResult)
-    sun = snap.sun
-    sun_phase = sun.twilight_phase.value.replace('_', ' ').title()
-    w(f"  Sun: {_format_pos(sun.azimuth,sun.altitude)} ({sun_phase})")
-    w(f"{sun.visibility}")
-    w(f"{sun.cloud_opacity}")
-    if sun.magnitude_impact > 0.1:
-        w(f"  ⚠ Sky Glow    +{sun.magnitude_impact:.1f} mag loss from sunlight")
-    
-    w(f"  Overall       {_quality_bar(atm.overall_quality)}  {atm.overall_quality:.2f}")
-    w("")
-
-    # --- WEATHER SUMMARY ---
-    wx = snap.weather
-    w("WEATHER")
-    w(f"  Cloud Layers  Low {wx.cloud_cover_low:.0f}% | Mid {wx.cloud_cover_mid:.0f}% | High {wx.cloud_cover_high:.0f}%")
-    w(f"  Visibility    {wx.visibility_m / 1000:.1f} km")
-    w(f"  Humidity      {wx.humidity:.0f}% (Dew Point Spread: {wx.dew_point_spread:.1f}°C)")
-    w(f"  Wind (low)    {wx.wind_speed_10m:.0f} km/h {_cardinal(wx.wind_direction_10m)}")
-    
-    stability = 'Stable' if wx.cape < 300 else 'Unstable' if wx.cape < 1000 else 'Very Unstable'
-    w(f"  Air Mass      {wx.cape:.0f} J/kg CAPE ({stability})")
-    w("")
-
-    # --- MOON ---
-    moon = snap.moon
-    moon_vis = "ABOVE HORIZON" if moon.above_horizon else "BELOW HORIZON"
-    w(f"MOON {moon_vis}")
-    w(f"{moon.visibility}")
-
-    
-    trend = "Waxing" if moon.waxing else "Waning"
-    w(f"  {trend} Phase — {moon.illumination * 100:.1f}% illuminated")
-    
-    if moon.above_horizon:
-        w(f"  Position:     {_format_pos(moon.azimuth, moon.altitude)}")
-        if moon.magnitude_impact > 0.5:
-            w(f"  ⚠ Lunar Glow  +{moon.magnitude_impact:.1f} mag wash-out")
-    w("")
-
-    # --- Eclipse ----
-
-    eclipse = snap.eclipse
-    if not eclipse.eclipse_type == EclipseType.NONE and eclipse.visible_from_here == True:
-        w(f"Eclipse info: {eclipse.note}\nObscuration: {eclipse.obscuration}")
-
-# --- PLANETS ---
-    if snap.planets:
-        w("PLANETS")
-        for p in snap.planets:
-            # Determine primary status string
-            status = "VISIBLE" if p.visibility == VisibilityState.VISIBLE else "OBSCURED"
-            
-            # Identify the reason for obscuration via flags
-            flag = ""
-            if p.visibility == VisibilityState.CLOUDED:
-                # Optional: Show opacity % if you want more detail in the text
-                flag = f"[CLOUDED {p.cloud_opacity*100:.0f}%]"
-            elif p.visibility == VisibilityState.BELOW_LIMIT:
-                flag = f"[TOO FAINT (eff: {p.effective_magnitude:+.1f})]"
-
-            # Standardized line format
-            w(f"  {p.name:<10} mag {p.magnitude:+.1f}  "
-              f"{_format_pos(p.azimuth, p.altitude)}  {status} {flag}")
-        w("")
-
-    # --- STARS VISIBLE ---
-    # Using the new snap.total_stars_visible property
-    w(f"STARS VISIBLE ({snap.total_stars_visible} of {snap.stars_above_horizon} above horizon)")
-    
-    # Using the new snap.stars_visible property
-    visible_list = snap.stars_visible
-    if visible_list:
-        clusters, lonely = fold_stars(visible_list)
-
-        if clusters:
-            w("  STAR GROUPS & FORMATIONS")
-            for c in clusters:
-                # 1. Handle the names and metadata line
-                lead_names = [s.name or "Unnamed" for s in c.leads]
-                if len(lead_names) > 1:
-                    names_str = ", ".join(lead_names[:-1]) + f", & {lead_names[-1]}"
-                else:
-                    names_str = lead_names[0]
-
-                followers = c.stars[len(c.leads):]
-                follower_text = ""
-                if followers:
-                    min_mag = min(s.magnitude for s in followers)
-                    max_mag = max(s.magnitude for s in followers)
-                    follower_text = f" (+{len(followers)} others, mag {min_mag:.1f} to {max_mag:.1f})"
-
-                consts = [s.constellation for s in c.stars if s.constellation and str(s.constellation).lower() != 'nan']
-                const_tag = ""
-                if consts:
-                    top_const, _ = Counter(consts).most_common(1)[0]
-                    const_tag = f" [{top_const}]"
-
-                # Output Header Line
-                w(f"    • {names_str}{follower_text}{const_tag}")
-
-                # 2. Add the Lead Star Position Line (First lead only)
-                first_lead = c.leads[0]
-                w(f"      {first_lead.name or 'Star'}: {_format_pos(first_lead.azimuth, first_lead.altitude)}")
-
-                # 3. Add the Shorthand Center/Span Line
-                # Format: (CARDINAL ALT°)
-                center_short = f"({_cardinal(c.center_az)} {c.center_alt:.0f}°)"
-                w(f"      Center: {center_short} | Span: {c.width:.1f}°W × {c.height:.1f}°H")
-
-        if lonely:
-            w("\n  ISOLATED BRIGHT POINTS")
-            # Show top brightest lonely stars
-            for s in sorted(lonely, key=lambda x: x.magnitude)[:8]:
-                # Line 1: Name and Magnitude
-                name = s.name or 'Unnamed Star'
-                w(f"    • {name} — {s.magnitude:+.2f} mag")
-                
-                # Line 2: Full Position Notation
-                # Format: SW (az 214°, alt 22°)
-                pos_line = _format_pos(s.azimuth, s.altitude)
-                
-                # Include Constellation if known
-                const_tag = f" [{s.constellation}]" if s.constellation and str(s.constellation).lower() != 'nan' else ""
-                
-                w(f"      {pos_line}{const_tag}")
-    else:
-        # Narrative context for why nothing is visible
-        if snap.sun.above_horizon:
-            w("  None — Sunlight prevents naked-eye star visibility.")
-        elif snap.weather.cloud_cover_total > 95:
-            w("  None — Heavy cloud cover obscuring all stars.")
-        else:
-            w("  None — Local light pollution or twilight preventing visibility.")
-    w("")
-
-    # --- OBSCURATION INFO ---
-    if not compact:
-        clouded = snap.stars_clouded
-        if clouded:
-            w(f"OBSCURED BY CLOUDS ({len(clouded)})")
-            # Show top 5 brightest stars currently blocked
-            for s in sorted(clouded, key=lambda x: x.magnitude)[:5]:
-                w(f"  [!] {s.name:<14} mag {s.magnitude:+.2f} ({_cardinal(s.azimuth)})")
-            w("")
-        
-        below_lim = snap.stars_below_limit
-        if below_lim:
-            w(f"BELOW VISIBILITY LIMIT ({len(below_lim)})")
-            w(f"  Fainter than {snap.limiting_magnitude:.2f} mag due to conditions.")
-            w("")
-
-    # --- FOOTER ---
-    w(f"  Sim Tick: #{snap.simulation_tick}")
-    w("=" * 65)
-
-    return "\n".join(lines)
+    # Filter out empty strings if a section (like Eclipse) returns nothing
+    return "\n".join([s for s in sections if s.strip()])

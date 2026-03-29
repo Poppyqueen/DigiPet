@@ -25,6 +25,7 @@ from .types        import (
     BortleClass,
     DarkAdaptation,
     SkyConditionNarrative,
+    StarCluster
 )
 from .sky_logger import SkyLogger
 
@@ -42,4 +43,5 @@ __all__ = [
     "BortleClass",
     "DarkAdaptation",
     "SkyConditionNarrative",
+    "StarCluster"
 ]
