@@ -63,6 +63,9 @@ class XenoCantoProvider(OutdoorsProvider):
         self._selection_id: int                 = 0
         self._lock                              = threading.Lock()
 
+        self._refreshing = False  
+
+
         _purge_expired_filesystem_cache(".cache/xeno_canto_audio")
         print(f"[XenoCantoProvider] Ready. lat={xeno_canto_loc.lat}, "
               f"lon={xeno_canto_loc.long}, "
@@ -236,12 +239,21 @@ class XenoCantoProvider(OutdoorsProvider):
             
         threading.Thread(target=_download_all, daemon=True).start()
 
+
     def _ensure_selection(self) -> None:
         current_tag = get_time_tag_from_now() or "morning"
         with self._lock:
             needs_refresh = (not self._active_selection or self._active_time_tag != current_tag)
+            if needs_refresh:
+                if self._refreshing:
+                    return  # another thread is already refreshing, bail out
+                self._refreshing = True
         if needs_refresh:
-            self._refresh_selection()
+            try:
+                self._refresh_selection()
+            finally:
+                with self._lock:
+                    self._refreshing = False
 
     def _fetch_sound_bytes(self, recording: dict) -> tuple[bytes, int] | None:
         audio_bytes = download_audio(recording)
