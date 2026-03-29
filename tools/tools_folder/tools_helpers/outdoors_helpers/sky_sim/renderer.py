@@ -95,12 +95,10 @@ def _obj_vis(obj: PlanetResult | MoonResult | SunResult) -> str:
 
 def _render_atmosphere(snap: SkySnapshot) -> str:
     atmos : AtmosphereScores = snap.atmosphere
-    wx : WeatherSnapshot = snap.weather
 
     strings = []
     strings.append(f"Atmosphere Quality: {_format_pct(atmos.overall_quality)}")
     strings.append(f"Local cloud coverage: {_format_pct(snap.cloud_coverage_simulated)}")
-    strings.append(f"Cloud Layers\n     - Low {wx.cloud_cover_low:.0f}% | Mid {wx.cloud_cover_mid:.0f}% | High {wx.cloud_cover_high:.0f}%")
     return '\n'.join(strings)
 
 def _render_snm(snap: SkySnapshot) -> str:
@@ -217,8 +215,23 @@ def _render_stars(snap: SkySnapshot) -> str:
 # Main Render Function
 # ---------------------------------------------------------------------------
 
+def render_limited(snap: SkySnapshot) -> str:
+    """The high-level orchestrator."""
+    show_percentage = 0.15 # Shot 15% of the visible stars, rounded to a minimum of 1
+    num_to_show = max(1, round(snap.total_stars_visible * show_percentage))
+    sections = [
+        # current twilight
+        # eclipse?
+        f"It currently is: {_humanize(snap.sun.twilight_phase)}",
+        _render_eclipse(snap),
+        f"You can see at least {num_to_show} stars tonight." if snap.total_stars_visible > 0 else "You can't see any astronomical objects from here right now."
+    ]
+    
+    # Filter out empty strings if a section (like Eclipse) returns nothing
+    return "\n".join([s for s in sections if s.strip()])
 
-def render_snapshot(snap: SkySnapshot, compact: bool = False) -> str:
+
+def render_snapshot(snap: SkySnapshot) -> str:
     """The high-level orchestrator."""
     sections = [
         _render_atmosphere(snap),

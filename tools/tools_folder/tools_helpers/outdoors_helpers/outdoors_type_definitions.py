@@ -18,8 +18,8 @@
 OUTDOORS_TYPES: list[str] = [
     "earth-weather",
     "ocean-views",
-    "xeno-canto"
-    # "astronomical",     # future: star/moon/planet data
+    "xeno-canto",
+    "earth-astro-views",
     # "space-traveler",   # future: space travel data
     # "world-camera",     # future: live public camera feeds → text perception
 ]

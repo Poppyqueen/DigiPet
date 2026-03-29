@@ -12,7 +12,7 @@ Public API:
     BortleClass         — enum: 1–9
 """
 from .simulator    import NightSkySimulator
-from .renderer     import render_snapshot
+from .renderer     import render_snapshot, render_limited
 from .types        import (
     SkySnapshot,
     WeatherSnapshot,
@@ -43,5 +43,6 @@ __all__ = [
     "BortleClass",
     "DarkAdaptation",
     "SkyConditionNarrative",
-    "StarCluster"
+    "StarCluster",
+    "render_limited",
 ]
