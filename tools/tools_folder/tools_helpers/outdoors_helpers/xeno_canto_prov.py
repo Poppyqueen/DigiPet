@@ -1,5 +1,5 @@
 """
-provider.py
+xeno_canto_prov.py
 ------------------
 OutdoorsProvider implementation for Xeno-canto wildlife sounds.
 
@@ -35,6 +35,7 @@ from .xeno_canto_system.cache import (
 )
 from .xeno_canto_system.engine import (
     WeatherContext,
+    AbundanceContext,
     _ticks_for_recording,
     _tokenise_type,
     _threshold_for,
@@ -48,11 +49,13 @@ class XenoCantoProvider(OutdoorsProvider):
     outdoors_type = "xeno-canto"
     tick_every: int = 1
 
-    def __init__(self, xeno_canto_loc: XenoCantoLoc, open_meteo=None):
+    def __init__(self, xeno_canto_loc: XenoCantoLoc, open_meteo=None, wildlife_abundance: int = 10):
         print("[XenoCantoProvider] Initialising provider.")
         self._loc                               = xeno_canto_loc
         self._open_meteo                        = open_meteo
         self._weather_context: WeatherContext   = WeatherContext()
+        self._abundance: AbundanceContext       = AbundanceContext(level=wildlife_abundance)
+
         self._active_selection: list[dict]      =[]
         self._selection_index: int              = 0
         self._active_time_tag: str | None       = None
@@ -65,11 +68,11 @@ class XenoCantoProvider(OutdoorsProvider):
 
         self._refreshing = False  
 
-
         _purge_expired_filesystem_cache(".cache/xeno_canto_audio")
         print(f"[XenoCantoProvider] Ready. lat={xeno_canto_loc.lat}, "
               f"lon={xeno_canto_loc.long}, "
-              f"weather={'yes' if open_meteo else 'no'}")
+              f"weather={'yes' if open_meteo else 'no'}, "
+              f"Bortle={self._abundance.level}/9")
         
     def _display_attribution_message(self, recording: dict) -> None:
         """Prints a beautifully formatted, clickable attribution block to the terminal."""
@@ -207,8 +210,8 @@ class XenoCantoProvider(OutdoorsProvider):
 
         recordings     = self._loc.get_recordings()
         filtered       = _filter_recordings(recordings, time_tag)
-        selection_size = _selection_size_for(time_tag, self._weather_context)
-        selection      = _weighted_sample(filtered, time_tag, selection_size, self._weather_context)
+        selection_size = _selection_size_for(time_tag, self._weather_context, self._abundance)
+        selection      = _weighted_sample(filtered, time_tag, selection_size, self._weather_context, self._abundance)
 
         with self._lock:
             self._active_selection = selection
@@ -282,7 +285,7 @@ class XenoCantoProvider(OutdoorsProvider):
         r          = selection[index % len(selection)]
         raw_type   = r.get("type") or ""
         tokens     = _tokenise_type(raw_type)
-        threshold  = _threshold_for(_ACTIVITY_THRESHOLD_LIMITED, time_tag, 1/6, tokens, w)
+        threshold  = _threshold_for(_ACTIVITY_THRESHOLD_LIMITED, time_tag, 1/6, tokens, w, self._abundance)
 
         if activity_level > threshold:
             if w.is_raining:
@@ -317,7 +320,7 @@ class XenoCantoProvider(OutdoorsProvider):
         w         = self._weather_context
         r         = selection[index % len(selection)]
         tokens    = _tokenise_type(r.get("type", ""))
-        threshold = _threshold_for(_ACTIVITY_THRESHOLD_FULL, time_tag, 1/4, tokens, w)
+        threshold = _threshold_for(_ACTIVITY_THRESHOLD_FULL, time_tag, 1/4, tokens, w, self._abundance)
 
         if activity_level > threshold:
             if w.is_raining:

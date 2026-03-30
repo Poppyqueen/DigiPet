@@ -1,3 +1,4 @@
+# engine.py
 from dataclasses import dataclass
 import random
 from utils.loc_datetime import datetime
@@ -60,6 +61,64 @@ class WeatherContext:
         """
         return self.wind_multiplier
 
+
+@dataclass
+class AbundanceContext:
+    """
+    Encodes the wildlife density of the environment on a 1–9 Bortle-style scale.
+
+    1  = deep urban core — a single pigeon, occasional starling, almost nothing.
+    5  = suburban / degraded habitat — moderate variety, gaps in activity.
+    9 = pristine wilderness / rainforest — full biodiversity, rich and constant.
+
+    Abundance is an environmental constant (set at world-creation time), not a
+    dynamic reading — unlike weather it never changes mid-session.  It influences
+    three levers through the same pipeline weather does:
+
+      selection_size_multiplier  — how many species are in the active pool
+      silence_threshold_multiplier — how likely the environment is "quiet"
+                                     (lower abundance → threshold easier to exceed
+                                     → silence fires more often)
+      diversity_weight           — 0.0..1.0 passed to _weighted_sample to control
+                                   how hard species-deduplication is enforced.
+                                   Bortle 9 = full diversity pass (many species).
+                                   Bortle 1  = no diversity pass (dominant species
+                                   repeat, just like a real impoverished habitat).
+    """
+    level: int = 9   # 1–9, clamped on init
+
+    def __post_init__(self) -> None:
+        self.level = max(1, min(9, self.level))
+
+    @property
+    def _t(self) -> float:
+        """Normalised position 0.0 (level=1) → 1.0 (level=9)."""
+        return (self.level - 1) / 8.0
+
+    @property
+    def selection_size_multiplier(self) -> float:
+        """
+        Pool size: 0.15 (Bortle 1) → 1.0 (Bortle 9).
+        At level 1 a morning pool of 10 collapses to 1–2 recordings.
+        """
+        return 0.15 + 0.85 * self._t
+
+    @property
+    def silence_threshold_multiplier(self) -> float:
+        """
+        Applied to the base activity threshold.  Values < 1.0 lower the bar
+        for triggering 'nothing heard', making silence more common at low abundance.
+        0.35 (Bortle 1) → 1.0 (Bortle 9).
+        """
+        return 0.35 + 0.65 * self._t
+
+    @property
+    def diversity_weight(self) -> float:
+        """
+        0.0 (Bortle 1, no deduplication) → 1.0 (Bortle 9, full deduplication).
+        Controls species-diversity enforcement in _weighted_sample.
+        """
+        return self._t
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +272,7 @@ def _threshold_for(
     default: float,
     tokens: list[str],
     weather: WeatherContext,
+    abundance: "AbundanceContext | None" = None,
 ) -> float:
     """
     Compute the effective activity threshold for a specific recording.
@@ -223,9 +283,14 @@ def _threshold_for(
     being suppressed or boosted uniformly.
 
     Condition modifiers are applied multiplicatively in priority order:
-      rain (binary) → wind (if above threshold)
-    Each modifier is derived from the recording's type tokens via
+      rain (binary) -> wind (if above threshold) -> abundance (Bortle scale)
+
+    Each weather modifier is derived from the recording's type tokens via
     _apply_condition_modifier(), so compound types are handled correctly.
+
+    Abundance applies a flat multiplier: low abundance lowers the threshold,
+    making the activity_level > threshold condition easier to satisfy — i.e.
+    silence fires more often. Bortle 1 -> x0.35; Bortle 9 -> x1.0 (no effect).
     """
     threshold = base_table.get(time_tag, default)
 
@@ -234,6 +299,9 @@ def _threshold_for(
 
     if (weather.wind_speed or 0.0) > _SELECTION_SIZE_WIND_THRESHOLD:
         threshold *= _apply_condition_modifier(tokens, _WIND_THRESHOLD_MODIFIERS)
+
+    if abundance is not None:
+        threshold *= abundance.silence_threshold_multiplier
 
     return threshold
 
@@ -363,7 +431,19 @@ def _weighted_sample(
     time_tag: str,
     k: int,
     weather: WeatherContext | None = None,
+    abundance: "AbundanceContext | None" = None,
 ) -> list[dict]:
+    """
+    Draw k recordings by weighted score, with optional species-diversity enforcement.
+
+    diversity_weight (from AbundanceContext) controls how hard deduplication is applied:
+      Bortle 9 (diversity_weight=1.0) — full species-diversity pass, as before.
+      Bortle 5  (diversity_weight=0.44) — probabilistic: each candidate is kept in
+                the diversity pass only if random() < diversity_weight, otherwise it
+                flows through weighted sampling as-is.
+      Bortle 1  (diversity_weight=0.0) — no diversity pass at all. Dominant/high-scored
+                species repeat freely, exactly as a species-poor habitat sounds.
+    """
     if not recordings:
         print("[XenoCantoProvider] Weighted sample: no recordings.")
         return []
@@ -389,13 +469,28 @@ def _weighted_sample(
         remainder = [r for r in recordings if r.get("id", "") not in seen_ids]
         candidates.extend(remainder[: k - len(candidates)])
 
+    diversity_weight = abundance.diversity_weight if abundance is not None else 1.0
+
+    if diversity_weight <= 0.0:
+        # Bortle 1 — no diversity enforcement whatsoever. Take the first k candidates
+        # directly from weighted sampling. The same sparrow will repeat.
+        result = candidates[:k]
+        unique_species = len({r.get("en", "").strip() or r.get("id", "") for r in result})
+        print(f"[XenoCantoProvider] Weighted sample: drew {len(result)} from "
+              f"{len(recordings)} candidates ({unique_species} unique species, "
+              f"diversity enforcement: none, Bortle={abundance.level if abundance else '?'}).")
+        return result
+
     seen_species: set[str]  = set()
     diverse:      list[dict] = []
     overflow:     list[dict] = []
     for r in candidates:
         sp = r.get("en", "").strip() or r.get("id", "")
-        if sp not in seen_species:
-            seen_species.add(sp)
+        # Probabilistic deduplication: at full weight (1.0) always deduplicate;
+        # at partial weight, sometimes let a repeat species slip through.
+        if sp not in seen_species or random.random() >= diversity_weight:
+            if sp not in seen_species:
+                seen_species.add(sp)
             diverse.append(r)
         else:
             overflow.append(r)
@@ -405,8 +500,10 @@ def _weighted_sample(
     while len(diverse) < k and overflow:
         diverse.append(overflow.pop(0))
 
+    unique_species = len({r.get("en", "").strip() or r.get("id", "") for r in diverse})
     print(f"[XenoCantoProvider] Weighted sample: drew {len(diverse)} from "
-          f"{len(recordings)} candidates ({len(seen_species)} unique species).")
+          f"{len(recordings)} candidates ({unique_species} unique species, "
+          f"diversity_weight={diversity_weight:.2f}, Bortle={abundance.level if abundance else '?'}).")
     return diverse
 
 
@@ -415,15 +512,27 @@ def _weighted_sample(
 # Weather-aware selection size
 # ---------------------------------------------------------------------------
 
-def _selection_size_for(time_tag: str, weather: WeatherContext) -> int:
+def _selection_size_for(
+    time_tag: str,
+    weather: WeatherContext,
+    abundance: "AbundanceContext | None" = None,
+) -> int:
     """
     Compute how many recordings to include in the active selection.
 
-    Base size comes from _SELECTION_SIZE_BY_TAG (or default). Bad weather
-    shrinks the pool: rain suppresses most species, so a smaller selection
-    better reflects reality than sampling the same N with lower scores.
-    Wind applies a milder shrink above the threshold speed.
-    Both factors apply multiplicatively if conditions coincide.
+    Base size comes from _SELECTION_SIZE_BY_TAG (or default). Two independent
+    axes then shrink the pool multiplicatively:
+
+      Weather  — rain suppresses most species; strong wind masks delicate calls.
+                 Both factors apply multiplicatively if conditions coincide.
+
+      Abundance (Bortle scale) — low abundance means fewer species are present
+                 at all, so a smaller pool better reflects reality than sampling
+                 the same N with lower scores. Bortle 9: full pool. Bortle 1:
+                 15% of the pool, potentially just 1-2 recordings.
+
+    The floor is 1, not 3 — a deep urban core genuinely may have only one
+    representative species audible.
     """
     size = _SELECTION_SIZE_BY_TAG.get(time_tag, _SELECTION_SIZE_DEFAULT)
 
@@ -433,11 +542,15 @@ def _selection_size_for(time_tag: str, weather: WeatherContext) -> int:
     if (weather.wind_speed or 0.0) > _SELECTION_SIZE_WIND_THRESHOLD:
         size = round(size * _SELECTION_SIZE_WIND_FACTOR)
 
-    # Never drop below 3 — need enough variety for bag-shuffle to be meaningful
-    size = max(3, size)
+    if abundance is not None:
+        size = round(size * abundance.selection_size_multiplier)
 
+    size = max(1, size)
+
+    bortle_str = f"Bortle={abundance.level}/9" if abundance is not None else "Bortle=n/a"
     print(f"[XenoCantoProvider] Selection size: {size} "
-          f"(tag={time_tag!r} rain={'yes' if weather.is_raining else 'no'} "
+          f"(tag={time_tag!r} {bortle_str} "
+          f"rain={'yes' if weather.is_raining else 'no'} "
           f"wind={weather.wind_speed:.1f}km/h)")
     return size
 
@@ -468,4 +581,3 @@ def _build_grp_hint(selection: list[dict]) -> str:
     if len(groups) == 2:
         return f"{groups[0]} and {groups[1]}"
     return ", ".join(groups[:-1]) + f", and {groups[-1]}"
-

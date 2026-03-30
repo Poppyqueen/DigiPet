@@ -60,7 +60,9 @@ class OutdoorsPerception:
             from utils.xeno_canto_api import XenoCantoLoc
             from tools.tools_folder.tools_helpers.outdoors_helpers.xeno_canto_prov import XenoCantoProvider
             self.xeno_canto = XenoCantoLoc(self.lat, self.long, api_key=canto_key)
-            self._register_provider(XenoCantoProvider(self.xeno_canto, self.open_meteo))
+
+            wildlife_abundance = self.config_manager.get_config("outdoors_perception", "xenocanto_abundance")
+            self._register_provider(XenoCantoProvider(self.xeno_canto, self.open_meteo, wildlife_abundance=wildlife_abundance))
 
         if self.config_manager.get_config("outdoors_perception", "enable_astro_views"): # Add flag or something for the sky thing
             from .tools_helpers.outdoors_helpers.sky_provider import EarthAstroViews

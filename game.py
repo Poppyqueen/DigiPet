@@ -34,7 +34,7 @@ from pygame_runtime.workers import start_chatbot_request, start_lore_panel_refre
 # Configuration
 # ---------------------------------------------------------------------------
 
-GAME_MODE = "user_player"
+GAME_MODE = "user_player"   # Options: "ai_player", "user_player", "mock"
 # Options: "ai_player"   — autonomous AI agent controls the pet
 #          "user_player" — human types commands directly
 #

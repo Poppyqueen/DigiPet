@@ -18,10 +18,10 @@ _MAX_TICKS_PER_RECORDING: int     = 5
 
 # Base selection size by time tag — dawn chorus warrants a larger pool.
 _SELECTION_SIZE_BY_TAG: dict[str, int] = {
-    "morning": 10,
-    "noon": 4,
+    "morning": 12,
+    "noon": 6,
 }
-_SELECTION_SIZE_DEFAULT: int = 8
+_SELECTION_SIZE_DEFAULT: int = 10
 
 # How much bad weather can shrink the selection (proportional to conditions).
 # Rain or strong wind mean fewer species are audible, so a smaller pool

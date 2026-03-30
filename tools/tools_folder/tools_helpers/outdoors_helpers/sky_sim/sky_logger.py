@@ -33,5 +33,5 @@ class SkyLogger:
             f.write(f"Bortle: Class {snap.bortle_class.value} | Limit: {snap.limiting_magnitude:.2f} mag\n")
             f.write(f"Stars Visible: {snap.total_stars_visible} | Above Horizon: {snap.stars_above_horizon}\n")
             
-            f.write(render_snapshot(snap, compact=True))
+            f.write(render_snapshot(snap))
             f.write("\n" + "-"*60 + "\n\n")

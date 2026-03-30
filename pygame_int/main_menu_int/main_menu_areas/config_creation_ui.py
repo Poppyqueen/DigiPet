@@ -419,44 +419,16 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             config_manager.set_config("game_settings", "idle_time_minutes", form_data["idle_time_minutes"]["value"])
 
 
-                            # Run color selection before final save
+                            # Run color selection
                             response_color = gui_color_selector.run_color_selection_ui(screen, font)
                             select_color = (100, 255, 100)  # default green
                             if response_color is not None:
                                 select_color = response_color
-
                             config_manager.set_config("AI", "pet_color", select_color)
-
                             state.pet_color = select_color
                             gui.gui_core.gui_construct_colors.set_color_theme()
 
-
-    
-                            print(f"Config Screen, running outdoors settings")
-                            outdoors_settings = outdoors_config.run_observation_settings_ui(screen, font)
-
-                            # Mapping internal keys to config manager keys
-                            # Format: { internal_key: config_manager_suffix }
-                            out_mapping = {
-                                "fauna_abundance": "xenocanto_abundance",
-                                "bortle_class": "astro_bortle_level" 
-                            }
-
-                            for category, settings in outdoors_settings.items():
-                                enabled = settings.get("enabled", False)
-                                
-                                # 1. Set the main toggle
-                                config_manager.set_config("outdoors_perception", f"enable_{category}", enabled)
-                                
-                                # 2. Set specific attributes only if enabled
-                                if enabled:
-                                    for key, value in settings.items():
-                                        if key != "enabled":
-                                            # Use the mapping if it exists, otherwise use the key name
-                                            config_key = out_mapping.get(key, key)
-                                            config_manager.set_config("outdoors_perception", config_key, value)
-                            
-                            # Add sound selection too later
+                            # Sound selection
                             selected_sound_filename = gui_sound_selector.run_sound_selection_ui(screen, font, SOUNDS_DIR)
                             print(f"Selected sound filename: {selected_sound_filename}")
                             if selected_sound_filename is not None:
@@ -464,11 +436,33 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             else:
                                 config_manager.set_config("AI", "pet_sound", "mellow_friend.mp3")  # default sound
 
+                            # Outdoors perception selection
+                            print(f"Config Screen, running outdoors settings")
+                            outdoors_settings = outdoors_config.run_observation_settings_ui(screen, font)
+                            out_mapping = {
+                                "fauna_abundance": "xenocanto_abundance",
+                                "bortle_class": "astro_bortle_level" 
+                            }
+                            for category, settings in outdoors_settings.items():
+                                enabled = settings.get("enabled", False)
+                                # 1. Set the main toggle
+                                config_manager.set_config("outdoors_perception", f"enable_{category}", enabled)
+                                # 2. Set specific attributes only if enabled
+                                if enabled:
+                                    for key, value in settings.items():
+                                        if key != "enabled":
+                                            # Use the mapping if it exists, otherwise use the key name
+                                            config_key = out_mapping.get(key, key)
+                                            config_manager.set_config("outdoors_perception", config_key, value)
+
+                            # DNA Selection
                             dna = dna_screen_ui.run_dna_selector_ui(screen, font)
                             # dna = PetDNA.generate_random()
                             config_manager.set_config("AI", "pet_dna", dna.to_seed())
                             print(f"[init] Generated DNA seed: {dna.to_seed()}")
 
+
+                            # Finish line!
                             config_manager.save_config_to_archive(config_name)
                             config_manager.load_config_from_archive(config_name)
                             gui.gui_popups.clear_all_popups()
