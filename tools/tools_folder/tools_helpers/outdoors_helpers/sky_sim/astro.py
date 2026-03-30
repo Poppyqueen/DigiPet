@@ -40,7 +40,11 @@ class AstroProvider:
         self._ts = self._loader.timescale()
         self._eph = self._loader('de421.bsp')
         self._earth = self._eph['earth']
-        self._observer = self._earth + wgs84.latlon(lat, lon, elevation_m=elevation_m)
+        
+        # Store the raw geographic location (Topos/Geodetic)
+        self._location = wgs84.latlon(lat, lon, elevation_m=elevation_m)
+
+        self._observer = self._earth + self._location
 
         self._star_df = self._load_stars()
 
@@ -171,20 +175,18 @@ class AstroProvider:
         alt, az, _ = apparent.altaz()
         altitude = alt.degrees
         azimuth  = az.degrees % 360
+        
+        f = almanac.dark_twilight_day(self._eph, self._location)
+        phase_value = int(f(t))
 
-        # Classify twilight phase
-        if altitude >= 18.0:
-            phase = TwilightPhase.DAY
-        elif altitude >= 0.0:
-            phase = TwilightPhase.CIVIL_TWILIGHT
-        elif altitude >= -6.0:
-            phase = TwilightPhase.CIVIL_TWILIGHT
-        elif altitude >= -12.0:
-            phase = TwilightPhase.NAUTICAL_TWILIGHT
-        elif altitude >= -18.0:
-            phase = TwilightPhase.ASTRO_TWILIGHT
-        else:
-            phase = TwilightPhase.NIGHT
+        phase_mapping = {
+            0: TwilightPhase.NIGHT,
+            1: TwilightPhase.ASTRO_TWILIGHT,
+            2: TwilightPhase.NAUTICAL_TWILIGHT,
+            3: TwilightPhase.CIVIL_TWILIGHT,
+            4: TwilightPhase.DAY
+        }
+        phase = phase_mapping.get(phase_value)
 
         mag_impact = sun_magnitude_loss(altitude)
 
@@ -202,7 +204,7 @@ class AstroProvider:
             magnitude=SUN_APPARENT_MAGNITUDE,
             # effective_magnitude, visibility, cloud_opacity filled in by simulator
         )
-
+    
     def get_sun_altitude(self, dt: datetime) -> float:
         """Convenience accessor — returns just the altitude in degrees."""
         return self.get_sun(dt).altitude
