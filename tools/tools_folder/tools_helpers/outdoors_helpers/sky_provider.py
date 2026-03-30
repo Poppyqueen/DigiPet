@@ -29,19 +29,21 @@ class EarthAstroViews(OutdoorsProvider):
         self._tick_interval_minutes: float = 15.0  # default, overridden below
 
 
-        self.bortle_class = config.get_config("sky_sim", "bortle") 
+        self.bortle_class = int(config.get_config("outdoors_perception", "astro_bortle_level"))
 
         if not self.bortle_class:
             default = 4
             print(f"ASTRO VIEWS ALERT! NO BORTLE CLASS CONFIGURED, USING DEFAULT {default}")
             self.bortle_class = default
+        else:
+            print(f"SKY SIM, Found config Bortle {self.bortle_class}")
 
 
         self.sim = NightSkySimulator(
         lat=self.lat, lon=self.lon, 
         weather_provider=self.open_meteo, 
 
-        bortle_class=int(self.bortle_class), 
+        bortle_class=self.bortle_class,
 
         noise_seed=dna_int,
         elevation_m=self.open_meteo.get_elevation()

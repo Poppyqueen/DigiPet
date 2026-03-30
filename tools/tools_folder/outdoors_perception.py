@@ -56,14 +56,15 @@ class OutdoorsPerception:
 
     def _load_conditionals(self) -> None:
         canto_key = os.getenv("XENO_CANTO_API_KEY")
-        if canto_key:
+        if canto_key and self.config_manager.get_config("outdoors_perception", "enable_xeno_canto"):
             from utils.xeno_canto_api import XenoCantoLoc
             from tools.tools_folder.tools_helpers.outdoors_helpers.xeno_canto_prov import XenoCantoProvider
             self.xeno_canto = XenoCantoLoc(self.lat, self.long, api_key=canto_key)
             self._register_provider(XenoCantoProvider(self.xeno_canto, self.open_meteo))
 
-        if True: # Add flag or something for the sky thing
+        if self.config_manager.get_config("outdoors_perception", "enable_astro_views"): # Add flag or something for the sky thing
             from .tools_helpers.outdoors_helpers.sky_provider import EarthAstroViews
+            
             self._register_provider(EarthAstroViews(self.open_meteo, self.config_manager, self.lat, self.long))
 
     def _register_provider(self, provider: OutdoorsProvider) -> None:
@@ -86,7 +87,7 @@ class OutdoorsPerception:
         for type_name, provider in self._resolve_providers(outdoors_types):
             if provider is None:
                 yield PerceptionResult(
-                    text=f"[Perception source '{type_name}' is currently unavailable.]"
+                    text=f"" # Quietly skip.
                 )
                 continue
             try:

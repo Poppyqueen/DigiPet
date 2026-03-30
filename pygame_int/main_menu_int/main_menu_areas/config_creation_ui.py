@@ -26,7 +26,7 @@ from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
 
 from pygame_int.main_digipet.pet_dna import PetDNA
 
-from . import dna_screen_ui
+from . import dna_screen_ui, outdoors_config
 
 text_inputs = {}
 dropdowns = {}
@@ -418,6 +418,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
                             config_manager.set_config("game_settings", "idle_time_minutes", form_data["idle_time_minutes"]["value"])
 
+
                             # Run color selection before final save
                             response_color = gui_color_selector.run_color_selection_ui(screen, font)
                             select_color = (100, 255, 100)  # default green
@@ -428,6 +429,32 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
 
                             state.pet_color = select_color
                             gui.gui_core.gui_construct_colors.set_color_theme()
+
+
+    
+                            print(f"Config Screen, running outdoors settings")
+                            outdoors_settings = outdoors_config.run_observation_settings_ui(screen, font)
+
+                            # Mapping internal keys to config manager keys
+                            # Format: { internal_key: config_manager_suffix }
+                            out_mapping = {
+                                "fauna_abundance": "xenocanto_abundance",
+                                "bortle_class": "astro_bortle_level" 
+                            }
+
+                            for category, settings in outdoors_settings.items():
+                                enabled = settings.get("enabled", False)
+                                
+                                # 1. Set the main toggle
+                                config_manager.set_config("outdoors_perception", f"enable_{category}", enabled)
+                                
+                                # 2. Set specific attributes only if enabled
+                                if enabled:
+                                    for key, value in settings.items():
+                                        if key != "enabled":
+                                            # Use the mapping if it exists, otherwise use the key name
+                                            config_key = out_mapping.get(key, key)
+                                            config_manager.set_config("outdoors_perception", config_key, value)
                             
                             # Add sound selection too later
                             selected_sound_filename = gui_sound_selector.run_sound_selection_ui(screen, font, SOUNDS_DIR)
