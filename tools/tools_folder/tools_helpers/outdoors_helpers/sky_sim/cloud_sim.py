@@ -546,8 +546,13 @@ class CloudSimulation:
     def simulated_cloud_coverage(self, samples: int = 256) -> float:
         blocked = 0
         rng = np.random.default_rng(seed=0)
-        azimuths  = rng.uniform(0, 360, samples)
-        altitudes = rng.uniform(0, 90,  samples)
+        azimuths = rng.uniform(0, 360, samples)
+
+        # Sample altitudes proportional to cos(alt) — correct solid-angle weighting.
+        # Equivalent to: alt = arcsin(uniform(0, 1)) mapped to [0, 90]
+        u = rng.uniform(0.0, 1.0, samples)
+        altitudes = np.degrees(np.arcsin(u))  # concentrates samples near horizon, not zenith
+
         for az, alt in zip(azimuths, altitudes):
             if self.opacity_at(az, alt) > 0.5:
                 blocked += 1
