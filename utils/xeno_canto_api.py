@@ -307,23 +307,40 @@ def _fetch_pages(
     per_page:      int = 100,
 ) -> tuple[list[dict], int]:
     """
-    Fetch pages_per_day consecutive pages starting from start_page.
+    Fetch pages_per_day unique pages starting from start_page, wrapping
+    around to page 1 if the end of the catalogue is reached mid-quota.
+
+    Example: start_page=2, pages_per_day=3, catalogue has 3 pages total.
+      → fetches page 2, page 3 (end reached), wraps → page 1. Done.
+
+    Pages already visited in this call are tracked in visited_pages so we
+    never re-fetch a page within the same run. If the entire catalogue is
+    smaller than pages_per_day, we stop once every page has been fetched
+    rather than looping indefinitely.
 
     Returns (deduplicated_recordings, num_pages_total).
-    Stops early if a page returns fewer recordings than per_page.
     """
     all_recordings: list[dict] = []
     seen_ids:       set[str]   = set()
-    num_pages_total = 1  # updated from first response
+    visited_pages:  set[int]   = set()
+    num_pages_total = start_page  # conservative until first response updates it
 
-    for offset in range(pages_per_day):
-        page = start_page + offset
+    pages_fetched = 0
+    page          = start_page
 
-        # Don't request past the last known page
-        if page > num_pages_total and offset > 0:
-            print(f"[XenoCantoAPI] Early stop: page {page} exceeds catalogue total ({num_pages_total}), stopping.")
+    while pages_fetched < pages_per_day:
+        # Once we know the catalogue size, wrap past-the-end page numbers.
+        if num_pages_total > 0 and page > num_pages_total:
+            page = 1
+
+        # If we've already visited this page in the current run the catalogue
+        # is exhausted — fetching more would just duplicate what we have.
+        if page in visited_pages:
+            print(f"[XenoCantoAPI] Page {page} already visited this run — "
+                  f"catalogue exhausted ({num_pages_total} page(s) total). Stopping.")
             break
 
+        visited_pages.add(page)
         recordings, num_pages_total = _fetch_page(
             query=query, api_key=api_key, page=page, per_page=per_page,
         )
@@ -337,22 +354,11 @@ def _fetch_pages(
                 continue
             if FILTER_NON_COMMERCIAL and ("-nc" in lic or "/nc/" in lic):
                 continue
-
             seen_ids.add(rid)
             all_recordings.append(r)
-            lic = r.get("lic", "").lower()
-            if not rid or rid in seen_ids:
-                continue
-            if FILTER_NO_DERIVATIVES and ("-nd" in lic or "/nd/" in lic):
-                continue
-            if FILTER_NON_COMMERCIAL and ("-nc" in lic or "/nc/" in lic):
-                continue
 
-            seen_ids.add(rid)
-            all_recordings.append(r)
-        # Short page means we've hit the end
-        if len(recordings) == 0:
-            break
+        pages_fetched += 1
+        page          += 1
 
     return all_recordings, num_pages_total
 
@@ -424,10 +430,14 @@ class XenoCantoLoc:
                 start_page=1, pages_per_day=pages_per_day, per_page=per_page,
             )
 
+        # Advance the cursor by however many pages we actually started from.
+        # Because _fetch_pages may have wrapped internally, the next run should
+        # start from the page *after* the last one we visited — computed simply
+        # as start_page + pages_per_day, wrapped against the catalogue size.
         next_page = start_page + pages_per_day
         if next_page > num_pages_total:
-            next_page = 1
-            print(f"[XenoCantoAPI] Cursor wrapped to 1 "
+            next_page = (next_page - 1) % max(num_pages_total, 1) + 1
+            print(f"[XenoCantoAPI] Cursor wrapped to {next_page} "
                 f"(catalogue has {num_pages_total} page(s)).")
 
         _save_pool(all_recordings, next_page, self.lat, self.long)
