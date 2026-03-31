@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import OutdoorsProvider
 
+from utils.wmo_codes import WMOWeatherCode
 
 class EarthWeatherProvider(OutdoorsProvider):
     """
@@ -27,12 +28,17 @@ class EarthWeatherProvider(OutdoorsProvider):
         window_perception() output.
         """
         structure_weather = self.open_meteo.get_structured_weather()
-        message = "\n".join([
+        messages =[
             "From where you stand, you can catch an incomplete glimplse of the outside world through an opening around you,",
             f"Is day: {structure_weather["is_day"]}",
-            f"Precipitation: {structure_weather["precipitation"]}"
-        ])
-        return message, None
+            f"Cloud cover: {structure_weather["cloud_cover"]:.2f}%",
+            f"Precipitation: {structure_weather["precipitation"]:.2f} mm" if structure_weather["precipitation"] > 0 else "",
+            f"Snowfall: {structure_weather["snowfall"]:.2f} cm" if structure_weather["snowfall"] > 0 else "",
+            f"Most severe weather event: {WMOWeatherCode.from_code(int(structure_weather["weather_code"]))}"
+        ]
+        clean = "\n".join([s for s in messages if s.strip()])
+
+        return clean, None
 
     def get_full_perception(self) -> tuple[str, str | None, bool]:
         return self.open_meteo.get_full_weather(), None, None

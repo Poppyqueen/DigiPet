@@ -5,6 +5,8 @@ import requests_cache
 from retry_requests import retry
 import os
 
+from .wmo_codes import WMOWeatherCode
+
 # Setup the Open-Meteo API client with cache and retry on error
 os.makedirs(".cache", exist_ok=True)
 
@@ -176,22 +178,23 @@ class OpenMeteoLoc:
         d = self.get_structured_weather()
         return (
             f"Current Weather Information:\n"
-            f"Apparent temperature:  {self._format_value(d['temperature'], '°C')}\n"
-            f"Dew point (2m):        {self._format_value(d['dew_point'], '°C')}\n"
-            f"Relative humidity:     {self._format_value(d['humidity'], '%')}\n"
             f"Is it daytime?:        {d['is_day']}\n"
-            f"Weather code:          {self._format_value(d['weather_code'], 'WMO')}\n"
+
+            f"Apparent temperature:  {self._format_value(d['temperature'], '°C')}\n"
+            f"Relative humidity:     {self._format_value(d['humidity'], '%')}\n"
+            f"WMO Most severe condition: {WMOWeatherCode.from_code(int(d['weather_code']))}\n"
             f"Visibility:            {self._format_value(d['visibility'], 'm')}\n"
             f"Wind speed (10m):      {self._format_value(d['wind_speed'], 'km/h')}\n"
             f"Wind direction (10m):  {self._format_value(d['wind_direction'], '°')}\n"
             f"Wind speed (120m):     {self._format_value(d['wind_speed_120m'], 'km/h')}\n"
-            f"Precipitation:         {self._format_value(d['precipitation'], 'mm')}\n"
-            f"Snowfall:              {self._format_value(d['snowfall'], 'cm')}\n"
-            f"Snow depth:            {self._format_value(d['snow_depth'], 'm')}\n"
             f"Cloud cover (total):   {self._format_value(d['cloud_cover'], '%')}\n"
             f"Cloud cover (low):     {self._format_value(d['cloud_cover_low'], '%')}\n"
             f"Cloud cover (mid):     {self._format_value(d['cloud_cover_mid'], '%')}\n"
             f"Cloud cover (high):    {self._format_value(d['cloud_cover_high'], '%')}\n"
+            f"Dew point (2m):        {self._format_value(d['dew_point'], '°C')}\n"
+            f"Precipitation:         {self._format_value(d['precipitation'], 'mm')}\n"
+            f"Snowfall:              {self._format_value(d['snowfall'], 'cm')}\n"
+            f"Snow depth:            {self._format_value(d['snow_depth'], 'm')}\n"
             f"CAPE:                  {self._format_value(d['cape'], 'J/kg')}\n"
         )
 
