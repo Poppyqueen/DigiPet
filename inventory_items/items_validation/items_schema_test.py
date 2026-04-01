@@ -34,7 +34,7 @@ def main():
     parser.add_argument(
         "--model", 
         type=str, 
-        default="gpt-5-mini", # Set a standard default
+        default="gpt-5.4-nano", # Set a standard default
         help="The specific model name."
     )
 

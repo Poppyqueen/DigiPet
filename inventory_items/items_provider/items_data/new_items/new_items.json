@@ -770,5 +770,48 @@
         "ticks_lasting": 6,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Retro Arcade Maze Cabinet",
+      "descriptions": [
+        "A chunky, retro arcade cabinet with one built-in maze game you play immediately."
+      ],
+      "static": true,
+      "type": [
+        "maze_interface",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The arcade cabinet is powered and the maze game is ready.",
+        "off_description": "The arcade cabinet is unplugged and dark.",
+        "on_sequence": "You flip the power switch and the screen flares to life, LEDs blinking across the bezel as the maze title screen locks in.",
+        "off_sequence": "You switch the cabinet off and the lights fade to a quiet glow before going completely dark.",
+        "perishable": false,
+        "ticks_lasting": 0,
+        "ticks_elapsed": 0
+      },
+      "maze_state": {
+        "seed": 0,
+        "size": [
+          0,
+          0
+        ],
+        "difficulty": "normal",
+        "pos": [
+          0,
+          0
+        ],
+        "goal": [
+          0,
+          0
+        ],
+        "steps_taken": 0,
+        "goal_reached": false
+      }
     }
 ]

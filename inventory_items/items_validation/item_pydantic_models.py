@@ -23,7 +23,7 @@ from .contract_mixin import ContractMixin
 from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 from tools.tools_folder.tools_data.harvesting_data import plant_types
-
+from tools.tools_folder.tools_helpers.maze_sim.types import MazeState
 import os
 import json
 
@@ -79,7 +79,7 @@ def get_mcp_item_types(config_path: str | None = None) -> list[str]:
 ignore_fingerprint_keys = ["id", "quantity", "static"]
 
 
-toggable_items = ["tv", "maze"] # This variable is a concept bag, does not affect the code, will be removed later
+toggable_items = ["tv", "maze_interface"] # This variable is a concept bag, does not affect the code, will be removed later
 
 item_types = ["consumable", "seed", "art_book", "book", "dispenser", "candy_bag"]
 item_types.extend(toggable_items)
@@ -97,18 +97,6 @@ refactored_types = [
                     "youtube_playlists_endpoint", "discogs_endpoint",
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
-                    #"sound_effects_apparatus", # Another MCP server, pretty fun 'https://github.com/austenstone/myinstants-mcp'. Node.js + npx
-
-                    # "_test_point_ping", "_test_point_add", "_test_point_awareness" # These are test types to exemplify the use of the MCP injected types in tool_registry.
-
-                # These are now loaded dynamically from local .gitignored mcp_config.json. Allows for quick registration of new item types, but items with mixins are first-class citizens. Jacks are quick and easy but they don't have the benefits of mixins with defined fields and descriptions.
-                    # "code_reviewer_notebook", # A test type, probably will be removed, uses the test MCP server included in the codebase.
-                    # "tiny_calculator", # test
-                    # "pong_machine",# test
-                    # "github_mcp_endpoint",
-                    # "tamagotchi_device"
-
-
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -240,6 +228,7 @@ class TVState(BaseModel):
         default="",
         description=f"Currently airing channel. Always set to empty string. Managed by the TV tool."
     )
+
 
 # =============================================================================
 # BASE ITEM
@@ -533,8 +522,15 @@ class SearxngEndpointFields(ContractMixin):
 class ColabEndpointFields(ContractMixin):
     model_description: ClassVar[str] = f"{base_endpoints_description} This specific endpoint provides access to a Colab notebook, with the ability to execute code cells, retrieve outputs, and manage the notebook's content. It is meant to be used as a powerful tool for running custom code, data analysis, or any other task that can be accomplished within a Colab environment."
 
-# class SoundboardFields(ContractMixin):
-#     model_description: ClassVar[str] = f"{base_endpoints_description} These must always be portable devices, any device will do, however it needs to be a handheld, wearable, portable or any carryable device. It allows for borwsing and on-demand playback of a vast library of sounds."
+class MazeInterface(ContractMixin):
+    model_description: ClassVar[str] = f"Maze device or toy, it can be a physical maze box with a small ball inside, or a virtual maze on a screen. The item provides an interactive maze experience, where the user can navigate through the maze by tilting the box or using controls for the virtual version. It can be used for entertainment, stress relief, or as a cognitive exercise."
+
+    stackable : bool = False # Overrides and forces base key
+    maze_state : MazeState = Field(
+        description="The state of the maze, including the seed for generation, size, current position, goal position, and steps taken. Managed by the maze tool."
+    )
+
+
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -575,7 +571,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "wikipedia_endpoint": WikipediaEndpointFields,
     "searxng_endpoint": SearxngEndpointFields,
     "colab_endpoint": ColabEndpointFields,
-    #"sound_effects_apparatus": SoundboardFields, # For future reference, this is a type of endpoint that provides access to a soundboard tool, it can be used for ambience, music, ASMR, or any other use case involving audio playback.
+
+    "maze_interface": MazeInterface,
 
 }
 

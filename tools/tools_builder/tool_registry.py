@@ -26,7 +26,7 @@ from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
 from tools.tools_folder.auction_house import AuctionHouse
-from tools.tools_folder.maze import MazeEnvironment
+from tools.tools_folder.maze_controller import MazeController
 from tools.tools_folder.lighthouse_controller import LighthouseController
 from tools.tools_folder.items_toggle import ItemToggleTool
 
@@ -174,7 +174,7 @@ class ToolRegistry:
         self.images_lab     = ImagesLab(subdirectory)
         self.dispenser_tools = DispenserTools(state_manager, signal, self.item_store)
         self.auction_house = AuctionHouse(state_manager, item_store=self.item_store)
-        self.maze           = MazeEnvironment(state_manager, signal)
+        self.maze           = MazeController(state_manager, signal)
         self.A_Life         = ALifeController(state_manager=state_manager, signal=signal, base_path=subdirectory)
         self.book_tools     = BookTools(state_manager, signal)
         self.consumables_tools = ConsumablesTools(state_manager, signal)
@@ -410,15 +410,16 @@ class ToolRegistry:
             },
             "maze": { # TODO: Make this an item, not room type, also needs to handle individual state for item instead of global, however this is a big choice.
                 "functions": {
-                    "VMaze-create_maze":        self.maze.create_maze,
-                    "VMaze-observe_environment": self.maze.observe_environment,
-                    "VMaze-move":               self.maze.move,
+                    "Maze-create_maze":        self.maze.create_maze,
+                    "Maze-observe_environment": self.maze.get_maze_state,
+                    "Maze-move":               self.maze.maze_move,
                 },
                 "definitions": maze_tools,
-                "item_types": ["virtual_maze"],
-                "use_level": "room_only",
-                "display_information": self.maze.display_information,
-                # agent_information intentionally omitted — contains restricted info (see TODO in original) # Make agent specific method
+                "item_types": ["maze_interface"],
+                "use_level": "dual_use",
+                "display_information": self.maze.percieve_data,
+                "agent_information": self.maze.percieve_data,
+                
             },
             "auction": {
                 "functions": { # These methods need love
