@@ -533,31 +533,35 @@ class ToolRegistry:
                 "item_types": ["water_point"],
                 "use_level": "dual_use"
             },
-            "planting_garden": { # Reworked, now handles individual items, introduced planter_pot item
+            # Gardening
+            "general_planting": {
                 "functions": {
                     "plant_seed":                       self.garden_manager.plant_seed,
                     "check_plant":                      self.garden_manager.check_plant, # Detailed plant by plant state.
                     "harvest_plant":                    self.garden_manager.harvest_plant,
-                    #"get_accessible_plants_info":       self.garden_manager.get_current_accessible_garden_agent, # Returns a summary of the plants and pots around, does not detail the specific state of each of them. # Keep toggled off? it should work fine.
                     "water_plant":                      self.garden_manager.water_plant,
                     "remove_plant":                     self.garden_manager.remove_plant
                 },
                 "definitions": plants_tools,
-                "room_types": ["cultivation_zone"],
-                "item_types": ["planter_pot"],
+                "room_types": ["cultivation_zone"], 
                 "use_level": "dual_use",
-                "display_information":  self.garden_manager.get_current_accessible_garden_gui, # Same info as get_accessible_plants_info, but this one does not reduce stats
-                "agent_information":    self.garden_manager.get_current_accessible_garden_gui, # Exact same method, both are summaries of the state.
+                "item_types": ["planter_pot"], 
+            },
+            "planting_garden": {
+                "definitions": plants_tools,
+                "room_types": ["cultivation_zone"],
+                "display_information":  self.garden_manager.get_garden_room_gui, 
+                "agent_information":    self.garden_manager.get_garden_room_gui, 
             },
             "pot_specific_plant_care": { 
                 "functions": {
-                    "inspect_pot": self.garden_manager.inspect_pot # This would return specific information about the pot and the plant in it, maybe even the history of interactions with it, to be used for plants that need specific care.
+                    "inspect_pot": self.garden_manager.inspect_pot 
                 },
                 "definitions": plants_tools,
                 "item_types": ["planter_pot"],
                 "use_level": "dual_use",
-                # "display_information": self.garden_manager.get_current_accessible_garden_gui, # This needs its own function that is specific to pots, currently it mixes up garden and pots.
-                # "agent_information": self.garden_manager.get_current_accessible_garden_gui,
+                "display_information": self.garden_manager.get_accessible_pots_gui,
+                "agent_information": self.garden_manager.get_accessible_pots_gui,
             },
 
             "fenestration_apertures": { # Windows, Light wells, portholes

@@ -392,23 +392,27 @@ class GardenController:
     # Contextual awareness
     # -----------------------------------------------------------------------
 
-    def _get_accessible_garden_data(self) -> str:
-        sections = []
 
+    def get_garden_room_gui(self) -> str:
+        """Only summarizes the current room's garden plots."""
         try:
             room_data = self.state_manager.get_current_room_data()
-            if CULTIVATION_ZONE_TYPE in room_data.room_types:
-                sections.append(self.garden_manager.get_garden_summary(
-                    room_id=room_data.id,
-                    room_name=self._room_name(room_data.id),
-                ))
+            if CULTIVATION_ZONE_TYPE not in room_data.room_types:
+                return ""
+            return self.garden_manager.get_garden_summary(
+                room_id=room_data.id,
+                room_name=self._room_name(room_data.id),
+            )
         except ValueError:
-            pass
+            return ""
 
+    def get_accessible_pots_gui(self) -> str:
+        """Only summarizes accessible pot items."""
         inventory = self.state_manager.get_inventory_state()
         all_items = inventory.inventory_items + inventory.room_items
-        pots      = [item for item in all_items if POT_TYPE in item.item_data.get("type", [])]
+        pots = [item for item in all_items if POT_TYPE in item.item_data.get("type", [])]
 
+        sections = []
         for item_entry in pots:
             ok, pot_state = self._get_pot_state(item_entry.item_id)
             if not ok:
@@ -418,12 +422,4 @@ class GardenController:
                 pot_name=f"{item_entry.name} (ID: {item_entry.item_id})",
             ))
 
-        return "\n\n".join(sections) if sections else "No garden plots or plant pots nearby."
-
-    def get_current_accessible_garden_agent(self) -> str:
-        summary = self._get_accessible_garden_data()
-        stats   = self._adjust_stats(GARDEN_SUMMARY_COSTS)
-        return f"{summary}\n{stats}."
-
-    def get_current_accessible_garden_gui(self) -> str:
-        return self._get_accessible_garden_data()
+        return "\n\n".join(sections) if sections else ""
