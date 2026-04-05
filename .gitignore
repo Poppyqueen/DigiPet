@@ -27,6 +27,8 @@ data_archive/
 
 *local_data/
 
+*repomix-output.xml
+*repomix.config.json
 # ------------------------------------
 # 3. Build & Packaging Artifacts
 # ------------------------------------

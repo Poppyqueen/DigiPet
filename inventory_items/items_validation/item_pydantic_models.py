@@ -97,6 +97,7 @@ refactored_types = [
                     "youtube_playlists_endpoint", "discogs_endpoint",
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
+                    "online_store"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -145,7 +146,10 @@ _outdoors_type_keys = tuple(OUTDOORS_TYPES)
 OutdoorsType = Literal[_outdoors_type_keys]  # type: ignore[valid-type]
 outdoors_type_names = ", ".join(_outdoors_type_keys)
 # Go to OUTDOORS_TYPES and add new outdoors types! Provider based system with an Abstract Class.
-
+# =============================================================================
+# Note: Maze items own a maze type, these types determine props and flavor text when traversing a maze environment.
+# Create and edit maze types here: tools/tools_folder/tools_helpers/maze_sim/maze_props.py
+# =============================================================================
 
 def get_base_item_types() -> list[str]:
     """
@@ -572,7 +576,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "searxng_endpoint": SearxngEndpointFields,
     "colab_endpoint": ColabEndpointFields,
 
-    "maze_interface": MazeInterface,
+    "maze_interface": MazeInterface, # You can add more maze types and props for these: tools/tools_folder/tools_helpers/maze_sim/maze_props.py
 
 }
 

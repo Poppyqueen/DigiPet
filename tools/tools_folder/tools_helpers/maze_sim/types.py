@@ -1,5 +1,20 @@
-
+from typing import Optional
 from pydantic import BaseModel, Field
+from typing import Literal
+
+from .maze_props import PROP_REGISTRY
+
+# 1. Extract the keys into a constant tuple
+_maze_type_keys = tuple(PROP_REGISTRY.keys()) # Add more props and types for mazes here!
+
+# 2. Create the Literal type 
+# Note: type: ignore is used because Literal technically expects 
+# hardcoded strings, but this is the standard way to keep it DRY.
+MazeType = Literal[_maze_type_keys]  # type: ignore[valid-type] 
+
+# 3. Create a helper string for error messages/logging
+maze_type_names = ", ".join(_maze_type_keys)
+
 
 class MazeState(BaseModel):
     seed: int = Field(
@@ -12,7 +27,7 @@ class MazeState(BaseModel):
     )
     difficulty: str = Field(
         default=None,
-        description="Always set to None. The maze difficulty ('normal' or 'hardcore'), managed by the maze tool."
+        description="Always set to None. The maze difficulty ('normal', 'hardcore', or 'insane'), managed by the maze tool."
     )
     pos: list[int] = Field(
         default=[0, 0],
@@ -29,4 +44,33 @@ class MazeState(BaseModel):
     goal_reached: bool = Field(
         default=False,
         description="Always set to False. Indicates whether the player has reached the goal in the maze."
+    )
+
+    # -----------------------------------------------------------------------
+    # Props & environment flavour
+    # -----------------------------------------------------------------------
+
+    maze_type: MazeType = Field(
+        default=None,
+        description=(
+            "The thematic type of the maze from possible types. "
+            "Determines which prop catalogue is used for decorative objects. "
+            "None means no type has been assigned; props will use a random catalogue."
+        )
+    )
+    type_locked: bool = Field(
+        default=False,
+        description=(
+            "When True the maze_type cannot be changed for this maze instance. "
+            "Set to True for static items that should not change type, like a physical maze box."
+        )
+    )
+    props_seed: int = Field(
+        default=None,
+        description=(
+            "Independent random seed used exclusively for deterministic prop placement. "
+            "Stored here so the full prop layout can be reconstructed from scratch "
+            "without persisting the prop map itself. "
+            "None means no props have been seeded for this maze."
+        )
     )

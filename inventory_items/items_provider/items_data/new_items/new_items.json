@@ -772,11 +772,12 @@
       }
     },
     {
-      "name": "Retro Arcade Maze Cabinet",
+      "name": "Retro Arcade Maze Machine",
       "descriptions": [
-        "A chunky, retro arcade cabinet with one built-in maze game you play immediately."
+        "A compact, retro-style arcade cabinet featuring a single maze game on its screen.",
+        "Tilt the cabinet or use the controls to navigate the ball through the maze toward the exit."
       ],
-      "static": true,
+      "static": false,
       "type": [
         "maze_interface",
         "toggleable"
@@ -787,10 +788,10 @@
       "toggle_state": {
         "toggle_state": "off",
         "toggle_uses_left": null,
-        "on_description": "The arcade cabinet is powered and the maze game is ready.",
-        "off_description": "The arcade cabinet is unplugged and dark.",
-        "on_sequence": "You flip the power switch and the screen flares to life, LEDs blinking across the bezel as the maze title screen locks in.",
-        "off_sequence": "You switch the cabinet off and the lights fade to a quiet glow before going completely dark.",
+        "on_description": "The arcade screen is powered and ready to play.",
+        "off_description": "The arcade screen is dark and inactive.",
+        "on_sequence": "You flip the arcade’s power switch and the cabinet wakes up—neon colors bloom on the CRT, the maze board sharpens, and a soft hum fills the room as the ball awaits your move.",
+        "off_sequence": "You switch the arcade off and the glow drains away—pitch fades to silence, the screen goes dark, and the cabinet settles into stillness.",
         "perishable": false,
         "ticks_lasting": 0,
         "ticks_elapsed": 0
@@ -811,7 +812,10 @@
           0
         ],
         "steps_taken": 0,
-        "goal_reached": false
+        "goal_reached": false,
+        "maze_type": "dungeon",
+        "type_locked": false,
+        "props_seed": 0
       }
     }
 ]

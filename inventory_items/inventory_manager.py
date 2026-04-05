@@ -333,6 +333,6 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.pet_state_manager.get_currency()
 
     def adjust_currency(self, 
-        amount: int 
+        amount: int | float
     )-> AdjustCurrencyResult:
         return self.pet_state_manager.adjust_currency(amount)

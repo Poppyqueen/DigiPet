@@ -116,14 +116,16 @@ class PetStateManager:
             amount = 0
         self._state_store.update_state_section("currency", amount)
 
-    def adjust_currency(self, amount: int) -> AdjustCurrencyResult:
+    def adjust_currency(self, amount: int | float) -> AdjustCurrencyResult:
         """
         Adjusts the current currency positively or negatively
         """
-        if not isinstance(amount, int):
-            error = f"Error: Attempted to adjust 'currency' with non-integer amount: {amount}. Ignoring."
+        if not isinstance(amount, (int, float)):
+            error = f"Error: Attempted to adjust 'currency' with non-numeric amount: {amount}. Ignoring."
             print(error)
             return AdjustCurrencyResult.fail(error=error, currency=self.get_currency().currency)
+        
+        amount = int(amount)
         current_currency = self.get_currency().currency
         new_currency = current_currency + amount
         if new_currency < 0:

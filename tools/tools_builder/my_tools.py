@@ -4,77 +4,6 @@
 # We need to be consistent with the actual function names and arguments in the code.
 # The JSON structures are used to define the tools that the agent can use, including their names, descriptions, and parameters.
 # They are also divided into groups, based on location or item for those conditional tools.
-maze_tools=[
-    {
-        "type": "function",
-        "name": "Maze-create_maze",
-        "description": "Allows you to create a virtual maze.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "interface_id":{
-                    "type": "number",
-                    "description": "The ID of the maze interface item. Each interface has its own unique state."
-                },
-                "width": {
-                    "type": "number",
-                    "description": "The width of the maze to create."
-                },
-                "height": {
-                    "type": "number",
-                    "description": "The height of the maze to create."
-                },
-                "difficulty": {
-                    "type": "string",
-                    "description": "The difficulty level of the maze. Can be 'normal' or 'hardcore'."
-                },
-                "override": {
-                    "type": "boolean",
-                    "description": "Whether to override an existing maze if one is already active on this interface. Defaults to false. Fails operation if false and a maze is active and flag is false."
-                }
-            },
-            "required": ["interface_id"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "Maze-observe_environment",
-        "description": "Allows you to observe the environment of the maze in a maze interface item. Fog Of War applies.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "interface_id":{
-                    "type": "number",
-                    "description": "The ID of the maze interface item to observe. Each interface has its own unique state."
-                }
-            },
-            "required": ["interface_id"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "Maze-move",
-        "description": "Allows you to move in the virtual maze.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "interface_id":{
-                    "type": "number",
-                    "description": "The ID of the maze interface item to move in. Each interface has its own unique state."
-                },
-
-                "direction": {
-                    "type": "string",
-                    "description": "The direction to move in. One of 'NORTH', 'SOUTH', 'EAST', 'WEST'."
-                }
-            },
-            "required": ["interface_id", "direction"],
-            "additionalProperties": False
-        }
-    }
-]
 laptop_tools=[
     {
         "type": "function",
@@ -2270,4 +2199,83 @@ endpoints_tools = [
             "additionalProperties": False
         }
     },
+]
+
+
+from tools.tools_folder.tools_helpers.maze_sim.maze_props import available_types
+maze_types = str(available_types())
+maze_tools=[
+    {
+        "type": "function",
+        "name": "Maze-create_maze",
+        "description": "Allows you to randomize a maze item. Max 50 squares.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "interface_id":{
+                    "type": "number",
+                    "description": "The ID of the maze interface item. Each interface has its own unique state."
+                },
+                "width": {
+                    "type": "number",
+                    "description": "The width of the maze to create."
+                },
+                "height": {
+                    "type": "number",
+                    "description": "The height of the maze to create."
+                },
+                "difficulty": {
+                    "type": "string",
+                    "description": "The difficulty level of the maze. Can be 'normal', 'hardcore' or 'insane'."
+                },
+                "maze_type": {
+                    "type": "string",
+                    "description": f"The thematic type for the maze. Must be one of: {maze_types}."
+                },
+                "override": {
+                    "type": "boolean",
+                    "description": "Whether to override an existing maze if one is already active on this interface. Defaults to false. Fails operation if false and a maze is active and flag is false."
+                }
+            },
+            "required": ["interface_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "Maze-observe_environment",
+        "description": "Allows you to observe the environment of the maze in a maze interface item. Fog Of War applies.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "interface_id":{
+                    "type": "number",
+                    "description": "The ID of the maze interface item to observe. Each interface has its own unique state."
+                }
+            },
+            "required": ["interface_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "Maze-move",
+        "description": "Allows you to move in the virtual maze.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "interface_id":{
+                    "type": "number",
+                    "description": "The ID of the maze interface item to move in. Each interface has its own unique state."
+                },
+
+                "direction": {
+                    "type": "string",
+                    "description": "The direction to move in. One of 'NORTH', 'SOUTH', 'EAST', 'WEST'."
+                }
+            },
+            "required": ["interface_id", "direction"],
+            "additionalProperties": False
+        }
+    }
 ]
