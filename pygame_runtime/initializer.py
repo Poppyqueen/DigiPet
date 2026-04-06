@@ -91,9 +91,9 @@ def _init_pygame() -> tuple[pygame.Surface, pygame.font.Font]:
         print(f"[init] Warning: Mixer unavailable — {exc}")
 
     try:
-        font = pygame.font.Font(None, 20)
+        font = pygame.font.Font("style/fonts/Inter/static/Inter_18pt-Bold.ttf", 13) # FONT: Add any font you like to the style/fonts folder and load it here.
     except pygame.error:
-        font = pygame.font.SysFont("Arial", 20)
+        font = pygame.font.SysFont(None, 20)
 
     line_height = font.get_linesize()
     # NOTE: init_gui_elements and update_gui_rects in gui_core.py are nearly
