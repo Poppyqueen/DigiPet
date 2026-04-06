@@ -36,10 +36,7 @@ outdoors_type_names = ", ".join(_outdoors_type_keys)
 # CONSTANTS
 # =============================================================================
 
-room_types = [
-    "bedroom", "living_room", "bathroom", "kitchen", "ALIFE_research", "computer_room", # needs changes, most of these don't exist anymore
-]
-
+room_types = []
 refactored_types = ["outdoors_area", "open_soil_zone"]
 room_types.extend(refactored_types)
 

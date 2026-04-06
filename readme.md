@@ -155,7 +155,6 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 
 #### Short term
 
-* IMPORTANT: Update pyproject.toml to include the new OpenRouter dependencies
 
 * Make sure room music in rooms definitions can be null 
 
@@ -165,8 +164,6 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 
 * When double-clicking on the agent, send it a message like "you feel an unusual chill on your body" or "an itch on your back overcomes you for a second".
 
-* Flag any direct key modification of item data in the code with a `TODO: DIRECT KEY MODIFICATION` comment.
-
 * Add `excess` consumption to consumable item definitions — `excess_amount` and `excess_effect` (flavor text describing overconsumption).
 
 * Add sound settings (backend and GUI) for background music, sound effects, autonomous agent calls, and TTS — with volume and mute controls.
@@ -174,7 +171,5 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 * Wearables for the pet?
 
 #### Long term
-
-* Implement Anthropic's MCP for connecting servers, turning the project into an MCP client.
 
 * Refactor the Pygame implementation so multiple agents can be active simultaneously on the same runtime.

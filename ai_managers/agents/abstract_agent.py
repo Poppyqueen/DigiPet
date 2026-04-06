@@ -20,10 +20,10 @@ from ai_managers.agents.memory.memory_handle import memory_manager
 from ai_managers.agents.ai_handle import ai_bot
 from ai_managers.ai_utils.ai_loader import AIConfiguration
 
-from tts_providers.base_tts_provider import BaseTTSProvider
-from tts_providers.macos_say_provider import MacOSSaiProvider
-from tts_providers.espeak_ng_provider import ESpeakNGProvider
-from tts_providers.piper_provider import PiperTTSProvider
+from ai_managers.tts_providers.base_tts_provider import BaseTTSProvider
+from ai_managers.tts_providers.macos_say_provider import MacOSSaiProvider
+from ai_managers.tts_providers.espeak_ng_provider import ESpeakNGProvider
+from ai_managers.tts_providers.piper_provider import PiperTTSProvider
 
 import shutil
 

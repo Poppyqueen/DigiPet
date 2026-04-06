@@ -28,7 +28,6 @@ from pygame_int import config, state
 from pygame_int.main_digipet import gui
 from pygame_int.juke_box import jukebox
 from pygame_int.main_menu_int.main_menu import run_config_main_menu_ui
-from pygame_int.main_digipet import gui_lore_panel  # noqa: F401  (ensure module is imported)
 
 from utils.config_manager import ConfigManager
 from inventory_items.base_state_manager.base_state_config import InitialStateConst

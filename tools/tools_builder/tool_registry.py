@@ -408,19 +408,6 @@ class ToolRegistry:
                 "item_types": ["art_book"],
                 "use_level": "inventory_only",
             },
-            "maze": { # TODO: Make this an item, not room type, also needs to handle individual state for item instead of global, however this is a big choice.
-                "functions": {
-                    "Maze-create_maze":        self.maze.create_maze,
-                    "Maze-observe_environment": self.maze.get_maze_state,
-                    "Maze-move":               self.maze.maze_move,
-                },
-                "definitions": maze_tools,
-                "item_types": ["maze_interface"],
-                "use_level": "dual_use",
-                "display_information": self.maze.percieve_data,
-                "agent_information": self.maze.percieve_data,
-                
-            },
             "auction": {
                 "functions": { # These methods need love
                     "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
@@ -434,7 +421,6 @@ class ToolRegistry:
                 "use_level": "dual_use"
             },
 
-            # Room Only Tools
             "dispenser": { # This is mostly fine, however, it is owns candy bags, maybe make candy bags use consume uses left?
                 "functions": { # Not sure what to do about this, optimally, this should be a general container? not sure
                     "dispense_candy": self.dispenser_tools.dispense_candy,
@@ -543,13 +529,13 @@ class ToolRegistry:
                     "remove_plant":                     self.garden_manager.remove_plant
                 },
                 "definitions": plants_tools,
-                "room_types": ["cultivation_zone"], 
+                "room_types": ["open_soil_zone"], 
                 "use_level": "dual_use",
                 "item_types": ["planter_pot"], 
             },
             "planting_garden": {
                 "definitions": plants_tools,
-                "room_types": ["cultivation_zone"],
+                "room_types": ["open_soil_zone"],
                 "display_information":  self.garden_manager.get_garden_room_gui, 
                 "agent_information":    self.garden_manager.get_garden_room_gui, 
             },
@@ -562,6 +548,19 @@ class ToolRegistry:
                 "use_level": "dual_use",
                 "display_information": self.garden_manager.get_accessible_pots_gui,
                 "agent_information": self.garden_manager.get_accessible_pots_gui,
+            },
+
+            "maze": { 
+                "functions": {
+                    "Maze-create_maze":        self.maze.create_maze,
+                    "Maze-observe_environment": self.maze.get_maze_state,
+                    "Maze-move":               self.maze.maze_move,
+                },
+                "definitions": maze_tools,
+                "item_types": ["maze_interface"],
+                "use_level": "dual_use",
+                "display_information": self.maze.percieve_data,
+                "agent_information": self.maze.percieve_data,
             },
 
             "fenestration_apertures": { # Windows, Light wells, portholes

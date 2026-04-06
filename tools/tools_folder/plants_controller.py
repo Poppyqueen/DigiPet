@@ -16,7 +16,7 @@ Nothing in this file touches JSON or garden maths.
 Unified API:
 - Every player action (plant, water, check, harvest, remove) has one public
   method with an optional pot_id parameter.
-- No pot_id  → room plot path (requires cultivation_zone room).
+- No pot_id  → room plot path (requires open_soil_zone room).
 - pot_id set → pot slot path (requires accessible planter_pot item).
 - The controller handles reading/writing pot_state to the item.
   GardenManager handles saving room state to JSON.

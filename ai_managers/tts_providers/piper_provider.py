@@ -1,10 +1,10 @@
 import threading
 import sounddevice as sd
 from piper import PiperVoice
-from tts_providers.base_tts_provider import BaseTTSProvider
+from ai_managers.tts_providers.base_tts_provider import BaseTTSProvider
 import os
 
-VOICES_PATH = "tts_providers/piper_voices/"
+VOICES_PATH = "ai_managers/tts_providers/piper_voices"
 
 # Update this dictionary with your downloaded Piper voices and choose an alias for each voice to use on the application configuration screen.
 voices_map={
