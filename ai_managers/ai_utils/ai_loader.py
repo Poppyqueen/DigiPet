@@ -67,7 +67,17 @@ class UnifiedLoader:
                 "required_libraries": ["openai", "instructor"],
                 "api_key_env": "OPENROUTER_API_KEY",
                 "requires_api_key": True
+            },
+            "llama_cpp": {
+                "simple_ai_module": "ai_managers.simple_ai.providers.llama_cpp_provider",
+                "simple_ai_class": "LlamaCppProv",
+                "agent_module": "ai_managers.agents.agent_clients.llama_cpp_client",
+                "agent_class": "LlamaCppClient",
+                "required_libraries": ["openai"],
+                "api_key_env": None,
+                "requires_api_key": False
             }
+
         },
         
         "tokenizers": {
@@ -99,6 +109,12 @@ class UnifiedLoader:
                 "module": "ai_managers.tokens.token_providers.openrouter_tokenizer",
                 "class": "OpenRouterTokenizer",
                 "required_libraries": ["tiktoken", "google.genai", "tokenizers"],
+                "needs_model": True
+            },
+            "llama_cpp": {
+                "module": "ai_managers.tokens.token_providers.opensource_tokenizer",
+                "class": "OpenSourceTokenizer",
+                "required_libraries": ["tokenizers"],
                 "needs_model": True
             }
         },

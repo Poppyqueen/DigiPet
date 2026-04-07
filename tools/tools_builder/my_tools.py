@@ -2109,7 +2109,7 @@ prepare_food_tools=[
                 },
                 "cooking_apparatus_id": {
                     "type": "number",
-                    "description": "The ID of a cookery or hearth item that allows for the preparation of meals."
+                    "description": "The ID of a cookery or hearth item that allows for the preparation of meals. Culinary equipment."
                 }
             },
             "required": ["process", "items_list", "cooking_apparatus_id"],

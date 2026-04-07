@@ -10,7 +10,7 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
 *   **Core Game:** The main game logic and Pygame initialization are handled in `game.py`.
 
-*   **AI Agent & Interface:** An AI chatbot module, `CLIChatbot`, acts as an endpoint for the AI agent and is integrated into `game.py`. It manages signals and interactions. It uses a providers ABCs system supporting OpenAI, Gemini, Groq and Ollama.
+*   **AI Agent & Interface:** An AI chatbot module, `CLIChatbot`, acts as an endpoint for the AI agent and is integrated into `game.py`. It manages signals and interactions. It uses a providers ABCs system supporting OpenAI, Gemini, Groq and Ollama, OpenRouter and Llama.cpp.
 
 *   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types are defined in `inventory_items/item_pydantic_models.py`. A variety of items have unique keys and validation provided by the pydantic models. 
 
@@ -129,7 +129,23 @@ OPENAI_API_KEY=your_openai_api_key_here
 python -m game
 ```
 
-The configuration screen will appear first — create a new agent or load a previously created one.
+
+### Running with Llama.cpp (Local)
+
+To use a local model with this framework, you must serve your GGUF file using the `llama-server` binary included with llama.cpp.
+
+**Standard Command:**
+llama-server 
+
+**Framework Configuration:**
+Ensure your `LlamaCppProv` is pointing to the correct address. By default, it looks for:
+http://localhost:8080/v1
+
+in:
+    ai_managers/agents/agent_clients/llama_cpp_client.py
+
+    ai_managers/simple_ai/providers/llama_cpp_provider.py
+
 
 ## What to Expect
 

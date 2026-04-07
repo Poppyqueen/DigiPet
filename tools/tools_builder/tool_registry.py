@@ -439,7 +439,8 @@ class ToolRegistry:
             "cook_technology": { # It is clean, now what?, if touching this first think about what to do with the consumables
                 "functions": {"prepare_food": self.cook.prepare_food},
                 "definitions": prepare_food_tools,
-                "item_types": ["culinary_equipment"]
+                "item_types": ["culinary_equipment"],
+                "use_level": "dual_use"
             },
 
             "tv": { # rename this, could be a TV or a radio, specifically a one to many and channel/station based information reciever device.

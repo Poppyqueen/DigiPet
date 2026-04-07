@@ -70,3 +70,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+''' example, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider llama_cpp \
+  --model unsloth/gemma-4-E2B-it-GGUF:Q4_K_M \
+  --types consumable \
+  --prompt "hotdog"
+'''
