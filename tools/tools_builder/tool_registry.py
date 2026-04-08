@@ -312,9 +312,9 @@ class ToolRegistry:
 
         if self.bluesky_enabled:
             try:
-                from tools.tools_folder.bluesky_handle import bluesky_bot
-                self.bluesky = bluesky_bot(state_manager, signal, self.images_lab)
-                print("BlueskyBot instance created.")
+                from tools.tools_folder.bluesky_controller import BlueskyTools
+                self.bluesky = BlueskyTools(state_manager, signal, self.images_lab)
+                print("BlueskyTools instance created.")
             except Exception as e:
                 print(f"Error with Bluesky tools: {e}")
 
@@ -511,7 +511,7 @@ class ToolRegistry:
                 },
 
 
-            "water_source": { 
+            "water_feature": { 
                 "functions": {
                     "drink_from_water_point": self.water_points.drink_from_water_point,
                     "wash_self_water_feature":   self.water_points.wash_self_water_feature, # It's back!
@@ -688,12 +688,17 @@ class ToolRegistry:
         if self.bluesky:
             self.tool_definitions["bluesky_social"] = {
                 "functions": {
-                    "post_bluesky":                 self.bluesky.post_bluesky,
-                    "get_posts_needing_responses":  self.bluesky.get_posts_needing_responses, # This is probably broken, needs help
-                    "post_reply":                   self.bluesky.post_reply
-                    # Get a pairing detailed function for notifications 
-                    # Get a paginated function to examine our own account posts as a summary, entries with post content, engagement metrics, and ID to be used for the above two functions
-                    # Get a detailed examine post that returns all the information about the post and its responses, not the threads of the responses, but only the direct responses to the post
+                    "get_notifications" : self.bluesky.get_notifications,
+                    "mark_notifications_seen": self.bluesky.mark_notifications_seen,
+                    "list_feeds": self.bluesky.list_feeds,
+                    "get_feed": self.bluesky.get_feed,
+                    "get_author_posts": self.bluesky.get_author_posts,
+                    "get_thread": self.bluesky.get_thread,
+                    "get_account_summary": self.bluesky.get_account_summary,
+                    "get_posts_needing_responses": self.bluesky.get_posts_needing_responses,
+                    "post": self.bluesky.post,
+                    "post_with_image": self.bluesky.post_with_image,
+                    "respond_to_post": self.bluesky.respond_to_post
                 },
                 "definitions": bluesky_tools,
                 # "room_types": ["bluesky_social"],

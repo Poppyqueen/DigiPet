@@ -817,5 +817,31 @@
         "type_locked": false,
         "props_seed": 0
       }
+    },
+    {
+      "name": "Smartphone",
+      "descriptions": [
+        "A sleek, glass-fronted mobile device.",
+        "A gateway to the digital world, capable of browsing the web and accessing social media."
+      ],
+      "static": false,
+      "type": [
+        "bluesky_social_endpoint",
+        "toggleable"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 5,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The screen glows with a vibrant, backlit interface.",
+        "off_description": "The screen is a dark, reflective slab of glass.",
+        "on_sequence": "You press the power button; the screen flashes a logo before settling into a bright, interactive home screen.",
+        "off_sequence": "You hold the side button; the display dims rapidly and fades into total darkness.",
+        "perishable": false,
+        "ticks_lasting": 10,
+        "ticks_elapsed": 0
+      }
     }
 ]

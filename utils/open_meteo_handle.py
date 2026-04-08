@@ -7,20 +7,61 @@ import os
 
 from .wmo_codes import WMOWeatherCode
 
-# Setup the Open-Meteo API client with cache and retry on error
-os.makedirs(".cache", exist_ok=True)
+import math
+import os
 
-cache_session = requests_cache.CachedSession(
-    '.cache/openmeteo',
-    backend='filesystem',
-    expire_after=900,
-    urls_expire_after={
-    '*/elevation*': 2592000, # 30 days   
-}
-)
+# --- MOCK CONTROL FLAG ---
+USE_MOCK = False  # Keep as False!
+# -------------------------
 
-retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
-openmeteo = openmeteo_requests.Client(session=retry_session)
+if USE_MOCK:
+    class MockVariable:
+        def __init__(self, val): self.val = val
+        def Value(self): return self.val
+
+    class MockCurrent:
+        def __init__(self, is_marine=False):
+            # Weather mapping (index: value)
+            self.data = {0: 45.0, 1: 21.0, 2: 1.0, 3: 12.0, 4: 180.0, 14: 3.0}
+            if is_marine: # Marine mapping
+                self.data = {0: 1.5, 1: 8.0, 9: 2.0, 11: 19.0}
+        def Variables(self, i): return MockVariable(self.data.get(i, 0.0))
+
+    class MockResponse:
+        def __init__(self, is_marine=False): self.is_m = is_marine
+        def Current(self): return MockCurrent(self.is_m)
+        def Timezone(self): return b"UTC"
+        def TimezoneAbbreviation(self): return b"UTC"
+
+    class MockClient:
+        def weather_api(self, url, params=None):
+            return [MockResponse(is_marine=("marine" in url))]
+        def get(self, *args, **kwargs): # For Elevation API
+            class Res:
+                def raise_for_status(self): pass
+                def json(self): return {"elevation": [250.0]}
+            return Res()
+
+    openmeteo = MockClient()
+    retry_session = MockClient()
+    print("⚠️  OPEN-METEO MOCK MODE ACTIVE: No real API calls will be made.")
+
+else:
+    # --- ORIGINAL INITIALIZATION ---
+    # Setup the Open-Meteo API client with cache and retry on error
+    os.makedirs(".cache", exist_ok=True)
+
+    cache_session = requests_cache.CachedSession(
+        '.cache/openmeteo',
+        backend='filesystem',
+        expire_after=900,
+        urls_expire_after={
+        '*/elevation*': 2592000, # 30 days   
+    }
+    )
+
+    retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+    openmeteo = openmeteo_requests.Client(session=retry_session)
 
 _WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 _MARINE_URL  = "https://marine-api.open-meteo.com/v1/marine"
@@ -178,7 +219,7 @@ class OpenMeteoLoc:
         d = self.get_structured_weather()
         return (
             f"Current Weather Information:\n"
-            f"Is it daytime?:        {d['is_day']}\n"
+            f"Is it daytime?:        {d['is_day'] if not USE_MOCK else "Sorry, I can't tell for sure"}\n"
 
             f"Apparent temperature:  {self._format_value(d['temperature'], '°C')}\n"
             f"Relative humidity:     {self._format_value(d['humidity'], '%')}\n"

@@ -411,7 +411,7 @@ discogs_tools=[
                 },
                 # "youtube_links": {
                 #     "type": "boolean",
-                #     "description": "If set to true, it will return the youtube links for the tracks in the Discogs database. Defaults to false."
+                #     "description": "If set to true, it will return the youtube links for the tracks in the Discogs database. Defaults to False."
                 # }
             },
             "required": ["master_id"],
@@ -1085,74 +1085,74 @@ base_tools=[
     }
 ]
 
-bluesky_tools=[
-    {
-        "type": "function",
-        "name": "post_bluesky",
-        "description": "Publishes a message to the Bluesky social media platform.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "description": "The text content of the post. Consider keeping it concise (e.g., under 250 characters)."
-                },
-                "image_post": {
-                    "type": "boolean",
-                    "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
-                },
-                "image_name": {
-                    "type": "string",
-                    "description": "If image_post is true, provide the exact name for the image in archive (from an Arts Book, 'ArtBooksTM' or a collection of SVGs you own) to accompany the post. If you fail to provide a valid name from this archive the post will fail."
-                },
-                "hashtags": {
-                    "type": "string",
-                    "description": "Optional hashtags to include in the post, string like '#AI#DigitalMind#Testing' Will be added at the end of the post."
-                }
-            },
-            "required": [
-                "message"
-            ],
-            "additionalProperties": False
-        }
-    },    
-    {
-        "type": "function",
-        "name": "get_posts_needing_responses",
-        "description": "Get the posts from your account that need responses.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [
-            ],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
-        "name": "post_reply",
-        "description": "Post a reply to a specific Bluesky post.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "uri": {
-                    "type": "string",
-                    "description": "The uri of the post to reply to."
-                },
-                "response_text": {
-                    "type": "string",
-                    "description": "The content of the reply."
-                }
-            },
-            "required": [
-                "uri",
-                "response_text"
-            ],
-            "additionalProperties": False
-        }
-    }
-]
+# bluesky_tools=[
+#     {
+#         "type": "function",
+#         "name": "post_bluesky",
+#         "description": "Publishes a message to the Bluesky social media platform.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "message": {
+#                     "type": "string",
+#                     "description": "The text content of the post. Consider keeping it concise (e.g., under 250 characters)."
+#                 },
+#                 "image_post": {
+#                     "type": "boolean",
+#                     "description": "Set to true to include an image of your current room with the post. Set to False for a text-only post."
+#                 },
+#                 "image_name": {
+#                     "type": "string",
+#                     "description": "If image_post is true, provide the exact name for the image in archive (from an Arts Book, 'ArtBooksTM' or a collection of SVGs you own) to accompany the post. If you fail to provide a valid name from this archive the post will fail."
+#                 },
+#                 "hashtags": {
+#                     "type": "string",
+#                     "description": "Optional hashtags to include in the post, string like '#AI#DigitalMind#Testing' Will be added at the end of the post."
+#                 }
+#             },
+#             "required": [
+#                 "message"
+#             ],
+#             "additionalProperties": False
+#         }
+#     },    
+#     {
+#         "type": "function",
+#         "name": "get_posts_needing_responses",
+#         "description": "Get the posts from your account that need responses.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#             },
+#             "required": [
+#             ],
+#             "additionalProperties": False
+#         }
+#     },
+#     {
+#         "type": "function",
+#         "name": "post_reply",
+#         "description": "Post a reply to a specific Bluesky post.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "uri": {
+#                     "type": "string",
+#                     "description": "The uri of the post to reply to."
+#                 },
+#                 "response_text": {
+#                     "type": "string",
+#                     "description": "The content of the reply."
+#                 }
+#             },
+#             "required": [
+#                 "uri",
+#                 "response_text"
+#             ],
+#             "additionalProperties": False
+#         }
+#     }
+# ]
 
 
 mirror_tools = [ # This is really old
@@ -2234,7 +2234,7 @@ maze_tools=[
                 },
                 "override": {
                     "type": "boolean",
-                    "description": "Whether to override an existing maze if one is already active on this interface. Defaults to false. Fails operation if false and a maze is active and flag is false."
+                    "description": "Whether to override an existing maze if one is already active on this interface. Defaults to False. Fails operation if False and a maze is active and flag is False."
                 }
             },
             "required": ["interface_id"],
@@ -2278,4 +2278,207 @@ maze_tools=[
             "additionalProperties": False
         }
     }
+]
+
+
+bluesky_tools = [
+  {
+    "type": "function",
+    "name": "get_notifications",
+    "description": "Fetch your notifications. Does NOT mark them seen. Call mark_notifications_seen() after processing.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "unread_only": { "type": "boolean", "description": "Only unread (default True)." },
+        "limit": { "type": "integer", "description": "Per page, max 100." },
+        "cursor": { "type": ["string", "null"], "description": "From previous response for next page." },
+        "page": { "type": "integer", "description": "Page number for tracking." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "mark_notifications_seen",
+    "description": "Advance the server seen cursor. Best practice: default empty seen_at to use the current timestamp after calling get_notifications().",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "seen_at": { "type": ["string", "null"], "description": "ISO timestamp (defaults to now)." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "list_feeds",
+    "description": "Return the registry of named feeds. Call before get_feed() to see valid names.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_timeline",
+    "description": "Fetch your home timeline (accounts you follow).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "limit": { "type": "integer", "description": "Per page, max 100." },
+        "cursor": { "type": ["string", "null"], "description": "From previous response for next page." },
+        "page": { "type": "integer", "description": "Page number for tracking." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_feed",
+    "description": "Fetch posts from a named feed or raw AT URI.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "name_or_uri": { "type": "string", "description": "Name from list_feeds() or a raw 'at://' URI." },
+        "limit": { "type": "integer", "description": "Per page." },
+        "cursor": { "type": ["string", "null"], "description": "From previous response for next page." },
+        "page": { "type": "integer", "description": "Page number for tracking." }
+      },
+      "required": ["item_id", "name_or_uri"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_author_posts",
+    "description": "Fetch posts from a specific author.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "actor": { "type": "string", "description": "Handle or DID." },
+        "limit": { "type": "integer", "description": "Per page." },
+        "cursor": { "type": ["string", "null"], "description": "From previous response for next page." },
+        "page": { "type": "integer", "description": "Page number for tracking." }
+      },
+      "required": ["item_id", "actor"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_thread",
+    "description": "Fetch a post thread. Increment page to go deeper. Check pagination.has_more — if True, request page + 1.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "uri": { "type": "string", "description": "AT URI of the root post." },
+        "page": { "type": "integer", "description": "1 = shallowest, increment for deeper replies." }
+      },
+      "required": ["item_id", "uri"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_account_summary",
+    "description": "Return your own profile and recent posts with engagement stats.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "limit": { "type": "integer", "description": "Number of recent posts to include." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_posts_needing_responses",
+    "description": "Return our own posts whose threads contain replies that @-mention you.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "limit": { "type": "integer", "description": "How many of our recent posts to scan. Defaults to 10 if missing." }
+      },
+      "required": ["item_id"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "post",
+    "description": "Publish a plain post.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "text": { "type": "string", "description": "Post text (max 300 graphemes)." },
+        "langs": { "type": "array", "items": { "type": "string" }, "description": "BCP-47 language tags e.g. ['en']." }
+      },
+      "required": ["item_id", "text"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "post_with_image",
+    "description": "Publish a post with a single image.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "text": { "type": "string", "description": "Post text (max 300 graphemes)." },
+        "image_name": { "type": "string", "description": "Name of the image in an known images you've created in a library or notebook." },
+        "image_alt": { "type": "string", "description": "Alt text." },
+        "langs": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["item_id", "text", "image_name", "image_alt"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "respond_to_post",
+    "description": "Reply to a post by URI.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "uri": { "type": "string", "description": "AT URI of the post to reply to." },
+        "text": { "type": "string", "description": "Reply text (max 300 graphemes)." },
+        "langs": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["item_id", "uri", "text"],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "update_profile_description",
+    "description": "Update your profile bio.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "description": { "type": "string", "description": "New bio text." }
+      },
+      "required": ["item_id", "description"],
+      "additionalProperties": False
+    }
+  }
 ]

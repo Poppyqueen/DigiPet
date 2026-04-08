@@ -1,4 +1,4 @@
-
+# TODO: this is related to a image book item thing, find it and put everything related to it in one place.
 
 from lxml import etree
 from pathlib import Path

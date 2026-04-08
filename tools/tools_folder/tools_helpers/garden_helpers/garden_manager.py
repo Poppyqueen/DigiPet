@@ -603,6 +603,7 @@ class GardenManager:
             lines.append(
                 f"  Plot {pid}:\n"
                 f"    Plant : {plant.plant_type} (UID: {plant.plant_uid})"
+                f" stage: {plant.current_stage_name} water: {self.simulation.describe_water_status(plant)}"
             )
 
         return "\n".join(lines)
@@ -630,7 +631,7 @@ class GardenManager:
             plant = PlantState.from_dict(slot["plant"])
             lines.append(
                 f"  Slot {sid}:\n"
-                f"    Plant : {plant.plant_type} (UID: {plant.plant_uid}) stage: {plant.current_stage_name}"
+                f"    Plant : {plant.plant_type} (UID: {plant.plant_uid}) stage: {plant.current_stage_name} water: {self.simulation.describe_water_status(plant)}"
             )
 
         return "\n".join(lines)
