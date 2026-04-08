@@ -843,5 +843,32 @@
         "ticks_lasting": 10,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Damaged iPod",
+      "descriptions": [
+        "A classic silver iPod with a heavily scratched screen.",
+        "The speaker grilles are dented and clearly malfunctioning.",
+        "The headphone jack feels loose and unresponsive."
+      ],
+      "static": false,
+      "type": [
+        "discogs_endpoint",
+        "toggleable"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 5,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The screen glows dimly, displaying a low-resolution menu.",
+        "off_description": "The device remains a dark, silent slab of metal and glass.",
+        "on_sequence": "You click the center button; the screen flickers to life with a weak, pale light as the internal hard drive whirs with a faint, struggling mechanical grind.",
+        "off_sequence": "You hold the power button down until the display fades into black, leaving only the cold reflection of the room on the cracked glass.",
+        "perishable": false,
+        "ticks_lasting": 10,
+        "ticks_elapsed": 0
+      }
     }
 ]

@@ -77,6 +77,6 @@ if __name__ == "__main__":
 python -m inventory_items.items_validation.items_schema_test \
   --provider openrouter \
   --model google/gemma-4-26b-a4b-it \
-  --types bluesky_social_endpoint toggleable \
-  --prompt "cellphone"
+  --types discogs_endpoint toggleable \
+  --prompt "iPod, broken speakers and no headphones."
 '''

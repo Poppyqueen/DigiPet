@@ -651,19 +651,21 @@ class ToolRegistry:
 
 
         if self.discogs_handle:
-            self.tool_definitions["discogs"] = { # Needs clean up probs 
+            self.tool_definitions["discogs"] = { 
                 "functions": {
                     "discogs_search_artist_by_name":                self.discogs_handle.search_artist_by_name,
-                    "discogs_get_artist_master_releases_overview":  self.discogs_handle.get_artist_master_releases_overview,
-                    "discogs_get_master_release_tracklist":         self.discogs_handle.get_master_release_tracklist,
-                    "discogs_get_collection_summary":               self.discogs_handle.get_collection_summary,
+                    "discogs_get_artist_discography":               self.discogs_handle.get_artist_discography,
+                    "discogs_search_master_by_title":               self.discogs_handle.search_master_by_title,
+                    "discogs_get_master_tracklist":                 self.discogs_handle.get_master_tracklist,
+
                     "discogs_get_wantlist_summary":                 self.discogs_handle.get_wantlist_summary,
-                    "discogs_search_master_release_by_name":        self.discogs_handle.search_master_release_by_name,
+                    "discogs_get_wantlist_unique_artists":          self.discogs_handle.get_wantlist_unique_artists,
+
                     "discogs_get_collection_unique_artists":        self.discogs_handle.get_collection_unique_artists,
-                    "discogs_get_wantlist_unique_artists":          self.discogs_handle.get_wantlist_unique_artists
+                    "discogs_get_collection_summary":               self.discogs_handle.get_collection_summary,
+
                 },
                 "definitions": discogs_tools,
-                # "room_types": ["discogs", "music_room"],
                 "item_types": ["discogs_endpoint"], # Only 'discogs_endpoint', a computer or anything could be discogs endpoint
                 "use_level": "dual_use"
             }
@@ -701,11 +703,10 @@ class ToolRegistry:
                     "respond_to_post": self.bluesky.respond_to_post
                 },
                 "definitions": bluesky_tools,
-                # "room_types": ["bluesky_social"],
                 "item_types": ["bluesky_social_endpoint"],
-                "use_level": "dual_use"
-                # Get display and agent information for this, get a simple notifications screen that tracks unread notifications and displays a small metadata summary of them.
-                # TODO: Think if we want an agent_information key for bluesky 
+                "use_level": "dual_use",
+                # "display_information": self.bluesky.get_notifications, 
+                # "agent_information": self.bluesky.get_notifications # Think if we want this here
             }
             print("Bluesky tools added to unified definitions.")
         

@@ -316,34 +316,6 @@ musicbrainz_tools=[
 discogs_tools=[
     {
         "type": "function",
-        "name": "discogs_get_wantlist_unique_artists",
-        "description": "Retrieves a list of the unique artists in the user's Discogs wantlist, it supports pagination. Defaults to page 1.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "number",
-                    "description": "The page number to retrieve (1-indexed)."
-                }
-            },
-            "required": [],
-            "additionalProperties": False
-        }
-    },
-{
-        "type": "function",
-        "name": "discogs_get_collection_unique_artists",
-        "description": "Retrieves a list of the unique artists in the user's Discogs collection.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-            },
-            "required": [],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function",
         "name": "discogs_search_artist_by_name",
         "description": "Searches for an artist by name on Discogs and returns their ID and main artist page URL. This tool prioritizes exact matches.",
         "parameters": {
@@ -360,28 +332,32 @@ discogs_tools=[
     },
     {
         "type": "function",
-        "name": "discogs_search_master_release_by_name",
-        "description": "Searches for master releases by title and optionally by artist on Discogs, returning the top results..",
+        "name": "discogs_search_master_by_title",
+        "description": "Searches for master releases by title and optionally by artist on Discogs, returning the top results.",
         "parameters": {
             "type": "object",
             "properties": {
-                "release_title": {
+                "title": {
                     "type": "string",
                     "description": "The title of the master release to search for."
                 },
                 "artist_name": {
                     "type": "string",
                     "description": "The name of the artist to narrow down the search."
+                },
+                "limit" : { 
+                    "type": "number",
+                    "description": "The number of results to return. Defaults to 5, max 10"
                 }
             },
-            "required": ["release_title"],
+            "required": ["title"],
             "additionalProperties": False
         }
     },
     {
         "type": "function",
-        "name": "discogs_get_artist_master_releases_overview",
-        "description": "Retrieves a paginated list of master release titles for a given artist ID. You need an ID from the tool search_artist_by_name to call this.",
+        "name": "discogs_get_artist_discography",
+        "description": "List master releases for an artist, using server-side pagination..",
         "parameters": {
             "type": "object",
             "properties": {
@@ -392,6 +368,10 @@ discogs_tools=[
                 "page": {
                     "type": "number",
                     "description": "The page number to retrieve (starts from 1). Defaults to 1"
+                },
+                "only_main": {
+                    "type": "boolean",
+                    "description": "If True (default), skip releases where the artist is credited as a guest/feature/remix rather than main artist."
                 }
             },
             "required": ["artist_id"],
@@ -400,7 +380,7 @@ discogs_tools=[
     },
     {
         "type": "function",
-        "name": "discogs_get_master_release_tracklist",
+        "name": "discogs_get_master_tracklist",
         "description": "Retrieves detailed information about the tracks of a specific Discogs Master release.",
         "parameters": {
             "type": "object",
@@ -408,11 +388,7 @@ discogs_tools=[
                 "master_id": {
                     "type": "number",
                     "description": "The Discogs ID of the Master release."
-                },
-                # "youtube_links": {
-                #     "type": "boolean",
-                #     "description": "If set to true, it will return the youtube links for the tracks in the Discogs database. Defaults to False."
-                # }
+                }
             },
             "required": ["master_id"],
             "additionalProperties": False
@@ -436,6 +412,18 @@ discogs_tools=[
     },
     {
         "type": "function",
+        "name": "discogs_get_wantlist_unique_artists",
+        "description": "Retrieves a list of the unique artists in the user's Discogs wantlist.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
         "name": "discogs_get_collection_summary",
         "description": "Retrieves a summary of the authenticated user's Discogs music collection with pagination.",
         "parameters": {
@@ -449,7 +437,20 @@ discogs_tools=[
             "required": [],
             "additionalProperties": False
         }
+    },    
+    {
+        "type": "function",
+        "name": "discogs_get_collection_unique_artists",
+        "description": "Retrieves a list of unique artists from the authenticated user's Discogs music collection.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+            "additionalProperties": False
+        }
     },
+
 ]
 youtube_playlister_tools=[
     {
