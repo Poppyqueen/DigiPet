@@ -270,12 +270,15 @@ class BaseChatbot(ABC):
 
         print(f"\n🤖 Thinking… (depth {depth})")
 
+        dev_message = self._build_developer_message() + "Current recursion depth: " + str(depth) + " of " + str(self.max_recursion_depth) + "."
+        # Try adding the recursion depth into context, might improve stuff
+
         try:
             function_flag, response_content = await self.ai.ai_response(
                 current_mem_structure if isinstance(current_mem_structure, dict) else {},
                 depth,
                 self.max_recursion_depth,
-                developer_message=self._build_developer_message(),
+                developer_message=dev_message,
             )
 
             # ── Function call branch ───────────────────────────────────
