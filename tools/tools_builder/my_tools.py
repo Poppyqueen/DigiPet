@@ -159,10 +159,14 @@ art_book_tools=[
     {
         "type": "function",
         "name": "create_svg_image",
-        "description": "'ArtBooksTM', allows you to create a new SVG image with the given name and content. It will be saved into an Arts Folder and saved with metadata.",
+        "description": "Images creation tool, any drawing area that owns a collection of art of your own making, can be used to create new images. You can use this tool to create new entries in your drawing area by providing the SVG content for the image you want to create, along with a name and concept for it.",
         "parameters": {
             "type": "object",
             "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the drawing area item."
+                },
                 "image_name": {
                     "type": "string",
                     "description": "The title of the image you want to make."
@@ -176,18 +180,44 @@ art_book_tools=[
                     "description": "The SVG XML format for the image you want to make."
                 }
             },
-            "required": ["image_name", "content"],
+            "required": ["item_id", "image_name", "content"],
             "additionalProperties": False
         }
     },
     {
         "type": "function",
-        "name": "read_archive",
-        "description": "Reads the archived metadata for your 'ArtBooksTM' collection. Lets you see what images you have saved in your Arts Folder.",
+        "name": "read_image_archive",
+        "description": "Reads the archived metadata for any specified collection. Lets you see what images you have saved in it.",
         "parameters": {
             "type": "object",
-            "properties": {},
-            "required": [],
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the drawing area item."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "delete_image",
+        "description": "Deletes an image from your item collection.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the drawing area item."
+                },
+                "image_name": {
+                    "type": "string",
+                    "description": "The name of the image to delete."
+                }
+
+            },
+            "required": ["item_id", "image_name"],
             "additionalProperties": False
         }
     }
@@ -2442,13 +2472,14 @@ bluesky_tools = [
     "parameters": {
       "type": "object",
       "properties": {
-        "item_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "bluesky_terminal_id": { "type": "integer", "description": "Bluesky terminal item ID." },
+        "image_archive_id": { "type": "integer", "description": "ID of the image in the image container item from which to take the image from." },
         "text": { "type": "string", "description": "Post text (max 300 graphemes)." },
-        "image_name": { "type": "string", "description": "Name of the image in an known images you've created in a library or notebook." },
+        "image_name": { "type": "string", "description": "Name of the image in an known images you've created." },
         "image_alt": { "type": "string", "description": "Alt text." },
         "langs": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["item_id", "text", "image_name", "image_alt"],
+      "required": ["bluesky_terminal_id", "image_archive_id", "text", "image_name", "image_alt"],
       "additionalProperties": False
     }
   },

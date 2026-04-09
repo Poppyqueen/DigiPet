@@ -171,7 +171,7 @@ class ToolRegistry:
         self.base_tools     = BaseTools(state_manager)
         self.room_tools     = main_tools_handle(state_manager, signal, memory_manager, config_manager, open_meteo)
         self.garden_manager = GardenController(state_manager, signal, open_meteo)
-        self.images_lab     = ImagesLab(subdirectory)
+        self.images_lab     = ImagesLab(state_manager, signal)
         self.dispenser_tools = DispenserTools(state_manager, signal, self.item_store)
         self.auction_house = AuctionHouse(state_manager, item_store=self.item_store)
         self.maze           = MazeController(state_manager, signal)
@@ -399,15 +399,6 @@ class ToolRegistry:
                 "item_types": ["book"],
                 "use_level": "inventory_only",
             },
-            "art_book": { # What to do about this? Rename to create drawing, introduce narrative texts on using different items, from notebooks with fountain pens, to hand-held drawing tablets, and professional stations, each archive needs to be tied to the item in some way, maybe make some UID? that is created for each item the first time one interacts with it, and registers it to the global datbase, why not use item ID? bypassing any fears that it might for some reason change, it shouldn't, but making a unique tracking ID for it would make sure that nobody else touches it. Maybe... keep the data like the book? the difference is that we can't save svgs directly, just make a pointer to a folder? needs a lot of stuff
-                "functions": {
-                    "create_svg_image": self.images_lab.create_svg_image,
-                    "read_archive":     self.images_lab.read_archive,
-                },
-                "definitions": art_book_tools,
-                "item_types": ["art_book"],
-                "use_level": "inventory_only",
-            },
             "auction": {
                 "functions": { # These methods need love
                     "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
@@ -458,6 +449,17 @@ class ToolRegistry:
 
 
     # New, refactored affordances to be more general
+
+            "art_book": {
+                "functions": {
+                    "create_svg_image": self.images_lab.create_svg_image,
+                    "delete_image": self.images_lab.delete_image,
+                    "read_image_archive":     self.images_lab.read_image_archive,
+                },
+                "definitions": art_book_tools,
+                "item_types": ["drawing_area"],
+                "use_level": "inventory_only",
+            },
 
             "book_creation": { # Bookbinding and other methods
                 "functions": {"create_book_item": self.book_tools.create_book_item},
@@ -639,7 +641,7 @@ class ToolRegistry:
                     "youtube_create_playlist":          self.youtube.create_playlist,
                     "youtube_add_video_to_playlist":    self.youtube.add_video_to_playlist,
                     #"open_youtube_item":        self.youtube.open_youtube_item,
-                    # Add functions to examine an existing playlist, get its details, etc.
+                    # Add functions to examine an existing playlist, get its details, etc. Maybe playlists can be item based? 
                 },
                 "definitions": youtube_playlister_tools,
                 #"room_types": ["youtube_playlists", "music_room"],
@@ -672,7 +674,7 @@ class ToolRegistry:
             print("Discogs tools added to unified definitions.")
 
         if self.musicbrainz_:
-            self.tool_definitions["musicbrainz"] = { # Needs better handling of the API
+            self.tool_definitions["musicbrainz"] = { # Does this need anything?
                 "functions": {
                     "musicbrainz_get_artist_details_and_works":     self.musicbrainz_.get_artist_details_and_works,
                     "musicbrainz_search_artists_by_name":           self.musicbrainz_.search_artists_by_name,

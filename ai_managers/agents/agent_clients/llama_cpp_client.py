@@ -7,11 +7,15 @@ from typing import List, Dict, Any, Optional
 import json
 from utils.pydantic_models import StructuredMemory
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class LlamaCppClient(AbstractLLMClient):
     def __init__(self, api_key: str = "not-needed"):
         self.client = OpenAI(
-            base_url="http://localhost:8080/v1", # TODO: Make this configurable?
+            base_url=os.getenv("LLAMA_CPP_BASE_URL") or "http://localhost:8080/v1", # TODO: Make this configurable?
             api_key=api_key,  # llama.cpp ignores this but the SDK requires it
         )
 

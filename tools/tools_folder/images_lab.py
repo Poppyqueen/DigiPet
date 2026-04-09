@@ -1,199 +1,188 @@
-import os
-import json
+"""
+images_lab.py
+─────────────
+Controller layer for the per-item SVG image archive.
 
-import re
+Owns the ``state_manager`` reference, resolves item access, retrieves / mints
+stable UIDs, and exposes agent-facing tool methods that return plain ``str``.
 
-from utils.loc_datetime import datetime
+All archive logic (filesystem I/O, metadata, validation) lives in
+``images_archive_manager.py``.  This file is a thin shell that follows the
+controller pattern defined in the framework skill.
 
-from tools.tools_folder.tools_helpers.svg_validator import SVGValidator
+Typical setup in the tool registry
+────────────────────────────────────
+    from tools.tools_folder.images_lab import ImagesLab
 
-TOTAL_IMAGES_LIMIT=10000 # TODO: Make this configurable
+    lab = ImagesLab(state_manager, signal_callback)
+    registry.register("create_svg_image",   lab.create_svg_image)
+    registry.register("delete_image",       lab.delete_image)
+    registry.register("read_image_archive", lab.read_image_archive)
+"""
 
+from __future__ import annotations
 
-def make_string_file_safe(input_string):
-    """
-    Sanitizes a string to be used as a file name.
-    
-    This function replaces characters that are not safe for file names on most
-    operating systems with an underscore '_'.
-    
-    Args:
-        input_string (str): The string to sanitize.
-        
-    Returns:
-        str: The sanitized string.
-    """
-    # Define a pattern of characters that are generally unsafe for file names.
-    # The pattern matches any character that is NOT a letter (a-z, A-Z),
-    # a number (0-9), an underscore (_), a hyphen (-), or a period (.).
-    # The `re.IGNORECASE` flag makes the regex case-insensitive.
-    unsafe_chars_pattern = re.compile(r'[^\w\s\.-]')
-    
-    # Replace unsafe characters with an underscore.
-    safe_string = unsafe_chars_pattern.sub('_', input_string)
-    
-    # Also, replace spaces with underscores for better cross-platform compatibility.
-    safe_string = safe_string.replace(' ', '_')
-    
-    # Trim leading/trailing whitespace, which could be an issue.
-    safe_string = safe_string.strip()
-    
-    return safe_string
+from typing import TYPE_CHECKING
+
+from tools.tools_folder.tools_helpers.images_helpers.images_archive_manager import (
+    ImagesArchiveManager,
+    generate_uid,
+)
+
+if TYPE_CHECKING:
+    from inventory_items.inventory_manager import InventoryHouseManager
+
+# Item type this controller operates on.
+IMAGES_LAB_ITEM_TYPE = "drawing_area"
+
+# The key used to store the stable UID inside item state.
+_UID_KEY = "images_lab_uid"
 
 
 class ImagesLab:
-    def __init__(self, base_path):
-        self.base_path = os.path.join(base_path, "images_archive")
-        os.makedirs(self.base_path, exist_ok=True)
-        self.svg_validator = SVGValidator()
+    """
+    Thin controller that exposes SVG-archive tools to the agent.
 
+    Responsibilities
+    ────────────────
+    - Locate items via ``state_manager.find_item``.
+    - Ensure every item has a stable UID (mint one and persist it on first use).
+    - Instantiate ``ImagesArchiveManager`` with the item's UID and delegate all
+      archive work to it.
+    - Return plain ``str`` results to the agent.
 
-    def _int_get_arch(self)->list:
+    No filesystem logic lives here — this class only orchestrates.
+    """
+
+    def __init__(self, state_manager, signal_callback) -> None:
+        self.state_manager: InventoryHouseManager = state_manager
+        self._signal_callback = signal_callback
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _get_manager(self, item_id: int) -> tuple[ImagesArchiveManager | None, str]:
         """
-        Will return a list of dictionaries. Each dictionary within the list represents an archived image's metadata.
+        Locate *item_id*, ensure it has a UID, and return an ``ImagesArchiveManager``.
+
+        Mints and persists a new UID via ``set_item_attribute`` the first time
+        an item is encountered.
+
+        Args:
+            item_id: The agent-provided item ID.
+
+        Returns:
+            ``(manager, "")`` on success.
+            ``(None, error_message)`` on any failure.
         """
-        metadata_file = os.path.join(self.base_path, "metadata.json")
-        if not os.path.exists(metadata_file):
-            return []
+        found = self.state_manager.find_item(
+            item_id,
+            required_type=IMAGES_LAB_ITEM_TYPE,
+            required_location="accessible",
+        )
+        if not found.success:
+            return None, found.error
 
-        with open(metadata_file, 'r') as f:
-            data = json.load(f)
-            return data
+        item_data = found.item_data
+        uid = item_data.get(_UID_KEY)
+
+        # Mint a UID if this item does not have one yet.
+        if not uid:
+            uid = generate_uid()
+            result = self.state_manager.set_item_attribute(item_id, key=_UID_KEY, value=uid)
+            if not result.success:
+                return None, f"Failed to assign a stable UID to item {item_id}: {result.error}"
+
+        manager = ImagesArchiveManager(self.state_manager.base_path, uid)
+        return manager, ""
 
 
-    def _update_metadata_archive(self, metadata_object):
-        metadata_file = os.path.join(self.base_path, "metadata.json")
-        if not os.path.exists(metadata_file):
-            with open(metadata_file, 'w') as f:
-                f.write("[]")
-        
-        with open(metadata_file, 'r+') as f:
-            data = json.load(f)
-            data.append(metadata_object)
-            f.seek(0)
-            json.dump(data, f, indent=4)
-
-    def _clean_up_entries(self):
+    def get_image_data(self, item_id: int, image_name: str) -> tuple[bytes | None, str]:
         """
-        Checks if the length of the metadata archive reached a limit. If so, remove both the relevant SVG file and its
-        entry for the oldest entries until we are below the configured TOTAL_IMAGES_LIMIT.
+        Resolve item, then return PNG bytes and alt text for *image_name*.
+
+        Returns:
+            ``(png_bytes, alt_text)`` on success.
+            ``(None, error_message)`` on any failure.
         """
-        metadata_file = os.path.join(self.base_path, "metadata.json")
-        if not os.path.exists(metadata_file):
-            return
+        manager, error = self._get_manager(item_id)
+        if manager is None:
+            return None, f"Could not access images lab: {error}"
 
-        try:
-            with open(metadata_file, 'r') as f:
-                data = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            return
+        return manager.get_image_data(image_name)
+    
+    
+    # ------------------------------------------------------------------
+    # Agent-facing tool methods  (all return plain str)
+    # ------------------------------------------------------------------
 
-        if not isinstance(data, list):
-            return
-
-        # Ensure there's room for a new image: reduce until len < TOTAL_IMAGES_LIMIT
-        while len(data) >= TOTAL_IMAGES_LIMIT:
-            # Prefer removing the oldest by time_stamp if available and parseable
-            oldest_index = None
-            oldest_dt = None
-            for i, entry in enumerate(data):
-                ts = entry.get("time_stamp")
-                if not ts:
-                    continue
-                try:
-                    dt = datetime.strptime(ts, "%Y-%m-%d_%H-%M-%S")
-                except Exception:
-                    continue
-                if oldest_dt is None or dt < oldest_dt:
-                    oldest_dt = dt
-                    oldest_index = i
-
-            # Fallback to FIFO (first entry) if no valid time_stamp found
-            if oldest_index is None:
-                oldest_index = 0
-
-            # Remove the file on disk if it exists
-            entry = data.pop(oldest_index)
-            path = entry.get("path")
-            if path:
-                try:
-                    if os.path.exists(path):
-                        os.remove(path)
-                except Exception:
-                    # Ignore file removal errors; continue cleaning metadata
-                    pass
-
-        # Persist updated metadata
-        try:
-            with open(metadata_file, 'w') as f:
-                json.dump(data, f, indent=4)
-        except Exception:
-            # If writing fails, we silently ignore to avoid crashing the caller
-            pass
-
-            #### ----- AT TOOLS ----- ### 
-
-    def create_svg_image(self, image_name, concept, content):
-        # print(f"--- DEBUG ---")
-        # print(f"Length of image_name: {len(str(image_name))}")
-        # print(f"Value of image_name: {str(image_name)[:100]}...") 
-        # print(f"-------------")
-        final_name = make_string_file_safe(image_name)
-        svg_path = os.path.join(self.base_path, f"{final_name}.svg")
-
-        # Validate SVG content
-        validation_result = self.svg_validator.validate_string(content)
-        if not validation_result['valid']:
-            return f"SVG validation failed: {validation_result['error']}"
-
-        try:
-            # Clean up old entries first to ensure room for the new one.
-            self._clean_up_entries()
-
-            # Try to create the image file.
-            try:
-                with open(svg_path, 'w') as svg_file:
-                    svg_file.write(content)
-            except IOError as e:
-                # Handle file creation/writing errors specifically.
-                print(f"An IOError occurred while creating the image file: {e}")
-                return f"Failed to create the image file for concept {concept}. Error: {e}"
-
-            current_datetime = datetime.now()
-            safe_filename_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-
-            # Now try to update the metadata.
-            try:
-                metadata_object = {
-                    "image_name": image_name, # use the original name for clarity
-                    "concept": concept,
-                    "path": svg_path,
-                    "time_stamp": safe_filename_datetime
-                }
-                self._update_metadata_archive(metadata_object)
-                return f"Image for concept {concept} created successfully with name {final_name} on path {svg_path}! Metadata archived for later usage."
-            except Exception as e:
-                # Handle metadata-related errors.
-                # Remove the created image file to avoid orphaned files.
-                if os.path.exists(svg_path):
-                    os.remove(svg_path)
-                print(f"An error occurred while updating metadata: {e}")
-                return f"Image file for concept {concept} was created, but failed to update metadata. The file has been removed to prevent orphaned data. Error: {e}"
-
-        except Exception as e:
-            # This is a general catch-all for any other unexpected errors.
-            print(f"An unexpected error occurred: {e}")
-            return f"An unexpected error occurred during the image creation process. Error: {e}"
-            
-
-    def read_archive(self)->list:
+    def create_svg_image(self, item_id: int, image_name: str, concept: str, content: str) -> str:
         """
-        Reads the metadata and returns an structured string for each of the entries.
-        """
-        metadata_file = os.path.join(self.base_path, "metadata.json")
-        if not os.path.exists(metadata_file):
-            return []
+        Save an SVG image to the archive owned by *item_id*.
 
-        with open(metadata_file, 'r') as f:
-            data = json.load(f)
-            return [f"Image Name: {entry['image_name']}, Concept: {entry['concept']}, Path: {entry['path']}" for entry in data]
+        Creation is **blocked** if the archive is at its limit.  No existing
+        images are ever deleted automatically — use ``delete_image`` to free space.
+
+        Args:
+            item_id:    ID of the images-lab item in the player's inventory or room.
+            image_name: Human-readable label for the image (used as the filename).
+            concept:    Short description of what the image represents.
+            content:    Raw SVG markup.
+
+        Returns:
+            A status string for the agent describing success or the reason for failure.
+        """
+        manager, error = self._get_manager(item_id)
+        if manager is None:
+            return f"Could not access images lab: {error}"
+
+        success, message = manager.create_svg_image(image_name, concept, content)
+        return message
+
+    def delete_image(self, item_id: int, image_name: str) -> str:
+        """
+        Delete a specific image from the archive owned by *item_id*.
+
+        The agent controls which images to remove — this is how space is freed
+        when the archive is full.
+
+        Args:
+            item_id:    ID of the images-lab item.
+            image_name: The exact ``image_name`` as shown in ``read_image_archive``.
+
+        Returns:
+            A status string confirming deletion or explaining why it failed.
+        """
+        manager, error = self._get_manager(item_id)
+        if manager is None:
+            return f"Could not access images lab: {error}"
+
+        success, message = manager.delete_image(image_name)
+        return message
+
+    def read_image_archive(self, item_id: int) -> str:
+        """
+        List all archived images for *item_id*, plus current usage.
+
+        Args:
+            item_id: ID of the images-lab item.
+
+        Returns:
+            A formatted string listing every archived image and archive usage,
+            or a message indicating the archive is empty.
+        """
+        manager, error = self._get_manager(item_id)
+        if manager is None:
+            return f"Could not access images lab: {error}"
+
+        parts = []
+        entries = manager.read_archive()
+
+        if not entries:
+            parts.append("The image archive is empty.")
+        else:
+            parts.extend(entries)
+
+        parts.append(manager.get_archive_status())
+        return "\n".join(p for p in parts if p)

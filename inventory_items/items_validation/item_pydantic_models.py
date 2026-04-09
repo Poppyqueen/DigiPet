@@ -81,7 +81,7 @@ ignore_fingerprint_keys = ["id", "quantity", "static"]
 
 toggable_items = ["tv", "maze_interface"] # This variable is a concept bag, does not affect the code, will be removed later
 
-item_types = ["consumable", "seed", "art_book", "book", "dispenser", "candy_bag"]
+item_types = ["consumable", "seed", "book", "dispenser", "candy_bag"]
 item_types.extend(toggable_items)
 
 refactored_types = [
@@ -97,7 +97,8 @@ refactored_types = [
                     "youtube_playlists_endpoint", "discogs_endpoint",
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
-                    "online_store"
+                    "online_store",
+                    "drawing_area"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -535,6 +536,13 @@ class MazeInterface(ContractMixin):
     )
 
 
+class ImagesLabFields(ContractMixin):
+    model_description: ClassVar[str] = "Digital or physical sketchbooks, drawing notebooks or paginated archives that contain images and where someone can create new entries by adding new images to it. They can be physical or digital."
+    images_lab_uid: str = Field(
+        default="",
+        description="Stable archive UID. Always initialise as empty string — assigned automatically by the tool on first use."
+    )
+
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -577,6 +585,8 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "colab_endpoint": ColabEndpointFields,
 
     "maze_interface": MazeInterface, # You can add more maze types and props for these: tools/tools_folder/tools_helpers/maze_sim/maze_props.py
+
+    "drawing_area": ImagesLabFields,
 
 }
 

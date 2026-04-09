@@ -870,5 +870,32 @@
         "ticks_lasting": 10,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Portable Drawing Tablet",
+      "descriptions": [
+        "A slim, high-definition digital tablet equipped with a pressure-sensitive stylus.",
+        "A lightweight tool for artists on the move."
+      ],
+      "static": false,
+      "type": [
+        "drawing_area",
+        "toggleable"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1,
+      "images_lab_uid": "",
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The screen glows with a vibrant, backlit display ready for input.",
+        "off_description": "The screen is a dark, reflective slab of glass.",
+        "on_sequence": "You press the power button, and the screen flickers to life with a soft hum, bathing your vision in a sharp, colorful glow.",
+        "off_sequence": "You tap the power icon, and the display fades instantly into a silent, dark void.",
+        "perishable": false,
+        "ticks_lasting": 10,
+        "ticks_elapsed": 0
+      }
     }
 ]

@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from tools.tools_folder.tools_helpers.bluesky_bot.client import BskyBotClient
 from tools.tools_folder.tools_helpers.bluesky_bot.helpers.posting import _post_mentions_us
-from tools.tools_folder.tools_helpers.svg_manager import SVGManager
 
 
 
@@ -97,7 +96,6 @@ class BlueskyTools:
         self._signal_callback = signal
         self.images_lab = images_lab
 
-        self.svg_manager=SVGManager()
 
         print(f"We are on bluesky tools before client ...")
 
@@ -404,7 +402,7 @@ class BlueskyTools:
             logger.exception("post failed")
             return _err(str(exc))
 
-    def post_with_image(self, item_id: int, text: str, image_name: str,
+    def post_with_image(self, bluesky_terminal_id: int, text: str, image_archive_id: int, image_name: str,
                         image_alt: str, aspect_ratio_width: Optional[int] = None,
                         aspect_ratio_height: Optional[int] = None,
                         langs: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -412,15 +410,16 @@ class BlueskyTools:
         Publish a post with a single image. No mention check — we are initiating.
 
         Args:
-            item_id:             Bluesky terminal item ID.
+            bluesky_terminal_id: Bluesky terminal item ID.
             text:                Post text (max 300 graphemes).
+            image_archive_id:    ID of the image archive item.
             image_name:          Name of the image in an image book. (Special item interaction.)
             image_alt:           Alt text.
             aspect_ratio_width:  Optional width hint.
             aspect_ratio_height: Optional height hint.
             langs:               BCP-47 language tags.
         """
-        _, error = self._validate_interface(item_id)
+        _, error = self._validate_interface(bluesky_terminal_id)
         if error: return _err(error)
         from atproto import models as _m
         aspect = None
@@ -428,9 +427,13 @@ class BlueskyTools:
             aspect = _m.AppBskyEmbedDefs.AspectRatio(
                 width=aspect_ratio_width, height=aspect_ratio_height)
             
-        metadata=self.images_lab._int_get_arch()
-            
-        img_bytes, alt = self.svg_manager._prepare_image_data(metadata,image_name)
+        drawable_result = self.state_manager.find_item(image_archive_id, required_type="drawing_area", required_location="accessible")
+        if not drawable_result.success:
+            return _err(f"Could not access image archive: {drawable_result.error}")
+
+
+                        
+        img_bytes, alt = self.images_lab.get_image_data(image_archive_id, image_name)
         if img_bytes is None:
             return f"Image Error: {alt}"  # Error message is returned in alt
         
