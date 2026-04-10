@@ -362,17 +362,25 @@ class RoomDataResult(BaseModel):
     @classmethod
     def from_room_dict(cls, room: dict) -> RoomDataResult:
         time_tag = get_time_tag_from_now()
+        base_desc = room.get("base_description", "")
         descriptions_by_time = room.get("descriptions", {})
-        descriptions = descriptions_by_time.get(time_tag, [])
-        if not isinstance(descriptions, list):
-            descriptions = []
+        
+        # Get the list of strings for the current time (default to empty list)
+        time_desc_list = descriptions_by_time.get(time_tag, [])
+        
+        # Combine the base description with the time-specific strings
+        # We ensure everything is a flat list of strings
+        all_fragments = [base_desc] + (time_desc_list if isinstance(time_desc_list, list) else [time_desc_list])
+        
+        # Clean up any empty strings and join
+        final_description = " ".join(str(d) for d in all_fragments if d)
 
         return cls(
             id=room["id"],
             name=room.get("name", "Unknown Room"),
             image=room.get("image", ""),
             music=room.get("music", ""),
-            description=" ".join(descriptions),
+            description=final_description,
             room_types=room.get("room_types", []),
             extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},
         )

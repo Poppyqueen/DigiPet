@@ -14,9 +14,9 @@ def main():
     
     parser.add_argument(
         "--types", 
-        nargs="+", 
-        default=["toggleable", "tamagotchi_device"],
-        help="List of types to include in the schema (space-separated)."
+        nargs="*", # Changed from "+" to "*" to allow zero items
+        default=[],
+        help="List of types to include in the schema (space-separated or empty)."
     )
     
     parser.add_argument(
@@ -107,6 +107,14 @@ python -m inventory_items.items_validation.items_schema_test \
   --mode room \
   --types outdoors_area open_soil_zone \
   --prompt "Astro-punk cabin garden"
+'''
+
+''' example room, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --mode room \
+  --prompt "Giant ball pit room"
 '''
 
 ''' example item (no mode defaults to item), from project root (not sure if a toggleable consumable is a good idea):

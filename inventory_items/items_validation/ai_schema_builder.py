@@ -38,6 +38,8 @@ def build_llm_schema(
     contracts: Dict[str, Type[ContractMixin]],
     types: List[str],
     model_name: str,
+    type_field_name: str = "type",
+
 ) -> Type[BaseModel]:
     """
     Builds a flat Pydantic model for LLM structured output.
@@ -85,7 +87,7 @@ def build_llm_schema(
     if types:
         from typing import Literal
         NarrowedType = Literal[tuple(types)]  # type: ignore[valid-type]
-        fields["type"] = (
+        fields[type_field_name] = (
             List[NarrowedType],
             Field(description="One or more type tags. From valid literals.")
         )
@@ -130,6 +132,8 @@ def build_llm_schema_for_types(types: List[str]) -> Type[BaseModel]:
         contracts=TYPE_FIELD_CONTRACTS,
         types=types,
         model_name=f"ItemDefinition_{type_label}",
+        type_field_name="room_types",
+
     )
 
     class _Container(BaseModel):

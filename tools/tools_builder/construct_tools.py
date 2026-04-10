@@ -196,7 +196,7 @@ class FunctionBuilder:
             return {"title": "Unknown Room", "body": "Could not retrieve room information."}
 
         room_name = current_room_data.name
-        room_description = current_room_data.description
+        room_description = current_room_data.description # Room description change
 
         function_id = "agent_information" if flag == "agent" else "display_information"
         body_parts = [] if flag == "agent" else ([room_description] if room_description else [])
@@ -233,7 +233,7 @@ class FunctionBuilder:
             return
 
         room_name        = current_room_data.name
-        room_description = current_room_data.description
+        room_description = current_room_data.description # Room description change
         body_parts       = [room_description] if room_description else []
 
         post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})

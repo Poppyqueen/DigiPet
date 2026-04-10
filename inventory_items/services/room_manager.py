@@ -83,7 +83,7 @@ class RoomManager:
                     print(f"DEBUG IMAGE SIGNAL: SENT CHANGE BACKGROUND WITH {c_name}")
 
                 room_data = RoomDataResult.from_room_dict(target_room)
-                room_descriptions_by_time = room_data.description
+                room_descriptions_by_time = room_data.description # Room description change
 
                 # Uses InventoryService for combined list
                 if self._inventory_service:

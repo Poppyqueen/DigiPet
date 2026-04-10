@@ -83,5 +83,36 @@
             ]
         },
         "items": []
+    },
+    {
+      "name": "The Sphere Chamber",
+      "base_description": "A massive, hemispherical vault spanning sixty feet in diameter, walled with seamless white polymer that curves upward into a soaring, windowless dome. The floor is a vast, sunken basin filled to a depth of five feet with millions of smooth, lightweight plastic spheres. A single heavy pressurized bulkhead serves as the only entrance at the base of the southern wall.",
+      "descriptions": {
+        "early_morning": [
+          "The pale light catches the crests of the plastic sea, creating a shimmering, undulating texture across the basin. The white polymer walls feel cool and clinical, reflecting a soft, diffused glow. The sheer scale of the dome creates a sense of hushed, sterile emptiness."
+        ],
+        "morning": [
+          "The spheres present a vibrant, chaotic topography that stretches toward the curved horizon of the walls. Every surface feels buoyant and light, as if the very air in the chamber has lost its density. The vastness of the dome makes the colorful mass below feel both playful and overwhelming."
+        ],
+        "noon": [
+          "A sharp, brilliant clarity defines the rounded edges of every individual sphere, turning the floor into a mosaic of high-contrast color. The white walls pulse with a clean, intense brightness that seems to expand the volume of the room. The air feels static and pressurized against the smooth polymer skin."
+        ],
+        "afternoon": [
+          "Long, soft shadows begin to pool between the mounds of plastic, adding a sense of heavy depth to the basin. The white curvature of the ceiling feels more pronounced, casting the upper reaches into a gentle, receding gradient. The tactile sensation of the room shifts toward a warm, saturated stillness."
+        ],
+        "late_afternoon": [
+          "The colors of the spheres deepen, turning the floor into a rich, textured landscape of amber and violet tones. The polymer walls hold a soft, matte sheen that absorbs the lowering light, making the ceiling feel lower and more intimate. The immense volume of the room feels thick with color."
+        ],
+        "night": [
+          "The chamber plunges into a deep, rhythmic darkness, where only the topmost layer of spheres catches a faint, ghostly glimmer. The white walls vanish into an impenetrable obsidian void, making the floor feel like a floating island of color in an infinite sea. The scale of the dome becomes an intimidating, heavy weight of shadow."
+        ],
+        "late_night": [
+          "The silence is absolute, and the plastic floor feels like a cold, multicolored abyss. The walls are nothing more than a memory of a boundary, lost in the crushing velvet of the dark. The room feels infinitely large yet claustrophobically hollow."
+        ]
+      },
+      "image": "white_room",
+      "music": "stasis",
+      "room_types": [],
+      "items": []
     }
 ]

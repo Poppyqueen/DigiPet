@@ -120,13 +120,25 @@ class BaseRoom(BaseModel):
     name: str = Field(
         description="Human-readable room name, e.g. 'Garden'."
     )
+    base_description: Optional[str] = Field(
+    default=None, 
+    description=(
+            "Define the physical 'container'. You must specify: "
+            "1. Scale and Volume: Is it an open clearing, a cramped cell, or a vast hall? How high is the ceiling or canopy? "
+            "2. Boundaries: Describe the walls (height, thickness, material) and the ground (earth, stone, wood). "
+            "3. Connectivity: Note the placement of openings, apertures, or archways. "
+            "Use heavy, material-focused language (e.g., 'A 40-foot-high cathedral hall of rib-vaulted limestone with a floor of polished obsidian'). "
+            "Keep it time-agnostic and static."
+        ) 
+    )
     descriptions: RoomTimeDescriptions = Field(
     description=(
-            "Structural and material flavor text. Focus exclusively on 'immovables': "
-            "architecture, wall textures, floor materials, and the room's permanent "
-            "atmospheric character. Do NOT mention lighting, temperature, sounds, "
-            "or objects, as these are layered dynamically. Instead, describe how "
-            "the physical space 'feels' or 'waits' at this time of day."
+            "A 3-4 sentence modifier describing the physical state of the surfaces defined in the base_description. "
+            "Focus on: "
+            "1. Material Response: How do the walls and floor look now? (e.g., 'The limestone grain is pulled into sharp relief by raking shadows'). "
+            "2. Depth and Dimension: How does the scale feel? (e.g., 'The 40-foot ceiling feels infinitely distant, lost in a heavy, impenetrable gloom'). "
+            "3. Thermal/Tactile State: How does the masonry hold itself? (e.g., 'The obsidian floor feels like a sheet of ice, pulling heat from the air'). "
+            "DO NOT name light sources (sun/moon), weather, or objects. Complete the base description's geometry with visual and tactile weight."
         )
     )
     image: Optional[ImagesNames] = Field(
@@ -141,7 +153,7 @@ class BaseRoom(BaseModel):
         description=f"One or more room type tags. From available Literals, or empty."
     )
     items: List[Any] = Field(
-        default_factory=[],
+        default_factory=list,
         description="Always an empty list. Items currently present in this room."
     )
 
