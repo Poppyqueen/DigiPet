@@ -584,7 +584,7 @@ plants_tools=[
             "type": "object",
             "properties": {                
                 "pot_id": {
-                    "type": ["number", "null"],
+                    "type": "number",
                     "description": "Optional, point at a pot or planter item to plant the seed into. If missing, the seed will planted in the current room."
                 },
                 "plot_id": {

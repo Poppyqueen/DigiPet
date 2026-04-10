@@ -2,38 +2,40 @@
     {
         "name": "lab_room",
         "image": "lab_room",
-        "room_types": ["ALIFE_research"],
-        "music": "white_room",
+        "room_types": [
+            "ALIFE_research"
+        ],
+        "music": "stasis",
         "descriptions": {
-        "late night": [
-            "A modern laboratory dedicated to A-Life research. The lab is quiet at this late hour.",
-            "The light in here is of a deep blue tone, casting long shadows."
-        ],
-        "early morning": [
-            "The lab is just beginning to stir, with a faint hum of machinery.",
-            "A cool, crisp light filters through the blinds."
-        ],
-        "morning": [
-            "Activity in the lab is picking up, researchers are at their stations.",
-            "Bright, natural light fills the room."
-        ],
-        "noon": [
-            "The lab is bustling with activity.",
-            "The overhead lights are at their brightest."
-        ],
-        "afternoon": [
-            "The afternoon slump seems to have hit, some researchers are taking a break.",
-            "The blue light feels a bit softer now."
-        ],
-        "late afternoon": [
-            "The lab is starting to wind down, but experiments are still running.",
-            "The light outside is beginning to dim, contrasting with the lab's blue glow."
-        ],
-        "night": [
-            "Only a few dedicated researchers remain, the lab is peaceful.",
-            "The deep blue light dominates, creating an atmospheric calm."
-        ]
-        },  
+            "late night": [
+                "A modern laboratory dedicated to A-Life research. The lab is quiet at this late hour.",
+                "The light in here is of a deep blue tone, casting long shadows."
+            ],
+            "early morning": [
+                "The lab is just beginning to stir, with a faint hum of machinery.",
+                "A cool, crisp light filters through the blinds."
+            ],
+            "morning": [
+                "Activity in the lab is picking up, researchers are at their stations.",
+                "Bright, natural light fills the room."
+            ],
+            "noon": [
+                "The lab is bustling with activity.",
+                "The overhead lights are at their brightest."
+            ],
+            "afternoon": [
+                "The afternoon slump seems to have hit, some researchers are taking a break.",
+                "The blue light feels a bit softer now."
+            ],
+            "late afternoon": [
+                "The lab is starting to wind down, but experiments are still running.",
+                "The light outside is beginning to dim, contrasting with the lab's blue glow."
+            ],
+            "night": [
+                "Only a few dedicated researchers remain, the lab is peaceful.",
+                "The deep blue light dominates, creating an atmospheric calm."
+            ]
+        },
         "items": []
     },
     {
@@ -42,7 +44,7 @@
         "room_types": [
             "living_room"
         ],
-        "music": "living_room",
+        "music": "aware_drifter",
         "descriptions": {
             "late night": [
                 "The living room is wrapped in darkness, save for the faint flicker of a dying fire casting soft shadows across plush cushions.",
@@ -81,7 +83,7 @@
         "room_types": [
             "kitchen"
         ],
-        "music": "kitchen",
+        "music": "interiority_spaces",
         "descriptions": {
             "late night": [
                 "The kitchen is hushed under the moonlight, stainless steel surfaces reflecting faint city lights through the window.",
@@ -120,7 +122,7 @@
         "room_types": [
             "library"
         ],
-        "music": "library",
+        "music": "what_might_there_be",
         "descriptions": {
             "late night": [
                 "The library lies in profound silence, bathed in the gentle glow of a single reading lamp, shadows dancing across towering shelves.",
@@ -159,7 +161,7 @@
         "room_types": [
             "bathroom"
         ],
-        "music": "bathroom",
+        "music": "comfort_fluff",
         "descriptions": {
             "late night": [
                 "The bathroom is bathed in soft, muted moonlight reflecting off the large mirror, with faint floral scents lingering in the still air.",
@@ -198,7 +200,7 @@
         "room_types": [
             "bedroom"
         ],
-        "music": "bedroom",
+        "music": "open_arms",
         "descriptions": {
             "late night": [
                 "The bedroom is cloaked in shadows, the large bed a silent sanctuary beneath the pale moonlight filtering through swaying curtains.",
@@ -237,7 +239,7 @@
         "room_types": [
             "computer_room"
         ],
-        "music": "computer_room",
+        "music": "keep_it_moving",
         "descriptions": {
             "late night": [
                 "The room is bathed in the cool glow of monitors, the hum of machines soothing in the stillness of night.",
@@ -278,7 +280,7 @@
             "planting_garden"
         ],
         "plot_number": 6,
-        "music": "garden",
+        "music": "specimens_walk",
         "descriptions": {
             "late night": [
                 "The garden is enveloped in velvety darkness, with moonlight casting silver shadows on the dense leaves.",
@@ -317,7 +319,7 @@
         "room_types": [
             "white_room"
         ],
-        "music": "white_room",
+        "music": "stasis",
         "descriptions": {
             "late night": [
                 "The room pulses with an eerie stillness, its white surfaces glowing faintly under an unseen, ghostly light.",

@@ -43,11 +43,11 @@ _DEV_EMOTE_KEYS = {
 # ---------------------------------------------------------------------------
 
 def _on_change_background(event) -> None:
-    image_path = getattr(event, "image_path", None)
-    if image_path:
-        gui.gui_core.load_and_set_background(image_path)
+    image_name = getattr(event, "image_name", None)
+    if image_name:
+        gui.gui_core.load_and_set_background(image_name)
     else:
-        print("[event] CHANGE_BACKGROUND_EVENT — missing image_path.")
+        print("[event] CHANGE_BACKGROUND_EVENT — missing image_name.")
 
 
 def _on_tts_sound(event, music_player) -> None:

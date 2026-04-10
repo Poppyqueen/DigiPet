@@ -747,7 +747,7 @@ class ToolRegistry:
             "display_information": lh.lighthouse_manager.get_service_room_status,
             "agent_information":   lh.lighthouse_manager.get_service_room_status,
         }
-        self.tool_definitions["accessible_light_viewing_room"] = {
+        self.tool_definitions["accessible_light_viewing_room"] = { # This should not be a room type, maybe use the lighthouse manager to look for any existing light source, the lamp, and make it a perception tool... wait, that requires a context... 
             "functions": {
                 "peek_at_lamp_light_output": lh.accessible_room_light_check,
             },

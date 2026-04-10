@@ -251,7 +251,7 @@ class GardenController:
             response = self._maybe_save_pot(pot_id, updated)
             if not response.success:
                 return response.error
-            msg += response.message
+            msg += "ORIGINAL POT ID CHANGED DUE TO INTERACTION: " + response.message
 
         self.state_manager.remove_item(seed_id)
         stats = self._adjust_stats(PLANT_SEED_COSTS)

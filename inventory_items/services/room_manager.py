@@ -79,7 +79,8 @@ class RoomManager:
                 current_room_data = self._find_room_by_id(self._state_store.get_state_section("current_room_id"))
                 if current_room_data:
                     c_name = current_room_data.get("image", "unnamed_image")
-                    self._send_signal({"type": "change_background", "image_path": f"{c_name}"})
+                    self._send_signal({"type": "change_background", "image_name": f"{c_name}"})
+                    print(f"DEBUG IMAGE SIGNAL: SENT CHANGE BACKGROUND WITH {c_name}")
 
                 room_data = RoomDataResult.from_room_dict(target_room)
                 room_descriptions_by_time = room_data.description

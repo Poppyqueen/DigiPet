@@ -169,7 +169,7 @@ def _load_initial_game_state(chatbot: BaseChatbot) -> None:
 
     # Background image
     room_data = chatbot.state_manager.get_current_room_data()
-    gui.gui_core.load_and_set_background(f"{room_data.image}.jpg")
+    gui.gui_core.load_and_set_background(room_data.image)
 
     # Stats
     stats_response = chatbot.state_manager.get_stats()

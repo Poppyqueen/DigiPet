@@ -6,7 +6,7 @@
             "outdoors_area",
             "open_soil_zone"
         ],
-        "music": "garden",
+        "music": "specimens_walk",
         "plot_number": 3,
         "outdoors_type": [
             "earth-weather",
@@ -51,7 +51,7 @@
         "image": "lab_room",
         "room_types": [],
         "plot_number": 3,
-        "music": "white_room",
+        "music": "stasis",
         "descriptions": {
             "late night": [
                 "The vats cast a cool, phosphorescent glow across the metal floor, their slow bubbles and the lab's low hum the only sounds in the hush.",

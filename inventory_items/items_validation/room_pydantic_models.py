@@ -22,7 +22,48 @@ from .contract_mixin import ContractMixin
 
 from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 
+import os
 
+
+
+def get_asset_names(base_dir: str, valid_extensions: set[str]) -> list[str]:
+    """
+    Generic walker that finds files in base_dir with specific extensions
+    and returns a sorted list of their names (without extensions).
+    """
+    asset_names = set()
+
+    if not os.path.exists(base_dir):
+        print(f"[gui_core] Warning: Directory not found: {base_dir}")
+        return []
+
+    for root, dirs, files in os.walk(base_dir):
+        for filename in files:
+            name_part, extension_part = os.path.splitext(filename)
+            
+            if extension_part.lower() in valid_extensions:
+                asset_names.add(name_part)
+
+    return sorted(list(asset_names))
+
+# =============================================================================
+# Populate background images names
+# =============================================================================
+_image_names = get_asset_names(
+        base_dir="style/images/area_images/", 
+        valid_extensions={".jpg", ".jpeg", ".png"}
+    )
+ImagesNames = Literal[tuple(_image_names)]  # type: ignore[valid-type]
+
+# print(f"[room_pydantic_models] Loaded background image names: {len(_image_names)} found. Sample: {_image_names[:10]}")
+
+
+_sound_names = get_asset_names(
+        base_dir="style/sounds/music/rooms", 
+        valid_extensions={".mp3"}
+    )
+
+SoundNames = Literal[tuple(_sound_names)]  # type: ignore[valid-type]
 # =============================================================================
 # OUTDOORS TYPES REGISTRY
 # =============================================================================
@@ -80,14 +121,20 @@ class BaseRoom(BaseModel):
         description="Human-readable room name, e.g. 'Garden'."
     )
     descriptions: RoomTimeDescriptions = Field(
-        description="Time-of-day description strings. All 7 slots required, each with at least one string."
+    description=(
+            "Structural and material flavor text. Focus exclusively on 'immovables': "
+            "architecture, wall textures, floor materials, and the room's permanent "
+            "atmospheric character. Do NOT mention lighting, temperature, sounds, "
+            "or objects, as these are layered dynamically. Instead, describe how "
+            "the physical space 'feels' or 'waits' at this time of day."
+        )
     )
-    image: str = Field(
-        description="Background image filename without extension, e.g. 'garden'." # do something about the file names
+    image: Optional[ImagesNames] = Field(
+        description="Background image filename without extension, e.g. 'garden', empty or white image if none of the options reflects nature of the environment." # do something about the file names
     )
-    music: Optional[str] = Field(
+    music: Optional[SoundNames] = Field(
         default=None,
-        description="Background music filename without extension, or None for silence." # do something about the file names
+        description="Background music filename without extension, or None for silence." 
     )
     room_types: Optional[List[RoomType]] = Field(
         default=[],
@@ -95,7 +142,7 @@ class BaseRoom(BaseModel):
     )
     items: List[Any] = Field(
         default_factory=[],
-        description="Items currently present in this room. Each entry must independently pass validate_item_dict. Initialize as empty list."
+        description="Always an empty list. Items currently present in this room."
     )
 
     @model_validator(mode="after")
@@ -122,7 +169,7 @@ class BaseRoom(BaseModel):
 
 class PlantingGardenFields(ContractMixin):
     plot_number: PositiveInt = Field(
-        description="Number of planting plots available in this garden room. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
+        description="Number of planting plots available in this garden room. Each plot can hold 1 individual plant. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
     )
 
 class OutdoorsAreaFields(ContractMixin):

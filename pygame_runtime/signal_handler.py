@@ -44,14 +44,14 @@ from pygame_int.main_digipet import animation, gui
 # ---------------------------------------------------------------------------
 
 def _on_change_background(signal_data: dict, chatbot, music_player) -> None:
-    image_path = signal_data.get("image_path")
-    if not image_path:
-        print("[signal] 'change_background' missing image_path.")
+    image_name = signal_data.get("image_name")
+    if not image_name:
+        print("[signal] 'change_background' missing image_name.")
         return
 
-    print(f"[signal] change_background → {image_path}")
+    print(f"[signal] change_background → {image_name}")
     pygame.event.post(
-        pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_path=image_path)
+        pygame.event.Event(config.CHANGE_BACKGROUND_EVENT, image_name=image_name)
     )
 
     current_room = chatbot.state_manager.get_current_room_data()

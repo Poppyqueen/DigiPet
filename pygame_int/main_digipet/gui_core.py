@@ -502,34 +502,29 @@ def _load_stat_icons() -> None:
                 _stat_icons[(stat_name, level)] = None
 
 
-def load_and_set_background(image_path: str) -> None:
+def load_and_set_background(image_name: str) -> None:
     """
-    Load an image and store it in state.background_image.
-
-    Searches several directories in order, with and without extension.
+    Finds an image by name (no extension) by walking the area_images directory.
+    Matches the name against files with standard image extensions.
     """
-    image_dirs = [ # Move these out of here? asset files, asset paths
-        "style/images/local_rooms_images",
-        "style/images/rooms_images",
-        "style/images/local_rooms_images/local_ai_gens",
-        "style/images/lighthouse_rooms_images",
-    ]
-
+    base_dir = "style/images/area_images/"
+    # Define supported extensions
+    valid_extensions = {".jpg", ".jpeg", ".png"}
     full_path = None
 
-    if "." not in image_path:
-        # No extension supplied — try .jpg in each directory.
-        for directory in image_dirs:
-            candidate = os.path.join(directory, f"{image_path}.jpg")
-            if os.path.exists(candidate):
-                full_path = candidate
+    # Walk the directory tree
+    for root, dirs, files in os.walk(base_dir):
+        for filename in files:
+            # Split the filename into name and extension
+            name_part, extension_part = os.path.splitext(filename)
+            
+            # Check if name matches and extension is a valid image type
+            if name_part == image_name and extension_part.lower() in valid_extensions:
+                full_path = os.path.join(root, filename)
                 break
-    else:
-        for directory in image_dirs:
-            candidate = os.path.join(directory, image_path)
-            if os.path.exists(candidate):
-                full_path = candidate
-                break
+        
+        if full_path:
+            break
 
     if full_path:
         try:
@@ -540,5 +535,5 @@ def load_and_set_background(image_path: str) -> None:
             print(f"[gui_core] Failed to load background '{full_path}': {exc}")
             state.background_image = None
     else:
-        print(f"[gui_core] Background not found in any directory: {image_path}")
+        print(f"[gui_core] Background name '{image_name}' not found in {base_dir}")
         state.background_image = None
