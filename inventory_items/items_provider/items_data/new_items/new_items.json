@@ -897,5 +897,86 @@
         "ticks_lasting": 10,
         "ticks_elapsed": 0
       }
+    },
+    {
+      "name": "Red Plastic Ball Pit Ball",
+      "descriptions": [
+        "A small, hollow, red plastic ball used in children's ball pits.",
+        "Lightweight and smooth to the touch."
+      ],
+      "static": false,
+      "type": [],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000
+    },
+    {
+      "name": "Yellow Plastic Ball Pit Ball",
+      "descriptions": [
+        "A small, hollow plastic ball used in ball pits.",
+        "Bright yellow in color."
+      ],
+      "static": false,
+      "type": [],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000
+    },
+    {
+      "name": "Dented Green Plastic Ball",
+      "descriptions": [
+        "A single, bright green plastic ball from a play pit.",
+        "It has a noticeable dent on one side, suggesting it has seen plenty of energetic play."
+      ],
+      "static": false,
+      "type": [
+        "meditation_aid"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000,
+      "meditation_aid_ambience": [
+        "The smooth, slightly uneven surface offers a grounding tactile sensation when rolled between the palms.",
+        "Its vibrant color provides a simple, cheerful visual anchor for sensory focus."
+      ],
+      "room_types": [
+        "meditation_aid"
+      ]
+    },
+    {
+      "name": "Green Plastic Ball Pit Ball",
+      "descriptions": [
+        "A small, hollow plastic ball used in ball pits.",
+        "Bright green color."
+      ],
+      "static": false,
+      "type": [],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000
+    },
+    {
+      "name": "Blue Plastic Ball Pit Ball",
+      "descriptions": [
+        "A small, hollow plastic ball used in ball pits.",
+        "Bright blue in color."
+      ],
+      "static": false,
+      "type": [],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000
+    },
+    {
+      "name": "Purple Plastic Ball Pit Ball",
+      "descriptions": [
+        "A single, lightweight plastic ball designed for use in ball pits.",
+        "Vibrant purple color."
+      ],
+      "static": false,
+      "type": [],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 1000
     }
 ]

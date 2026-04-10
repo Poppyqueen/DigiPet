@@ -249,7 +249,7 @@ class BaseItem(BaseModel):
     name: str = Field(description="Human-readable item name, e.g. 'Bowl of Nuts'.")
     descriptions: List[str] = Field(description="One or more description strings shown to the player.")
     static: bool = Field(description="True if the item cannot be logically picked up or moved by a single human, like furniture, machinery, permanent fixtures or installed work equipment.")
-    type: Optional[List[str]] = Field(default=[], description=f"Empty, one or more type tags from valid literals. Used to define, control and determine specific behaviors and required keys for the item. Standard items with no interaction do not require a type.")
+    type: Optional[List[str]] = Field(default=[], description=f"Empty, one or more type tags from valid literals. Empty list if none of the existing types fits. Used to define, control and determine specific behaviors and required keys for the item. Standard items with no interaction do not require a types.")
     stackable: bool = Field(default=False, description="Stackability is primarily driven by item size and weight, then by uniqueness. Most items are stackable except for furniture, objects larger than a human, or items that are too heavy to lift. Some truly unique items are not stackable, a specific meal is not stackable, but a red apple is stackable.")
     quantity: PositiveInt = Field(default=1, description="How many units are in this stack. Always 1.")
     max_stack_size: Optional[PositiveInt] = Field(default=None, description="Maximum units per stack. None means unlimited.")

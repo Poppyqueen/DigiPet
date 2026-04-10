@@ -72,7 +72,7 @@ def main():
     # 4. Request Structured Output
     # Tweaked system prompt slightly to reflect the mode
     system_prompt = (
-        f"Please return structured responses for a {args.mode} using all the following types: "
+        f"Please return structured responses for a {args.mode} using all the following types (If no type given, leave types as an empty list.): "
         f"#### {args.types} #### Always generate only 1 {args.mode}."
     )
     
@@ -98,6 +98,20 @@ python -m inventory_items.items_validation.items_schema_test \
   --model google/gemma-4-26b-a4b-it \
   --types drawing_area toggleable \
   --prompt "Drawing tablet, completely portable, with a screen and stylus."
+'''
+
+''' example item (no mode defaults to item), from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --prompt "Single Ball Pit Plastic Ball, blue"
+'''
+
+''' example item (no mode defaults to item), from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --prompt "Single Ball Pit Plastic Ball, purple"
 '''
 
 ''' example room, from project root:

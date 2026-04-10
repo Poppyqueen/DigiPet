@@ -150,7 +150,7 @@ class BaseRoom(BaseModel):
     )
     room_types: Optional[List[RoomType]] = Field(
         default=[],
-        description=f"One or more room type tags. From available Literals, or empty."
+        description=f"Empty, one or more room type tags. From available Literals, or empty."
     )
     items: List[Any] = Field(
         default_factory=list,
