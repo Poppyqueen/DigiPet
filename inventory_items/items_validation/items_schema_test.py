@@ -96,8 +96,17 @@ if __name__ == "__main__":
 python -m inventory_items.items_validation.items_schema_test \
   --provider openrouter \
   --model google/gemma-4-26b-a4b-it \
-  --types drawing_area toggleable \
-  --prompt "Drawing tablet, completely portable, with a screen and stylus."
+  --mode item \
+  --types store_endpoint toggleable \
+  --prompt "Furniture, large cabinet computer interface terminal."
+'''
+
+''' example item (no mode defaults to item), from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --types consumable store_entry \
+  --prompt "jawbreaker Hard Candy"
 '''
 
 ''' example item (no mode defaults to item), from project root:

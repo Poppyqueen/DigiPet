@@ -10,15 +10,9 @@ All archive logic (filesystem I/O, metadata, validation) lives in
 ``images_archive_manager.py``.  This file is a thin shell that follows the
 controller pattern defined in the framework skill.
 
-Typical setup in the tool registry
-────────────────────────────────────
-    from tools.tools_folder.images_lab import ImagesLab
-
-    lab = ImagesLab(state_manager, signal_callback)
-    registry.register("create_svg_image",   lab.create_svg_image)
-    registry.register("delete_image",       lab.delete_image)
-    registry.register("read_image_archive", lab.read_image_archive)
 """
+
+# TODO: Add int field for drawing area which limits how many images can be stored in the archive.
 
 from __future__ import annotations
 

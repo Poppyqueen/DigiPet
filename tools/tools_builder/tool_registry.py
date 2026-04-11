@@ -25,7 +25,7 @@ from tools.tools_folder.plants_controller import GardenController
 from tools.tools_folder.rooms_tools import main_tools_handle
 from tools.tools_folder.images_lab import ImagesLab
 from tools.tools_folder.dispenser_tools import DispenserTools
-from tools.tools_folder.auction_house import AuctionHouse
+from tools.tools_folder.auction_house import StoreController
 from tools.tools_folder.maze_controller import MazeController
 from tools.tools_folder.lighthouse_controller import LighthouseController
 from tools.tools_folder.items_toggle import ItemToggleTool
@@ -58,7 +58,7 @@ from .my_tools import (
     musicbrainz_tools,
     bluesky_tools,
     art_book_tools,
-    laptop_tools,
+    #laptop_tools,
     dispenser_tools,
     maze_tools,
     searxng_tools,
@@ -78,7 +78,8 @@ from .my_tools import (
     water_source_tools,
     prepare_food_tools,
     plants_tools,
-    endpoints_tools
+    endpoints_tools,
+    store_tools
 )
 
 from .tool_availability import make_toolset_checker
@@ -173,7 +174,7 @@ class ToolRegistry:
         self.garden_manager = GardenController(state_manager, signal, open_meteo)
         self.images_lab     = ImagesLab(state_manager, signal)
         self.dispenser_tools = DispenserTools(state_manager, signal, self.item_store)
-        self.auction_house = AuctionHouse(state_manager, item_store=self.item_store)
+        self.store_tools = StoreController(state_manager, signal, item_store=self.item_store)
         self.maze           = MazeController(state_manager, signal)
         self.A_Life         = ALifeController(state_manager=state_manager, signal=signal, base_path=subdirectory)
         self.book_tools     = BookTools(state_manager, signal)
@@ -386,32 +387,6 @@ class ToolRegistry:
                 "display_information": al.display_information if al else None,
                 # agent_information intentionally omitted — contains restricted info (see TODO in original)
             },
-
-            "book": {
-                "functions": {
-                    "list_chapters":        self.book_tools.list_book_chapters, # Now general examine returns a list of the contents, but leaving this function here, maybe remove later?
-                    "add_chapter":          self.book_tools.add_book_chapter,
-                    "read_chapter":         self.book_tools.read_book_chapter,
-                    "delete_chapter":       self.book_tools.delete_book_chapter,
-                    "update_book_chapter":  self.book_tools.update_book_chapter,
-                },
-                "definitions": book_tools,
-                "item_types": ["book"],
-                "use_level": "inventory_only",
-            },
-            "auction": {
-                "functions": { # These methods need love
-                    "computer_browse_auction_house": self.auction_house.get_pretty_items_list,
-                    "computer_lookup_auction_house_item": self.auction_house.lookup_item,
-                    "computer_buy_item": self.auction_house.buy_item,
-                    "computer_sell_item": self.auction_house.sell_item,
-                    "computer_get_currency": self.auction_house.get_currency
-                },
-                "definitions": laptop_tools,
-                "item_types": ["online_store"],
-                "use_level": "dual_use"
-            },
-
             "dispenser": { # This is mostly fine, however, it is owns candy bags, maybe make candy bags use consume uses left?
                 "functions": { # Not sure what to do about this, optimally, this should be a general container? not sure
                     "dispense_candy": self.dispenser_tools.dispense_candy,
@@ -425,8 +400,6 @@ class ToolRegistry:
 
 
     # REFACTOR ZONE:
-
-
             "cook_technology": { # It is clean, now what?, if touching this first think about what to do with the consumables
                 "functions": {"prepare_food": self.cook.prepare_food},
                 "definitions": prepare_food_tools,
@@ -448,8 +421,32 @@ class ToolRegistry:
             },
 
 
-    # New, refactored affordances to be more general
-
+    # New, refactored affordances to be more general:
+            "store": {
+                "functions": { 
+                    "browse_store_category": self.store_tools.browse_category,
+                    "store_lookup_item": self.store_tools.lookup_item,
+                    "store_buy_item": self.store_tools.buy_item,
+                    "store_sell_item": self.store_tools.sell_item,
+                    "store_get_balance": self.store_tools.get_balance,
+                    "store_hello": self.store_tools.open_store
+                },
+                "definitions": store_tools,
+                "item_types": ["store_endpoint"],
+                "use_level": "dual_use"
+            },
+            "book": {
+                "functions": {
+                    "list_chapters":        self.book_tools.list_book_chapters, # Now general examine returns a list of the contents, but leaving this function here, maybe remove later?
+                    "add_chapter":          self.book_tools.add_book_chapter,
+                    "read_chapter":         self.book_tools.read_book_chapter,
+                    "delete_chapter":       self.book_tools.delete_book_chapter,
+                    "update_book_chapter":  self.book_tools.update_book_chapter,
+                },
+                "definitions": book_tools,
+                "item_types": ["book"],
+                "use_level": "inventory_only",
+            },
             "art_book": {
                 "functions": {
                     "create_svg_image": self.images_lab.create_svg_image,

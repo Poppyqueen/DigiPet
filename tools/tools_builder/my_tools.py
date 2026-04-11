@@ -2514,3 +2514,139 @@ bluesky_tools = [
     }
   }
 ]
+
+
+store_tools = [
+  {
+    "type": "function",
+    "name": "browse_store_category",
+    "description": "Lists items available to buy or sell in a specific category of a store endpoint. Paginated (20 items per page).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "endpoint_id": {
+          "type": "integer",
+            "description": "The unique ID of the item or store to interact with."
+        },
+        "store_type": {
+          "type": "string",
+          "description": "The category name to browse (e.g., 'weapons', 'potions')."
+        },
+        "page": {
+          "type": "integer",
+          "description": "The page number to view (0-indexed). Defaults to 0."
+        }
+      },
+      "required": [
+        "endpoint_id",
+        "store_type"
+      ],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "store_lookup_item",
+    "description": "Returns price, sell price, trade mode, and availability for a named item. Supports fuzzy matching.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "endpoint_id": {
+          "type": "integer",
+            "description": "The unique ID of the item or store to interact with."
+        },
+        "item_name": {
+          "type": "string",
+          "description": "The name of the item to look up."
+        }
+      },
+      "required": [
+        "endpoint_id",
+        "item_name"
+      ],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "store_buy_item",
+    "description": "Purchase one or more units of an item from the store. Deducts currency and adds items to inventory.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "endpoint_id": {
+          "type": "integer",
+            "description": "The unique ID of the item or store to interact with."
+        },
+        "item_name": {
+          "type": "string",
+          "description": "The name of the item to purchase."
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "The number of units to buy. Defaults to 1."
+        }
+      },
+      "required": [
+        "endpoint_id",
+        "item_name"
+      ],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "store_sell_item",
+    "description": "Sell one or more units of an inventory item to the store. Adds currency and removes items from inventory.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "endpoint_id": {
+          "type": "integer",
+            "description": "The unique ID of the item or store to interact with."
+        },
+        "item_id": {
+          "type": "integer",
+          "description": "The unique inventory ID of the item you wish to sell."
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "The number of units to sell. Defaults to 1."
+        }
+      },
+      "required": [
+        "endpoint_id",
+        "item_id"
+      ],
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "store_get_balance",
+    "description": "Returns your current currency balance.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": False
+    }
+  },
+  {
+    "type": "function",
+    "name": "store_hello",
+    "description": "Entry point — shows the welcome message, available categories, and a short item count per category for this store endpoint.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "endpoint_id": {
+            "type": "integer",
+            "description": "The unique ID of the item or store to interact with."
+        }
+        },
+        "required": [
+        "endpoint_id"
+        ],
+        "additionalProperties": False
+    }
+    }
+]

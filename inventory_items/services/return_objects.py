@@ -438,7 +438,7 @@ class AdjustCurrencyResult(BaseModel):
     success: bool
     message: str
     error: str | None = None
-    currency: int
+    currency: float
     
     @model_validator(mode="after")
     def _check_consistency(self) -> AdjustCurrencyResult:
@@ -449,12 +449,12 @@ class AdjustCurrencyResult(BaseModel):
         return self
     
     @classmethod
-    def ok(cls, message: str, currency: int) -> AdjustCurrencyResult:
+    def ok(cls, message: str, currency: float) -> AdjustCurrencyResult:
         """Build a successful result."""
         return cls(success=True, message=message, error=None, currency=currency)
     
     @classmethod
-    def fail(cls, error: str, currency: int) -> AdjustCurrencyResult:
+    def fail(cls, error: str, currency: float) -> AdjustCurrencyResult:
         """Build a failed result. message mirrors error for easy appending."""
         return cls(success=False, message=error, error=error, currency=currency)
 
@@ -471,7 +471,7 @@ class GetCurrencyResult(BaseModel):
     success: bool
     message: str
     error: str | None = None
-    currency: int
+    currency: float
     
     @model_validator(mode="after")
     def _check_consistency(self) -> GetCurrencyResult:
@@ -482,12 +482,12 @@ class GetCurrencyResult(BaseModel):
         return self
     
     @classmethod
-    def ok(cls, message: str, currency: int) -> GetCurrencyResult:
+    def ok(cls, message: str, currency: float) -> GetCurrencyResult:
         """Build a successful result."""
         return cls(success=True, message=message, error=None, currency=currency)
     
     @classmethod
-    def fail(cls, error: str, currency: int) -> GetCurrencyResult:
+    def fail(cls, error: str, currency: float) -> GetCurrencyResult:
         """Build a failed result. message mirrors error for easy appending."""
         return cls(success=False, message=error, error=error, currency=currency)
 

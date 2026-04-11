@@ -102,7 +102,7 @@ class PetStateManager:
     # --- Currency Getters and Setters ---
     def get_currency(self) -> GetCurrencyResult:
         currency_value = self._state_store.get_state_section("currency")
-        if not isinstance(currency_value, int) or currency_value < 0:
+        if currency_value < 0:
             print(f"Warning: get_currency found invalid state value ({currency_value}). Returning default 0.")
             return GetCurrencyResult.fail(error="Invalid currency value found in state.", currency=0)
         return GetCurrencyResult.ok(currency=currency_value, message="Currency retrieved successfully.")
@@ -116,26 +116,27 @@ class PetStateManager:
             amount = 0
         self._state_store.update_state_section("currency", amount)
 
-    def adjust_currency(self, amount: int | float) -> AdjustCurrencyResult:
-        """
-        Adjusts the current currency positively or negatively
-        """
+    def adjust_currency(self, amount) -> AdjustCurrencyResult:
+        # 1. Allow floats in the type check
         if not isinstance(amount, (int, float)):
-            error = f"Error: Attempted to adjust 'currency' with non-numeric amount: {amount}. Ignoring."
-            print(error)
+            error = f"Numeric value required, got: {type(amount).__name__}"
             return AdjustCurrencyResult.fail(error=error, currency=self.get_currency().currency)
         
-        amount = int(amount)
-        current_currency = self.get_currency().currency
-        new_currency = current_currency + amount
+        # 2. Get current balance (ensure it's treated as float)
+        current_currency = float(self.get_currency().currency)
+        
+        # 3. Perform math and round to 2 decimal places
+        new_currency = round(current_currency + amount, 2)
+        
+        # 4. Clamp to 0.0
         if new_currency < 0:
-            print(f"Warning: Adjustment would set 'currency' below 0. Clamping to 0.")
-            new_currency = 0
-            self._state_store.update_state_section("currency", new_currency)
-            return AdjustCurrencyResult.ok(currency=new_currency, message="Currency adjusted and reached 0.")
+            new_currency = 0.0
+            
         self._state_store.update_state_section("currency", new_currency)
-        return AdjustCurrencyResult.ok(currency=new_currency, message=f"Currency adjusted, new balance: {new_currency}")
-
+        return AdjustCurrencyResult.ok(
+            currency=new_currency, 
+            message=f"Balance updated to {new_currency:.2f}" # Formats to '0.00'
+        )
     def get_emotes_data(self) -> EmotesResult:
         current_emote = self._state_store.get_state_section("current_emote", "unknown")
         possible_emotes = self._state_store.get_state_section("possible_emotes", {})

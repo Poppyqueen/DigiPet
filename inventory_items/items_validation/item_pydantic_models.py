@@ -24,6 +24,9 @@ from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions
 from tools.tools_folder.tools_helpers.tv_utils.tv_channels_definitions import TV_TYPE_CHANNELS
 from tools.tools_folder.tools_data.harvesting_data import plant_types
 from tools.tools_folder.tools_helpers.maze_sim.types import MazeState
+
+from tools.tools_folder.tools_helpers.store_helpers.store_types import StoreEndpointData, StoreEntryData
+
 import os
 import json
 
@@ -98,7 +101,9 @@ refactored_types = [
                     "musicbrainz_endpoint", "bluesky_social_endpoint", 
                     "wikipedia_endpoint", "searxng_endpoint",
                     "online_store",
-                    "drawing_area"
+                    "drawing_area",
+
+                    "store_entry", "store_endpoint"
                     ] # In process of refactoring tools and affordances, making them more general and modular.
 item_types.extend(refactored_types)
 
@@ -197,7 +202,6 @@ class ToggleableStates(BaseModel):
         default=0,
         description="Handled by runtime, always initialize as 0."
     )
-
 
 
 class BookChapter(BaseModel):
@@ -543,6 +547,19 @@ class ImagesLabFields(ContractMixin):
         description="Stable archive UID. Always initialise as empty string — assigned automatically by the tool on first use."
     )
 
+class StoreEntryFields(ContractMixin):
+    model_description: ClassVar[str] = "A store entry item represents a purchasable offering in an online or physical store. It contains details about the product, such as its name, description, price, and any other relevant information that a customer would need to know before making a purchase. This type is meant to be used in conjunction with the StoreEndpointFields type, which provides access to a store's inventory and purchasing system."
+    store_entry_data: StoreEntryData = Field(
+        description="Data specific to a store entry, including price, availability, and other relevant details. Managed by the store endpoint tool."
+    )
+class StoreEndpointFields(ContractMixin):
+    model_description: ClassVar[str] = "This specific endpoint provides access to an online or physical store, with the ability to browse products, view details, and make purchases. It is meant to be used as a tool for shopping and managing online purchases, and it can be mixed with other types for enhanced functionality, such as toggleable for electronics or dispensers for vending machines."
+    store_endpoint_data: StoreEndpointData = Field(
+        description="Data specific to a store endpoint, including available categories and item listings. Managed by the store endpoint tool."
+    )
+
+
+
 # =============================================================================
 # TYPE_FIELD_CONTRACTS REGISTRY
 #
@@ -588,9 +605,10 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
 
     "drawing_area": ImagesLabFields,
 
+    "store_entry": StoreEntryFields,
+    "store_endpoint": StoreEndpointFields,
+
 }
-
-
 # =============================================================================
 # VALIDATION
 # =============================================================================

@@ -131,8 +131,7 @@ def build_llm_schema_for_types(types: List[str]) -> Type[BaseModel]:
         base=BaseItem,
         contracts=TYPE_FIELD_CONTRACTS,
         types=types,
-        model_name=f"ItemDefinition_{type_label}",
-        type_field_name="room_types",
+        model_name=f"ItemDefinition_{type_label}"
 
     )
 
@@ -174,6 +173,8 @@ def build_room_llm_schema_for_types(room_types: List[str]) -> Type[BaseModel]:
         contracts=ROOM_TYPE_FIELD_CONTRACTS,
         types=room_types,
         model_name=f"RoomDefinition_{type_label}",
+        type_field_name="room_types",
+
     )
 
     class _Container(BaseModel):

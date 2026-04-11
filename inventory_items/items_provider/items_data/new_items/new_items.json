@@ -978,5 +978,82 @@
       "stackable": true,
       "quantity": 1,
       "max_stack_size": 1000
+    },
+    {
+      "name": "Terminal Management Console",
+      "descriptions": [
+        "A heavy-duty, floor-mounted computer interface used for controlling facility subsystems and accessing the local network terminal."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "System Admin Terminal",
+        "store_types": [
+          "snacks"
+        ],
+        "welcome_message": "Authentication successful. Welcome to the Central Management Interface."
+      },
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The terminal screen glows with a soft amber light and the cooling fans hum quietly.",
+        "off_description": "The terminal is dark and silent, its heavy metal casing cold to the touch.",
+        "on_sequence": "You press the power toggle, and a series of rhythmic clicks echo from within the cabinet as the internal systems boot up, followed by the low, comforting whir of cooling fans.",
+        "off_sequence": "You hit the shutdown command; the amber glow fades into blackness and the hum of the electronics dies away into silence.",
+        "perishable": false,
+        "ticks_lasting": 10,
+        "ticks_elapsed": 0
+      }
+    },
+      {
+      "name": "Jawbreaker Hard Candy",
+      "descriptions": [
+        "A massive, multi-layered sphere of hard candy.",
+        "Extremely durable and takes a long time to dissolve.",
+        "As you work through the layers, the flavor gradually shifts."
+      ],
+      "static": false,
+      "type": [
+        "consumable",
+        "store_entry"
+      ],
+      "stackable": true,
+      "quantity": 1,
+      "max_stack_size": 20,
+      "consume_uses_left": 50,
+      "stats_edit": {
+        "fullness": 0.5,
+        "hydration": -1.5,
+        "energy": 2.0
+      },
+      "effects": [
+        "You press the hard sphere against your tongue, feeling the intense, sugary friction.",
+        "The sharp sweetness of the outer layer floods your senses as it begins to melt.",
+        "A sudden burst of tart cherry flavor hits your palate as you crack through a new colored layer.",
+        "Your jaw aches slightly from the constant pressure of working the candy.",
+        "The cooling sensation of the dissolving sugar provides a brief, sugary distraction.",
+        "You feel a steady trickle of glucose entering your system, providing a minor mental lift.",
+        "The texture is smooth and relentless, a constant weight against your cheek.",
+        "A new layer of lime flavor emerges, cutting through the previous sweetness with a zing.",
+        "The candy becomes smaller, more concentrated, and harder to maneuver in your mouth.",
+        "You feel the satisfying crunch as a tiny fragment finally breaks off into a manageable piece.",
+        "The sweetness is becoming cloying, coating your mouth in a thick, sugary film.",
+        "Your mouth feels increasingly dry from the concentrated sugar density.",
+        "You swirl the remaining core around, savoring the final, deep notes of the confection.",
+        "The last bit of flavor dissipates, leaving only a lingering, sugary aftertaste.",
+        "You finally swallow the last tiny remnant, feeling a small spike of energy."
+      ],
+      "store_entry_data": {
+        "price": 1.5,
+        "store_type": "snacks",
+        "trade_mode": "buy_and_sell",
+        "sell_discount": 0.4
+      }
     }
 ]
