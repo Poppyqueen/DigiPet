@@ -282,7 +282,10 @@ class FunctionBuilder:
         possible_emotes = '\n'.join(self.state_manager.get_emotes_data().possible_emotes)
 
         current_tools_info = (await self.get_current_tools_info("agent"))["body"]
-        
+
+        rooms = self.state_manager.get_accessible_rooms()
+        rooms_summary = f"Available areas: {', '.join(f'{r.name} (ID:{r.id})' for r in rooms)}"
+
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
             "This source at any point seen, is the most up to date grounded state.",
@@ -301,6 +304,8 @@ class FunctionBuilder:
             "Available items in the room: ",
             room_string,
             "\n#############\n",
+            "Current accessible areas: ",
+            rooms_summary,
             "Current stats:",
             self.state_manager.get_stats().message,
             "\n#############\n",

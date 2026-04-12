@@ -97,8 +97,8 @@ python -m inventory_items.items_validation.items_schema_test \
   --provider openrouter \
   --model google/gemma-4-26b-a4b-it \
   --mode item \
-  --types store_endpoint toggleable \
-  --prompt "Furniture, large cabinet computer interface terminal."
+  --types seatable sleepable_spot \
+  --prompt "Market bench, solid gray concrete minimal bench."
 '''
 
 ''' example item (no mode defaults to item), from project root:
@@ -131,6 +131,43 @@ python -m inventory_items.items_validation.items_schema_test \
   --types outdoors_area open_soil_zone \
   --prompt "Astro-punk cabin garden"
 '''
+
+''' example room, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --mode room \
+  --types outdoors_area open_soil_zone \
+  --prompt "Astro-punk cabin hiking road, clear road, shrubs open area"
+'''
+
+''' example room, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --mode room \
+  --types outdoors_area open_soil_zone \
+  --prompt "Astro-punk market entrance area"
+'''
+
+''' example room, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --mode room \
+  --types outdoors_area open_soil_zone \
+  --prompt "Astro-punk market gardening stores area"
+'''
+
+''' example room, from project root:
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openrouter \
+  --model google/gemma-4-26b-a4b-it \
+  --mode room \
+  --types outdoors_area open_soil_zone \
+  --prompt "Astro-punk market food stalls area"
+'''
+
 
 ''' example room, from project root:
 python -m inventory_items.items_validation.items_schema_test \

@@ -348,7 +348,7 @@ class ToolRegistry:
                     "list_items_in_inventory":      self.base_tools.list_items_in_inventory,
                     "set_current_emote":            self.base_tools.set_current_emote,
                     "move_to_room":                 state_manager.set_current_room,
-                    "list_all_rooms":               self.base_tools.get_all_rooms,
+                    "list_accessible_rooms":               self.base_tools.get_all_rooms,
                     "pick_up_item":                 self.base_tools.pick_up_item,
                     "examine_item":                 None,  # set by FunctionBuilder (needs self ref)
                     "drop_item":                    self.base_tools.drop_item,

@@ -950,7 +950,7 @@ base_tools=[
     {
         "type": "function",
         "name": "move_to_room",
-        "description": "Changes your current location to a specified room. Requires the room ID to move to, which can be obtained using the function list_all_rooms.",
+        "description": "Changes your current location to a specified room. Requires the room ID to move to, which can be obtained using the function list_accessible_rooms.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -967,7 +967,7 @@ base_tools=[
     },
     {
         "type": "function",
-        "name": "list_all_rooms",
+        "name": "list_accessible_rooms",
         "description": "Retrieves a list of all available rooms alongside their ID for exploration and movement.",
         "parameters": {
             "type": "object",

@@ -8,6 +8,7 @@
         ],
         "music": "specimens_walk",
         "plot_number": 3,
+        "movement_group": "blue_set",
         "outdoors_type": [
             "earth-weather",
             "ocean-views",
@@ -52,6 +53,7 @@
         "room_types": [],
         "plot_number": 3,
         "music": "stasis",
+        "movement_group": "blue_set",
         "descriptions": {
             "late night": [
                 "The vats cast a cool, phosphorescent glow across the metal floor, their slow bubbles and the lab's low hum the only sounds in the hush.",
@@ -86,6 +88,7 @@
     },
     {
       "name": "The Sphere Chamber",
+      "movement_group": "red_set",
       "base_description": "A massive, hemispherical vault spanning sixty feet in diameter, walled with seamless white polymer that curves upward into a soaring, windowless dome. The floor is a vast, sunken basin filled to a depth of five feet with millions of smooth, lightweight plastic spheres. A single heavy pressurized bulkhead serves as the only entrance at the base of the southern wall.",
       "descriptions": {
         "early_morning": [
@@ -110,9 +113,216 @@
           "The silence is absolute, and the plastic floor feels like a cold, multicolored abyss. The walls are nothing more than a memory of a boundary, lost in the crushing velvet of the dark. The room feels infinitely large yet claustrophobically hollow."
         ]
       },
-      "image": "white_room",
+      "image": "sphere_chamber",
       "music": "stasis",
       "room_types": [],
       "items": []
+    },
+    {
+      "name": "Hiking Trail B",
+      "is_connectoid": true,
+      "connections": ["Hiking Trail A", "The Sphere Chamber", "garden"],
+      "base_description": "A narrow, sunken hiking road carved deep into the earth, flanked by towering, ancient tree trunks that form a living perimeter. The ground is a packed mixture of dark loam and crushed basalt, winding through a dense forest canopy that reaches heights of eighty feet. The path is bounded by steep, moss-covered earthen embankments that create a sense of containment and isolation.",
+      "descriptions": {
+        "early_morning": [
+          "The heavy loam feels damp and yielding underfoot, exhaling a scent of wet minerals. The towering canopy creates a claustrophobic depth, where the scale of the trees dwarfs the path. Shadowed ridges in the earthen walls appear soft and blurred by the humidity."
+        ],
+        "morning": [
+          "The fine grain of the basalt path is sharply defined by light filtering through the high canopy. The verticality of the surrounding trunks feels immense, pulling the gaze upward into a dense ceiling of foliage. The embankments hold a cool, subterranean temperature."
+        ],
+        "noon": [
+          "Patterns of high-contrast light dance across the textured soil, creating a complex mosaic on the ground. The immense scale of the forest feels static and heavy, pressing in from the earthen sides. The air feels thick and still between the massive wooden pillars."
+        ],
+        "afternoon": [
+          "Long, raking shadows stretch across the sunken road, emphasizing the depth of the embankments. The texture of the bark and the granular soil becomes more pronounced in the shifting light. The scale of the clearing feels vast yet intensely enclosed by the density of the woods."
+        ],
+        "late_afternoon": [
+          "The earthen walls glow with a warm, ochre hue as light hits the mossy slopes. The path feels narrow and intimate, swallowed by the lengthening silhouettes of the giant trees. A tactile coolness begins to rise from the damp, shaded soil."
+        ],
+        "night": [
+          "The path is a void of deep textures, where the ground feels like a dark, soft ribbon through the woods. The boundaries of the road are lost to an impenetrable gloom, making the forest feel infinite and swallowing. The atmosphere is heavy and silent."
+        ],
+        "late_night": [
+          "The ground feels cold and solid, a dark passage through the immense, unseen forest. The scale of the canopy is felt only as a weight of absolute darkness overhead. The embankments seem to press inward, tightening the sense of isolation."
+        ]
+      },
+      "image": "forest_crevice_trail",
+      "music": "aware_drifter",
+      "room_types": [
+        "outdoors_area"
+      ],
+      "items": [],
+      "outdoors_type": [
+        "earth-astro-views"
+      ]
+    },      
+    {
+      "name": "Hiking Trail A",
+      "is_connectoid": true,
+      "connections": ["Hiking Trail B", "Market Entrance"],
+      "base_description": "A wide, segmented hiking road carved through a rugged plateau, stretching toward a distant horizon. The path is composed of interlocking, matte-black polymer tiles embedded into the red, iron-rich soil. Flanking the road are thick clusters of low-lying, bioluminescent shrubs that form natural, irregular boundaries. The sky above is an immense, unobstructed expanse with no overhead canopy, creating a sense of overwhelming scale.",
+      "descriptions": {
+        "early_morning": [
+          "The polymer tiles hold a damp, heavy chill that clings to the air. The shrubs appear as dark, velvet silhouettes against the pale, dusty earth.",
+          "The vastness of the open sky feels heavy and pressing, as if the atmosphere itself has weight."
+        ],
+        "morning": [
+          "Sharp light catches the grit of the red soil, making the texture of the path feel abrasive and raw. The shrubbery casts long, stretched shadows across the polymer segments.",
+          "The horizon feels distant and unreachable, emphasizing the wide, lonely stretch of the trail."
+        ],
+        "noon": [
+          "The heat radiates from the dark tiles, creating a shimmering distortion in the air just above the ground. The textures of the shrubs are bleached and harsh under the direct glare.",
+          "The scale of the open plateau feels exposed and vulnerable, with no relief from the vertical expanse."
+        ],
+        "afternoon": [
+          "The red earth glows with an intense, saturated heat, making the boundaries of the road feel stark and defined. Shadows begin to pool deeply within the shrub clusters.",
+          "The vastness of the terrain feels tactile, as if the wind is carving the very landscape into sharper shapes."
+        ],
+        "late_afternoon": [
+          "The polymer path turns a deep, bruised purple under the raking light. The edges of the shrubs are rimmed with a sharp, golden luminescence.",
+          "The dimension of the road feels elongated, stretching into an infinite, narrowing perspective."
+        ],
+        "night": [
+          "The ground feels like a cold, obsidian void, with only the faint, rhythmic pulsing of the shrubs providing depth. The silence of the expanse feels physical.",
+          "The scale is lost to a profound, velvet darkness that swallows the boundaries of the path."
+        ],
+        "late_night": [
+          "A biting, crystalline cold emanates from the soil, making the polymer tiles feel like sheets of frozen metal. The shrubs cast a dim, ghostly light that barely touches the road.",
+          "The emptiness of the sky feels like a heavy weight pressing down upon the desolate trail."
+        ]
+      },
+      "image": "lonely_crevice_hike",
+      "music": "aware_drifter",
+      "room_types": [
+        "outdoors_area"
+      ],
+      "items": [],
+      "outdoors_type": [
+        "earth-astro-views"
+      ]
+    },
+    {
+      "name": "Market Entrance",
+      "is_connectoid": false,
+      "movement_group": "green_set",
+      "base_description": "A sprawling, semi-enclosed docking bay converted into a transit hub, featuring a high-vaulted ceiling of interlocking carbon-fiber plates. The ground is a composite of weathered reinforced concrete and hexagonal metal plating, scarred by heavy machinery tracks. Massive hydraulic pillars, sixty feet high, support the upper gantries, while wide, arched apertures lead toward the star-dusted void beyond.",
+      "descriptions": {
+        "early_morning": [
+          "The metallic floor holds a damp, biting chill that seeps through thick soles. Long, distorted shadows stretch across the carbon-fiber ceiling, making the vast space feel cavernous and hollow.",
+          "Static-charged air clings to the skin, tasting of ozone and cold iron."
+        ],
+        "morning": [
+          "The hexagonal plating reflects a pale, diffused glare that emphasizes every hairline fracture in the concrete. The scale of the overhead gantries feels imposing, looming like silent giants.",
+          "A thin layer of metallic dust settles into the grooves of the floor, giving the surface a gritty, tactile roughness."
+        ],
+        "noon": [
+          "The high-vaulted ceiling loses its depth, appearing as a flat, heavy lid of dark composite pressing down on the plaza. The heat from the idling machinery radiates upward, shimmering against the massive hydraulic pillars.",
+          "Harsh, angular shadows carve the docking bay into stark zones of light and deep, impenetrable void."
+        ],
+        "afternoon": [
+          "The warmth of the day begins to leach out of the metal plates, leaving the ground feeling unnervingly tepid. The carbon-fiber ceiling takes on a bruised, matte quality under the shifting light.",
+          "The textures of the worn concrete become more pronounced, appearing rugged and abrasive under the raking light."
+        ],
+        "late_afternoon": [
+          "Amber light catches the edges of the hydraulic pillars, turning the industrial steel into glowing, molten silhouettes. The vastness of the bay feels more intimate, though the growing shadows carry a heavy, silent weight.",
+          "The floor's metallic grain is pulled into sharp relief, emphasizing the scars and gouges of decades of transit."
+        ],
+        "night": [
+          "The space expands into an infinite, dark maw where the ceiling is lost to a heavy, velvet gloom. Only the sharp edges of the hexagonal plating are visible, catching faint, stray glimmers.",
+          "The concrete feels intensely cold, acting as a heat sink that pulls warmth from anything standing upon it."
+        ],
+        "late_night": [
+          "The atmosphere is thick with a crushing stillness, as if the very air has solidified into a dark, pressurized mass. The boundaries of the bay vanish into a total, light-swallowing darkness.",
+          "The metallic surfaces feel slick and unnaturally smooth, vibrating faintly with the distant, rhythmic thrum of the station's core."
+        ]
+      },
+      "image": "future_market_hub",
+      "music": "aware_drifter",
+      "room_types": [
+        "outdoors_area"
+      ],
+      "items": [],
+      "outdoors_type": [
+        "earth-astro-views"
+      ],
+      "plot_number": 0
+    },
+    {
+      "name": "Market Terrace",
+      "is_connectoid": false,
+      "movement_group": "green_set",
+      "base_description": "A sprawling, semi-enclosed outdoor plaza suspended above a planetary rift, measuring approximately two hundred feet in diameter. The floor is composed of interlocking hexagonal carbon-fiber tiles embedded with patches of dark, nutrient-rich loam. High-tensile polymer membranes form a translucent canopy overhead, supported by jagged, oxidized titanium struts that rise thirty feet into the air. Open apertures at the perimeter offer a terrifyingly vast view of the celestial void.",
+      "descriptions": {
+        "early_morning": [
+          "The carbon-fiber tiles glisten with a thin layer of condensation, making the dark loam look like wet velvet. The titanium struts cast long, skeletal shadows across the planting plots. A cool, metallic dampness clings to the air."
+        ],
+        "morning": [
+          "The polymer canopy catches the first light, diffusing it into a soft, sterile glow that illuminates the grain of the soil. The scale of the plaza feels expansive as the shadows retreat into the structural recesses. The air feels crisp and highly oxygenated."
+        ],
+        "noon": [
+          "Light penetrates the canopy with intense clarity, striking the dark earth with a punishing brightness. The titanium supports vibrate with a faint, thermal hum. The vastness of the surrounding void feels sharply defined against the bright edges of the terrace."
+        ],
+        "afternoon": [
+          "Raking light stretches the shadows of the struts across the hexagonal floor, creating a rhythmic pattern of dark and light. The loam appears parched and textured, its deep crevices highlighted by the angle of light. The scale of the plaza feels heavy and grounded."
+        ],
+        "late_afternoon": [
+          "The polymer ceiling takes on a bruised, amber hue, casting a warm but artificial glow over the dark soil. Shadows grow elongated and soft, blurring the boundaries between the titanium struts and the void. The thermal energy of the day lingers in the carbon-fiber tiles."
+        ],
+        "night": [
+          "The plaza is swallowed by a profound, ink-like darkness, where only the faint outlines of the titanium struts are visible. The soil looks like a void within a void, absorbing what little ambient light remains. The scale feels infinitely deep and unsettlingly quiet."
+        ],
+        "late_night": [
+          "The boundaries of the terrace vanish into an impenetrable gloom, leaving only the tactile sensation of the cold, hard tiles. The canopy overhead is a mere suggestion of a ceiling, lost in the crushing weight of the darkness. The atmosphere is heavy, silent, and biting cold."
+        ]
+      },
+      "image": "future_garden_stalls",
+      "music": "what_might_there_be",
+      "room_types": [
+        "outdoors_area"
+      ],
+      "items": [],
+      "outdoors_type": [
+        "earth-astro-views"
+      ],
+      "plot_number": 12
+    },
+    {
+      "name": "Market Stalls",
+      "is_connectoid": false,
+      "movement_group": "green_set",
+      "base_description": "A vast, open-air concourse set within a crater-rimmed basin, stretching hundreds of meters wide under a low-hanging, artificial sky-dome. The ground is a compacted mixture of dark lunar regolith and recycled polymer plates, textured with heavy, industrial grooves. Surrounding the perimeter are towering, modular food stalls constructed from oxidized titanium and reinforced glass, their heights varying from ten to thirty feet. Open archways between the stalls provide access to narrow, winding service alleys.",
+      "descriptions": {
+        "early_morning": [
+          "The regolith surface holds a biting, metallic chill that seems to seep upward from the dark earth. The titanium structures appear muted and matte, their edges softened by a heavy, clinging haze. The vast scale of the basin feels oppressive, as if the crater walls are leaning inward."
+        ],
+        "morning": [
+          "Sharp, angular shadows stretch across the polymer plates, highlighting the gritty texture of the soil. The metallic surfaces of the stalls gleam with a cold, clinical luster. The atmosphere feels thin and expansive, with the distant rim of the crater feeling impossibly far away."
+        ],
+        "noon": [
+          "Light hits the ground with a punishing intensity, bleaching the dark regolith into a pale, dusty gray. The titanium walls radiate a dry, searing heat that vibrates against the skin. The sheer volume of the open concourse feels blinding and exposed."
+        ],
+        "afternoon": [
+          "Long, raking light pulls the deep grooves of the floor into stark, obsidian-like relief. The thermal energy of the day lingers in the polymer plates, making the ground feel uncomfortably warm. The verticality of the stalls becomes more pronounced as shadows deepen in the alcoves."
+        ],
+        "late_afternoon": [
+          "The titanium structures catch a bruised, metallic glow, making their oxidized patches appear deep and textured. The regolith begins to lose its warmth, turning tactilely coarse and biting. The vastness of the sky-dome feels heavy and lowering."
+        ],
+        "night": [
+          "The ground turns into a sea of impenetrable darkness, with only the sharp edges of the polymer plates catching faint reflections. The modular stalls loom like massive, silent monoliths of cold metal. The scale of the plaza feels cavernous and hollow."
+        ],
+        "late_night": [
+          "The surfaces are coated in a profound, velvet-like gloom that swallows all sense of depth. The titanium frames feel unnervingly cold to the touch, pulling heat from the air. The boundary between the ground and the crater walls vanishes into a singular, crushing void."
+        ]
+      },
+      "image": "future_market_stalls",
+      "music": "what_might_there_be",
+      "room_types": [
+        "outdoors_area"
+      ],
+      "items": [],
+      "outdoors_type": [
+        "earth-astro-views"
+      ],
+      "plot_number": 12
     }
 ]

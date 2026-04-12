@@ -1055,5 +1055,207 @@
         "trade_mode": "buy_and_sell",
         "sell_discount": 0.4
       }
+    },
+   {
+      "name": "Wild Bramble Shrub",
+      "descriptions": [
+        "A dense, sprawling thicket of wild brambles and tangled branches.",
+        "The thorny interior of the shrub contains several dark, shadowed nooks where small objects easily become snagged or lost in the leaf litter."
+      ],
+      "static": true,
+      "type": [
+        "cranny_host"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null
+    },
+    {
+      "name": "Crooked Tall Oak",
+      "descriptions": [
+        "A towering, ancient oak tree with a trunk that twists and turns in an elegant, irregular spiral.",
+        "Its weathered bark holds centuries of stories, and its sprawling branches create a natural canopy of dappled light."
+      ],
+      "static": true,
+      "type": [
+        "meditation_aid",
+        "comfort_object"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "meditation_aid_ambience": [
+        "The gentle rustle of heavy leaves creates a rhythmic, white-noise lullaby.",
+        "Dappled sunlight shifts slowly across the ground, creating a mesmerizing dance of light and shadow.",
+        "The grounding presence of the ancient wood radiates a sense of timeless permanence."
+      ],
+      "narrative_hug": [
+        "You lean your weight against the rough, warm bark, feeling the immense strength of the wood supporting you.",
+        "As you wrap your arms around a sturdy limb, the texture of the moss feels soft and cool against your skin.",
+        "You press your cheek against the trunk, listening to the faint, deep creak of the tree breathing with the wind."
+      ]
+    },
+    {
+      "name": "Stacked Boulder Set",
+      "descriptions": [
+        "A collection of massive, weathered boulders carefully piled one atop the other.",
+        "The grey stone is textured with patches of dried lichen and deep, natural fissures."
+      ],
+      "static": true,
+      "type": [
+        "cranny_host",
+        "seatable",
+        "meditation_aid"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "narrative_sitting": [
+        "You lower yourself onto the flat surface of the uppermost stone, feeling the unyielding, ancient chill of the rock through your clothes.",
+        "The rough texture of the granite bites slightly into your palms as you steady yourself on the heavy seat.",
+        "You settle onto the sun-warmed surface, finding a strange, solid stability in the weight of the stones beneath you."
+      ],
+      "meditation_aid_ambience": [
+        "The sheer, silent mass of the stones radiates a sense of profound permanence and grounding.",
+        "A quiet stillness seems to emanate from the arrangement, encouraging a slowing of breath and thought.",
+        "The natural geometry of the stack creates a focal point for contemplation, anchoring the surrounding space in stillness."
+      ]
+    },
+    {
+      "name": "Weathered sign post",
+      "descriptions": [
+        "A wooden sign post, worn by time and the elements.",
+        "The letters that once adorned the sign have long since vanished."
+      ],
+      "static": true,
+      "type": [],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null
+    },
+    {
+      "name": "Neo-Fruit Snack Stall",
+      "descriptions": [
+        "A neon-lit, hovering market stall specialized in genetically enhanced fruit snacks.",
+        "The stall hums with a soft blue energy, displaying various colorful fruit preparations behind a shimmering kinetic barrier."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "Cyber-Orchard Express",
+        "store_types": [
+          ""
+        ],
+        "welcome_message": "Welcome to the Cyber-Orchard! Grab some bio-enhanced sweetness to fuel your journey."
+      }
+    },
+    {
+      "name": "Neon-Glaze Bakery Stall",
+      "descriptions": [
+        "A sleek, hovering market stall illuminated by pulsing pink and blue neon lights.",
+        "The air around it smells of caramelized sugar and synthetic yeast.",
+        "Specially designed for quick transactions in high-density urban zones."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "Cyber-Sweet Provisions",
+        "store_types": [
+          ""
+        ],
+        "welcome_message": "Step into the future of flavor! Grab some fresh neon-bread before it's gone!"
+      }
+    },
+    {
+      "name": "Neo-Protein Meat Stall",
+      "descriptions": [
+        "A high-tech market stall glowing with neon accents.",
+        "Specializes in premium synthesized red meats and genetically enhanced poultry."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "Neo-Protein Meat Stall",
+        "store_types": [
+          ""
+        ],
+        "welcome_message": "Welcome to the future of nutrition. Fresh cuts, synthesized to perfection!"
+      }
+    },
+   {
+      "name": "Neo-Ocean Seafood Stall",
+      "descriptions": [
+        "A sleek, holographic-accented food stall specializing in synthetically enhanced and fresh deep-sea delicacies.",
+        "The stall hums with a low-frequency cooling system to keep the seafood at peak freshness."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "Neo-Ocean Delicacies",
+        "store_types": [
+          ""
+        ],
+        "welcome_message": "Welcome to Neo-Ocean. Taste the depths of the future!"
+      }
+    },
+    {
+      "name": "Gardening Stall",
+      "descriptions": [
+        "A sleek, neon-accented futuristic market stall.",
+        "Specializes in high-tech seeds for advanced gardening."
+      ],
+      "static": true,
+      "type": [
+        "store_endpoint"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "store_endpoint_data": {
+        "store_name": "Neo-Flora Seed Station",
+        "store_types": [
+          "seeds"
+        ],
+        "welcome_message": "Welcome to the future of cultivation. Scan your biometric ID to begin browsing our seed catalogue."
+      }
+    },
+    {
+      "name": "Market Bench",
+      "descriptions": [
+        "A solid, minimalist bench made of smooth, gray concrete.",
+        "A heavy-duty seating option commonly found in urban plazas or market squares."
+      ],
+      "static": true,
+      "type": [
+        "seatable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "narrative_sitting": [
+        "You lower yourself onto the unyielding surface, feeling the cool, hard texture of the concrete through your clothes.",
+        "The bench offers no cushion, forcing you to sit upright as you settle onto the cold, gray slab.",
+        "You rest on the smooth stone, the solid weight of the bench providing a steady, motionless seat."
+      ]
     }
 ]

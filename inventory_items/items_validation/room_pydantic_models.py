@@ -117,6 +117,25 @@ class RoomTimeDescriptions(BaseModel):
 class BaseRoom(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    is_connectoid:Optional[bool] = Field(
+        default=None, 
+        description=(
+            "Is this a bridge, or connection between zones? roads, trails, roundabout or others, if so, set to true."
+        )
+    )
+    movement_group : Optional[str]= Field(
+        default = "default",
+        description =(
+            "If this room is a regular room set this string as 'default' if not specified."
+        )
+    )
+    connections : Optional[List[str]] = Field(
+        default=[],
+        description=(
+            "If this room is a connectoid initialize this as an empty list or an specified list of room names."
+        )
+    )
+
     name: str = Field(
         description="Human-readable room name, e.g. 'Garden'."
     )

@@ -309,6 +309,22 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         return self.room_manager.get_all_rooms_data()
 
 
+    def get_accessible_rooms(self) -> list[RoomDataResult]:
+        """
+        Returns a RoomDataResult for every room reachable from the current room.
+ 
+        Accessibility is determined by the ConnectionsGraph built at init:
+          - Rooms sharing the same movement_group are freely reachable.
+          - Connectoids whose connections list includes the current room are reachable.
+          - From a connectoid, only its declared connections are reachable.
+          - Rooms with no group and not listed by any connectoid are never returned.
+ 
+        This is the LLM-facing movement query. For unrestricted system access
+        use get_all_rooms_data() instead.
+        """
+        return self.room_manager.get_accessible_rooms()
+ 
+ 
     def get_inventory_state(self) -> InventoryStateResult:
         """
         Returns a fully-typed snapshot of the player inventory and current

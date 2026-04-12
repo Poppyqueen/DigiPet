@@ -21,8 +21,8 @@ class BaseTools:
         return agent_response
         
     def get_all_rooms(self):
-        rooms = self.state_manager.get_all_rooms_data()
-        summary = f"Available rooms: {', '.join(f'{r.name} (ID:{r.id:06d})' for r in rooms)}"
+        rooms = self.state_manager.get_accessible_rooms()
+        summary = f"Available rooms: {', '.join(f'{r.name} (ID:{r.id})' for r in rooms)}"
         return summary
 
 

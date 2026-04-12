@@ -14,6 +14,7 @@ from inventory_items.items_validation.item_pydantic_models import (
     get_base_item_types,
     get_mcp_item_types)
 from inventory_items.items_validation.room_pydantic_models import validate_room_dict
+from inventory_items.services.connections_graph import ConnectionsGraph
 
 
 import os
@@ -47,7 +48,20 @@ class StateStore(GenericJsonTool):
         self._post_init_state_validation()
         self._write_json(self._state)
 
+        # Build the connections graph from the now-validated rooms list.
+        # This must run after _assign_missing_ids and _post_init_state_validation
+        # so every room is guaranteed to have a valid integer ID.
+        self._connections_graph = ConnectionsGraph(
+            self._state.get("rooms", [])
+        )
+ 
 
+ 
+    def get_connections_graph(self) -> ConnectionsGraph:
+        """Returns the pre-built movement graph. Used by RoomManager."""
+        return self._connections_graph
+ 
+ 
     def get_state_section(self, key, default=None):
         """Provides read-access to a section of the state."""
         return self._state.get(key, default)

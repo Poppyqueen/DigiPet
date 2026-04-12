@@ -41,6 +41,28 @@
         "Blue Plastic Ball Pit Ball[x750]",
         "Purple Plastic Ball Pit Ball[x250]"
     ],
+    "Hiking Trail B":[
+        "Wild Bramble Shrub[x3]",
+        "Weathered sign post"
+    ],
+    "Hiking Trail A":[
+        "Crooked Tall Oak",
+        "Wild Bramble Shrub[x2]",
+        "Stacked Boulder Set"
+    ],
+    "Market Entrance":[
+        "Neo-Fruit Snack Stall",
+        "Market Bench"
+    ],
+    "Market Terrace":[
+        "Gardening Stall"
+    ],
+    "Market Stalls":[
+        "Neon-Glaze Bakery Stall",
+        "Neo-Protein Meat Stall",
+        "Neo-Ocean Seafood Stall",
+        "Market Bench[x3]"
+    ],
     "inventory": [
     ]
 }
