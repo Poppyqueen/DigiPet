@@ -26,8 +26,6 @@ class EarthAstroViews(OutdoorsProvider):
         clean_dna = "".join(char for char in self.pet_dna if char.isdigit())
         dna_int = int(clean_dna) # Use this for a seed in the noise
 
-        self._tick_interval_minutes: float = 15.0  # default, overridden below
-
 
         self.bortle_class = int(config.get_config("outdoors_perception", "astro_bortle_level"))
 
@@ -60,9 +58,6 @@ class EarthAstroViews(OutdoorsProvider):
         snap = self.sim.snapshot()
         rendered = render_snapshot(snap)
         return rendered, None, None
-    
-    def set_tick_interval_minutes(self, minutes: float) -> None:
-        self._tick_interval_minutes = minutes
 
     def tick(self) -> None:
-        self.sim.tick(minutes=self._tick_interval_minutes)
+        self.sim.tick()

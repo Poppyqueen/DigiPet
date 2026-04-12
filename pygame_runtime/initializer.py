@@ -210,10 +210,7 @@ def _build_tick_registry(chatbot,) -> TickRegistry:
 
     interval_ms = idle_ms * 0.75
     registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=interval_ms)
-    # This is a shortcut 
-    sky_provider = reg.outdoors_perception._providers.get("earth-astro-views") 
-    if sky_provider:
-        sky_provider.set_tick_interval_minutes(interval_ms / 60_000)
+    
     return registry
 
 # Replace the existing _splash() function entirely:
