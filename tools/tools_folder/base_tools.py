@@ -21,9 +21,7 @@ class BaseTools:
         return agent_response
         
     def get_all_rooms(self):
-        rooms = self.state_manager.get_accessible_rooms()
-        summary = f"Available rooms: {', '.join(f'{r.name} (ID:{r.id})' for r in rooms)}"
-        return summary
+        return self.state_manager.llm_get_accessible_rooms()
 
 
     def add_item_description(self, item_id: int, new_description: str) -> str: 

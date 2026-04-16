@@ -357,6 +357,7 @@ class RoomDataResult(BaseModel):
     music: str
     description: str
     room_types: list[str]
+    title_display: str
     extra_data: dict = {}
 
     @classmethod
@@ -375,13 +376,19 @@ class RoomDataResult(BaseModel):
         # Clean up any empty strings and join
         final_description = " ".join(str(d) for d in all_fragments if d)
 
+        name = room.get("name", "Unknown Room")
+        group = str(room.get("movement_group") or "").replace('_', ' ').title()
+
+        title_display = f"{name} Group: [{group}]" 
+
         return cls(
             id=room["id"],
-            name=room.get("name", "Unknown Room"),
+            name=name,
             image=room.get("image", ""),
             music=room.get("music", ""),
             description=final_description,
             room_types=room.get("room_types", []),
+            title_display=title_display,
             extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},
         )
 

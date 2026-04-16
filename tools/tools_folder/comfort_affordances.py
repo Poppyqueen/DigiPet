@@ -58,7 +58,7 @@ class ComfortAffordances:
         # --- Add signal call ---
         self._signal_callback({"type": "show_icon_popup", "icon_path": "style/images/action_icons/meditate_icon.png"})
         # ------------------------
-        return f"You feel inspired by the ambience, you try to quiet your mind, however, thoughts rush over you... {thoughts}.\n As you keep going your mind begins letting go...\n...\n..."
+        return f"You feel inspired by the ambience, you try to quiet your mind, however, thoughts rush over you... {thoughts}.\n As you keep going your mind begins letting go, you feel your negative patterns and recursive thoughts clearing and letting go...\n...\n...\n..."
 
     def _get_medit_item_state(self, item_id: int) -> tuple[bool, dict | str]:
         found_response = self.state_manager.find_item(
@@ -149,7 +149,7 @@ class ComfortAffordances:
 
         self._signal_callback({"type": "show_message_popup", "message": f"Looking for something hidden..."})
 
-        if not check_one_in(45): # magic number 45
+        if not check_one_in(45): # magic number 45 TODO: Add check one in as field in item of cranny host
             return f"You squeeze your hand and arm and reach for the cranny in the {item_name}, you flail in search for a while, however you can't find anything but dust bunnies."
 
         # all_items = self.item_store.get_items_by_type("dust_bunnied_gleaning")
@@ -159,8 +159,8 @@ class ComfortAffordances:
         found_item_types = ["dust_bunnied_gleaning"]
 
         # From defined types in pydantic models
-        modifier_types = ["comfort_object", "meditation_aid", "toggleable"] # Order matters here! 
-        pick = front_weighted_pick(items=modifier_types, none_chance=0.30)
+        modifier_types = ["comfort_object", "meditation_aid", "toggleable"] # Order matters here! TODO: Add types to cranny host instead of this list, or appended to. Maybe... replace types?
+        pick = front_weighted_pick(items=modifier_types, none_chance=0.30) # TODO: Add none chance to item? 
         if pick:
             found_item_types.append(pick)
 

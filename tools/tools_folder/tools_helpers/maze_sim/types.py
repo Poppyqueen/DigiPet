@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 from typing import Literal
 
@@ -15,25 +15,25 @@ MazeType = Literal[_maze_type_keys]  # type: ignore[valid-type]
 # 3. Create a helper string for error messages/logging
 maze_type_names = ", ".join(_maze_type_keys)
 
-
 class MazeState(BaseModel):
-    seed: int = Field(
+    # Use Optional[type] or type | None so that default=None is VALID
+    seed: Optional[int] = Field(
         default=None,
         description="Always set to None. The seed for the maze generation algorithm, managed by the maze tool."
     )
-    size: list[int] = Field(
+    size: Optional[List[int]] = Field(
         default=None,
         description="Always set to None. The dimensions of the maze [width, height], managed by the maze tool."
     )
-    difficulty: str = Field(
+    difficulty: Optional[str] = Field(
         default=None,
         description="Always set to None. The maze difficulty ('normal', 'hardcore', or 'insane'), managed by the maze tool."
     )
-    pos: list[int] = Field(
+    pos: List[int] = Field(
         default=[0, 0],
         description="Always set to [0, 0], x,y. The current coordinates of the player in the maze, managed by the maze tool."
     )
-    goal: list[int] = Field(
+    goal: Optional[List[int]] = Field(
         default=None,
         description="Always set to None. The coordinates of the goal in the maze, managed by the maze tool."
     )
@@ -46,11 +46,9 @@ class MazeState(BaseModel):
         description="Always set to False. Indicates whether the player has reached the goal in the maze."
     )
 
-    # -----------------------------------------------------------------------
-    # Props & environment flavour
-    # -----------------------------------------------------------------------
+    # --- Props & environment flavour ---
 
-    maze_type: MazeType = Field(
+    maze_type: Optional[str] = Field( # Or MazeType if you have that Enum defined
         default=None,
         description=(
             "The thematic type of the maze from possible types. "
@@ -65,12 +63,10 @@ class MazeState(BaseModel):
             "Set to True for static items that should not change type, like a physical maze box."
         )
     )
-    props_seed: int = Field(
+    props_seed: Optional[int] = Field(
         default=None,
         description=(
             "Independent random seed used exclusively for deterministic prop placement. "
-            "Stored here so the full prop layout can be reconstructed from scratch "
-            "without persisting the prop map itself. "
             "None means no props have been seeded for this maze."
         )
     )

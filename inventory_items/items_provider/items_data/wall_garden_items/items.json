@@ -1,0 +1,402 @@
+[
+    {
+        "name": "Dense Berry Shrub",
+        "descriptions": [
+            "A tangled, salt-sprayed shrub common along the coastal hiking trails.",
+            "The thick, woody stems create deep, shadowed pockets near the base, perfect for catching windblown debris."
+        ],
+        "static": true,
+        "type": [
+            "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+    },
+      {
+        "name": "Weathered Coastal Shrubbery",
+        "descriptions": [
+          "A dense, salt-sprayed flowering shrub growing near the hiking trail.",
+          "Its thick, tangled branches create numerous dark gaps and hollow centers near the base.",
+          "Perfect for small things to get lost in among the dried petals and coastal debris."
+        ],
+        "static": true,
+        "type": [
+          "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Weathered Coastal Trellis",
+        "descriptions": [
+          "A heavy, salt-crusted wooden trellis leaning against a seaside cottage wall.",
+          "Thick, woody vines of creeping jasmine have wound themselves tightly through the lattice, creating deep, shaded gaps in the wood.",
+          "Small crevices between the damp wood and the stone wall offer plenty of hiding spots for lost items."
+        ],
+        "static": true,
+        "type": [
+          "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Ancient Coastal Redwood",
+        "descriptions": [
+          "A massive, towering redwood tree with thick, textured bark.",
+          "The needles shimmer slightly with sea salt spray.",
+          "Its roots stretch deep into the sandy, coastal soil, providing a stable landmark for hikers."
+        ],
+        "static": true,
+        "type": [
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Ancient Crooked Pine",
+        "descriptions": [
+          "A weathered pine tree with a dramatic, wind-swept bend.",
+          "Its bark is thick and salty from the coastal breeze.",
+          "A popular landmark for hikers navigating the coastal trails."
+        ],
+        "static": true,
+        "type": [
+
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Verdant Coastal Pond",
+        "descriptions": [
+          "A secluded, crystal-clear freshwater pond nestled within the coastal hiking trails.",
+          "Lush aquatic vegetation weaves through the depths, swaying gently in the stillness.",
+          "The water is exceptionally translucent, revealing the soft, rippled sandy floor ten feet below."
+        ],
+        "static": true,
+        "type": [
+          "water_point",
+          "meditation_aid"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "narrative_drinking": [
+          "You cup your hands, bringing the cool, pristine liquid to your lips; it tastes of nothing but pure, refreshing clarity.",
+          "A swallow of the pond's water sends a soothing, revitalizing chill running down your throat.",
+          "The water is crisp and light, washing away the dust of the hiking trail with every sip."
+        ],
+        "narrative_wash_self": [
+          "You plunge your hands into the cool depths, feeling the silky texture of the water as you rinse away the grit of the trail.",
+          "As you splash the water onto your face, the refreshing chill snaps your senses awake.",
+          "You wade into the shallows, letting the gentle movement of the water scrub your tired limbs."
+        ],
+        "stats_edit": {
+          "fullness": 0.0,
+          "hydration": 0.4,
+          "energy": 0.2
+        },
+        "meditation_aid_ambience": [
+          "The rhythmic, soft lapping of water against the sandy banks creates a natural metronome for deep breathing.",
+          "Sunlight filters through the translucent water, casting dancing, hypnotic patterns of light on the sandy bottom.",
+          "The gentle rustle of aquatic plants provides a soothing, white-noise backdrop for quiet reflection."
+        ]
+      },
+      {
+        "name": "Weathered Driftwood Log",
+        "descriptions": [
+          "A massive, sun-bleached log washed up from the coast and partially embedded in the sandy soil.",
+          "Smooth to the touch from years of salt spray and sand abrasion.",
+          "The deep grooves in the wood provide numerous small nooks and shadowed crevices."
+        ],
+        "static": true,
+        "type": [
+          "seatable",
+          "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "narrative_sitting": [
+          "You lower yourself onto the sun-warmed wood, feeling the coarse, salt-crusted texture against your palms.",
+          "As you settle onto the log, the uneven surface forces you to adjust your weight, finding a momentary balance amidst the coastal breeze.",
+          "The heat of the day lingers in the thick timber beneath you, providing a steady warmth as you rest your tired legs."
+        ]
+      },
+      {
+        "name": "Small Square Window",
+        "descriptions": [
+          "A small, cozy square window framed in dark, polished wood.",
+          "The glass is beautifully fragmented by intricate wooden diamond-patterned grilles."
+        ],
+        "static": true,
+        "type": [
+          "toggleable",
+          "fenestration_aperture"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "toggle_state": {
+          "toggle_state": "off",
+          "toggle_uses_left": null,
+          "on_description": "The window shutter is open, revealing the world outside through the diamond grilles.",
+          "off_description": "The window shutter is closed, blocking the view with dark wood.",
+          "on_sequence": "You slide the heavy wooden latch aside and push the pane open, letting in a fresh breeze.",
+          "off_sequence": "You pull the wooden shutter closed, hearing the satisfying thud as it meets the frame.",
+          "perishable": false,
+          "ticks_lasting": 10,
+          "ticks_elapsed": 0
+        },
+        "accessible": true,
+        "outdoors_type": [
+          "earth-weather",
+          "ocean-views",
+          "earth-astro-views",
+          "xeno-canto"
+        ]
+      },
+      {
+        "name": "Bundle of Dried Sea Grass",
+        "descriptions": [
+          "A small, tightly bound bunch of salt-crusted grass collected from the coastal dunes.",
+          "Fragile and slightly abrasive to the touch."
+        ],
+        "static": false,
+        "type": [
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 20
+      },
+      {
+        "name": "Small Tuft of Coastal Grass",
+        "descriptions": [
+          "A small, hardy clump of grass common in coastal rural areas.",
+          "The blades are slightly salty to the touch."
+        ],
+        "static": false,
+        "type": [],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 20
+      },
+      {
+        "name": "Tall Coastal Shrub",
+        "descriptions": [
+          "A hardy, salt-tolerant shrub with dense, waxy green leaves.",
+          "Commonly found along the hiking trails of the coastal outskirts."
+        ],
+        "static": true,
+        "type": [],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Coastal Ground Cover",
+        "descriptions": [
+          "A patch of hardy, salt-tolerant vegetation clinging to the sandy soil.",
+          "Commonly found along hiking trails in coastal rural areas."
+        ],
+        "static": false,
+        "type": [],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 20
+      },
+      {
+        "name": "Large 'Francine' Bed",
+        "descriptions": [
+          "An opulent, oversized bed featuring ornate dark wood carvings.",
+          "Draped in luxurious, deep purple silk sheets that shimmer in the light.",
+          "The mattress is incredibly plush, feeling as though it's filled with a cloud of soft feathers."
+        ],
+        "static": true,
+        "type": [
+          "sleepable_spot",
+          "seatable"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "narrative_sleeping": [
+          "You sink deep into the feather-soft mattress, the purple silk feeling cool and smooth against your skin as the world drifts away.",
+          "The massive bed swallows you up in a cloud of comfort, providing a sense of absolute security and warmth.",
+          "As you lie back, the plush mattress contours perfectly to your body, making you feel weightless amidst the heavy velvet textures."
+        ],
+        "narrative_sitting": [
+          "You settle onto the edge of the bed, feeling the luxurious dip of the mattress beneath you.",
+          "The soft purple sheets bunch slightly under your weight as you find a comfortable position on the plush surface.",
+          "You rest on the edge of this grand piece of furniture, feeling the decadence of the Victorian craftsmanship beneath your hands."
+        ]
+      },
+      {
+        "name": "Ornate Mahogany Vanity",
+        "descriptions": [
+          "A massive, heavy-set vanity crafted from deep, dark-stained mahogany.",
+          "The piece features elegant cabriole legs and intricate, hand-carved floral flourishes along the apron.",
+          "Its surface is polished to a mirror-like sheen, reflecting the dim light of the room.",
+          "The many small gaps between the drawers and the carved edges create deep, shadowed crevices."
+        ],
+        "static": true,
+        "type": [
+          "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Ornate Mahogany Four-Poster Bed",
+        "descriptions": [
+          "A massive, antique bed crafted from deep, dark-stained mahogany.",
+          "The frame features intricate hand-carved flourishes and sweeping cabriole legs.",
+          "The surface is polished to a mirror-like sheen, reflecting the dim light of the room.",
+          "It is dressed in luxurious, heavy purple sheets over a thick, yielding mattress."
+        ],
+        "static": true,
+        "type": [
+          "sleepable_spot",
+          "seatable"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "narrative_sleeping": [
+          "You sink into the plush mattress, the weight of the heavy purple sheets providing a comforting, cocoon-like warmth.",
+          "As you lie back, the grandeur of the dark timber frame fades into the background, leaving only the softness of the bedding against your skin.",
+          "The deep violet fabric feels cool at first, then quickly warms to your body as you drift toward sleep."
+        ],
+        "narrative_sitting": [
+          "You sit on the edge of the bed, feeling the sturdy support of the mahogany frame beneath you.",
+          "The silkiness of the purple sheets brushes against your legs as you settle onto the soft mattress.",
+          "You rest against the cushioned headboard, surrounded by the scent of aged wood and polished lacquer."
+        ]
+      },
+      {
+        "name": "Ornate Silk-Upholstered Rocking Sofa",
+        "descriptions": [
+          "An oversized, grand rocking sofa crafted from deep, dark-stained walnut.",
+          "The frame features exquisite hand-carved flourishes and sweeping cabriole legs that taper elegantly toward the floor.",
+          "Luxurious heavy silk cushions cover the seat, offering a soft contrast to the mirror-like sheen of the polished wood.",
+          "The rhythmic creak of the heavy timber rockers promises a soothing rest."
+        ],
+        "static": true,
+        "type": [
+          "cranny_host",
+          "seatable",
+          "sleepable_spot"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "narrative_sitting": [
+          "You settle into the plush silk, feeling the weight of the heavy walnut frame stabilize your movement.",
+          "As you sit, the sofa gently oscillates, the polished wood runners gliding smoothly across the floor.",
+          "The ornate carvings press slightly against your hands as you grip the armrests, grounding you in the sofa's massive presence."
+        ],
+        "narrative_sleeping": [
+          "You stretch out across the expanse of silk, the rhythmic, slow motion of the rockers lulling you toward sleep.",
+          "Wrapped in the warmth of the cushioned seat, you drift off as the dark, sturdy timbers sway with a hypnotic cadence.",
+          "The smooth, cool touch of the silk against your skin contrasts with the heavy, secure feeling of the mahogany-toned frame."
+        ]
+      },
+      {
+        "name": "Pressure Oil Lamp",
+        "descriptions": [
+          "A heavy, portable lamp crafted from hand-polished brass.",
+          "Features intricate filigree engravings around the fuel reservoir and a small, mechanical hand-crank for pressure regulation."
+        ],
+        "static": false,
+        "type": [
+          "meditation_aid",
+          "toggleable"
+        ],
+        "stackable": true,
+        "quantity": 1,
+        "max_stack_size": 5,
+        "meditation_aid_ambience": [
+          "The steady, rhythmic hiss of the pressure valve provides a grounding white noise.",
+          "A warm, golden luminescence dances against the room's textures, casting soft, elongated shadows."
+        ],
+        "toggle_state": {
+          "toggle_state": "off",
+          "toggle_uses_left": null,
+          "on_description": "The lamp emits a steady, amber glow through etched glass panes.",
+          "off_description": "The brass casing sits cold and dark, reflecting only the dim ambient light.",
+          "on_sequence": "You turn the small brass hand-crank, feeling the mechanical resistance of the internal pump. With a sharp hiss of pressurized air, a small flame blooms behind the etched glass, bathing your hands in sudden, comforting warmth.",
+          "off_sequence": "You twist the shut-off valve; the rhythmic hiss tapers into a sigh, and the golden light retreats into a single, dying ember before vanishing into darkness.",
+          "perishable": false,
+          "ticks_lasting": 10,
+          "ticks_elapsed": 0
+        }
+      },
+      {
+        "name": "Ornate Brass-Inlaid Circular Desk",
+        "descriptions": [
+          "A heavy, dark mahogany desk with a circular top, featuring intricate brass filigree tracing the edges.",
+          "The underside is a labyrinth of hand-polished brass fittings and small, recessed gaps where dust and lost trinkets have gathered over decades.",
+          "A tarnished wrought iron support frame holds the heavy wood aloft, creating narrow crevices between the metal legs and the tabletop."
+        ],
+        "static": true,
+        "type": [
+          "cranny_host"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Brass-Filigree Bookbinding Station",
+        "descriptions": [
+          "A heavy, industrial-grade workstation crafted from dark, oil-rubbed mahogany and reinforced with polished brass structural supports.",
+          "Features an integrated hand-cranked hydraulic press with etched glass viewing ports to monitor paper compression.",
+          "The surface is inlaid with intricate wrought iron filigree, providing a stable yet opulent space for delicate leatherwork.",
+          "Equipped with small, brass-fitted valves that control a steam-assisted drying tray, showing slight tarnishing around the edges from years of careful use."
+        ],
+        "static": true,
+        "type": [
+          "bookmaking_implements"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null
+      },
+      {
+        "name": "Glyph-Etched Tide Rock",
+        "descriptions": [
+          "A smooth, salt-crusted rock embedded deep in the coastal sands.",
+          "The stone pulses with a rhythmic, azure light that mimics the ebb and flow of the distant waves.",
+          "Faint, magical glyphs shimmer on its surface, forming an intricate, shifting labyrinth of light."
+        ],
+        "static": true,
+        "type": [
+          "maze_interface"
+        ],
+        "stackable": false,
+        "quantity": 1,
+        "max_stack_size": null,
+        "maze_state": {
+          "seed": null,
+          "size": null,
+          "difficulty": null,
+          "pos": [
+            0,
+            0
+          ],
+          "goal": null,
+          "steps_taken": 0,
+          "goal_reached": false,
+          "maze_type": "coastal",
+          "type_locked": true,
+          "props_seed": null
+        }
+      }
+]

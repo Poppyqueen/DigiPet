@@ -225,7 +225,7 @@ class MazeController:
         # ---- current-cell prop (full description) ----
         if obs.current_prop:
             lines.append("")
-            lines.append(f"You notice: [{obs.current_prop['name']}]")
+            lines.append(f"In your current position you notice: [{obs.current_prop['name']}]")
             lines.append(f"  {obs.current_prop['description']}")
 
         # ---- probe report ----

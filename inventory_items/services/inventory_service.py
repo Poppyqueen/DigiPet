@@ -801,14 +801,6 @@ class InventoryService:
         location_id  = raw["location_id"]     # int or None
         location_name = raw["location_name"]  # str or None
 
-        # 3. Type filter
-        if required_type is not None:
-            if required_type not in item_data.get("type", []):
-                return ItemLookupResult.fail(
-                    f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
-                    f"but you can't use it that way."
-                )
-
         # 4. Location filter
         if required_location is not None:
             if required_location == "inventory":
@@ -847,6 +839,14 @@ class InventoryService:
                         f"but you don't see it anywhere."
 
                     )
+
+        # 3. Type filter
+        if required_type is not None:
+            if required_type not in item_data.get("type", []):
+                return ItemLookupResult.fail(
+                    f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
+                    f"but you can't use it that way."
+                )
 
         # 5. All filters passed
         return ItemLookupResult.ok(

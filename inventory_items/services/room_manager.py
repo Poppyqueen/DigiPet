@@ -119,7 +119,7 @@ class RoomManager:
         )
 
     # ------------------------------------------------------------------
-    # Accessible rooms (LLM-facing)
+    # Accessible rooms 
     # ------------------------------------------------------------------
 
     def get_accessible_rooms(self) -> list[RoomDataResult]:
@@ -142,6 +142,84 @@ class RoomManager:
             if room:
                 results.append(RoomDataResult.from_room_dict(room))
         return results
+    
+
+ 
+
+    def llm_get_accessible_rooms(self) -> str:
+        """
+        Returns a formatted string describing every room reachable from the
+        current room, shaped for direct LLM consumption.
+ 
+        Three cases:
+ 
+        1. Current room is a connectoid — corridor template:
+           "You are in a connecting area. You can travel to:
+            * Garden (ID:000003) [blue_set]
+            * Living Room (ID:000012) [red_set]"
+ 
+        2. Current room is a regular room with exits:
+           "You see the following areas around:
+            * Outdoors Area A (ID:000007) [blue_set]
+            * Garden (ID:000003) [blue_set] [Gateway — leads to: Hallway]
+            * Hallway (ID:000001) [Connecting: Garden, Living Room, Bathroom]"
+ 
+        3. No accessible rooms at all:
+           "There are no accessible areas from here."
+        """
+        graph = self._state_store.get_connections_graph()
+        current_room_id = self.get_current_room_id()
+        accessible_ids = graph.get_accessible_ids(current_room_id)
+ 
+        if not accessible_ids:
+            return "There are no accessible areas from here."
+ 
+        standing_in_connectoid = graph.is_connectoid(current_room_id)
+ 
+        def _format_room_line(room_id: int) -> str:
+            room = self._find_room_by_id(room_id)
+            if not room:
+                return f"* Unknown area (ID:{room_id})"
+ 
+            name = room.get("name", "Unknown")
+            parts = [f"* {name} (ID:{room_id:06d})"]
+ 
+            if graph.is_connectoid(room_id):
+                # Show where this connectoid leads by name — no group tag since
+                # connectoids never have one, and destinations are more useful.
+                dest_ids = graph.get_connectoid_destinations(room_id)
+                dest_names = []
+                for did in dest_ids:
+                    dest_room = self._find_room_by_id(did)
+                    if dest_room:
+                        dest_names.append(dest_room.get("name", f"ID:{did}"))
+                if dest_names:
+                    parts.append(f"[Connecting: {', '.join(dest_names)}]")
+            else:
+                # Regular room — show group, then gateway annotation if applicable.
+                group = room.get("movement_group")
+                if isinstance(group, str) and group:
+                    parts.append(f"[{group}]")
+ 
+                if not standing_in_connectoid:
+                    exit_ids = graph.get_connectoid_exits(room_id)
+                    if exit_ids:
+                        exit_names = []
+                        for eid in exit_ids:
+                            exit_room = self._find_room_by_id(eid)
+                            if exit_room:
+                                exit_names.append(exit_room.get("name", f"ID:{eid}"))
+                        if exit_names:
+                            parts.append(f"[Gateway — leads to: {', '.join(exit_names)}]")
+ 
+            return " ".join(parts)
+ 
+        lines = [_format_room_line(rid) for rid in accessible_ids]
+ 
+        if standing_in_connectoid:
+            return "You are in a connecting area. You can travel to:\n" + "\n".join(lines)
+ 
+        return "You see the following areas around:\n" + "\n".join(lines)
 
     # ------------------------------------------------------------------
     # Data accessors (unchanged, get_all_rooms_data returns everything)

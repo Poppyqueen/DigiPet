@@ -374,7 +374,7 @@ def run_pygame_expedition(name, info):
         now = pygame.time.get_ticks()
         if now - last_tick_time > REAL_TIME_WAIT:
             #clear_screen()
-            sim.tick(minutes=SIM_TICK_TIME)
+            sim.tick()
             snap = sim.snapshot() 
             cloud_tex = create_cloud_surface(sim)
             logger.log_snapshot(name, snap)

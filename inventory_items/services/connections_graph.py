@@ -117,3 +117,24 @@ class ConnectionsGraph:
 
     def is_accessible(self, current_room_id: int, target_room_id: int) -> bool:
         return target_room_id in self.get_accessible_ids(current_room_id)
+    
+    def get_connectoid_exits(self, room_id: int) -> list[int]:
+        """
+        Returns the IDs of every connectoid that lists room_id in its connections.
+        In other words: the gateways a regular room can use to leave its group.
+        Returns an empty list for connectoids and isolated rooms.
+        """
+        return list(self._room_exits.get(room_id, []))
+    
+
+    def get_connectoid_destinations(self, connectoid_id: int) -> list[int]:
+        """
+        Returns the room IDs that this connectoid connects to.
+        Returns an empty list if connectoid_id is not a connectoid.
+        """
+        return list(self._connectoid_connections.get(connectoid_id, []))
+ 
+ 
+    def is_connectoid(self, room_id: int) -> bool:
+        """Returns True if room_id is a connectoid."""
+        return room_id in self._connectoid_connections

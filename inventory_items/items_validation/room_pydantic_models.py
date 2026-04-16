@@ -13,7 +13,7 @@
 #   2. Add an entry to ROOM_TYPE_FIELD_CONTRACTS.
 #   That's it — validate_room_dict and the LLM schema update automatically.
 
-from typing import List, Optional, Dict, Any, Type, Literal
+from typing import List, Optional, Dict, Any, Type, Literal, ClassVar
 from pydantic import BaseModel, Field, ConfigDict, model_validator, PositiveInt
 
 from .contract_mixin import ContractMixin
@@ -116,28 +116,27 @@ class RoomTimeDescriptions(BaseModel):
 
 class BaseRoom(BaseModel):
     model_config = ConfigDict(extra="allow")
-
-    is_connectoid:Optional[bool] = Field(
-        default=None, 
+    
+    name: str = Field(
+        description="Human-readable room name, e.g. 'Garden'."
+    )
+    is_connectoid:bool = Field(
+        default=False, 
         description=(
             "Is this a bridge, or connection between zones? roads, trails, roundabout or others, if so, set to true."
         )
     )
     movement_group : Optional[str]= Field(
-        default = "default",
+        default=None,
         description =(
-            "If this room is a regular room set this string as 'default' if not specified."
+            "If this room is a regular room set this string as 'default' if not specified. If this room is a 'connectoid', this key should be missing."
         )
     )
     connections : Optional[List[str]] = Field(
-        default=[],
+        default=None,
         description=(
-            "If this room is a connectoid initialize this as an empty list or an specified list of room names."
+            "If this room is a connectoid initialize this as an empty list or an specified list of room names.  If this room is not 'connectoid', this key should be missing."
         )
-    )
-
-    name: str = Field(
-        description="Human-readable room name, e.g. 'Garden'."
     )
     base_description: Optional[str] = Field(
     default=None, 
@@ -199,11 +198,14 @@ class BaseRoom(BaseModel):
 # =============================================================================
 
 class PlantingGardenFields(ContractMixin):
+    model_description: ClassVar[str] = "This represents an area where a player can host and tend for plants in the floor, the ground determines a number of plots for plants depending on the size of the area."
     plot_number: PositiveInt = Field(
         description="Number of planting plots available in this garden room. Each plot can hold 1 individual plant. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
     )
 
 class OutdoorsAreaFields(ContractMixin):
+    model_description: ClassVar[str] = "This type represents an outdoors area, open ceiling, can vary from concrete playgrounds to deep jungles."
+
     outdoors_type: List[OutdoorsType] = Field(
         default=[_outdoors_type_keys[0]],
         description=f"A list of Literals from valid options, they represent where this outdoors area is located."

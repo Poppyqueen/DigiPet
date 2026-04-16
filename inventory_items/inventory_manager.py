@@ -318,11 +318,19 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
           - Connectoids whose connections list includes the current room are reachable.
           - From a connectoid, only its declared connections are reachable.
           - Rooms with no group and not listed by any connectoid are never returned.
- 
-        This is the LLM-facing movement query. For unrestricted system access
-        use get_all_rooms_data() instead.
         """
         return self.room_manager.get_accessible_rooms()
+    
+
+    def llm_get_accessible_rooms(self) -> str:
+        """
+        Returns a formatted string describing every room reachable from the
+        current room, shaped for direct LLM consumption.
+ 
+        Use this for agent perception. For structured logic use
+        get_accessible_rooms() instead.
+        """
+        return self.room_manager.llm_get_accessible_rooms()
  
  
     def get_inventory_state(self) -> InventoryStateResult:

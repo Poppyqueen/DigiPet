@@ -1,0 +1,134 @@
+.constants:
+  - &coastal_style "Style: A coastal biome, small rural town environment. Hiking area."
+  - &indoors_item "Cozy room interior item"
+  - &victorian_prompt >
+      Style Guide: Focus on 'Industrial Opulence.' Use materials like polished 
+      brass, wrought iron, etched glass, and dark hardwoods. Describe ornate 
+      engravings, filigree, and mechanical details (valves, pumps, hand-cranks). 
+      Show age through 'tarnished' or 'hand-polished' surfaces. Avoid the 
+      word 'Victorian'.
+
+config:
+  provider: "openrouter"
+  model: "google/gemma-4-26b-a4b-it"
+  export_dir: "data_constructors/dev_crafter/items"
+
+tasks:
+
+  - mode: "item"
+    types: ["maze_interface"]
+    context: 
+      - *coastal_style
+    prompts:
+      - "A magical embedded rock in the sand, it seems to be powered by the energy of the distant waves, it flickers following the natural pattern of the sea, when you interact with it it displays glyphs and symbols that invite interaction."
+
+  # - mode: "item"
+  #   types: ["cranny_host", "seatable", "sleepable_spot"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Large silk rocking sofa."
+
+  # - mode: "item"
+  #   types: ["cranny_host"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Small circular desk"
+
+  # - mode: "item"
+  #   types: ["meditation_aid", "toggleable"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Infinite portable, pressure oil lamp"
+    
+  # - mode: "item"
+  #   types: ["bookmaking_implements"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Work station"
+
+  # - mode: "item"
+  #   types: ["cranny_host"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Large vanity desk, dark wooden furniture, large stand."
+
+  # - mode: "item"
+  #   types: ["sleepable_spot","seatable"]
+  #   context: 
+  #     - *indoors_item
+  #     - *victorian_prompt
+  #   prompts:
+  #     - "Large bed, purple sheets, soft mattress."
+
+  # - mode: "item"
+  #   types: ["sleepable_spot","seatable"]
+  #   context: 
+  #     - *indoors_item
+  #   prompts:
+  #     - "Large victorian style bed, purple sheets, the mattress is so soft you sink into it as if made out of feathers."
+
+
+  # - mode: "item"
+  #   types: []
+  #   context: 
+  #     - *coastal_style
+  #   prompts:
+  #     - "Small grass"
+  #     - "Tall shrub"
+  #     - "Ground cover"
+
+  # - mode: "item"
+  #   types: []
+  #   context: 
+  #     - *coastal_style
+  #   prompts:
+  #     - "Tall tree"
+  #     - "Crooked tree"
+
+  # - mode: "item"
+  #   types: ["cranny_host", "water_point", "meditation_aid"]
+  #   context: 
+  #     - *coastal_style
+  #   prompts:
+  #     - "Fresh water pond, clear water seems to always rest in here, water vegetation grows in and on it, around 10 feet in lenght, it looks deep, the sandy soil around it is visible through the translucent water."
+
+  # - mode: "item"
+  #   types: ["seatable","cranny_host"]
+  #   context: 
+  #     - *coastal_style
+  #   prompts:
+  #     - "Natural, land feature."
+
+  # - mode: "item"
+  #   types: ["toggleable", "fenestration_aperture"]
+  #   context: 
+  #     - *indoors_item
+  #   prompts:
+  #     - "Small square window, dark wood, the glass is fragmented by a wooden patterned diamond grilles"
+
+  # - mode: "room"
+  #   types: ["outdoors_area"]
+  #   context: *coastal_style
+  #   prompts:
+  #     # - "Name: 'Section A2'. Secluded road passage-way, directly connected to a private garden. It is a connectoid to Section A"
+  #     # - "Name: 'Section A'. Section A of the main hiking trail, it is dense with vegetation, surrounding areas are hugged by trees. It is a connectoid to Section A2, Section B"
+  #     # - "Name: 'Section B'. Section B of the main hiking trail, it is dense with vegetation, surrounding areas are hugged by trees. It is a connectoid to Section A, Section B2, Section C"
+  #     # - "Name: 'Section B2'. Section B2 of the main hiking trail, the road grows more and more reduced through this path, a small hallways of vegetation grows around it. It is a connectoid of Section B, Nature Heaven"
+  #     # - "Name: 'Section C'. Section C of the main hiking trail, the vegetation on this section opens up to reveal a coastal view of the shore, divided by a small lining of shrubs, plants and a ditch between the road and the open sea. It is a connectoid of Section B"
+  #     # - "Name: 'Nature Heaven' Movement Group: 'turquoise'. A small almost hidden sanctuary, behing a small opening in the vegetation from the main trail, it serves as a small enclosed room made out of naturally growing plants, the plants grow tall to surround anyone, but the cannopy is clear so we can see the sky."
+
+  - mode: "room"
+    types: []
+    context: "Home interior, cozy."
+    prompts:
+      - "Name: 'Hallway', A quiet and crammed hallway that has a single open window to the sky outside. Connectoid to living_room, bathroom, garden."

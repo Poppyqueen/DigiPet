@@ -265,6 +265,7 @@ class FunctionBuilder:
         """Build the full context string injected into the LLM system prompt."""
         try:
             current_room_data = self.state_manager.get_current_room_data()
+            # print(f"DEBUG CONSTRUCT TOOLS CONTEXT: ROOM DATA OBJECT: {current_room_data}")
         except ValueError:
             return "Error: Could not find current room?????"
 
@@ -272,7 +273,7 @@ class FunctionBuilder:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         room_description = current_room_data.description
-        room_name = current_room_data.name
+        room_title_display = current_room_data.title_display
 
         inventory_state = self.state_manager.get_inventory_state()
 
@@ -283,8 +284,10 @@ class FunctionBuilder:
 
         current_tools_info = (await self.get_current_tools_info("agent"))["body"]
 
-        rooms = self.state_manager.get_accessible_rooms()
-        rooms_summary = f"Available areas: {', '.join(f'{r.name} (ID:{r.id})' for r in rooms)}"
+        rooms_summary = self.state_manager.llm_get_accessible_rooms()
+
+
+        #print(f"DEBUG CONTEXT, ROOMS SUMMARY: {rooms_summary}")
 
         context = [
             "MAIN SOURCE OF UNIVERSAL TRUTH:",
@@ -292,20 +295,21 @@ class FunctionBuilder:
             "#############",
             "Current State:",
             f"Current time: {now}, {get_time_tag_from_now()}",
-            f"Currently, you are in: {room_name}\nRoom Description: {room_description}\n",
+            f"Currently, you are in: {room_title_display}\nRoom Description: {room_description}\n",
+            "\n#############\n",
+            "Current accessible areas: ",
+            rooms_summary,
+            "\n#############\n",
+            "Available items in the current room: ",
+            room_string,
+            "\n#############\n",
+            "In your inventory the current items are:",
+            inv_string,
             "\n#############\n",
             self.state_manager.get_emotes_data().message,
             "\n#############\n",
             f"Possible emotes: {possible_emotes}",
             "\n#############\n",
-            "In your inventory the current items are:",
-            inv_string,
-            "\n#############\n",
-            "Available items in the room: ",
-            room_string,
-            "\n#############\n",
-            "Current accessible areas: ",
-            rooms_summary,
             "Current stats:",
             self.state_manager.get_stats().message,
             "\n#############\n",

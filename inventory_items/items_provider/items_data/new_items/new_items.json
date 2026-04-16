@@ -216,7 +216,7 @@
         "max_stack_size": 1
     },
     {
-        "name": "Embroidered Velvet Bolster Pillow (Victorian)",
+        "name": "Embroidered Velvet Bolster Pillow",
         "descriptions": [
             "A deeply padded cylindrical bolster covered in crushed ruby velvet, its surface subtly faded at the center where generations have rested.",
             "Edges trimmed with cream silk fringe and glass-seed beading; hand-stitched roses and scrolling vines wind along its length in muted silk thread.",
@@ -382,7 +382,7 @@
         ]
     },
     {
-        "name": "Aetheric Parlour Television",
+        "name": "Parlour Television",
         "descriptions": [
             "A tall walnut cabinet inset with brass filigree and a convex, mercury-tinted screen that hums faintly with contained lightning.",
             "Victorian styling fused with arcane circuitry: gaslamp dials, a phonograph-style speaker grille, and etched runes that trace eldritch conduits along the wood.",
@@ -503,9 +503,9 @@
         }
     },
     {
-        "name": "Victorian Cucumber Tea Sandwich",
+        "name": "Cucumber Tea Sandwich",
         "descriptions": [
-            "A slender, crustless tea sandwich of thin-sliced cucumber laid between delicately buttered white bread — the classic refreshment of a Victorian afternoon.",
+            "A slender, crustless tea sandwich of thin-sliced cucumber laid between delicately buttered white bread.",
             "Soothingly cool and feather-light, seasoned with a pinch of salt and a hint of lemon, made to be eaten in polite bites beside steaming teacups."
         ],
         "static": false,
@@ -624,7 +624,7 @@
     {
       "name": "Clockwork Aeolophone Musicbox",
       "descriptions": [
-        "A palm-sized, late-Victorian musicbox that blends gilt brass clockwork with a tiny luminous speaker and many intricate tiny levers and buttons — a toy that hints at futures the Victorians might have imagined.",
+        "A palm-sized, musicbox that blends gilt brass clockwork with a tiny luminous speaker and many intricate tiny levers and buttons — a toy that hints at futures the Victorians might have imagined.",
         "Its case is carved oak with inlaid mother-of-pearl stars; a small winding key and an ebony stop lever sit beside a perforated brass horn that transmits any sound the user instructs it with, pure magic!",
         "Wound, it quetly hums with twists and turns comming from the mechanisms in its interior, light manages to scape from the inside through its seams, it is expectant of input and to be used.; unwound, it is compact and cool, like a pocket relic from a clockwork salon."
       ],
