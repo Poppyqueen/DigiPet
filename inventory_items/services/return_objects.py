@@ -379,7 +379,7 @@ class RoomDataResult(BaseModel):
         name = room.get("name", "Unknown Room")
         group = str(room.get("movement_group") or "").replace('_', ' ').title()
 
-        title_display = f"{name} Group: [{group}]" 
+        title_display = f"{name} ID: {room["id"]} Group: [{group}]" 
 
         return cls(
             id=room["id"],

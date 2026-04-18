@@ -82,7 +82,8 @@ class RoomManager:
         current_room_id = self._state_store.get_state_section("current_room_id")
 
         if current_room_id == room_id:
-            return f"You are already in the {self._format_room_for_display(target_room)}."
+            room_data = RoomDataResult.from_room_dict(target_room)
+            return f"You are already in the {room_data.title_display}."
 
         # ── Access check ──────────────────────────────────────────────
         graph = self._state_store.get_connections_graph()
@@ -114,7 +115,7 @@ class RoomManager:
 
         room_data = RoomDataResult.from_room_dict(target_room)
         return (
-            f"You move to the {self._format_room_for_display(target_room)}. "
+            f"You move to the {room_data.title_display}. "
             f"Tools pool has changed. {room_data.description}"
         )
 
