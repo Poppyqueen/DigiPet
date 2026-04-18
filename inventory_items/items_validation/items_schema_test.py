@@ -147,3 +147,11 @@ python -m inventory_items.items_validation.items_schema_test \
   --types consumable toggleable \
   --prompt "Potato chips bag"
 '''
+
+''' example item (no mode defaults to item), from project root (not sure if a toggleable consumable is a good idea):
+python -m inventory_items.items_validation.items_schema_test \
+  --provider openai \
+  --model gpt-5.4-nano \
+  --types cranny_host sleepable_spot seatable \
+  --prompt "Victorian Mahogany Chaise Longue"
+'''

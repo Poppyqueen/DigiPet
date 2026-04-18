@@ -160,30 +160,51 @@
         "accessible": true
     },
     {
-        "name": "Victorian Mahogany Chaise Longue",
-        "descriptions": [
-            "A graceful chaise longue carved from dark mahogany, its sinuous frame and scrolled feet polished to a soft sheen. The deep-buttoned back and seat are upholstered in wine-red velvet, edged with gilt tassels and a fringe trim.",
-            "Once a salon staple, this chaise is built for reclining: a raised headrest, a gently sloping seat, and enough length to stretch out. Faint impressions in the velvet suggest many afternoons spent in languid repose."
+      "name": "Victorian Mahogany Chaise Longue",
+      "descriptions": [
+        "A long, upholstered Victorian chaise in warm mahogany with carved legs and a gently worn seat cushion.",
+        "It’s the kind of chaise you could settle into for hours, shaped for lounging rather than sitting upright."
+      ],
+      "static": true,
+      "type": [
+        "seatable",
+        "sleepable_spot",
+        "cranny_host"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "narrative_search": [
+        "You run your hand along the underside of the chaise, feeling for loosened joints and tiny hidden pockets of dust.",
+        "You peer between the carved wooden legs, catching the shadowy gap where grime gathers over time.",
+        "You press your fingers into the crevice where the upholstery meets the frame, rummaging through lint and forgotten grit.",
+        "You lift the edge of the cushion slightly and look down into the dark seam where small things might have dropped."
+      ],
+      "reward_options": [
+        [
+          "dust_bunnied_gleaning"
         ],
-        "static": true,
-        "type": [
-            "sleepable_spot",
-            "seatable",
-            "cranny_host"
+        [
+          "comfort_object"
         ],
-        "stackable": false,
-        "quantity": 1,
-        "max_stack_size": 1,
-        "narrative_sleeping": [
-            "You slide down the chaise and let its long seat take your weight; the velvet cools beneath you and the carved headrest cradles your neck as your limbs go heavy.",
-            "You stretch out along the chaise's graceful curve; the cushions yield around your hips and shoulders, and the room's hush draws your breathing slow and even.",
-            "You turn onto your side and tuck an arm beneath the tasselled bolster; the velvet rubs soft against your cheek while the afternoon light steals across your lids and you drift away."
+        [
+          "cleaning_rag"
         ],
-        "narrative_sitting": [
-            "You fold yourself into the chaise, the tufted back giving just enough to support your spine while the arm curves to hold your elbow.",
-            "You perch at the chaise's middle, one knee bent, the velvet whispering under your hand as you lean back and watch the ceiling's plasterwork.",
-            "You recline half-way, propping yourself on a bolster; the mahogany frame presses cool beneath your palm and the upholstery settles around you in a small, comfortable hollow."
+        [
+          "meditation_aid"
         ]
+      ],
+      "chance": 0.1,
+      "narrative_sleeping": [
+        "You lower yourself onto the chaise, letting the long form catch your legs as you recline.",
+        "You sink into the worn upholstery, shifting until your back and neck find a comfortable angle.",
+        "You pull the cushion up a fraction and settle, the carved frame steady beneath you as you drift toward sleep."
+      ],
+      "narrative_sitting": [
+        "You ease yourself onto the chaise, resting back against the upholstered support.",
+        "You sit sideways for a moment, adjusting your position as the cushion cups your weight.",
+        "You settle in and let your legs extend along the length, relaxing into a lounging posture."
+      ]
     },
     {
         "name": "Mother-of-Pearl Shirt Button (Victorian)",
@@ -1090,5 +1111,42 @@
         ]
       ],
       "chance": 0.3
+    },
+      {
+      "name": "Folding Director's Chair",
+      "descriptions": [
+        "A lightweight folding chair with a sturdy frame and fabric seat/back, built for quick setup and easy carry.",
+        "The armrest-less design keeps it compact when folded."
+      ],
+      "static": false,
+      "type": [
+        "seatable",
+        "sleepable_spot",
+        "toggleable"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "toggle_state": {
+        "toggle_state": "off",
+        "toggle_uses_left": null,
+        "on_description": "The director's chair is fully unfolded and ready to sit in.",
+        "off_description": "The director's chair is folded down for carrying and storage.",
+        "on_sequence": "You unfold the chair with a quick snap—hinges lock in place, and the fabric settles flat as the frame clicks upright under your hands.",
+        "off_sequence": "You fold the chair down; the frame collapses smoothly at the joints and the fabric bunches as the locking clicks fade.",
+        "perishable": false,
+        "ticks_lasting": 3,
+        "ticks_elapsed": 0
+      },
+      "narrative_sleeping": [
+        "You lie back carefully across the seat and fabric back, the frame holding you steady as your weight settles into the padding.",
+        "You curl on the chair, using the backrest as support while the legs stay planted and quiet under you.",
+        "You stretch out as much as the narrow seat allows, the folding frame pressing lightly through the fabric while you drift toward sleep."
+      ],
+      "narrative_sitting": [
+        "You lower yourself into the seat and the chair catches you—comfortable fabric gives way just enough to feel supported.",
+        "You sit back against the fabric backrest, the frame holding firm while your posture relaxes.",
+        "You perch in the chair and feel it steady beneath you, the folding legs planted solid with no wobble."
+      ]
     }
 ]

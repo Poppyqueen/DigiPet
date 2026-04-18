@@ -43,6 +43,22 @@ class MazeController:
         self.last_interact_id = None
 
     # ------------------------------------------------------------------
+    # Interface validation
+    # ------------------------------------------------------------------
+
+    def _validate_interface(self, item_id: int):
+        result = self.state_manager.find_item(
+            item_id,
+            required_type=MAZE_ITEM_TYPE,
+            required_location="accessible",
+        )
+        if result.toggle_state is False:
+            return None, f"Interface {self.state_manager.format_item_for_display(item_id, False)}, is 'off' can't use it like that."
+        if not result.success:
+            return None, result.error
+        return result.item_data, None
+
+    # ------------------------------------------------------------------
     # Perception tools
     # ------------------------------------------------------------------
 
@@ -112,6 +128,10 @@ class MazeController:
                 f"Unknown maze_type '{maze_type}'. "
                 f"Available types: {', '.join(known_types)}."
             )
+
+        _, error = self._validate_interface(interface_id)
+        if error:
+            return error
 
         # Load current state to check for an active maze and read item-level flags
         state, err = self._load_state(interface_id)
@@ -194,6 +214,10 @@ class MazeController:
         Returns:
             Human-readable observation string.
         """
+        _, error = self._validate_interface(interface_id)
+        if error:
+            return error
+
         env, state, err = self._reconstruct(interface_id)
         if err:
             return err
@@ -251,6 +275,10 @@ class MazeController:
         Returns:
             Human-readable result string (includes reward info on goal).
         """
+        _, error = self._validate_interface(interface_id)
+        if error:
+            return error
+
         env, state, err = self._reconstruct(interface_id)
         if err:
             return err
@@ -297,11 +325,28 @@ class MazeController:
 
         return f"{result.message}{reward_message}"
 
-    def list_maze_types(self) -> str:
+    def list_maze_types(self, interface_id: int) -> str:
         """
         TOOL: list_maze_types
         Returns the available maze thematic types that can be passed to create_maze.
+        If this interface is type_locked, returns only the locked type instead.
+        If maze_type is None on a locked interface, reports 'random'.
+
+        Args:
+            interface_id: The item/interface this maze is attached to.
         """
+        _, error = self._validate_interface(interface_id)
+        if error:
+            return error
+
+        state, err = self._load_state(interface_id)
+        if err:
+            return f"Error loading maze state: {err}"
+
+        if state and state.type_locked:
+            locked_type = state.maze_type if state.maze_type is not None else "random"
+            return f"This maze interface is type-locked. Type: {locked_type}."
+
         types = available_types()
         return f"Available maze types: {', '.join(types)}."
 
