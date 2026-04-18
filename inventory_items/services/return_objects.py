@@ -193,6 +193,8 @@ class ItemLookupResult(BaseModel):
     location_name: str | None = None
     error: str | None = None
 
+    toggle_state : bool | None = None
+
     model_config = {"arbitrary_types_allowed": True}
 
     @model_validator(mode="after")
@@ -216,6 +218,8 @@ class ItemLookupResult(BaseModel):
         location: Literal["inventory", "room"],
         location_id: int | None = None,
         location_name: str | None = None,
+        toggle_state : bool | None = None
+
     ) -> ItemLookupResult:
         """Build a successful result."""
         return cls(
@@ -225,6 +229,7 @@ class ItemLookupResult(BaseModel):
             location_id=location_id,
             location_name=location_name,
             error=None,
+            toggle_state=toggle_state
         )
 
     @classmethod

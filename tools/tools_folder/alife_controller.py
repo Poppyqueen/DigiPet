@@ -6,7 +6,7 @@ import time
 
 from tools.tools_folder.tools_helpers.alife_simulation import ALifeSimulation
 from tools.tools_folder.tools_helpers.alife_manager import ALifeManager
-
+# TODO: Add item controller pattern, maybe tie the logic and simulations to each different item? not sure.
 class ALifeController:
     """
     The boundary layer for ALife simulation.

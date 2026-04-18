@@ -111,6 +111,9 @@ class BlueskyTools:
             required_type=BLUESKY_ACCESS_TYPE,
             required_location="accessible",
         )
+        if result.toggle_state is False:
+            return None, f"Interface {self.state_manager.format_item_for_display(item_id,False)}, is 'off' can't use it like that."
+        
         if not result.success:
             return None, result.error
         return result.item_data, None
@@ -428,8 +431,11 @@ class BlueskyTools:
                 width=aspect_ratio_width, height=aspect_ratio_height)
             
         drawable_result = self.state_manager.find_item(image_archive_id, required_type="drawing_area", required_location="accessible")
+        
         if not drawable_result.success:
             return _err(f"Could not access image archive: {drawable_result.error}")
+        if drawable_result.toggle_state is False:
+            return _err(f"Interface {self.state_manager.format_item_for_display(image_archive_id,False)}, is 'off' can't use it like that.")
 
 
                         

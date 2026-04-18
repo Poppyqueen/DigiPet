@@ -77,6 +77,11 @@ class ImagesLab:
         )
         if not found.success:
             return None, found.error
+        
+        if found.toggle_state is False:
+            return None, f"Item {self.state_manager.format_item_for_display(item_id,False)}, is 'off' can't use it like that."
+
+
 
         item_data = found.item_data
         uid = item_data.get(_UID_KEY)

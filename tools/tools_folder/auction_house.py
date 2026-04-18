@@ -50,6 +50,9 @@ class StoreController:
                 f"Store endpoint {endpoint_id} is not accessible. "
                 f"{result.error}"
             )
+        
+        if result.toggle_state is False:
+            return False, f"Store endpoint {endpoint_id} is currently turned off."
 
         raw = result.item_data.get("store_endpoint_data")
         if not raw:

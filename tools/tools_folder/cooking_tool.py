@@ -45,6 +45,11 @@ class CookingApparatus:
         cooking_apparatus = self.state_manager.find_item(cooking_apparatus_id, required_type=CULINARY_EQUIPMENT_TYPE, required_location="accessible")
         if not cooking_apparatus.success:
             return cooking_apparatus.error
+        
+        if cooking_apparatus.toggle_state is False:
+            return f"Item {self.state_manager.format_item_for_display(cooking_apparatus_id,False)}, is 'off' can't use it like that."
+
+
 
         cooking_apparatus = cooking_apparatus.item_data
 

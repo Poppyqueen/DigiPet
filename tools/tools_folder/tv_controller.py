@@ -51,7 +51,7 @@ class TVController:
         )
         if found_response.error:
             return False, found_response.error
-            
+
         ts = found_response.item_data.get("toggle_state", {})
         if isinstance(ts, dict) and ts.get("toggle_state") == "off":
             return False, f"TV {tv_id} is turned off."

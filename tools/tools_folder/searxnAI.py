@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
+# TODO: Needs update to have a _validate_interface and tie it to an item type.
+
 
 load_dotenv()
 

@@ -800,7 +800,11 @@ class InventoryService:
         location     = raw["location"]        # "inventory" or "room"
         location_id  = raw["location_id"]     # int or None
         location_name = raw["location_name"]  # str or None
-
+        
+        ts_obj = item_data.get("toggle_state") or {}
+        raw = ts_obj.get("toggle_state") if isinstance(ts_obj, dict) else None
+        toggle_state = (raw == "on") if raw in ["on", "off"] else None
+        
         # 4. Location filter
         if required_location is not None:
             if required_location == "inventory":
@@ -847,6 +851,7 @@ class InventoryService:
                     f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
                     f"but you can't use it that way."
                 )
+                
 
         # 5. All filters passed
         return ItemLookupResult.ok(
@@ -854,6 +859,7 @@ class InventoryService:
             location=location,
             location_id=location_id,
             location_name=location_name,
+            toggle_state = toggle_state
         )
 
 
