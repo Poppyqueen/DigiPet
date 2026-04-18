@@ -30,6 +30,8 @@ from tools.tools_folder.tools_helpers.store_helpers.store_types import StoreEndp
 import os
 import json
 
+narrative_prompt = "A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of,"
+
 ## Registry helpers
 
 # 1. Load the MCP Config from root
@@ -453,8 +455,24 @@ class SleepableSpotFields(ContractMixin):
         description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, laying down and sleeping on this item."
     )
 
+
 class CrannyHostFields(ContractMixin):
     model_description: ClassVar[str] = "A cranny host is any kind of furniture, appliance or item that would have accidental wedges, nooks, dark corners or any other crevices where small items like forgotten trinkets, small broken implements, or any other minutiae might drop and hide. Crannies are reachable, unintended places where inconsequential flotsam would end up due to carelessness. The underside of an antique victorian vanity desk or the space between the fridge and the wall."
+
+    narrative_search: List[str] = Field(
+        description=f"{narrative_prompt} reaching, searching or rummaging across, inside bellow or above of this item. Should be a neutral narrative, no success nor failure described."
+    )
+
+    reward_options: List[List[ItemType]] = Field(
+        description="A list of lists. Each nested list represents a collection of types the possible rewarded item that can be extracted from the source item 'cranny host'. Use 'dust_bunnied_gleaning' if no logical item types fit. Example, a berries shrub marked as a cranny host might return the following lists: [['dust_bunnied_gleaning'], ['consumable'], ['seed'], ['seed', 'consumable']]. A front weighted random pick will be ran on this list of lists and will select any one of them for the reward item."        
+        )
+
+    chance : float = Field(
+        default=0.5,
+        description="Percentage chance of finding an item when searching this cranny host. Ranges from 0.0 to 1.0, where 0.0 means you will never find anything, and 1.0 means you will always find something."
+    )
+
+
 
 class DustBunniedGleaningFields(ContractMixin):
     model_description: ClassVar[str] = "Inconsequential flotsam of all sorts, the rewards of reaching into the forgotten corners and crevices of a room, such as lost buttons, discontinued coins, antique kitchen utensils, former held-close trinkets, and other defunct minutiae."

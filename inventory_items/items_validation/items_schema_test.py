@@ -97,8 +97,8 @@ python -m inventory_items.items_validation.items_schema_test \
   --provider openrouter \
   --model google/gemma-4-26b-a4b-it \
   --mode item \
-  --types store_endpoint toggleable \
-  --prompt "Furniture, large cabinet computer interface terminal."
+  --types cranny_host \
+  --prompt "Berries shrub, strawberry"
 '''
 
 ''' example item (no mode defaults to item), from project root:
