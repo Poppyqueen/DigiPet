@@ -142,44 +142,59 @@ class ComfortAffordances:
             return lookup.error
 
         item_data = lookup.item_data
-
         item_name = self.state_manager.format_item_for_display(item_data, False)
-        item_descs = item_data.get("descriptions", [])
-        item_desc = self._get_item_text(item_data, "descriptions")
+        
+        search_chance = item_data.get("chance", 0.05) 
+        reward_options = item_data.get("reward_options", []) 
+        narrative_lines = item_data.get("narrative_search", [f"You reach under the {item_name}."])
 
-        self._signal_callback({"type": "show_message_popup", "message": f"Looking for something hidden..."})
 
-        if not check_one_in(45): # magic number 45 TODO: Add check one in as field in item of cranny host
-            return f"You squeeze your hand and arm and reach for the cranny in the {item_name}, you flail in search for a while, however you can't find anything but dust bunnies."
+        self._signal_callback({"type": "show_message_popup", "message": "Looking for something hidden..."})
 
-        # all_items = self.item_store.get_items_by_type("dust_bunnied_gleaning")
-        # random_item = random.choice(all_items)
+        search_action_desc = random.choice(narrative_lines)
 
-        # At this point we passed the check and we are creating an item!
-        found_item_types = ["dust_bunnied_gleaning"]
+        if random.random() >= search_chance:
+            return f"{search_action_desc} However, you find nothing but dust bunnies."
 
-        # From defined types in pydantic models
-        modifier_types = ["comfort_object", "meditation_aid", "toggleable"] # Order matters here! TODO: Add types to cranny host instead of this list, or appended to. Maybe... replace types?
-        pick = front_weighted_pick(items=modifier_types, none_chance=0.30) # TODO: Add none chance to item? 
-        if pick:
-            found_item_types.append(pick)
+        found_item_types = None
+        if reward_options:
+            try:
+                found_item_types = front_weighted_pick(items=reward_options, none_chance=0.30)
+                print(f"DEBUG: front_weighted_pick returned: {found_item_types}")
+            except Exception as e:
+                print(f"DEBUG ERROR: front_weighted_pick crashed: {e}")
+                # Don't crash the whole thing, just proceed with None
+                found_item_types = None
 
-        # Call item crafter AI
-        item_descs_text = "\n".join(item_descs)
-        items = self.items_crafter.craft_item(
-            user_prompt=f"Create an item that you would find under the item: {item_name}, {item_descs_text}. \n This should be an inconsequential item, with no real value or use. Create an evocative item that fits the qualities of the item it was found under.",
+        item_descs_text = "\n".join(item_data.get("descriptions", []))
+
+        items_to_create = self.items_crafter.craft_item(
+            user_prompt=(
+                f"Create an item found under: {item_name}. {item_descs_text}. "
+                f"Inconsequential, evocative, and fits the source item's qualities."
+            ),
             select_types=found_item_types
         )
-        messages = []
-        for created_data in items:
-            messages.append(f"{self.state_manager.format_item_for_display(created_data)}! You take a close look at it, {'\n'.join(created_data['descriptions'])}")
-            result = self.state_manager.create_item("inventory", None, created_data)
-            if result.error:
-                print(result.error)
-                return f"You spend a good effort while fishing under the {item_name}, for a moment you think you had found something, but you realize it was just a mirage."
+        
+        print(f"DEBUG: items_to_create type={type(items_to_create)}, value={items_to_create}")
 
-        self._signal_callback({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trumpet.png"}) # TODO: Maybe get specific icon for this
-        return f"After a while of reaching and rummaging through the darkness under and around the {item_name}, {item_desc}, you found:" + "\n".join(messages)
+        if not items_to_create:
+            return f"{search_action_desc} You feel something, but it turns out to be a mirage."
+
+        result = self.state_manager.create_item(
+            target_location="inventory",
+            target_location_id=None,
+            item_creation_data=items_to_create
+        )
+
+        print(f"DEBUG: create_item result success={result.success}, error={result.error}")
+
+        if not result.success:
+            return f"{search_action_desc} You feel something, but it slips back into the shadows."
+
+        self._signal_callback({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trumpet.png"})
+        
+        return f"{search_action_desc} You found:\n{result.message}"
 
     # Add instance methods here
     async def sleep_on_item(self, lay_item_id, seconds):

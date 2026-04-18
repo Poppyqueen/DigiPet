@@ -1056,6 +1056,41 @@
         "sell_discount": 0.4
       }
     },
+    {
+      "name": "Strawberry Shrub",
+      "descriptions": [
+        "A low-growing, leafy bush laden with small, ripening strawberries.",
+        "The tangled branches and thick mulch at the base create numerous tiny, shaded pockets."
+      ],
+      "static": false,
+      "type": [
+        "cranny_host"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "narrative_search": [
+        "You reach your fingers into the cool, damp shadows beneath the strawberry leaves.",
+        "You sift through the tangled stems and dark soil, feeling for anything caught in the foliage.",
+        "You brush aside the heavy leaves, searching the narrow gaps between the stems and the earth."
+      ],
+      "reward_options": [
+        [
+          "dust_bunnied_gleaning"
+        ],
+        [
+          "consumable"
+        ],
+        [
+          "seed"
+        ],
+        [
+          "seed",
+          "consumable"
+        ]
+      ],
+      "chance": 0.3
+    },
    {
       "name": "Wild Bramble Shrub",
       "descriptions": [
