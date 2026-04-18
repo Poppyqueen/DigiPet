@@ -32,19 +32,36 @@ class AssistantMessage(BaseModel):
     content: str
 
 
-class ToolOutput(BaseModel):
-    """Represents a tool execution output in the conversation."""
-    type: Literal["tool_output"]
+class ToolBatchCall(BaseModel):
+    """
+    A single tool call and its result within a batch.
+    Mirrors the function_array dict produced by ai_handle.ai_response().
+    """
+    function_name: str
+    arguments: Dict[str, Any]
+    result: str
     call_id: Optional[str] = None
-    content: str
-    function_name: Optional[str] = None
-    arguments: Optional[Dict[str, Any]] = None,
-    thought_signature: Optional[str] = None
+    thought_signature: Optional[str] = None  # Gemini extended-thinking only
 
+
+class ToolBatch(BaseModel):
+    """
+    Represents all tool calls issued by the LLM in a single inference step.
+
+    A single tool call is represented as a batch of one.  This uniform
+    structure means every client has exactly one branch to handle tool
+    history — no ToolOutput vs ToolBatch split.
+
+    The shared timestamp on the parent memory entry guarantees all calls
+    in a batch are emitted consecutively by construct_data, so clients
+    receive them in the exact order and grouping the LLM produced them.
+    """
+    type: Literal["tool_batch"]
+    calls: List[ToolBatchCall]
 
 
 ConversationEntry = Annotated[
-    Union[UserMessage, AssistantMessage, ToolOutput],
+    Union[UserMessage, AssistantMessage, ToolBatch],
     Field(discriminator="type")
 ]
 

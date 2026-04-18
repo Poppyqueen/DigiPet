@@ -198,15 +198,16 @@ class memory_manager:
                             if isinstance(entry, dict) and "content" in entry:
                                 content_data = entry["content"]
                                 if isinstance(content_data, dict):
-                                    # Handle dictionary content (e.g., function call results)
-                                    # We want to exclude 'context' if it exists
-                                    temp_content_data = content_data.copy() # Create a copy to modify
-                                    if "context" in temp_content_data:
-                                        del temp_content_data["context"] # Remove context before dumping
-
-                                    # Only add to string_memory if there's still content left
-                                    if temp_content_data:
-                                        string_memory += json.dumps(temp_content_data) + "\n"
+                                    if content_data.get("type") == "tool_batch":
+                                        # Stringify the calls list for token counting
+                                        string_memory += json.dumps(content_data.get("calls", [])) + "\n"
+                                    else:
+                                        # Legacy single-call dict — exclude 'context' key if present
+                                        temp_content_data = content_data.copy()
+                                        if "context" in temp_content_data:
+                                            del temp_content_data["context"]
+                                        if temp_content_data:
+                                            string_memory += json.dumps(temp_content_data) + "\n"
                                 else:
                                     # Handle string content (e.g., user/assistant messages)
                                     string_memory += str(content_data) + "\n"
@@ -376,36 +377,29 @@ class memory_manager:
             text_or_object = entry["content"]
             key_tag = entry["original_tag"]
 
-            # --- UPDATED: Handle 'system' and 'tool' tags for tool outputs ---
+            # --- Handle 'system' and 'tool' tags ---
             if key_tag in ["system", "tool"]:
-                if isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
-                    tool_output_content = str(text_or_object["result"])
-                    call_id = text_or_object.get("call_id")
-                    thought_signature = text_or_object.get("thought_signature")
 
-                    if thought_signature:
-                        structured_memory["conversation_history"].append({
-                            "type": "tool_output",
-                            "call_id": call_id,
-                            "content": tool_output_content,
-                            "function_name": text_or_object.get("function_name"),
-                            "arguments": text_or_object.get("arguments"),
-                            "thought_signature": thought_signature
-                        })
-                    else:
-                        structured_memory["conversation_history"].append({
-                            "type": "tool_output",
-                            "call_id": call_id,
-                            "content": tool_output_content,
-                            "function_name": text_or_object.get("function_name"),
-                            "arguments": text_or_object.get("arguments"),
-                        })
-                # elif isinstance(text_or_object, str):
-                #     print(f"Warning: Plain string system message found for tag '{key_tag}'. Treating as 'user'")
-                #     structured_memory["conversation_history"].append({
-                #         "type": "user",
-                #         "content": text_or_object
-                #     })
+                # ── New format: a batch (or singleton batch) from one inference turn ──
+                if isinstance(text_or_object, dict) and text_or_object.get("type") == "tool_batch":
+                    # Pass straight through — clients receive the full batch and are
+                    # responsible for translating it into their wire format.
+                    structured_memory["conversation_history"].append(text_or_object)
+
+                # ── Legacy format: single call dict saved before this refactor ────────
+                # Wrap it into a batch-of-one so clients only need one code path.
+                elif isinstance(text_or_object, dict) and "function_name" in text_or_object and "result" in text_or_object:
+                    legacy_call = {
+                        "function_name": text_or_object.get("function_name"),
+                        "arguments":     text_or_object.get("arguments", {}),
+                        "result":        str(text_or_object.get("result", "")),
+                        "call_id":       text_or_object.get("call_id"),
+                        "thought_signature": text_or_object.get("thought_signature"),
+                    }
+                    structured_memory["conversation_history"].append({
+                        "type":  "tool_batch",
+                        "calls": [legacy_call],
+                    })
             else:
                 role = key_tag
                 valid_roles = ["user", "assistant"]
@@ -549,18 +543,33 @@ class memory_manager:
             content_data = entry.get("content", "")
 
             # --- The Core Logic ---
-            # --- UPDATED: Check if the entry is a structured system OR tool message ---
-            is_structured_tool_message = (
+            # A "structured tool message" is either the new tool_batch format or
+            # the legacy single-call dict.  Both live under the 'tool' tag.
+            is_tool_batch = (
                 entry.get('original_tag') in ['system', 'tool'] and
                 isinstance(content_data, dict) and
-                "result" in content_data
+                content_data.get("type") == "tool_batch"
             )
+            is_legacy_tool = (
+                entry.get('original_tag') in ['system', 'tool'] and
+                isinstance(content_data, dict) and
+                "result" in content_data and
+                content_data.get("type") != "tool_batch"
+            )
+            is_structured_tool_message = is_tool_batch or is_legacy_tool
 
             # Check if this specific entry is safeguarded
             is_safeguarded = idx in safeguarded_indices
 
             if is_structured_tool_message and not is_safeguarded:
-                result_text = str(content_data.get("result", ""))
+                # Build the text to measure and potentially summarize.
+                # For a batch we join all result strings; for legacy we use the single result.
+                if is_tool_batch:
+                    result_parts = [str(c.get("result", "")) for c in content_data.get("calls", [])]
+                    result_text = "\n---\n".join(result_parts)
+                else:
+                    result_text = str(content_data.get("result", ""))
+
                 result_tokens = self.token_manager.count_tokens(result_text)
 
                 # Now check if it meets the criteria for summarization
@@ -576,7 +585,18 @@ class memory_manager:
                         )
 
                         new_content = content_data.copy()
-                        new_content["result"] = f"Summarized from original tool output: {summarized_content_raw}"
+                        if is_tool_batch:
+                            # Replace the calls list with a single synthetic summarized call
+                            # so downstream code still sees a valid tool_batch structure.
+                            new_content["calls"] = [{
+                                "function_name": "summarized_batch",
+                                "arguments": {},
+                                "result": f"Summarized from original tool batch: {summarized_content_raw}",
+                                "call_id": None,
+                                "thought_signature": None,
+                            }]
+                        else:
+                            new_content["result"] = f"Summarized from original tool output: {summarized_content_raw}"
 
                         summarized_entry = {
                             "timestamp": entry.get("timestamp"),

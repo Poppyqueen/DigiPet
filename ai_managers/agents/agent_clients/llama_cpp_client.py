@@ -66,29 +66,33 @@ class LlamaCppClient(AbstractLLMClient):
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
 
-            elif entry["type"] == "tool_output":
-                # Chat completions tool call format:
-                # 1. assistant message with tool_calls
-                # 2. tool message with the result
-                l_messages.append({
-                    "role": "assistant",
-                    "content": None,
-                    "tool_calls": [{
-                        "id": entry["call_id"],
+            elif entry["type"] == "tool_batch":
+                # One assistant message with ALL tool_calls, then one tool result per call.
+                tool_calls_payload = []
+                for call in entry["calls"]:
+                    tool_calls_payload.append({
+                        "id":   call["call_id"],
                         "type": "function",
                         "function": {
-                            "name": entry["function_name"],
-                            "arguments": json.dumps(entry["arguments"])
-                                if isinstance(entry["arguments"], dict)
-                                else entry["arguments"]
+                            "name":      call["function_name"],
+                            "arguments": json.dumps(call["arguments"])
+                                         if isinstance(call["arguments"], dict)
+                                         else call["arguments"],
                         }
-                    }]
-                })
+                    })
+
                 l_messages.append({
-                    "role": "tool",
-                    "tool_call_id": entry["call_id"],
-                    "content": str(entry["content"])
+                    "role":       "assistant",
+                    "content":    None,
+                    "tool_calls": tool_calls_payload,
                 })
+
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "role":         "tool",
+                        "tool_call_id": call["call_id"],
+                        "content":      str(call["result"]),
+                    })
 
         settings = {
             "model": model,

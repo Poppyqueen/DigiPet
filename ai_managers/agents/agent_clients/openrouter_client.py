@@ -83,48 +83,34 @@ class OpenRouterClient(AbstractLLMClient):
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
 
-            elif entry["type"] == "tool_output":
-                # In the chat completions format, a tool call round-trip is:
-                #   1. assistant message with tool_calls array
-                #   2. tool message with the result
-                #
-                # We inject the assistant stub only if the previous message isn't
-                # already an assistant message that carries this call_id.
-                call_id = entry.get("call_id")
-                function_name = entry.get("function_name")
-                arguments = entry.get("arguments", {})
-
-                # Check if the last message already covers this tool call
-                already_has_stub = (
-                    l_messages
-                    and l_messages[-1].get("role") == "assistant"
-                    and any(
-                        tc.get("id") == call_id
-                        for tc in l_messages[-1].get("tool_calls", [])
-                    )
-                )
-
-                if not already_has_stub:
-                    l_messages.append({
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            {
-                                "id": call_id,
-                                "type": "function",
-                                "function": {
-                                    "name": function_name,
-                                    "arguments": json.dumps(arguments) if isinstance(arguments, dict) else str(arguments),
-                                },
-                            }
-                        ],
+            elif entry["type"] == "tool_batch":
+                # One assistant message with ALL tool_calls in the batch,
+                # then one tool result message per call.
+                tool_calls_payload = []
+                for call in entry["calls"]:
+                    tool_calls_payload.append({
+                        "id":   call["call_id"],
+                        "type": "function",
+                        "function": {
+                            "name":      call["function_name"],
+                            "arguments": json.dumps(call["arguments"])
+                                         if isinstance(call["arguments"], dict)
+                                         else str(call["arguments"]),
+                        },
                     })
 
                 l_messages.append({
-                    "role": "tool",
-                    "tool_call_id": call_id,
-                    "content": str(entry["content"]),
+                    "role":       "assistant",
+                    "content":    None,
+                    "tool_calls": tool_calls_payload,
                 })
+
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "role":         "tool",
+                        "tool_call_id": call["call_id"],
+                        "content":      str(call["result"]),
+                    })
 
         settings = {
             "model": model,

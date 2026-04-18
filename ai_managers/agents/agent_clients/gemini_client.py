@@ -143,9 +143,12 @@ class GeminiClient(AbstractLLMClient):
 
         conversation_history = messages.get("conversation_history", [])
         
-        # *** NEW SAFETY CHECK FOR INVALID CONVERSATION START ***
-        if conversation_history and conversation_history[0].get("type") in ["assistant", "tool_output"]:
-            print("Warning: Conversation history started with a model action due to summarization. Prepending a placeholder user message to ensure API compatibility.")
+        # *** SAFETY CHECK: conversation must not start with a model-side turn ***
+        # After memory summarization the oldest user message may have been pruned,
+        # leaving a tool_batch or assistant message at the front.  Gemini rejects
+        # conversations that don't start with a user turn.
+        if conversation_history and conversation_history[0].get("type") in ["assistant", "tool_batch"]:
+            print("Warning: Conversation history started with a model action due to summarization. Prepending a placeholder user message.")
             placeholder_message = {
                 "type": "user",
                 "content": "A summarization process has been applied reorganizing your memory. You can now continue."
@@ -172,83 +175,52 @@ class GeminiClient(AbstractLLMClient):
                 i += 1
 
 
-            elif original_type == "tool_output":
+            elif original_type == "tool_batch":
+                # Build exactly one model turn (all FunctionCall parts) and one user
+                # turn (all FunctionResponse parts) from the batch.  This matches the
+                # Gemini wire format requirement: calls and responses must be grouped
+                # by inference turn, not listed individually.
                 model_call_parts = []
                 tool_response_parts = []
-                
-                tool_msg_index = i
-                while tool_msg_index < len(conversation_history) and \
-                    conversation_history[tool_msg_index].get("type") == "tool_output":
-                    
-                    tool_msg = conversation_history[tool_msg_index]
-                    content_data = tool_msg.get("content")
 
-                    # 1. FIX: Initialize thought_signature to None
-                    function_name, arguments, result, call_id, thought_signature = None, None, None, None, None
+                for call in msg.get("calls", []):
+                    call_id          = call.get("call_id") or str(uuid.uuid4())
+                    function_name    = call.get("function_name")
+                    arguments        = call.get("arguments", {})
+                    result           = call.get("result", "")
+                    thought_signature = call.get("thought_signature")
 
-                    # Robustly parse both nested and flat tool_output formats
-                    if isinstance(content_data, dict) and "function_name" in content_data:
-                        function_name = content_data.get("function_name")
-                        arguments = content_data.get("arguments", {})
-                        result = content_data.get("result", "")
-                        call_id = content_data.get("call_id")
-                        # 2. FIX: Extract thought_signature from the content dictionary
-                        thought_signature = content_data.get("thought_signature") 
+                    # ── FunctionCall part (goes into the model turn) ──────────
+                    fc_kwargs = {"name": function_name, "args": arguments}
+                    if call_id:
+                        fc_kwargs["id"] = call_id
+                    fn_call_obj = types.FunctionCall(**fc_kwargs)
 
-                    elif "function_name" in tool_msg:
-                        function_name = tool_msg.get("function_name")
-                        arguments = tool_msg.get("arguments", {})
-                        result = str(content_data)
-                        call_id = tool_msg.get("call_id")
-                        # 3. FIX: Extract thought_signature from the message level if it exists there
-                        thought_signature = tool_msg.get("thought_signature")
+                    part_kwargs = {"function_call": fn_call_obj}
+                    if thought_signature:
+                        try:
+                            decoded_sig = base64.b64decode(thought_signature) \
+                                          if isinstance(thought_signature, str) \
+                                          else thought_signature
+                            part_kwargs["thought_signature"] = decoded_sig
+                        except Exception as e:
+                            print(f"Warning: could not decode thought_signature: {e}")
+                            part_kwargs["thought_signature"] = thought_signature
+                    model_call_parts.append(types.Part(**part_kwargs))
 
-                    if function_name is not None:
-                        # Build FunctionCall (WITHOUT thought_signature)
-                        fc_kwargs = {"name": function_name, "args": arguments or {}}
-                        if call_id:
-                            fc_kwargs["id"] = call_id
-                        
-                        fn_call_obj = types.FunctionCall(**fc_kwargs)
+                    # ── FunctionResponse part (goes into the user turn) ───────
+                    fr_kwargs = {"name": function_name, "response": {"result": str(result)}}
+                    if call_id:
+                        fr_kwargs["id"] = call_id
+                    tool_response_parts.append(
+                        types.Part(function_response=types.FunctionResponse(**fr_kwargs))
+                    )
 
-                        # Build Part (WITH thought_signature)
-                        part_kwargs = {"function_call": fn_call_obj}
-                        
-                        # 4. FIX: Handle the extracted signature (Decode Base64 -> Bytes)
-                        if thought_signature:
-                            try:
-                                # Check if it's a string (it should be, from JSON) and decode
-                                if isinstance(thought_signature, str):
-                                    decoded_sig = base64.b64decode(thought_signature)
-                                    part_kwargs["thought_signature"] = decoded_sig
-                                else:
-                                    part_kwargs["thought_signature"] = thought_signature
-                            except Exception as e:
-                                print(f"Warning: Could not decode thought_signature, sending as is. Error: {e}")
-                                part_kwargs["thought_signature"] = thought_signature
-                        
-                        model_call_parts.append(
-                            types.Part(**part_kwargs)
-                        )
-                        
-                        # Build FunctionResponse
-                        fr_kwargs = {"name": function_name, "response": {"result": str(result)}}
-                        if call_id:
-                            fr_kwargs["id"] = call_id
-                        
-                        tool_response_parts.append(
-                            types.Part(function_response=types.FunctionResponse(**fr_kwargs))
-                        )
-                    else:
-                        print(f"Warning: Skipping malformed 'tool_output' message: {tool_msg}")
-
-                    tool_msg_index += 1
-                
                 if model_call_parts:
                     gemini_contents.append({"role": "model", "parts": model_call_parts})
-                    gemini_contents.append({"role": "user", "parts": tool_response_parts})
+                    gemini_contents.append({"role": "user",  "parts": tool_response_parts})
 
-                i = tool_msg_index
+                i += 1
             
             else:
                 print(f"Warning: Skipping unknown message type '{original_type}'.")
