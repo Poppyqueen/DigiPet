@@ -128,28 +128,31 @@ class OllamaClient(AbstractLLMClient):
                 l_messages.append({"role": "user", "content": entry["content"]})
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
-            elif entry["type"] == "tool_output":
-
-
-                l_messages.append({
-                    "role": "assistant",
-                    "tool_calls": [{
-                        "id": entry["call_id"],
+            elif entry["type"] == "tool_batch":
+                # One assistant message with ALL tool_calls, then one tool result per call.
+                tool_calls_payload = []
+                for call in entry["calls"]:
+                    tool_calls_payload.append({
+                        "id":   call["call_id"],
                         "type": "function",
                         "function": {
-                            "name": entry["function_name"],
-                            "arguments": entry["arguments"]
+                            "name":      call["function_name"],
+                            "arguments": call["arguments"],
                         }
-                    }]
-                })
+                    })
 
                 l_messages.append({
-                    "role": "tool", # Using 'tool' role for tool output.
-                    "content": str(entry["content"]),
-                    "tool_name": entry["function_name"],
-                    "tool_call_id": entry["call_id"]
-
+                    "role":       "assistant",
+                    "tool_calls": tool_calls_payload,
                 })
+
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "role":         "tool",
+                        "content":      str(call["result"]),
+                        "tool_name":    call["function_name"],
+                        "tool_call_id": call["call_id"],
+                    })
         
         # DEBUG: Log the final constructed 'l_messages' list that will be sent to the LLM.
         # print(f"DEBUG: Constructed 'messages' list for LLM API call: {json.dumps(l_messages, indent=2)}")

@@ -110,26 +110,34 @@ class GroqClient(AbstractLLMClient):
                 l_messages.append({"role": "user", "content": entry["content"]})
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
-            elif entry["type"] == "tool_output":
-
-
-                l_messages.append({
-                    "role": "assistant",
-                    "tool_calls": [{
-                        "id": entry["call_id"],
+            elif entry["type"] == "tool_batch":
+                # Build one assistant message carrying ALL function calls in the batch,
+                # followed by one tool result message per call.
+                # This is the correct Chat Completions batched tool call format.
+                tool_calls_payload = []
+                for call in entry["calls"]:
+                    tool_calls_payload.append({
+                        "id":   call["call_id"],
                         "type": "function",
                         "function": {
-                            "name": entry["function_name"],
-                            "arguments": str(entry["arguments"])
+                            "name":      call["function_name"],
+                            "arguments": json.dumps(call["arguments"])
+                                     if isinstance(call["arguments"], dict)
+                                     else str(call["arguments"]),
                         }
-                    }]
-                })
+                    })
 
                 l_messages.append({
-                    "role": "tool",
-                    "content": entry["content"],
-                    "tool_call_id": entry["call_id"]
+                    "role":       "assistant",
+                    "tool_calls": tool_calls_payload,
                 })
+
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "role":         "tool",
+                        "content":      str(call["result"]),
+                        "tool_call_id": call["call_id"],
+                    })
 
         if tool_choice == "none":
             l_messages.append({
@@ -183,4 +191,3 @@ class GroqClient(AbstractLLMClient):
             function_calls=normalized_function_calls if normalized_function_calls else None,
             text_content=output_text if output_text else None
         )
-        

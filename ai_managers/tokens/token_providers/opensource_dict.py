@@ -5,6 +5,8 @@ mapped_models={
     "gemma2-9b-it":"google/gemma-2-9b-it",
     "deepseek-r1-distill-llama-70b":"deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
     "openai/gpt-oss-120b":"openai/gpt-oss-120b", # Using Groq inference requires downloading the Tokenizer for this
+    "openai/gpt-oss-20b": "openai/gpt-oss-20b",
+    "qwen/qwen3-32b": "qwen/qwen3-32b",
 
     "qwen3:4b":"Qwen/Qwen3-4B", # ollama 4b models, improving the pet system allows for these models to be a lot more competent now
     "granite3.3:2b":"ibm-granite/granite-3.3-2b-instruct",

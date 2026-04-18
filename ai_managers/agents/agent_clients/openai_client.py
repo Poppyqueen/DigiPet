@@ -44,20 +44,22 @@ class OpenAIClient(AbstractLLMClient):
                 l_messages.append({"role": "user", "content": entry["content"]})
             elif entry["type"] == "assistant":
                 l_messages.append({"role": "assistant", "content": entry["content"]})
-            elif entry["type"] == "tool_output":
-                
-                # correct way to point at tool calls and results
-                l_messages.append({
-                    "type": "function_call",
-                    "call_id": entry["call_id"],
-                    "name": entry["function_name"],
-                    "arguments": str(entry["arguments"]) # Arguments are expected as JSON string
-                })
-                l_messages.append({
-                    "type": "function_call_output",
-                    "call_id": entry["call_id"],
-                    "output": str(entry["content"]) # Output is expected to be a string
-                })
+            elif entry["type"] == "tool_batch":
+                # Responses API format: emit all function_call items first,
+                # then all function_call_output items.
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "type":      "function_call",
+                        "call_id":   call["call_id"],
+                        "name":      call["function_name"],
+                        "arguments": str(call["arguments"]),
+                    })
+                for call in entry["calls"]:
+                    l_messages.append({
+                        "type":    "function_call_output",
+                        "call_id": call["call_id"],
+                        "output":  str(call["result"]),
+                    })
         
 
         settings = {

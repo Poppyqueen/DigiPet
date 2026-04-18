@@ -1,4 +1,4 @@
-# abstract_chatbot.py
+# abstract_agent.py
 # Abstract base class for all chatbot implementations.
 # Owns: TTS lifecycle, the chain-of-actions loop, wellness consequences, logging, shutdown.
 # Subclasses own: memory persistence strategy, developer message construction.
@@ -283,14 +283,24 @@ class BaseChatbot(ABC):
 
             # ── Function call branch ───────────────────────────────────
             if function_flag:
-                print(f"⚙️  Function call(s) at depth {depth} — adjusting wellness stats.")
+                call_count = len(response_content) if isinstance(response_content, list) else 1
+                print(f"⚙️  Function call(s) [{call_count}] at depth {depth} — adjusting wellness stats.")
                 for stat in ("fullness", "hydration", "energy"):
                     self.state_manager.adjust_stat(stat, -0.1)
 
                 if isinstance(response_content, list):
-                    for result in response_content:
-                        self.memory.save_to_memory(result, "short_term", "tool")
-                        print("✅ Saved function result to short-term memory.")
+                    # Save the entire list of calls as ONE batch entry.
+                    # This preserves the fact that all calls in response_content
+                    # originated from a single model inference turn, so that
+                    # construct_data can reconstruct the correct API message
+                    # structure (one assistant turn → N tool results) rather
+                    # than treating each call as an independent sequential action.
+                    batch_entry = {
+                        "type": "tool_batch",
+                        "calls": response_content,  # list of function_array dicts from ai_response
+                    }
+                    self.memory.save_to_memory(batch_entry, "short_term", "tool")
+                    print(f"✅ Saved tool batch ({len(response_content)} call(s)) to short-term memory.")
 
                 updated_mem = self.memory.get_memory_structure()
                 if updated_mem is None:

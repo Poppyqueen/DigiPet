@@ -17,7 +17,7 @@ class OpenSourceTokenizer(ABC):
             self.hugging_ID = mapped_models[general_model]
         else:
             # This error now only appears if OpenSourceTokenizer is actually chosen AND its model isn't mapped.
-            print(f"Model '{general_model}' not mapped to a HuggingFace repo ID in (utils.token_providers.opensource_dict.mapped_models). Please configure the model.")
+            print(f"Model '{general_model}' not mapped to a HuggingFace repo ID in (ai_managers/tokens/token_providers/opensource_dict.py). Please configure the model.")
             sys.exit(0) # Exit if the specific model isn't mapped for OpenSourceTokenizer
 
         self.tokenizer = Tokenizer.from_pretrained(self.hugging_ID, token=self.HuggingFace_Key)
