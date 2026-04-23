@@ -456,22 +456,76 @@ class SleepableSpotFields(ContractMixin):
     )
 
 
+# --- Paste into item_pydantic_models.py alongside the other ContractMixin definitions ---
+# Then add "cranny_host": CrannyHostFields to TYPE_FIELD_CONTRACTS.
+
 class CrannyHostFields(ContractMixin):
-    model_description: ClassVar[str] = "A cranny host is any kind of furniture, appliance or item that would have accidental wedges, nooks, dark corners or any other crevices where small items like forgotten trinkets, small broken implements, or any other minutiae might drop and hide. Crannies are reachable, unintended places where inconsequential flotsam would end up due to carelessness. The underside of an antique victorian vanity desk or the space between the fridge and the wall."
-
-    narrative_search: List[str] = Field(
-        description=f"{narrative_prompt} reaching, searching or rummaging across, inside bellow or above of this item. Should be a neutral narrative, no success nor failure described."
+    model_description: ClassVar[str] = (
+        "A nook, cranny, crevice, or hidden hollow within a piece of furniture or room feature "
+        "that may conceal small forgotten or lost objects. The yield_pool depletes as items are "
+        "pulled from it and replenishes over time via the tick system."
     )
 
-    reward_options: List[List[ItemType]] = Field(
-        description="A list of lists. Each nested list represents a collection of types the possible rewarded item that can be extracted from the source item 'cranny host'. Use 'dust_bunnied_gleaning' if no logical item types fit. Example, a berries shrub marked as a cranny host might return the following lists: [['dust_bunnied_gleaning'], ['consumable'], ['seed'], ['seed', 'consumable']]. A front weighted random pick will be ran on this list of lists and will select any one of them for the reward item."        
+    chance: float = Field(
+        default=0.05,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Base probability (0.0–1.0) that a search action finds anything at all. "
+            "0.05 is a tight crevice that rarely gives up its secrets; 0.3 is an obvious cubby."
         )
-
-    chance : float = Field(
-        default=0.5,
-        description="Percentage chance of finding an item when searching this cranny host. Ranges from 0.0 to 1.0, where 0.0 means you will never find anything, and 1.0 means you will always find something."
+    )
+    yield_pool: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Current resource level of this nook (0.0–1.0). Always initialise at 1.0. "
+            "Managed by the tool at runtime — decreases on a successful pull, "
+            "replenishes each tick by refresh_rate up to 1.0."
+        )
+    )
+    yield_cost: float = Field(
+        default=0.25,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "How much yield_pool is consumed by a single successful pull. "
+            "0.25 means the nook can be harvested ~4 times before running dry. "
+            "A rare, singular hiding spot might use 1.0."
+        )
+    )
+    refresh_rate: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "How much yield_pool is restored each tick. "
+            "0.1 means a fully drained nook refills over ~10 ticks. "
+            "Set very low (0.01–0.05) for spots that should stay sparse for a long time."
+        )
+    )
+    reward_options: List[List[ItemType]] = Field(
+        default_factory=list,
+        description=(
+            "A list of lists. Each nested list represents a collection of types for the possible "
+            "rewarded item extracted from this cranny host. Use 'dust_bunnied_gleaning' if no "
+            "logical item types fit. A front-weighted random pick selects one inner list, which "
+            "is then passed to the crafter as the item type constraint. "
+            "Example for a cranny behind a bookshelf: "
+            "[['dust_bunnied_gleaning'], ['trinket'], ['consumable'], ['trinket', 'readable']]."
+        )
+    )
+    narrative_search: List[str] = Field(
+        default_factory=list,
+        description=(
+            "A list of **second-person, present tense** narration lines describing the physical "
+            "act of reaching into or searching this nook. Each line should feel distinct — "
+            "different angles of the same gesture. One is chosen at random per search."
+        )
     )
 
+    examine_fields: ClassVar[list[str]] = ["yield_pool", "yield_cost", "refresh_rate"]
 
 
 class DustBunniedGleaningFields(ContractMixin):

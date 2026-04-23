@@ -1148,5 +1148,40 @@
         "You sit back against the fabric backrest, the frame holding firm while your posture relaxes.",
         "You perch in the chair and feel it steady beneath you, the folding legs planted solid with no wobble."
       ]
+    },
+    {
+      "name": "Wild Mint Bush",
+      "descriptions": [
+        "A low, fragrant tangle of mint stems that has crept into a sheltered crack.",
+        "Its leaves hide tiny odds and ends among the roots and stones."
+      ],
+      "static": true,
+      "type": [
+        "cranny_host"
+      ],
+      "stackable": false,
+      "quantity": 1,
+      "max_stack_size": null,
+      "chance": 0.35,
+      "yield_pool": 1.0,
+      "yield_cost": 0.25,
+      "refresh_rate": 0.08,
+      "reward_options": [
+        [
+          "consumable"
+        ],
+        [
+          "seed"
+        ],
+        [
+          "seed",
+          "consumable"
+        ]
+      ],
+      "narrative_search": [
+        "You part the minty stems and probe beneath the leaves with your fingers.",
+        "You bend close, brushing aside damp foliage as you feel around the hidden hollow.",
+        "You reach into the thick green growth, searching the cool space beneath the roots."
+      ]
     }
 ]

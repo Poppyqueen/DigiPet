@@ -11,14 +11,20 @@ class ItemsCrafter:
         self._valid_types = valid_types
 
     def craft_item(self, user_prompt: str, select_types: list[str]) -> list[dict] | None:
-        # Validate that the requested types are actually known to this agent
-        unknown = [t for t in select_types if t not in self._valid_types]
-        if unknown:
-            print(f"Warning: ItemsCrafter asked to craft unknown types {unknown} — skipping.")
-            select_types = [t for t in select_types if t in self._valid_types]
-        if not select_types:
-            return None
+        # 1. Normalize valid_types to an empty list if it's None to avoid iteration errors
+        available_types = self._valid_types or []
+        select_types = select_types or []
+        
+        # 2. Filter requested types against what is available
+        # Only perform filtering if available_types isn't empty; 
+        # otherwise, we assume we're passing everything through to the builder.
+        if available_types:
+            unknown = [t for t in select_types if t not in available_types]
+            if unknown:
+                print(f"Warning: ItemsCrafter asked to craft unknown types {unknown} — skipping.")
+                select_types = [t for t in select_types if t in available_types]
 
+        # 3. Build the schema (now handles empty select_types gracefully)
         schema = build_llm_schema_for_types(select_types)
 
         for attempt in range(self.retries):
@@ -28,10 +34,15 @@ class ItemsCrafter:
                     user=user_prompt,
                     structure=schema
                 )
-                if not response:
+                
+                # If the LLM returns nothing but the schema was valid, 
+                # we should still handle the response safely.
+                if response is None:
                     print(f"Empty response, retrying... ({attempt + 1}/{self.retries})")
                     continue
+                
                 return [item.model_dump() for item in response.items]
             except Exception as e:
                 print(f"Error on attempt {attempt + 1}/{self.retries}: {e}")
+                
         return None

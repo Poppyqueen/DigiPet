@@ -37,6 +37,8 @@ from tools.tools_folder.tv_controller import TVController
 
 from tools.tools_folder.outdoors_perception import OutdoorsPerception
 from tools.tools_folder.comfort_affordances import ComfortAffordances
+from tools.tools_folder.cranny_tools import CrannyController
+
 from tools.tools_folder.water_points import WaterInstallation
 
 from tools.tools_folder.cooking_tool import CookingApparatus
@@ -79,7 +81,8 @@ from .my_tools import (
     prepare_food_tools,
     plants_tools,
     endpoints_tools,
-    store_tools
+    store_tools,
+    cranny_tools,
 )
 
 from .tool_availability import make_toolset_checker
@@ -191,6 +194,8 @@ class ToolRegistry:
         self.item_toggle    = ItemToggleTool(state_manager, signal)
 
         self.wikipedia_controller = WikipediaController(state_manager, signal, memory_manager)
+
+        self.cranny_controller = CrannyController(state_manager,signal,self.items_crafter)
 
 
         # Optional services
@@ -475,12 +480,13 @@ class ToolRegistry:
                 "use_level": "room_only", # can't sleep while... holding the sleeping bag
             },
             "cranny": { # these items, usually furniture allow you to reach under them sometimes revealing forgotten rewards!
-                "functions": { # TODO: Update this to include cranny type in this item object definition, handle returning different types of gleanings based on different types
-                    "reach_into_item_crevice": self.comfort.reach_into_item_crevice,
+                "functions": { 
+                    "reach_into_item_crevice": self.cranny_controller.reach_into_item_crevice,
                 },
-                "definitions": comfort_tools,
+                "definitions": cranny_tools,
                 "item_types": ["cranny_host"],
                 "use_level": "room_only",
+                "display_information": self.cranny_controller.agent_perceive # Added 'agent percieve' to display info, decide if we want it as an actual agent_information so it is injected into the agent context. Right now just used in the GUI.
             },
 
             "seat": { # seatables!
