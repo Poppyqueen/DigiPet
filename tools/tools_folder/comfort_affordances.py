@@ -110,7 +110,7 @@ class ComfortAffordances:
         if not item_object.success:
             return item_object.error
         if item_object.toggle_state is False:
-            return f"Seat {self.state_manager.format_item_for_display(item_id,False)}, is 'off' can't use it like that."
+            return f"Seat {self.state_manager.format_item_for_display(item_object.item_data, False)}, is 'off' can't use it like that."
         
         # Safe to access item_data only after success check
         item_details = item_object.item_data
