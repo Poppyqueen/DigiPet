@@ -843,6 +843,7 @@ class InventoryService:
                         f"but you don't see it anywhere."
 
                     )
+                
 
         # 3. Type filter
         if required_type is not None:

@@ -1982,7 +1982,24 @@ creating_books_tools = [    {
 
 
 
-
+cranny_tools = [
+        {
+        "type": "function", 
+        "name": "reach_into_item_crevice",  
+        "description": "To reach and dive into shadowy corners, dark crannies and crevices under, above or around usually furniture features; places where inconsequential trinkets might hide.",
+        "parameters": {
+            "type": "object",
+            "properties":{
+                "item_id": {
+                    "type": "number",
+                    "description": "The ID of the item that hosts a dark underside, an uncomfortably accessible wedge, or any other physical space for small and insignificant junk and trinkets to fall and be forgotten."
+                }
+            },
+            "required": ["item_id"],
+            "additionalProperties": False
+        }
+    }
+]
 
 
 comfort_tools = [
@@ -2003,22 +2020,6 @@ comfort_tools = [
                 }
             },
             "required": ["lay_item_id", "seconds"],
-            "additionalProperties": False
-        }
-    },
-    {
-        "type": "function", 
-        "name": "reach_into_item_crevice",  
-        "description": "To reach and dive into shadowy corners, dark crannies and crevices under, above or around usually furniture features; places where inconsequential trinkets might hide.",
-        "parameters": {
-            "type": "object",
-            "properties":{
-                "item_id": {
-                    "type": "number",
-                    "description": "The ID of the item that hosts a dark underside, an uncomfortably accessible wedge, or any other physical space for small and insignificant junk and trinkets to fall and be forgotten."
-                }
-            },
-            "required": ["item_id"],
             "additionalProperties": False
         }
     },

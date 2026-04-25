@@ -210,6 +210,8 @@ def _build_tick_registry(chatbot,) -> TickRegistry:
 
     interval_ms = idle_ms * 0.75
     registry.register("outdoors_perception", reg.outdoors_perception.tick, interval_ms=interval_ms)
+
+    registry.register("cranny_controller", reg.cranny_controller.tick, interval_ms=idle_ms * 2.2)
     
     return registry
 

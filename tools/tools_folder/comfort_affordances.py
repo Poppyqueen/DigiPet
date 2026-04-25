@@ -12,8 +12,6 @@ import math
 import asyncio
 
 
-NOOK_TYPE = "cranny_host"
-
 SEAT_TYPE = "seatable"
 SEAT_NARRATIVE = "narrative_sitting"
 
@@ -112,7 +110,7 @@ class ComfortAffordances:
         if not item_object.success:
             return item_object.error
         if item_object.toggle_state is False:
-            return f"Seat {self.state_manager.format_item_for_display(item_id,False)}, is 'off' can't use it like that."
+            return f"Seat {self.state_manager.format_item_for_display(item_object.item_data, False)}, is 'off' can't use it like that."
         
         # Safe to access item_data only after success check
         item_details = item_object.item_data
@@ -133,70 +131,6 @@ class ComfortAffordances:
         
         # TODO: Add icon pop-up signal and image to assets
         return f"You take a seat on the {display_item_name}\n{item_desc}\n{item_phenom}\n{message}"
-
-    def reach_into_item_crevice(self, item_id):
-        lookup = self.state_manager.find_item(
-            item_id,
-            required_type=NOOK_TYPE,
-            required_location="room"
-        )
-        if lookup.error:
-            return lookup.error
-
-        item_data = lookup.item_data
-        item_name = self.state_manager.format_item_for_display(item_data, False)
-        
-        search_chance = item_data.get("chance", 0.05) 
-        reward_options = item_data.get("reward_options", []) 
-        narrative_lines = item_data.get("narrative_search", [f"You reach under the {item_name}."])
-
-
-        self._signal_callback({"type": "show_message_popup", "message": "Looking for something hidden..."})
-
-        search_action_desc = random.choice(narrative_lines)
-
-        if random.random() >= search_chance:
-            return f"{search_action_desc} However, you find nothing but dust bunnies."
-
-        found_item_types = None
-        if reward_options:
-            try:
-                found_item_types = front_weighted_pick(items=reward_options, none_chance=0.30)
-                print(f"DEBUG: front_weighted_pick returned: {found_item_types}")
-            except Exception as e:
-                print(f"DEBUG ERROR: front_weighted_pick crashed: {e}")
-                # Don't crash the whole thing, just proceed with None
-                found_item_types = None
-
-        item_descs_text = "\n".join(item_data.get("descriptions", []))
-
-        items_to_create = self.items_crafter.craft_item(
-            user_prompt=(
-                f"Create an item found under: {item_name}. {item_descs_text}. "
-                f"Inconsequential, evocative, and fits the source item's qualities."
-            ),
-            select_types=found_item_types
-        )
-        
-        print(f"DEBUG: items_to_create type={type(items_to_create)}, value={items_to_create}")
-
-        if not items_to_create:
-            return f"{search_action_desc} You feel something, but it turns out to be a mirage."
-
-        result = self.state_manager.create_item(
-            target_location="inventory",
-            target_location_id=None,
-            item_creation_data=items_to_create
-        )
-
-        print(f"DEBUG: create_item result success={result.success}, error={result.error}")
-
-        if not result.success:
-            return f"{search_action_desc} You feel something, but it slips back into the shadows."
-
-        self._signal_callback({"type": "show_icon_popup", "icon_path": "style/images/action_icons/trumpet.png"})
-        
-        return f"{search_action_desc} You found:\n{result.message}"
 
     # Add instance methods here
     async def sleep_on_item(self, lay_item_id, seconds):
