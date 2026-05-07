@@ -172,6 +172,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
         item_id: int,
         required_type: str | None = None,
         required_location: Literal["inventory", "room", "accessible"] | None = None,
+        check_toggle: bool = True
     )-> ItemLookupResult:
         """
         Unified item lookup with optional filters.
@@ -185,6 +186,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
                             "inventory"    → must be in the player's inventory
                             "room"         → must be in any room
                             "accessible"   → must be in inventory OR the current room
+        check_toggle      : If True, items with a toggle_state of "off" will be treated as not found.
 
         Returns
         -------
@@ -192,7 +194,7 @@ class InventoryHouseManager: # NO LONGER INHERITS FROM GenericJsonTool
             Always returns this model.
             Check result.success before using result.item_data.
         """
-        return self.inventory_service.find_item(item_id=item_id,required_type=required_type,required_location=required_location)
+        return self.inventory_service.find_item(item_id=item_id,required_type=required_type,required_location=required_location,check_toggle=check_toggle)
 
     def set_item_attribute(self,
         item_id: int, 
