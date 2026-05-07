@@ -21,7 +21,7 @@ class ItemToggleTool:
         return [item for item in item_data if "toggleable" in item.item_data.get("type", "")]
 
     def _toggle_item(self, item_id: int, turn_on: bool) -> str:
-        item_result = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id, check_toggle=False)
         if not item_result.success:
             return item_result.error
 
@@ -61,7 +61,7 @@ class ItemToggleTool:
 
     def toggle_item_power_auto(self, item_id: int) -> str:
         """Toggle — determines on/off from current state and flips it."""
-        item_result = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id, check_toggle=False)
         if not item_result.success:
             return item_result.error
 

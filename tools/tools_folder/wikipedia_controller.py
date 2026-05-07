@@ -8,6 +8,9 @@ from tools.tools_folder.tools_helpers.services.wiki_handle import WikipediaHandl
 
 import time
 
+# TODO: Add new AI tool for it to 'extract' specified information from a long article without it having to 
+# read it complete, by contracting a small separate memoryless AI query.
+
 
 # Safety floor used when memory_manager is unavailable OR when calc_budgets()
 # throws. Intentionally conservative — better to warn the agent about a medium

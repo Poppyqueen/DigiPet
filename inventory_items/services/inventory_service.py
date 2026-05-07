@@ -762,6 +762,7 @@ class InventoryService:
         item_id: int,
         required_type: str | None = None,
         required_location: Literal["inventory", "room", "accessible"] | None = None,
+        check_toggle: bool = True
     ) -> ItemLookupResult:
         """
         Unified item lookup with optional filters.
@@ -775,6 +776,7 @@ class InventoryService:
                             "inventory"    → must be in the player's inventory
                             "room"         → must be in any room
                             "accessible"   → must be in inventory OR the current room
+        check_toggle      : If True, items with a toggle_state of "off" will be treated as not found.
 
         Returns
         -------
@@ -805,14 +807,6 @@ class InventoryService:
         raw = ts_obj.get("toggle_state") if isinstance(ts_obj, dict) else None
         toggle_state = (raw == "on") if raw in ["on", "off"] else None
         
-        # 3. Type filter
-        if required_type is not None:
-            if required_type not in item_data.get("type", []):
-                return ItemLookupResult.fail(
-                    f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
-                    f"but you can't use it that way."
-                )
-
         # 4. Location filter
         if required_location is not None:
             if required_location == "inventory":
@@ -852,6 +846,22 @@ class InventoryService:
 
                     )
                 
+        # 3. Type filter
+        if required_type is not None:
+            if required_type not in item_data.get("type", []):
+                return ItemLookupResult.fail(
+                    f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
+                    f"but you can't use it that way."
+                )
+            
+        # ??. Toggle filter here? # TODO: Decide about this, do we want it here?
+        if check_toggle:
+            if toggle_state is not None:
+                if toggle_state == False:
+                    return ItemLookupResult.fail(
+                        f"You try to interact with '{item_data.get('name', '?')}' ({item_id}) "
+                        f"but its toggle state won't allow it."
+                    )
 
         # 5. All filters passed
         return ItemLookupResult.ok(
