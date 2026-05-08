@@ -1,0 +1,23 @@
+{
+  "groups": {
+    "left_gray": ["living_room", "kitchen"],
+    "right_gray": ["library", "bedroom"],
+    "center_gray": ["bathroom"],
+    "main_gray": ["garden"],
+    "turquoise": ["Nature Heaven"]
+  },
+  "connections": [
+    ["Hallway", "living_room"],
+    ["Hallway", "bathroom"],
+    ["Hallway", "garden"],
+    ["Hallway", "bedroom"],
+
+    ["garden", "Section A2"],
+    
+    ["Section A2", "Section A"],
+    ["Section A", "Section B"],
+    ["Section B", "Section B2"],
+    ["Section B2", "Nature Heaven"],
+    ["Section B", "Section C"]
+  ]
+}

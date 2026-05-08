@@ -15,8 +15,9 @@
         "b_house_path": "inventory_items/base_state_manager/houses_data/lighthouse_details.json",
         "items_config": "inventory_items/base_state_manager/houses_configs/lighthouse_config.json"
     },
-    "extended_home":{
+    "walled_garden":{
         "b_house_path": "inventory_items/base_state_manager/houses_data/wall_garden.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/wall_garden_config.json"
+        "items_config": "inventory_items/base_state_manager/houses_configs/wall_garden_config.json",
+        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/wall_garden_lo.json"
     }
 }

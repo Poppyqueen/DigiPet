@@ -120,24 +120,7 @@ class BaseRoom(BaseModel):
     name: str = Field(
         description="Human-readable room name, e.g. 'Garden'."
     )
-    is_connectoid:bool = Field(
-        default=False, 
-        description=(
-            "Is this a bridge, or connection between zones? roads, trails, roundabout or others, if so, set to true."
-        )
-    )
-    movement_group : Optional[str]= Field(
-        default=None,
-        description =(
-            "If this room is a regular room set this string as 'default' if not specified. If this room is a 'connectoid', this key should be missing."
-        )
-    )
-    connections : Optional[List[str]] = Field(
-        default=None,
-        description=(
-            "If this room is a connectoid initialize this as an empty list or an specified list of room names.  If this room is not 'connectoid', this key should be missing."
-        )
-    )
+
     base_description: Optional[str] = Field(
     default=None, 
     description=(
@@ -148,6 +131,25 @@ class BaseRoom(BaseModel):
             "Use heavy, material-focused language (e.g., 'A 40-foot-high cathedral hall of rib-vaulted limestone with a floor of polished obsidian'). "
             "Keep it time-agnostic and static."
         ) 
+    )
+    
+    movement_group : Optional[str]= Field(
+        default=None,
+        description =(
+            "If this room is a regular room set this string as 'default' if not specified. If this room is a 'connectoid', this key should be missing."
+        )
+    )
+    is_connectoid:bool = Field(
+        default=False, 
+        description=(
+            "Is this a bridge, or connection between zones? roads, trails, roundabout or others, if so, set to true."
+        )
+    )
+    connections : Optional[List[str]] = Field(
+        default=None,
+        description=(
+            "If this room is a connectoid initialize this as an empty list or an specified list of room names.  If this room is not 'connectoid', this key should be missing."
+        )
     )
     descriptions: RoomTimeDescriptions = Field(
     description=(

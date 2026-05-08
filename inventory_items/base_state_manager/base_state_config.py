@@ -134,6 +134,93 @@ class InitialStateConst():
         """
         return list(self.states_configs.keys())
 
+    def _apply_layout_config(self, rooms: list, layout_config_path: str) -> list:
+        """
+        Applies movement group and connectoid connection data from a layout config file
+        onto the room list. Ignores any existing movement keys already present on rooms.
+
+        Layout config format:
+        {
+            "groups": {
+                "group_name": ["room_name", ...]
+            },
+            "connections": [
+                ["RoomOrConnectoidA", "RoomOrConnectoidB"],
+                ...
+            ]
+        }
+
+        Rules:
+        - Rooms listed in "groups" receive movement_group, is_connectoid=False, connections=null.
+        - Rooms that appear in "connections" edges but not in any group are treated as connectoids:
+          is_connectoid=True, movement_group=null, connections=[all their neighbors].
+        - Rooms not mentioned in either get movement_group="default".
+        - Connections are always bidirectional — each edge is expanded to both directions.
+        - Warns on any name in the layout that has no matching room in the house file.
+        """
+        with open(layout_config_path, 'r') as f:
+            layout = json.load(f)
+
+        groups = layout.get("groups", {})
+        edges = layout.get("connections", [])
+
+        # Build a lookup by room name for quick access
+        room_by_name = {room["name"]: room for room in rooms}
+
+        # Validate all names in groups
+        for group_name, members in groups.items():
+            for name in members:
+                if name not in room_by_name:
+                    print(f"Layout warning: '{name}' in group '{group_name}' has no matching room.")
+
+        # Build adjacency map from edges (bidirectional)
+        adjacency = {}
+        for edge in edges:
+            if len(edge) != 2:
+                print(f"Layout warning: skipping malformed edge {edge}")
+                continue
+            a, b = edge
+            for name in (a, b):
+                if name not in room_by_name:
+                    print(f"Layout warning: '{name}' in connections has no matching room.")
+            adjacency.setdefault(a, [])
+            adjacency.setdefault(b, [])
+            if b not in adjacency[a]:
+                adjacency[a].append(b)
+            if a not in adjacency[b]:
+                adjacency[b].append(a)
+
+        # Determine which names are group members vs connectoids
+        group_members = {name for members in groups.values() for name in members}
+        connectoid_names = {name for name in adjacency if name not in group_members}
+
+        # Stamp group members
+        for group_name, members in groups.items():
+            for name in members:
+                if name in room_by_name:
+                    room = room_by_name[name]
+                    room["movement_group"] = group_name
+                    room["is_connectoid"] = False
+                    room["connections"] = None
+
+        # Stamp connectoids
+        for name in connectoid_names:
+            if name in room_by_name:
+                room = room_by_name[name]
+                room["is_connectoid"] = True
+                room["movement_group"] = None
+                room["connections"] = adjacency[name]
+
+        # Default for any room not mentioned in the layout at all
+        mentioned = group_members | connectoid_names
+        for room in rooms:
+            if room["name"] not in mentioned:
+                room.setdefault("movement_group", "default")
+                room.setdefault("is_connectoid", False)
+                room.setdefault("connections", None)
+
+        return rooms
+
     def create_state(self, select_state):
         """
         Creates the complete initial game state based on a selected configuration.
@@ -180,7 +267,12 @@ class InitialStateConst():
 
         # The other rooms are added to the list without an 'id' key
         final_rooms_list.extend(other_rooms)
-        
+
+        # Apply layout config for movement groups and connectoid connections if provided
+        layout_config_path = selected_config.get("layout_config")
+        if layout_config_path:
+            final_rooms_list = self._apply_layout_config(final_rooms_list, layout_config_path)
+
         # Populate the 'items' list for each room using the new items_config map
         for room in final_rooms_list:
             item_config_for_room = items_config.get(room["name"])
