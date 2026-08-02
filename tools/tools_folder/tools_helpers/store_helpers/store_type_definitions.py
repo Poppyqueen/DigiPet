@@ -52,16 +52,16 @@ STORE_TYPE_DEFINITIONS: dict[str, dict] = {
     },
     "furniture": {
         "display_name": "Furniture",
-        "description": "Chairs, tables, shelving, and decorative pieces for the home.",
+        "description": "Chairs, tables, appliances, shelving, and decorative pieces for the home.",
     },
     "electronics": {
         "display_name": "Electronics",
         "description": "Discounted gadgets, small appliances, and tech accessories.",
     },
-    "books": {
-        "display_name": "Books",
-        "description": "Fiction, non-fiction, guides, and collector editions.",
-    },
+    "cookware&tableware":{
+        "display_name": "Cookware & Tableware",
+        "description": "Assorment of utilities, tools, containers, and anything you might imagine saving in a kitchen cupboard."
+    }
 }
 
 # Derived — consumed by store_types.py to build the Literal and by store logic

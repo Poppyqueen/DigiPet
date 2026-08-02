@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Hydrangea-Lined Window Seat Niche",
+    "descriptions": [
+      "You notice a shallow hollow tucked into the built-in window bench, where blue hydrangea blossoms spill softly around the edge and catch the daylight in pale, papery layers.",
+      "You reach into the little recess beneath the cushion lip, where a few dried petals cling to the wood and the space holds the faint sheltering hush of a well-loved room.",
+      "You search the snug opening beside the window seat and feel the worn trim, the flower stems brushing close as if this small pocket has been quietly keeping things safe for you."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.28,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You slide your fingers under the bench edge and part the hydrangea stems.",
+      "You lean close to the window seat and work your hand into the hidden gap.",
+      "You brush aside the blooms and feel around the tucked-away nook.",
+      "You reach into the shallow hollow where the cushion meets the frame."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ]
+  }
+]

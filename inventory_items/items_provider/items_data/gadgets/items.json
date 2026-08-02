@@ -1,0 +1,871 @@
+[
+  {
+    "name": "Portable Retro TV",
+    "descriptions": [
+      "A small suitcase-style television with rounded corners, a cream plastic shell, and a carry handle worn smooth by years of use. The tiny screen glows behind a slightly hazed pane, and the dials click with a reassuring little weight when you turn them.",
+      "It sits easily on a shelf or table, throwing a soft picture and a faint blue-white shimmer across the room. The set feels like something saved from another era and kept working with patient care."
+    ],
+    "static": false,
+    "type": [
+      "tv",
+      "store_entry",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen hums awake with a muted glow and a steady little picture.",
+      "off_description": "The screen goes dark and the little cabinet becomes quiet again.",
+      "on_sequence": "You press the dial and hear a soft mechanical click, then a low hum gathers behind the screen as the glass wakes with a pale glow. A faint buzz settles into the room, and the picture sharpens into a steady little window of moving light.",
+      "off_sequence": "You turn the set off and the hum thins out at once, leaving only a final tick from the housing. The glow drains from the screen, and the cabinet rests as a plain, silent box once more.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Vintage Console TV",
+    "descriptions": [
+      "A wooden console television with a rounded glass screen, a fabric speaker grille, and brass-toned knobs worn smooth by careful hands.",
+      "It sits low and solid, its warm veneer and soft amber glow making the room feel settled and quietly lived-in.",
+      "The screen carries a gentle hum, framed by age-polished edges and the faint memory of long evenings spent nearby."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "store_entry",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The console TV glows with a soft picture and a low, steady hum.",
+      "off_description": "The console TV rests dark and still, its glass screen reflecting the room.",
+      "on_sequence": "You press the knob, and the set answers with a soft click. A warm bloom gathers behind the glass, the speaker gives a faint hiss, and the screen wakes into a steady wash of light.",
+      "off_sequence": "You turn the knob back, and the picture folds away at once. The hum thins to silence, the glow drains from the glass, and the room takes back its quiet reflection.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Flat Screen TV",
+    "descriptions": [
+      "A slim black television with a glassy face, sitting level on a low stand and reflecting the room in a soft dark sheen.",
+      "Its screen wakes cleanly and quietly, ready to fill the wall with bright color and late-night glow."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "store_entry",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen lights up with crisp moving images and a gentle electronic hum.",
+      "off_description": "The screen goes dark, leaving only a faint reflective surface.",
+      "on_sequence": "You press the power button, and the black glass blooms into pale light. A soft hum gathers behind the panel as the first colors sharpen into view.",
+      "off_sequence": "You press the power button again, and the picture folds away. The glow drains from the panel, the hum settles, and the screen returns to a quiet dark mirror.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Teddy Bear",
+    "descriptions": [
+      "A small teddy bear with velvety fur, softly worn at the paws and ears, as if it has spent many quiet evenings on a shelf near the lamp.",
+      "Its stitched muzzle and gentle glassy eyes give it a tender, familiar presence, like something kept close on a reading chair or tucked beside a pillow.",
+      "The fabric holds a faint plush warmth, and its little ribbon looks slightly rumpled from being handled often and with affection."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "comfort_object"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "meditation_aid_ambience": [
+      "You feel the room soften around it, as if the air has a calmer rhythm when it sits nearby.",
+      "It lends a quiet, watchful comfort, turning a bright corner into a softer place to pause and breathe."
+    ],
+    "narrative_hug": [
+      "You hold it against your chest, and its plush body settles into you with a reassuring, weightless ease.",
+      "You press your face into its fur and feel a small, steady comfort that lingers in your hands.",
+      "You hug it close, and the worn softness of its seams makes the moment feel safe and familiar."
+    ]
+  },
+  {
+    "name": "Small Soft Blue Blanket",
+    "descriptions": [
+      "A small, soft blanket in a washed blue tone, with a gentle drape and a neatly finished edge.",
+      "Its fabric feels lightly brushed from use, carrying the calm of a lived-in room and the hush of late evening light."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "comfort_object"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "meditation_aid_ambience": [
+      "It settles the space into a quieter rhythm, like soft daylight resting on a sofa.",
+      "Its blue surface carries a cool, steady calm that makes the air feel easier to breathe.",
+      "Folded nearby, it adds a familiar sense of pause and shelter to the room."
+    ],
+    "narrative_hug": [
+      "You wrap it around yourself and feel the fabric gather warmth close to your skin.",
+      "You hold it against your chest and it answers with a gentle, soothing weight.",
+      "You press into it and the soft blue folds make everything feel a little more settled."
+    ]
+  },
+  {
+    "name": "Small Deep Purple Blanket",
+    "descriptions": [
+      "A small blanket in a deep plum shade, soft from many washes and edged with a simple stitched hem.",
+      "It folds down neatly into your hands, carrying a quiet, lived-in warmth and a faint sense of calm."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "comfort_object"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "It settles the room into a softer rhythm, as if the air itself is moving more slowly.",
+      "Its dark color holds light gently, creating a private little pocket of stillness.",
+      "When it rests nearby, the space feels less sharp around the edges and easier to breathe in."
+    ],
+    "narrative_hug": [
+      "You wrap it around yourself and feel the weight land softly, like a private pause.",
+      "You hold it close and the fabric yields with a familiar, soothing hush.",
+      "You press into it and the deep color seems to gather the day's noise and keep it away."
+    ]
+  },
+  {
+    "name": "Mahogany Sitting Cat Figurine",
+    "descriptions": [
+      "A small seated cat carved from deep mahogany, its polished curves catching the room\u2019s soft light with a calm, lived-in glow.",
+      "The figurine feels familiar and quietly decorative, like a cherished shelf piece chosen for its warm color, smooth finish, and restful presence."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "comfort_object"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "meditation_aid_ambience": [
+      "Its dark wood surface holds a gentle sheen that steadies the eye and settles the room into a slower rhythm.",
+      "Placed nearby, it adds a quiet sense of intention, as if the corner has been gently arranged for pause and reflection."
+    ],
+    "narrative_hug": [
+      "You hold the little cat against you and feel its smooth wood cool at first, then slowly warming in your hands.",
+      "You press the figurine close and notice its solid weight, reassuring and still, like a small private anchor.",
+      "You cradle the carved cat and feel the polished surface resting neatly against your palms, tidy and comforting."
+    ]
+  },
+  {
+    "name": "Oil Diffuser",
+    "descriptions": [
+      "A small ceramic diffuser with a matte glaze and a soft, rounded silhouette, the kind that sits quietly on a shelf beside a paperback and a half-finished mug.",
+      "Its gentle vents and dim indicator light give it the look of something made to keep a room feeling settled and lived-in, not decorated."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "It releases a thin veil of fragrance and a faint glow that softens the room.",
+      "off_description": "It rests in silence, its basin still and its light unlit.",
+      "on_sequence": "You fill the chamber, press the switch, and feel a quiet hum wake beneath your hand as a thread of scent begins to spread.",
+      "off_sequence": "You tap it off, and the hum fades first, followed by the last warm trace of mist lifting into still air.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    },
+    "meditation_aid_ambience": [
+      "You breathe in a steady, barely visible scent that settles the edges of the room.",
+      "Its low glow and soft hum make the air feel arranged for lingering thoughts.",
+      "It lends the space a gentle pause, like evening held in place for a few more minutes."
+    ]
+  },
+  {
+    "name": "Yoga Mat",
+    "descriptions": [
+      "A rolled mat in a muted, well-loved color, its surface softly textured for steady footing and quiet stretches.",
+      "It has the tidy, lived-in look of something kept by the door or beside a shelf, ready for a few unhurried minutes of movement.",
+      "The material feels slightly springy underfoot, with faint creases that hint at many calm routines.",
+      "A simple strap keeps it bundled when you are not using it, like a small promise to return to yourself."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The mat lies open, inviting slow stretches and grounded balance.",
+      "off_description": "The mat rolls tight, resting quietly until you need it again.",
+      "on_sequence": "You unroll the mat and it settles with a soft, rubbery hush, flattening into a stable path beneath your hands and feet.",
+      "off_sequence": "You roll the mat back up, and it gathers itself into a neat cylinder with a faint whisper of textured fabric against fabric.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    },
+    "meditation_aid_ambience": [
+      "It steadies the room into a small practice space, turning a patch of floor into a private pause.",
+      "It gives your body a clear, forgiving surface, encouraging slow breaths and deliberate movement.",
+      "It brings a quiet sense of routine, as if the day can be gently arranged into better shape."
+    ]
+  },
+  {
+    "name": "Retro Maze Arcade",
+    "descriptions": [
+      "A freestanding arcade cabinet with a worn matte finish, soft-edged corners, and a screen that glows like a remembered rainy evening.",
+      "Its control panel is smooth from years of hands, with a speaker grille, a coin slot, and a maze display framed by gentle ambient light.",
+      "The cabinet feels familiar and lived-in, as if it belongs beside a lamp, a rug, and a half-finished mug on a side table."
+    ],
+    "static": true,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_entry_data": {
+      "price": 180.0,
+      "store_type": "electronics",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The cabinet lights up and the maze hums with a soft electronic pulse.",
+      "off_description": "The cabinet rests dark and quiet, its screen gone still.",
+      "on_sequence": "You press the start control, and the screen blooms to life with a muted glow. A low hum rises from the speakers, and the maze redraws itself in crisp lines while the room catches a wash of light from the panel.",
+      "off_sequence": "You switch it off, and the glow drains gently from the screen. The hum thins to silence, leaving only the cabinet's dim outline and the faint memory of motion.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    },
+    "maze_state": {
+      "seed": null,
+      "size": null,
+      "difficulty": null,
+      "pos": [
+        0,
+        0
+      ],
+      "goal": null,
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": null,
+      "type_locked": false,
+      "props_seed": null
+    }
+  },
+  {
+    "name": "Portable Retro Game Emulator",
+    "descriptions": [
+      "A pocket-sized black-and-silver handheld with a matte shell, a bright little screen, and softly worn buttons that click with reassuring certainty.",
+      "It feels like a well-kept everyday companion, built for quiet corners, train rides, and the small luxury of an uninterrupted game."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "store_entry_data": {
+      "price": 160.0,
+      "store_type": "electronics",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen glows to life and the handheld hums with a ready, familiar energy.",
+      "off_description": "The screen goes dark and the device rests in a silent, pocketable shape.",
+      "on_sequence": "You press the power button and feel a soft vibration answer in your fingertips. The screen blooms from black into a steady glow, and the buttons sit warm and expectant beneath your thumbs.",
+      "off_sequence": "You hold the power button and the light thins away, leaving only the faint afterglow of the display. The handheld settles into stillness, cool and compact in your hands.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    },
+    "maze_state": {
+      "seed": null,
+      "size": null,
+      "difficulty": null,
+      "pos": [
+        0,
+        0
+      ],
+      "goal": null,
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": "dungeon",
+      "type_locked": true,
+      "props_seed": null
+    }
+  },
+  {
+    "name": "Pocket Maze Display",
+    "descriptions": [
+      "A slim handheld game with a matte shell, a soft-glow screen, and a thumb-sized maze that waits for your next decision.",
+      "It feels like something you leave on a side table beside a charging cable, then pick up again when the room goes quiet."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen glows and the maze comes alive beneath your controls.",
+      "off_description": "The screen rests dark and still, holding its little paths in silence.",
+      "on_sequence": "You press the edge switch and the display wakes with a clean, bright wash of light. The maze lines sharpen under your thumb, and the device settles into a ready hum.",
+      "off_sequence": "You tap it off and the glow drains away in a smooth fade. The screen goes black, and the tiny corridors disappear back into stillness.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    },
+    "maze_state": {
+      "seed": null,
+      "size": null,
+      "difficulty": null,
+      "pos": [
+        0,
+        0
+      ],
+      "goal": null,
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": null,
+      "type_locked": false,
+      "props_seed": null
+    }
+  },
+  {
+    "name": "Etched Lantern Stone",
+    "descriptions": [
+      "A grounded rock breaks the floor with a smooth, weather-worn face, its carved channels holding a soft white-blue glow.",
+      "The stone sits half-buried and immovable, ringed with fine etchings that light the dim space like a quiet sign at night."
+    ],
+    "static": true,
+    "type": [
+      "toggleable",
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The etchings shine with a cool white-blue radiance, tracing the rock\u2019s surface in steady lines.",
+      "off_description": "The carvings rest dark and shallow against the stone\u2019s worn face.",
+      "on_sequence": "You press near the etched grooves, and the stone answers with a slow bloom of white-blue light that gathers in the lines and spills across the rock.",
+      "off_sequence": "You let the glow fade, and the traced channels sink back into shadow, leaving only the stone\u2019s rough, settled surface.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    },
+    "maze_state": {
+      "seed": null,
+      "size": null,
+      "difficulty": null,
+      "pos": [
+        0,
+        0
+      ],
+      "goal": null,
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": null,
+      "type_locked": true,
+      "props_seed": null
+    }
+  },
+  {
+    "name": "Pocket Brass Maze Box",
+    "descriptions": [
+      "A palm-sized brass box with a velvet-lined lid and a tiny glass window over its shifting pathways.",
+      "The polished edges are softened by handling, and the little maze inside catches the light like a kept secret.",
+      "A compact mechanical puzzle that feels at home on a coffee table, a desk, or tucked into a coat pocket."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The maze is randomized and ready to guide a tiny ball through its changing paths.",
+      "off_description": "The maze rests in a settled layout, waiting for you to begin again.",
+      "on_sequence": "You turn the small mechanism, and the box answers with a soft click and a faint internal shuffle. Beneath the glass, the corridors rearrange themselves into a fresh pattern, each turn seeming to settle into place with a tiny metallic hush.",
+      "off_sequence": "You flick the control back, and the motion fades into a neat, satisfying stop. The moving parts quiet down, leaving the maze still and orderly beneath the glass.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    },
+    "maze_state": {
+      "seed": null,
+      "size": null,
+      "difficulty": null,
+      "pos": [
+        0,
+        0
+      ],
+      "goal": null,
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": "dungeon",
+      "type_locked": true,
+      "props_seed": null
+    }
+  },
+  {
+    "name": "Minimalist Floor Lamp",
+    "descriptions": [
+      "A slim floor lamp with a matte metal stem and a pale fabric shade, made to vanish into the corner until evening asks more of the room.",
+      "Its simple silhouette rests on a weighted base, and the switch clicks with an easy, familiar certainty."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A soft pool of light lifts from the shade and settles across the room.",
+      "off_description": "The lamp stands quiet and dark, its form barely there in the corner.",
+      "on_sequence": "You flick the switch and the shade wakes at once, spilling a warm wash that smooths the edges of the walls and gathers a little island of light at your feet.",
+      "off_sequence": "You click the switch off and the glow thins, then vanishes, leaving the stem as a faint line against the room.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Desk Retro Lamp",
+    "descriptions": [
+      "A small lamp with a brushed metal neck and a rounded shade, the kind that settles neatly beside a notebook and a mug.",
+      "Its painted base shows faint scuffs from being shifted across wood grain, while the cord loops down in a plain, practical line.",
+      "When lit, it casts a soft pool over the desk, making paper edges and pen marks feel quietly important."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp glows with a warm, focused halo over the desk.",
+      "off_description": "The lamp sits dark and compact, its shade catching only the room's spill of light.",
+      "on_sequence": "You flip the switch and the bulb wakes with a brief, soft pulse. Warm light gathers under the shade, then spills outward in a calm circle across the surface, brightening the edges of whatever sits beneath it.",
+      "off_sequence": "You switch it off and the glow drops away at once. The shade turns to a quiet silhouette, and the desk slips back into the dim, with only the room left to outline its shape.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Wall-Mounted Outdoors Lantern",
+    "descriptions": [
+      "A weathered metal lantern fixed beside a doorway, its frosted glass softening the light into a gentle pool on the wall.",
+      "It carries the faint scuffs of rain and dust, with a small switch tucked along the bracket for easy use.",
+      "Its glow feels like an evening errand remembered: practical, modest, and reassuring against the dark."
+    ],
+    "static": true,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lantern casts a steady, mellow light over the threshold and nearby path.",
+      "off_description": "The lantern rests dark and still against the wall.",
+      "on_sequence": "You flick the switch and the glass warms from within, the bulb catching and settling into a soft, steady shine that loosens the shadows around the doorway.",
+      "off_sequence": "You click the switch back and the light thins away, leaving the glass dim as the bracket returns to a quiet, waiting stillness.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Yellow Lava Lamp",
+    "descriptions": [
+      "A glass lamp with a sunflower-yellow base and a slow, syrupy glow that pools softly against the room.",
+      "Its molten wax rises and falls behind the glass like a small private weather system, casting lazy bands of light over nearby surfaces."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp warms up and begins to send buttery light through the glass.",
+      "off_description": "The lamp rests dark and still, its wax settled at the bottom.",
+      "on_sequence": "You flip the switch and feel a faint click beneath your fingers. A heat blooms in the metal base, then the glass begins to wake with a soft amber shimmer as the wax loosens and drifts into slow, floating shapes.",
+      "off_sequence": "You switch it off and the light drains away at once. The glow fades to silence, and the wax gently settles back into a heavy yellow pool.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Red Lava Lamp",
+    "descriptions": [
+      "A glass lamp with a red wax heart drifting through warm liquid, its glow softening the edges of the room.",
+      "The base feels weighty and familiar, like something that has spent years on a shelf beside books and half-finished mugs."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp glows from within, and red shapes slowly rise and fold back through the glass.",
+      "off_description": "The lamp stands dark and still, its wax resting in a quiet pool.",
+      "on_sequence": "You flick the switch, and a low heat gathers in the base before the glass blushes alive. Red wax loosens and begins its slow climb, curling into soft, drifting forms.",
+      "off_sequence": "You switch it off, and the light fades first, then the wax settles by degrees into a motionless heap at the bottom.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Green Lava Lamp",
+    "descriptions": [
+      "A glass-bodied lamp with slow amber bubbles drifting through a pool of green light, the kind of thing that hums softly on a shelf and turns a room gentler after dusk.",
+      "Its chrome base is lightly scuffed, its cord neatly coiled, and the whole piece feels like something kept near a couch, a bedside table, or a stack of well-read paperbacks."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp glows from within as green wax rises and falls in slow, drifting shapes.",
+      "off_description": "The lamp sits dark and clear, holding a quiet pool of stillness.",
+      "on_sequence": "You flip the switch and a low warmth gathers in the base. The glass wakes with a soft bloom of color, and inside, the wax loosens into slow, floating streams that climb, fold, and sink again.",
+      "off_sequence": "You switch it off, and the glow thins away until the glass is only a dim shape on the shelf. The motion inside settles into silence as the lamp cools.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Purple Lava Lamp",
+    "descriptions": [
+      "A glass lamp with purple wax drifting through pale, liquid light, casting a soft glow that makes the room feel a little slower.",
+      "A plug-in accent piece with a weighted base and a warm pulse, its glossy vessel holding slow-moving shapes like floating thoughts."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "store_entry"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp glows and the purple wax begins to rise in slow, drifting shapes.",
+      "off_description": "The lamp rests dark and still, its wax pooled quietly at the bottom.",
+      "on_sequence": "You flick the switch, and a low warmth gathers under the glass. The base hums almost imperceptibly as the purple wax loosens, lifts, and folds into soft, drifting blobs.",
+      "off_sequence": "You switch it off, and the glow drains away. The motion inside settles back into silence as the wax sinks and the glass turns still.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Blender",
+    "descriptions": [
+      "A compact countertop blender with a brushed finish and a clear pitcher that catches the room light in clean, quiet lines.",
+      "It sits like a familiar little appliance from an everyday kitchen, steady and unassuming, with a base that feels made for repeated use."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The blender hums with a steady, contained power, ready at a touch.",
+      "off_description": "The blender rests silently, its pitcher and base waiting on the counter.",
+      "on_sequence": "You press the control and the base wakes with a low buzz, the pitcher catching a faint tremor as the mechanism gathers itself.",
+      "off_sequence": "You switch it off and the sound thins away, leaving a brief vibration in your hand before the machine settles.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    },
+    "narrative_prepare": [
+      "You set it down and notice the weight of the base anchoring it to the surface.",
+      "You take hold of the pitcher and feel the lid fit in with a practiced, everyday snugness.",
+      "You reach for the control and the smooth plastic gives under your fingers with no fuss.",
+      "You meet the clear container against the light and see the measured markings waiting inside."
+    ]
+  },
+  {
+    "name": "Electric Oven",
+    "descriptions": [
+      "A freestanding kitchen oven with a brushed metal face, soft-glow controls, and a glass door that keeps the warmth visible while you work around it.",
+      "Its enamel interior and gently worn knobs suggest a well-used household fixture that fits neatly into an everyday shopping list.",
+      "The cabinet hums with practical reliability, the kind of appliance that settles into a lived-in kitchen without asking for attention."
+    ],
+    "static": true,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The oven glows to life with a steady interior heat behind its glass door.",
+      "off_description": "The oven sits quiet and dark, its controls resting at ease.",
+      "on_sequence": "You press the control and hear a soft click as the panel wakes, then a low hum gathers behind the metal face while a warm glow begins to bloom inside.",
+      "off_sequence": "You turn it down and the hum fades first, then the light slips away until the cavity looks still and cool again.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    },
+    "narrative_prepare": [
+      "You stand before the brushed front and reach for the familiar controls.",
+      "You feel the cool handle and the slight give of a well-kept door.",
+      "You listen for the small mechanical click that marks the start of use.",
+      "You take in the faint reflected light on the glass before you begin."
+    ]
+  },
+  {
+    "name": "Salad Serving Set",
+    "descriptions": [
+      "A neatly paired server set with smooth handles and a quietly polished finish, built for easy reaching and a table that feels already half laid out.",
+      "It has the practical grace of something meant to live in daily use, with clean lines, balanced weight, and a surface that catches light without showing off.",
+      "The set feels familiar in the hand, like an object chosen for regular meals, shared portions, and unhurried evenings at home."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "culinary_equipment"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "narrative_prepare": [
+      "You lift the set and notice how evenly it rests in your hand.",
+      "You turn the handles once, feeling the smooth finish and the solid balance.",
+      "You bring it close to the table and sense how naturally it belongs among everyday place settings."
+    ]
+  },
+  {
+    "name": "Countertop Whisk Station",
+    "descriptions": [
+      "A small, freestanding mixing setup with a brushed steel cradle and a pale wooden handle rail, made to sit neatly beside the rest of the kitchen gear.",
+      "It carries the calm, used polish of a well-kept room: clean edges, soft reflections, and the kind of finish that feels at home under warm indoor light."
+    ],
+    "static": true,
+    "type": [
+      "store_entry",
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You run your hand over the smooth handle and feel the cool metal settle into your palm.",
+      "You draw it toward you, and the light catches along its curves with a quiet, familiar shine.",
+      "You lift it from its cradle and sense how easily it waits for the next motion."
+    ]
+  },
+  {
+    "name": "Desk Computer",
+    "descriptions": [
+      "A compact machine with a matte shell, a bright screen, and a soft fan hush that fills a small room with a working calm.",
+      "Its cables settle in a neat drift behind the desk, and the glow from the display gives the tabletop a lived-in, evening-ready look."
+    ],
+    "static": true,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "youtube_playlists_endpoint", 
+      "discogs_endpoint", 
+      "musicbrainz_endpoint", 
+      "bluesky_social_endpoint", 
+      "wikipedia_endpoint", 
+      "searxng_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen wakes and the desk computer hums into steady service.",
+      "off_description": "The machine rests silent, its dark screen reflecting the room.",
+      "on_sequence": "You press the power button and the display blooms from black to light, the fan gathering a low, even breath as icons sharpen into place.",
+      "off_sequence": "You hold the power control and the glow thins away, the fan slows, and the screen settles back into a calm, glossy dark.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Laptop",
+    "descriptions": [
+      "A slim clamshell computer with a brushed metal shell, a glassy screen, and a faint warmth that gathers around the keys when it wakes.",
+      "Its lid closes with a soft, precise touch, and the trackpad carries the polish of long evenings spent answering messages and finishing small tasks.",
+      "The chassis has a few gentle scuffs at the edges, like an object that lives on a desk beside a mug, a charger, and a half-read notebook."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "youtube_playlists_endpoint", 
+      "discogs_endpoint", 
+      "musicbrainz_endpoint", 
+      "bluesky_social_endpoint", 
+      "wikipedia_endpoint", 
+      "searxng_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen glows and the keyboard lights up with a low, steady hum.",
+      "off_description": "The screen goes dark and the machine settles into a quiet, closed stillness.",
+      "on_sequence": "You lift the lid, and the hinge gives a smooth, familiar resistance before the display blooms awake. A soft hum rises through the palm rest, the keys brighten, and the surface under your hands begins to gather a little warmth.",
+      "off_sequence": "You close the lid, and the bright glass disappears with a muted click. The hum fades at once, the lights slip away, and the slim shell rests in a neat, silent line.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cellphone",
+    "descriptions": [
+      "A slim little handset with a glass face, softly rounded edges, and a case worn smooth at the corners from daily handling.",
+      "Its screen wakes with a muted glow, showing fingerprints, a tidy row of icons, and the familiar scratch of an object that lives in pockets and beside half-finished cups of tea."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "toggleable",
+      "youtube_playlists_endpoint", 
+      "discogs_endpoint", 
+      "musicbrainz_endpoint", 
+      "bluesky_social_endpoint", 
+      "wikipedia_endpoint", 
+      "searxng_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen shines to life with a small, even light.",
+      "off_description": "The screen goes dark and the handset rests quiet in your hand.",
+      "on_sequence": "You press the side button, and the glass face brightens under your thumb. A soft pulse blooms across the display, icons settling into place with a faint, polished glow.",
+      "off_sequence": "You press the side button again, and the light folds away at once. The display slips into shadow, leaving only the cool weight of the handset and the faint trace of your touch.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  }
+]

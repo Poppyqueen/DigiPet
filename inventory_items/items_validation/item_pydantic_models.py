@@ -289,10 +289,37 @@ class ConsumableFields(ContractMixin):
         )
     )
     stats_edit: ItemStatsEdit = Field(
-        description="You should first think 'Is this a Potentially Hazardous Food?' (raw meats, spoiled foods, etc.). If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0. "
+        description=(
+            "Rate the stat impact of consuming this item **exactly as it physically exists right now** — "
+            "not what it could become after preparation. "
+            "Ask yourself: if someone put this directly in their mouth and swallowed it, what happens?\n\n"
+
+            "NEGATIVE floats (-0.5 to -10.0) for any item that is:\n"
+            "  - Dry, chalky, or astringent in raw form (tea leaves, dried herbs, flour, raw grains, coffee beans) "
+            "— these pull moisture from your mouth and offer nothing satisfying. hydration should be negative.\n"
+            "  - Raw and unprepared (raw meat, uncooked beans, unroasted coffee, dry pasta) "
+            "— the body can't absorb these well or they cause discomfort.\n"
+            "  - Spoiled, rotten, or hazardous — strong negatives across all stats.\n"
+            "  - Hard, inedible as-is, or normally only consumed after a transformation step "
+            "(roasting, boiling, steeping, cooking).\n\n"
+
+            "POSITIVE floats (0.5 to 10.0) only for items that are already in their final, "
+            "ready-to-consume form — a poured juice, a cooked dish, a ripe fruit, a baked good.\n\n"
+
+            "Key check: 'Does this item require a preparation step (steeping, cooking, roasting, boiling) "
+            "before a person would normally eat or drink it?' "
+            "If yes, the stats should reflect the discomfort and poor nutrition of consuming it raw and unprepared."
+        )
     )
+    
     effects: List[str] = Field(
-        description="A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions."
+        description=(
+            "Narrate the physical experience of consuming this item **in its current state**, "
+            "not after any preparation. If it is dry leaves, the person is chewing dry leaves. "
+            "If it is a raw bean, they are biting into a raw bean. "
+            "Do not describe a brewed cup, a cooked dish, or any version of the item that requires a step not yet taken. "
+            "Second-person, present tense. Each entry is one bite or portion, from a different sensory angle."
+        )
     )
 
     examine_fields: ClassVar[list[str]] = ["consume_uses_left"] # Examine fields are not used during validation nor LLM structured generation, they define the behavior of each type for the 'examine_item' tool, whatever is listed here or returned by a 'render_examine_section' classmethod will be appended into any examine action for an item that matches this type. 
@@ -460,12 +487,8 @@ class SleepableSpotFields(ContractMixin):
 # Then add "cranny_host": CrannyHostFields to TYPE_FIELD_CONTRACTS.
 
 class CrannyHostFields(ContractMixin):
-    model_description: ClassVar[str] = (
-        "A nook, cranny, crevice, or hidden hollow within a piece of furniture or room feature "
-        "that may conceal small forgotten or lost objects. The yield_pool depletes as items are "
-        "pulled from it and replenishes over time via the tick system."
-    )
-
+    model_description: ClassVar[str] = "A nook, cranny, crevice, or hidden hollow within a piece of furniture or room feature that may conceal small forgotten or lost objects."
+    
     chance: float = Field(
         default=0.05,
         ge=0.0,
@@ -481,8 +504,7 @@ class CrannyHostFields(ContractMixin):
         le=1.0,
         description=(
             "Current resource level of this nook (0.0–1.0). Always initialise at 1.0. "
-            "Managed by the tool at runtime — decreases on a successful pull, "
-            "replenishes each tick by refresh_rate up to 1.0."
+            "Managed by the tool at runtime."
         )
     )
     yield_cost: float = Field(
@@ -491,8 +513,7 @@ class CrannyHostFields(ContractMixin):
         le=1.0,
         description=(
             "How much yield_pool is consumed by a single successful pull. "
-            "0.25 means the nook can be harvested ~4 times before running dry. "
-            "A rare, singular hiding spot might use 1.0."
+            "0.25 means the nook can be harvested ~4 times before running dry."
         )
     )
     refresh_rate: float = Field(
@@ -501,46 +522,23 @@ class CrannyHostFields(ContractMixin):
         le=1.0,
         description=(
             "How much yield_pool is restored each tick. "
-            "0.1 means a fully drained nook refills over ~10 ticks. "
-            "Set very low (0.01–0.05) for spots that should stay sparse for a long time."
-        )
-    )
-    reward_options: List[List[ItemType]] = Field(
-        default_factory=list,
-        description=(
-            "A list of lists. Each nested list represents a collection of types for the possible "
-            "rewarded item extracted from this cranny host. Use 'dust_bunnied_gleaning' if no "
-            "logical item types fit. A front-weighted random pick selects one inner list, which "
-            "is then passed to the crafter as the item type constraint. "
-            "Example for a cranny behind a bookshelf: "
-            "[['dust_bunnied_gleaning'], ['trinket'], ['consumable'], ['trinket', 'readable']]."
+            "0.1 means a fully drained nook refills over ~10 ticks."
         )
     )
     narrative_search: List[str] = Field(
-        default_factory=list,
         description=(
-            "A list of **second-person, present tense** narration lines describing the physical "
-            "act of reaching into or searching this nook. Each line should feel distinct — "
-            "different angles of the same gesture. One is chosen at random per search."
+            "A list of second-person, present tense narration lines describing the physical "
+            "act of reaching into or searching this nook. Each line should feel distinct."
         )
     )
-
+    reward_options: List[List[ItemType]] = Field(
+        description=(
+            "A list of lists. Each nested list is a collection of types for the possible "
+            "rewarded item. Use 'dust_bunnied_gleaning' if no logical item types fit. "
+            "Example: [['dust_bunnied_gleaning'], ['consumable'], ['seed', 'consumable']]."
+        )
+    )
     examine_fields: ClassVar[list[str]] = ["yield_pool", "yield_cost", "refresh_rate"]
-
-
-    narrative_search: List[str] = Field(
-        description=f"{narrative_prompt} reaching, searching or rummaging across, inside bellow or above of this item. Should be a neutral narrative, no success nor failure described."
-    )
-
-    reward_options: List[List[ItemType]] = Field(
-        description="A list of lists. Each nested list represents a collection of types the possible rewarded item that can be extracted from the source item 'cranny host'. Use 'dust_bunnied_gleaning' if no logical item types fit. Example, a berries shrub marked as a cranny host might return the following lists: [['dust_bunnied_gleaning'], ['consumable'], ['seed'], ['seed', 'consumable']]. A front weighted random pick will be ran on this list of lists and will select any one of them for the reward item."        
-        )
-
-    chance : float = Field(
-        default=0.5,
-        description="Percentage chance of finding an item when searching this cranny host. Ranges from 0.0 to 1.0, where 0.0 means you will never find anything, and 1.0 means you will always find something."
-    )
-
 
 
 class DustBunniedGleaningFields(ContractMixin):

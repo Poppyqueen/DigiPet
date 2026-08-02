@@ -48,7 +48,7 @@ class MazeState(BaseModel):
 
     # --- Props & environment flavour ---
 
-    maze_type: Optional[str] = Field( # Or MazeType if you have that Enum defined
+    maze_type: Optional[MazeType] = Field( # Or MazeType if you have that Enum defined
         default=None,
         description=(
             "The thematic type of the maze from possible types. "

@@ -1,4 +1,3 @@
-# python -m data_constructors.dev_crafter.batch_process
 import argparse
 import json
 import os
@@ -15,24 +14,37 @@ from inventory_items.items_validation.ai_schema_builder import (
     build_room_llm_schema_for_types,
 )
 
+class RateLimiter:
+    def __init__(self, requests_per_second=2, batch_size=100, idle_time=5):
+        self.delay = 1.0 / requests_per_second
+        self.batch_size = batch_size
+        self.idle_time = idle_time
+        self.request_count = 0
+        self.last_request_time = 0
+
+    def wait_if_needed(self):
+        # 1. Handle Request-per-second limit
+        elapsed = time.time() - self.last_request_time
+        if elapsed < self.delay:
+            time.sleep(self.delay - elapsed)
+
+        # 2. Handle Batch Idle/Cool-down
+        self.request_count += 1
+        if self.request_count % self.batch_size == 0:
+            print(f"   [RateLimit] Reached {self.batch_size} requests. Idling for {self.idle_time}s...")
+            time.sleep(self.idle_time)
+        
+        self.last_request_time = time.time()
 
 def save_incremental(output_path: Path, mode: str, data_list: list):
-    """
-    Overwrites the specific mode's JSON file with the current list of objects.
-    """
     file_path = output_path / f"{mode}s.json"
     with open(file_path, "w") as f:
         json.dump(data_list, f, indent=2)
     print(f"   [Disk] Updated {file_path}")
 
-
 def main():
-    # --- Setup & Manifest Loading ---
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--manifest", 
-        default="data_constructors/dev_crafter/manifest.yaml"
-    )
+    parser.add_argument("--manifest", default="data_constructors/dev_crafter/manifest.yaml")
     args = parser.parse_args()
 
     try:
@@ -44,13 +56,10 @@ def main():
 
     config = manifest.get("config", {})
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Corrected path logic to avoid the "Read-only" root error
     raw_path = config.get("export_dir", "./output").lstrip("/")
     output_path = Path.cwd() / raw_path / f"session_{timestamp}"
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # Storage for the runtime session
     results = {"item": [], "room": []}
 
     print(f"--- Initializing {config.get('provider')} client ---")
@@ -61,56 +70,61 @@ def main():
     )
     client = client_manager.get_client()
 
-# --- Processing Tasks ---
+    # --- Initialize Rate Limiter ---
+    limiter = RateLimiter(requests_per_second=2, batch_size=100, idle_time=5)
+
     for task in manifest.get("tasks", []):
         mode = task.get("mode", "item")
         types = task.get("types", [])
         prompts = task.get("prompts", [])
-        
         context_raw = task.get("context", "")
         context = " ".join(context_raw) if isinstance(context_raw, list) else context_raw
 
-        if mode == "room":
-            schema = build_room_llm_schema_for_types(types)
-        else:
-            schema = build_llm_schema_for_types(types)
+        schema = build_room_llm_schema_for_types(types) if mode == "room" else build_llm_schema_for_types(types)
+
+        # 2. Get the JSON schema dictionary from the class
+        schema_dict = schema.model_json_schema()
+
+        # 3. Print it beautifully with indentation
+        print(json.dumps(schema_dict, indent=4))
 
         for prompt in prompts:
+            # Apply Rate Limiting before the call
+            limiter.wait_if_needed()
+
             full_prompt = f"{context} {prompt}".strip()
-            
             type_list_str = ", ".join(types) if types else "empty"
+
             system_instruction = (
-                f"Generate 1 {mode} using types ONLY THE GIVEN TYPES: {type_list_str}."
+                f"Generate 1 {mode}. The 'type' field MUST contain ALL of these types exactly: {types}. "
+                f"Do not omit any. Do not add others."
                 if types else f"Generate 1 {mode}. Types empty."
             )
 
             try:
-                print(f"Generating {mode}: '{prompt[:50]}...'")
+                print(f"Generating {mode} ({limiter.request_count}): '{prompt[:50]}...'")
                 response = client.structured_output(
                     system=system_instruction,
                     user=full_prompt,
                     structure=schema,
                 )
 
-                # Convert response to dictionary
                 raw_data = response.model_dump()
-                
-                # Use the key we discovered (items or rooms)
-                # We use .get() and fallback to an empty list to avoid crashes
                 key = f"{mode}s" 
                 data_list = raw_data.get(key, [])
 
                 if data_list and isinstance(data_list, list):
-                    # Take the first object from the LLM's list and 
-                    # add it to our session's flat list
-                    results[mode].append(data_list[0])
-                    
-                    # Save the flattened list to disk
+                    item = data_list[0]
+                    # Force type field to always be the full list we requested
+                    if isinstance(item.get("type"), str):
+                        item["type"] = types
+                    elif isinstance(item.get("type"), list) and set(item["type"]) != set(types):
+                        item["type"] = types
+
+                    results[mode].append(item)
                     save_incremental(output_path, mode, results[mode])
                 else:
                     print(f"⚠️ Expected key '{key}' not found in LLM response.")
-
-                time.sleep(1)
 
             except Exception as e:
                 print(f"❌ Failed to generate '{prompt}': {e}")
@@ -118,7 +132,6 @@ def main():
 
     print(f"\n--- Batch Complete ---")
     print(f"Results saved in: {output_path}")
-
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,1769 @@
+[
+  {
+    "name": "Large Round Window",
+    "descriptions": [
+      "You face a broad circular pane set in a clean wall, smooth frame.",
+      "The glass looks out onto the world in a wide, even curve, and the edges feel quietly fitted into the space like they have always belonged there."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "You let the round window open to the outside, and fresh air spill through the wide frame.",
+      "off_description": "You close the round window, and the room settles back into stillness behind the glass.",
+      "on_sequence": "You turn the latch and ease the round window open, feeling the seal release as a breath of cooler air slips inward and the room brightens around the edges.",
+      "off_sequence": "You guide the round window shut, and the frame settles with a soft finality as the outside sound fades to a distant hush.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Small Framed Square Window",
+    "descriptions": [
+      "You have a neatly framed square window with clean lines, a pale finish."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "You have the window opened to let in a fresh drift of air and outside sound.",
+      "off_description": "You have the window shut, holding the room in a quiet seal.",
+      "on_sequence": "You lift the latch and ease the small square open. A mild current slips through the frame, carrying the faint scents and sounds of the street or sky beyond.",
+      "off_sequence": "You draw the window closed until it meets the frame with a soft, secure click. The room settles back into a hushed, sheltered stillness.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Round Viewport",
+    "descriptions": [
+      "You face a round pane set neatly into the wall, its clean frame making the room feel gently connected to the world beyond.",
+      "You see a smooth circular opening with clear glass, the kind that lets in a calm, quiet sliver of sky, weather, or distance.",
+      "You look through a modest round window that feels well-kept and familiar, with a simple finish that softens the edge between inside comfort and the outside view."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ]
+  },
+  {
+    "name": "Wide Rectangular Window",
+    "descriptions": [
+      "You face a broad, neat pane set flush into the wall.",
+      "You look through clear glass that opens the space to the weather outside, while the clean lines and quiet finish make the opening feel orderly and familiar."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ]
+  },
+  {
+    "name": "Window Walls",
+    "descriptions": [
+      "You face broad panes set into slim frames, filling the room with soft reflections.",
+      "You let the outside linger at the edge of the space, where glass, clean lines, and a calm hush make the room feel open without losing its sheltered warmth."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ]
+  },
+  {
+    "name": "Clear Skylight",
+    "descriptions": [
+      "You look up and meet a clean pane set flush into the ceiling.",
+      "You can see the sky plainly above, with the glass drawing expressive patches.",
+      "It sits overhead as a neat, fixed opening, bringing a quiet lift to the room without disturbing its calm lines."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": false,
+    "outdoors_type": [
+      "earth-weather"
+    ]
+  },
+  {
+    "name": "Colorful Skylight",
+    "descriptions": [
+      "You look up through a broad ceiling pane washed in soft colors, where daylight pools in gentle patches and the room below feels quietly lifted.",
+      "You see a fixed overhead opening framed in clean lines, its tinted glass catching the sky and spilling a calm, lived-in glow across the space."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": false,
+    "outdoors_type": [
+      "earth-weather"
+    ]
+  },
+  {
+    "name": "Compact Bookbinding Workbench",
+    "descriptions": [
+      "You keep a sturdy, waist-high table with a smooth, wear-softened top, its pale wood grain warmed by use and scattered with tiny cut marks.",
+      "You notice shallow drawers for tools, a little clamp rail, and a calm, lived-in finish that makes the whole piece feel ready for quiet afternoons of paper, thread, and glue.",
+      "You find it stays planted where it stands, giving you a reliable corner for folding, pressing, and stitching slim volumes by hand."
+    ],
+    "static": true,
+    "type": [
+      "bookmaking_implements"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Folding Book Press",
+    "descriptions": [
+      "You hold a compact press with smooth metal plates, rounded corners, and a reassuring heft, made for flattening fresh signatures and setting glued spines in a tidy stack.",
+      "You see a portable binding tool that opens like a small case, its screws, straps, and polished surfaces looking well kept from frequent use on a desk or kitchen table."
+    ],
+    "static": false,
+    "type": [
+      "bookmaking_implements",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The press is clamped shut, ready to hold pages in a firm, even squeeze.",
+      "off_description": "The press lies open and relaxed, with its plates separated for loading paper.",
+      "on_sequence": "You fold the plates together and turn the knobs until the stack settles under a steady, careful pressure.",
+      "off_sequence": "You loosen the clamps and let the plates part with a soft metallic shift, leaving room for the next bundle of pages.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Thermal Label Printer",
+    "descriptions": [
+      "You keep a compact desktop printer that hums softly and feeds out narrow labels in clean, dark lines.",
+      "Its plastic shell is smooth from use, with a tidy tray and a faint warmth that gathers around the paper slot."
+    ],
+    "static": false,
+    "type": [
+      "bookmaking_implements",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The printer wakes and begins feeding labels with a soft, steady whirr.",
+      "off_description": "The printer sits quiet, its tray still and its slot dark.",
+      "on_sequence": "You press the switch and the printer stirs under your fingers, a small motor taking hold as the feed rollers catch. A narrow strip slides forward with a dry rustle, and the machine settles into a low, regular hum.",
+      "off_sequence": "You switch it off and the hum thins away, the rollers easing to a stop. The last bit of motion fades from the paper path, leaving the shell cool and still.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Lounge Sofa",
+    "descriptions": [
+      "Low sofa with soft upholstery and rounded arms, the kind that holds the shape of your body after a long day.",
+      "Its fabric feels lived-in and gently brushed, with a cushiony give that invites you to linger under warm lamplight."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie back and the sofa catches you at once, its cushions giving way in a slow, familiar hush.",
+      "Your legs stretch out along the wide seat, and the worn fabric warms under your weight as the room quiets around you.",
+      "You settle deeper into the soft dip of the cushions, where the air feels still and the edges of the day blur loose.",
+      "You close your eyes and the sofa keeps you cradled, firm enough to rest on, soft enough to forget the hour."
+    ],
+    "narrative_sitting": [
+      "You sit down and the sofa answers with a muted sink, its cushions spreading around you in a gentle fold.",
+      "Your back meets the padded support, and the smooth upholstery feels calm and dependable beneath your hands.",
+      "You rest there with your shoulders easing downward, held by a seat that feels made for unhurried evenings.",
+      "You settle into the broad cushion and let the room come to you, one quiet breath at a time."
+    ],
+    "chance": 0.2,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.005,
+    "reward_options": [],
+    "narrative_search": [
+      "You reach over the sofa\u2019s broad arm and trace the soft give of the upholstery, feeling seams, cushions, and the faint dip where bodies have rested.",
+      "You search along the back and between the cushions, your fingers moving through the folds and edges where small things might slip out of sight.",
+      "You lean in close and run your hand under the front lip and along the sides, checking the tucked spaces the sofa quietly keeps."
+    ]
+  },
+  {
+    "name": "Lounge Outdoors Chair",
+    "descriptions": [
+      "You catch the easy give of woven straps over a powder-coated frame, the kind of chair that has spent many bright afternoons under open sky and still feels ready for one more. Its fabric is sun-faded in small, honest ways, and the whole shape invites you to slow down without asking for anything in return."
+    ],
+    "static": false,
+    "type": [
+      "seatable",
+      "sleepable_spot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie back into the broad sling and feel it cradle your weight at a gentle angle, with the air moving freely around your arms and face.",
+      "You settle into the chair and the woven surface holds you in a soft, slightly taut curve, enough support to let your body loosen.",
+      "You drift off with your legs stretched out and the frame cool beneath you, while the seat keeps its steady, quiet shape through the night."
+    ],
+    "narrative_sitting": [
+      "You sit down and the chair gives just enough, the straps yielding with a familiar spring before settling into place.",
+      "You let your shoulders drop and the seat takes your weight in an even, unhurried way, like it has been waiting outside all day.",
+      "You rest here with your feet planted and your back angled low, feeling the chair\u2019s open weave and firm frame keep you comfortably suspended above the ground."
+    ],
+    "chance": 0.2,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach along the arms and under the seat, tracing the spaces where small things can slip and settle.",
+      "You search the woven sling and the narrow joins of frame and fabric, moving your hand through the gaps with care.",
+      "You run your fingers beneath the chair and along its edges, checking the shaded pockets where little items might be tucked away."
+    ]
+  },
+  {
+    "name": "Mahogany king-size bed",
+    "descriptions": [
+      "You see a broad mahogany frame with a smooth, dark sheen, its edges softened by years of careful use and the hush of a lived-in room.",
+      "The bed feels substantial and steady, with polished wood that catches lamplight in warm, low streaks and invites you to slow down.",
+      "Its scale leaves plenty of room to stretch out, while the rich grain and tidy finish give the whole piece a calm, settled presence."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie back and the wide mattress takes your weight evenly, while the mahogany frame sits dark and solid at the edge of your view.",
+      "You sink into the bed\u2019s surface and feel the day drain out of your shoulders as the room quiets around the soft give of bedding.",
+      "You turn onto your side and the smooth wooden rail stays cool and steady beside you, grounding the stillness of the room."
+    ],
+    "narrative_sitting": [
+      "You sit on the edge and the mattress dips gently under you, the mahogany frame holding firm with an easy, familiar steadiness.",
+      "You rest for a moment and the bed gives just enough to feel welcoming without losing its shape.",
+      "You let your hands brush the polished wood as you sit, tracing the warm grain and the soft wear along the corners."
+    ],
+    "chance": 0.2,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach across the broad surface, feeling smooth bedding, sturdy wood, and the quiet edges where small things might slip out of sight.",
+      "You search along the frame and between the mattress and headboard, moving through folds, seams, and the dim spaces tucked beside the bed.",
+      "You sweep your hand beneath the low clearance, brushing dust and checking the hidden corners where forgotten objects tend to rest."
+    ]
+  },
+  {
+    "name": "Individual Bed",
+    "descriptions": [
+      "You face a simple bed with a stitched fabric headboard, pale sheets, and a neatly folded throw that softens the room's edges.",
+      "It feels lived-in and cared for, with smooth bedding, a steady frame, and the quiet neatness of a room kept in easy order."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie back and your weight settles into the mattress, which gives with a familiar, forgiving softness.",
+      "You stretch out beneath the sheets and feel the room narrow to the hush of fabric, spring, and your own slow breathing.",
+      "You sink into the bed's steady support, where the pillow takes the shape of your head and the day loosens at the edges."
+    ],
+    "narrative_sitting": [
+      "You sit on the edge of the bed and the mattress dips under you with a gentle, springy give.",
+      "You settle onto the bed and your feet find the floor while the quilt brushes your legs in a soft drag.",
+      "You perch there for a moment, feeling the frame stay solid beneath the quiet bounce of the mattress."
+    ],
+    "chance": 0.2,
+    "yield_pool": 1.0,
+    "yield_cost": 0.15,
+    "refresh_rate": 0.005,
+    "reward_options": [],
+    "narrative_search": [
+      "You run your hand along the neatly made surface, feeling the slight ridges of the weave and the tucked corners.",
+      "You reach across the bed's width, brushing over the blanket, the pillow, and the smooth stretch of sheet beneath.",
+      "You lean over the mattress and feel the soft give beneath your palm, along with the crisp edges where the bedding is folded cleanly."
+    ]
+  },
+  {
+    "name": "Low-Frame Individual Bed",
+    "descriptions": [
+      "You see a low bed with a simple frame and soft, lived-in bedding, the kind that sits close to the floor and makes a room feel settled and easy to move through.",
+      "Its finish is plain and gently worn, with edges softened by use and fabric that looks washed, folded, and ready at the end of a long day."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie down low to the floor, and the mattress takes your weight with a quiet, forgiving give.",
+      "You stretch out beneath the blankets, and the room feels hushed around you, held together by the soft rustle of fabric.",
+      "You settle into the narrow span of the bed, and the steady support beneath you eases the day out of your shoulders."
+    ],
+    "narrative_sitting": [
+      "You sit on the edge and feel the mattress dip just enough to steady you.",
+      "You perch on the low frame, your feet close to the floor, with the bedding bunching softly beneath you.",
+      "You rest on the bed for a moment, and the simple height makes the whole room feel calm and approachable."
+    ],
+    "chance": 0.25,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach across the mattress and over the pillows, feeling for anything that has slipped into the folds.",
+      "You run your hand along the low frame and beneath the bedding, searching the seams and tucked edges.",
+      "You lean over the bed and inspect the corners, where fabric slackens and small things can disappear."
+    ]
+  },
+  {
+    "name": "Loveseat Sofa",
+    "descriptions": [
+      "You sink into a low, fabric-covered seat with rounded arms and a softened back, the cushions giving way with a familiar, lived-in hush.",
+      "You notice neat stitching, a few gentle creases in the upholstery, and the kind of wear that comes from being used every day rather than displayed."
+    ],
+    "static": true,
+    "type": [
+      "seatable",
+      "sleepable_spot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie down across the loveseat and your body settles into the shallow dip between the cushions, as if the seat remembers your weight.",
+      "You stretch your legs along the narrow frame and let the padded arms cradle you on either side, close enough to feel enclosed.",
+      "You drift off with your cheek against the soft upholstery, breathing in the faint trace of fabric, dust, and a room that has been quietly lived in."
+    ],
+    "narrative_sitting": [
+      "You sit back and feel the cushions yield under you, taking the edge off the floor and the day at once.",
+      "You rest your hands on the smooth arms and notice the fabric\u2019s soft grain beneath your fingers.",
+      "You settle into the loveseat and look around from its low, steady height, held in place by its padded give."
+    ],
+    "chance": 0.30,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach between the cushions and along the seams, your fingers brushing the tucked-in edges and the narrow gaps where small things can slip.",
+      "You run your hand beneath the seat and around the back, feeling for any hidden hollow in the frame or folds of fabric.",
+      "You search across the upholstery and down into the creases, tracing the places where loose objects tend to vanish and wait."
+    ]
+  },
+  {
+    "name": "Upholstered Daybed with Built-in Drawers",
+    "descriptions": [
+      "You see a low, fabric-wrapped daybed with a soft, tailored frame and stitched seams that catch the light in gentle lines.",
+      "You notice smooth drawer fronts tucked beneath the cushion, their pulls worn to a muted sheen from frequent use.",
+      "You take in the calm, lived-in look of the piece, where clean edges meet a cushiony surface made for lingering or stretching out."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable",
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie down and the padded surface gives just enough, settling around your weight with a quiet, familiar give.",
+      "You stretch out on the daybed and the upholstery holds a soft warmth, while the frame stays steady beneath you.",
+      "You sleep here and the cushion levels out your body, with the enclosed drawers below adding a grounded, tucked-away feeling."
+    ],
+    "narrative_sitting": [
+      "You sit on the daybed and the cushion sinks slightly, returning in a slow, easy way.",
+      "You settle on the edge and the upholstered surface feels smooth through your clothes, the whole piece steady and reassuring.",
+      "You sit back against the padded form and the low height makes the room feel more relaxed around you."
+    ],
+    "chance": 0.65,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "comfort_object"
+      ],
+      [
+        "sheet"
+      ],
+      [
+        "cleaning_rag"
+      ]
+    ],
+    "narrative_search": [
+      "You reach along the seams and under the cushion, feeling for tucked-away edges and hidden gaps.",
+      "You search around the drawers and beneath the frame, where small objects might have slipped into the shadows.",
+      "You run your hand over the upholstery and along the base, tracing the narrow spaces where forgotten things can rest."
+    ]
+  },
+  {
+    "name": "Folding Bed",
+    "descriptions": [
+      "You see a compact bed with a padded frame that unfolds into a full resting place, its fabric worn smooth at the edges from daily use.",
+      "When it is folded away, it stands neatly against the wall like a quiet piece of practical furniture, always ready to open out again."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lie back and the mattress takes your weight in one even, familiar press.",
+      "The surface settles under you with a soft creak of hinges and fabric.",
+      "You stretch out and feel the room narrow to the hush of sheets, padding, and your own breathing.",
+      "Your body sinks just enough for comfort, then stays steady as if the bed knows the shape of rest."
+    ],
+    "narrative_sitting": [
+      "You sit down and the folded frame gives a little under you, firm but welcoming.",
+      "The padded surface feels lived-in and dependable beneath your weight.",
+      "You rest for a moment on the bed, letting the quiet sturdiness of it hold you.",
+      "Even sitting upright, you feel the mattress keep a gentle, springy support."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The bed unfolds into a full sleeping space.",
+      "off_description": "The bed folds into a compact resting form.",
+      "on_sequence": "You grip the edge and pull; the frame opens with a soft metallic click, the mattress swinging out until it settles flat and ready.",
+      "off_sequence": "You fold the sections back together, and the bed closes with a muted thump, tucking itself into a neat, space-saving shape.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Murphy Bed",
+    "descriptions": [
+      "A wall-mounted bed with a folded panel face and clean, lived-in edges, waiting to drop down into a quiet place to rest.",
+      "Its surface looks neatly kept, with everyday wear softened by steady use and careful upkeep."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You pull the bed down and lie back as the panel settles with a muted thump, the room rearranging itself around the narrow stretch of mattress.",
+      "You sink into the mattress and feel the firm frame hold steady beneath you, while the tucked-away room gives the air a tucked-in, private hush.",
+      "You sleep with the wall close at your side, the bedding carrying a faint clean warmth and the mattress cradling you in a compact, reassuring way."
+    ],
+    "narrative_sitting": [
+      "You sit on the lowered bed and feel the mattress dip gently beneath you, its edge firm enough to support your weight without sagging.",
+      "You perch on the mattress and let your shoulders relax, the frame steady against the wall and the room feeling quietly organized around you.",
+      "You sit there for a moment, legs hanging over the side, and the bed gives you a soft, springy place to pause."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The bed is lowered and ready for use.",
+      "off_description": "The bed is folded up against the wall.",
+      "on_sequence": "You release the latch and guide the panel down, the concealed bed unfolding into place with a controlled, familiar motion.",
+      "off_sequence": "You lift the panel back into the wall, and the room opens up as the mattress disappears behind the clean front of the cabinet.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Patio Chair",
+    "descriptions": [
+      "You sit down and feel the molded surface give with a familiar, lived-in ease, warm from the afternoon and faintly textured by a thousand small weatherings.",
+      "Your weight settles into a simple frame that has learned the shape of long conversations, iced drinks, and unhurried hours under a soft sky."
+    ],
+    "static": false,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You settle into the chair and feel its easy give hold you without fuss.",
+      "You sit back and let the frame take your weight, steady and unremarkable in the best way.",
+      "You rest here and the chair keeps you slightly lifted from the patio\u2019s rough warmth."
+    ],
+    "chance": 0.25,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.05,
+    "reward_options": [      [
+        "dust_bunnied_gleaning"
+      ]],
+    "narrative_search": [
+      "You reach along the chair\u2019s arms and run your hand over the seams, the edges, and the shallow grooves where dust and sunlight gather.",
+      "You lean in to inspect beneath the seat, feeling the cool underside and the dry little spaces where lost things might catch."
+    ]
+  },
+  {
+    "name": "Fake Leather 1-Seater Sofa",
+    "descriptions": [
+      "You sink into a compact seat wrapped in smooth, imitation hide that gives off a soft sheen under the room light.",
+      "The cushions hold you with a practiced softness, their seams neat, their edges worn just enough to feel lived in.",
+      "You feel the quiet hush of upholstered padding beneath you, with a glossy surface that catches stray reflections from nearby lamps."
+    ],
+    "static": true,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You sit low and centered, the seat yielding with a faint, padded sigh beneath your weight.",
+      "You settle into the narrow cushion, and the faux surface warms quickly against you without ever feeling cold to the touch.",
+      "You lean back and feel the sofa take you in gently, its smooth covering slipping a little under your clothes.",
+      "You rest on the single cushion, surrounded by tidy seams and the soft give of foam that has been used often enough to know your shape.",
+      "You shift once, then again, and the seat answers with a quiet creak hidden under the upholstery."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You run your hand along the side seam, feeling the tight stitching and the slight drag of the textured surface.",
+      "You reach between the cushion and the arm, tracing the narrow gap where small things might slip from sight.",
+      "You search under the front edge, following the line of the frame where shadows collect and stray bits can hide.",
+      "You press along the back and seat crease, feeling for anything caught in the folds of the padded cover."
+    ]
+  },
+  {
+    "name": "Velvet Upholstered 1-Seater Sofa",
+    "descriptions": [
+      "You face a low, one-person sofa wrapped in deep velvet, its surface catching the light in soft, shifting strokes.",
+      "You see a rounded seat with a gentle give, the fabric brushed smooth where hands and bodies have lingered over time.",
+      "You notice clean seams, cushioned arms, and a lived-in finish that makes the piece feel quietly cared for.",
+      "You catch the faint sheen of the upholstery, dark at the folds and brighter along the raised nap."
+    ],
+    "static": false,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You sink into the velvet and feel the seat close around you with a soft, supportive hush.",
+      "You settle back against the cushioned frame, and the fabric warms where your weight rests.",
+      "You sit low and slightly tucked in, with the sofa holding you in a calm, easy way.",
+      "You feel the velvet change under you as you shift, smooth in one direction and brushed in the other."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You run your hand along the velvet and trace the nap as it bends and catches the light.",
+      "You reach over the seat and feel the shallow dips where use has softened the cushion.",
+      "You search the seam lines and tucked edges, brushing the upholstery where small things might slip and hide.",
+      "You move along the arms and back, feeling the neat joins, the padding beneath, and the quiet wear of daily use."
+    ]
+  },
+  {
+    "name": "Upholstered Ottoman",
+    "descriptions": [
+      "You see a low, fabric-wrapped block that softens the room with its rounded edges and quiet, lived-in presence.",
+      "Its surface wears the faint smoothing of daily use, as if hands, sleeves, and resting feet have all passed over it without haste.",
+      "It settles into the room with a muted, familiar ease, finished in a tone that catches window light without glare."
+    ],
+    "static": false,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You sit and feel the cushion give in a slow, even way beneath you.",
+      "You rest on its padded top, and the room seems to lower its voice around you.",
+      "You settle onto the upholstered surface, where the fabric holds a soft warmth from the air and your own weight."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach across the upholstered top, feeling the slight nap of the fabric under your fingertips.",
+      "You search along the seams and edges, where the stitching pulls the material into neat, practical folds.",
+      "You run your hand over the cushioned surface, tracing the gentle give and the tidy line where upholstery meets frame."
+    ]
+  },
+  {
+    "name": "Folding Garden Chair",
+    "descriptions": [
+      "You sit low in a weathered canvas seat, the metal frame cool through the fabric and steady beneath you.",
+      "Its folded hinges and sun-faded trim feel like they belong on a balcony, patio, or porch that has seen many slow afternoons.",
+      "The chair settles with a faint creak, offering a simple place to pause while the day drifts by."
+    ],
+    "static": false,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You lower yourself into the taut fabric and feel it give just enough to catch you.",
+      "The thin metal arms sit lightly at your sides, cool at first, then warming where your hands rest.",
+      "You hear a soft creak in the joints, like the chair is settling into your weight and the afternoon around you.",
+      "You sit with your knees angled and your shoulders easing down, as if the day has finally found a chair of its own."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The folding garden chair stands open and ready to hold your weight.",
+      "off_description": "The folding garden chair lies shut into a slim, easy-to-carry form.",
+      "on_sequence": "You unfold the frame and it clicks into place with a small, certain snap, the fabric pulling taut as the seat opens under your hands.",
+      "off_sequence": "You fold the frame inward and the seat collapses neatly, the metal bars drawing together with a soft, tidy clack.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Folding Director's Chair",
+    "descriptions": [
+      "You rest in a black canvas chair with pale wooden arms, the kind that clicks open with practiced ease and folds flat when you need the floor back.",
+      "Its squared frame feels tidy and familiar, with a seat that settles you into an unhurried corner of the room."
+    ],
+    "static": false,
+    "type": [
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sitting": [
+      "You lower yourself into the taut canvas and feel the frame take your weight with a dry, confident creak.",
+      "Your knees angle forward under the wooden arms, and the chair holds you in a neat pocket of stillness.",
+      "You sit a little higher than expected, watching the room from a calm, upright perch."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The chair stands open and ready, its canvas seat stretched between the rails.",
+      "off_description": "The chair folds flat against itself, easy to tuck aside.",
+      "on_sequence": "You pull the frame apart and the joints snap into place with a light, familiar clack, until the seat stretches taut beneath you.",
+      "off_sequence": "You lift and fold the frame inward, and the canvas slackens as the chair settles into a slim, carried shape.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Vanity Desk",
+    "descriptions": [
+      "You face a pale desk with a broad mirror and soft, rounded edges, its surface marked by the faint trace of daily routines and scattered small habits.",
+      "You work around smooth drawers, brushed handles, and the little shadows gathered where bottles, pins, and forgotten trinkets tend to wander.",
+      "You sense a lived-in polish here: a place for quick touch-ups, loose notes, and the quiet clutter that collects beside a mirror."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.85,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.08,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "comfort_object"
+      ]
+    ],
+    "narrative_search": [
+      "You run your fingers along the desk\u2019s edges and into the narrow gaps where the drawers meet the frame.",
+      "You lean toward the mirror and trace the small ledge beneath it, where tiny objects like to disappear from sight.",
+      "You reach behind and under the surface, feeling for the hidden corners that hold whatever has slipped away from view."
+    ]
+  },
+  {
+    "name": "Clothes Closet",
+    "descriptions": [
+      "You face a tall wardrobe of painted wood, its doors slightly uneven from years of opening and closing. The handles are smooth with use, and the seam where the doors meet holds a thin, shadowed gap that feels worth a careful reach.",
+      "You stand before a closet that carries the soft wear of daily life: faint scuffs near the base, a mellow finish on the panels, and a quiet scent of fabric and old cedar lingering at the edges.",
+      "You trace the narrow spaces around the closet door frame, where a dropped button or slipped note might have tucked itself away and waited there in stillness."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.45,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.08,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You run your hand along the closet\u2019s edge and feel the slight ridge where wood meets wall.",
+      "You peer into the dim line beneath the bottom panel, searching the soft shadow near the floor.",
+      "You ease the door open a little and look into the narrow seam, where small things can slip out of sight."
+    ]
+  },
+  {
+    "name": "Wall-Mounted Kitchen Cupboards",
+    "descriptions": [
+      "You face pale painted doors that hover above the counter, their rounded edges softened by years of fingertips and drifting steam.",
+      "You reach along the seam where the cabinet bottoms meet the wall, feeling the faint warmth of old cooking air and the slight grit tucked into the corners.",
+      "You trace the little gaps around the handles and door frames, where a lost packet edge or a crumb might have slipped into shadow.",
+      "You tilt your attention up to the quiet stretch beneath the cupboards, where everyday things are tucked away behind smooth panels and a soft clack of hinges."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.85,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable",
+        "seed"
+      ]
+    ],
+    "narrative_search": [
+      "You run your gaze along the lower edge of the cupboards, following the thin shadow where wall and wood meet.",
+      "You slide your hand under the overhang, brushing past the hidden lip beneath the doors.",
+      "You peer into the narrow spaces around the hinges and trim, where small things can vanish from sight.",
+      "You reach toward the high panels and feel for the tiny recesses that collect dust, crumbs, and forgotten odds and ends."
+    ]
+  },
+  {
+    "name": "Kitchen Base Cupboards",
+    "descriptions": [
+      "You run your fingers along the painted doors set low beneath the counter, where warm wood grain peeks through the soft wear at the edges.",
+      "You crouch beside the lower cabinets and notice the quiet dimness under the counter, with familiar nicks, scuffed corners, and a faint trace of everyday use.",
+      "You lean in close to the base cupboards, where pull handles are smoothed by touch and the space near the toe-kick holds a hush of tucked-away things."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.7,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.08,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "dust_bunnied_gleaning",
+        "consumable"
+      ]
+    ],
+    "narrative_search": [
+      "You kneel beside the base cupboards and let your gaze travel along the line where doors meet the floor.",
+      "You reach under the counter\u2019s edge, feeling the shallow recesses and worn seams hidden in shadow.",
+      "You trace the lower cabinet fronts, searching the narrow gaps and the quiet space around the hinges."
+    ]
+  },
+  {
+    "name": "Low-profile livingroom cabinet",
+    "descriptions": [
+      "You kneel beside the long, squat cabinet, its smooth laminate surface warm from the room\u2019s light and faintly marked by the everyday brush of keys, mugs, and hurried hands.",
+      "You trace the narrow gap where the doors meet the frame, feeling the slight give of well-fitted wood and the dust-soft edge tucked out of sight below the living room line.",
+      "You lean close to the base and follow the shallow shadow running under it, where quiet little things can slide away and stay hidden until you think to look."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.85,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning",
+        "consumable"
+      ],
+      [
+        "dust_bunnied_gleaning",
+        "seed"
+      ]
+    ],
+    "narrative_search": [
+      "You bend toward the cabinet\u2019s low face and let your gaze travel along the seam where the doors settle into the frame.",
+      "You run your hand across the top edge and down to the shaded space beneath, where the floor disappears into a thin, private gap.",
+      "You crouch and peer along the baseboard line, following the tucked-away crease that catches small forgotten things.",
+      "You slide your fingers into the narrow space between cabinet and wall, feeling for any soft catch or hidden corner.",
+      "You kneel in front of the cabinet and search the dim strip under its bottom edge, where dust gathers and loose items can rest unseen."
+    ]
+  },
+  {
+    "name": "Freshwater Pond",
+    "descriptions": [
+      "You stand at the edge of a still pond tucked into the landscaped grounds, its surface catching the pale wash of the sky and the soft blur of nearby greenery.",
+      "You see a shallow, clear body of water bordered by reeds and trimmed grass, with the faint smell of wet earth and fallen leaves hanging close to it."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean in and take a careful sip, tasting cool, clean water with a faint green edge from the pond\u2019s living skin.",
+      "You cup your hand to the water and drink, feeling the chill of it settle across your mouth and throat."
+    ],
+    "narrative_wash_self": [
+      "You splash the pond water over your hands and face, and the cold rinse leaves your skin bright and damp.",
+      "You kneel at the edge and wash off the day\u2019s grit, the water sliding over your fingers in soft, refreshing sheets."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    },
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You peer into the pond\u2019s shallows, watching pale stems, drifting bits of leaf, and the wavering reflection on the surface.",
+      "You reach along the edge and feel for what lies beneath the waterline, the mud giving softly under your touch."
+    ]
+  },
+  {
+    "name": "Tiered garden fountain",
+    "descriptions": [
+      "You stand beside a weather-smoothed garden fountain, its pale stone tiers beaded with clear water that slips from one basin to the next in a steady hush.",
+      "You catch the cool scent of wet masonry and moss as the fountain keeps its slow rhythm, bright with reflected light and softened by use."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean in and sip from the lower basin, where the water tastes cool and clean, with a faint mineral edge from the stone.",
+      "You cup your hand under the falling stream and drink, the water crisp on your tongue and refreshingly cold as it leaves a damp shine on your skin.",
+      "You drink from the fountain\u2019s pooled edge, and the water feels bright and plain, easing the dry ache at the back of your throat."
+    ],
+    "narrative_wash_self": [
+      "You wet your hands under the falling water and rinse them clean, the chill making your fingers tighten for a moment.",
+      "You splash water across your face and forearms, and the stone-cool rinse clears away heat and dust.",
+      "You draw water from the basin and wipe it over your skin, leaving you freshened by the steady, clean flow."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.3,
+      "energy": 0.1
+    },
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You run your fingers along the damp rim and peer between the stacked basins, tracing the seams where water gathers and spills.",
+      "You reach around the fountain\u2019s base, feeling for a hidden ledge beneath the spray and the worn stone lip.",
+      "You search along the tiers and the shadowed lower bowl, listening to the water and the soft tick of droplets against the surface."
+    ]
+  },
+  {
+  "name": "Stone birdbath bowl",
+  "descriptions": [
+    "You stand over a shallow stone basin with a softened rim, its pale surface worn smooth by weather and careful use.",
+    "Rainwater gathers in the bowl and holds a dim reflection. Occasionally, a tiny water strider ripples the surface, or a small spec of pollen drifts across the still water."
+  ],
+  "static": true,
+  "type": [
+    "water_point"
+  ],
+  "stackable": false,
+  "quantity": 1,
+  "max_stack_size": null,
+  "narrative_drinking": [
+    "You lean in and sip from the water pooled in the stone. It starts cool, but leaves a sharp, metallic aftertaste that makes your throat tighten and your stomach instantly churn with unease."
+  ],
+  "narrative_wash_self": [
+    "You dip your hands into the basin to rinse them, but as the water dries, it leaves your skin feeling strangely tight and tingling with an uncomfortable, stinging numbness."
+  ],
+  "stats_edit": {
+    "fullness": -0.2,
+    "hydration": 0.05,
+    "energy": -0.5
+  },
+  "chance": 0.0,
+  "yield_pool": 1.0,
+  "yield_cost": 0.0,
+  "refresh_rate": 0.0,
+  "reward_options": [
+    [
+      "dust_bunnied_gleaning"
+    ]
+  ],
+  "narrative_search": [
+    "You run your fingers along the lip of the stone bowl and feel the weathered edge, watching a few tiny insects scatter across the water sitting still below your hand."
+  ]
+  },
+  {
+    "name": "Kitchen Sink",
+    "descriptions": [
+      "You stand before a white enamel basin set into a pale countertop, its chrome tap catching the room\u2019s warm light.",
+      "A shallow bowl of metal and porcelain waits by the wall, marked with faint water spots and the soft wear of daily use."
+    ],
+    "static": true,
+    "type": [
+      "water_point",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean in and sip from the running tap, tasting cool water with a faint trace of pipe metal.",
+      "You cup your hand under the stream and drink, the water sliding crisp and plain over your tongue."
+    ],
+    "narrative_wash_self": [
+      "You splash water over your face, and the coolness wakes your skin at once.",
+      "You rinse your hands in the basin, feeling the water sheet away dust and stickiness.",
+      "You wet a cloth at the tap and wipe your arms, the chill leaving your skin refreshed."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    },
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You reach into the empty basin and run your hand along the curved bottom.",
+      "You feel beneath the rim and around the faucet, where droplets and old grime collect.",
+      "You check the corners of the sink and the ledge behind the tap."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "Water runs from the tap into the basin.",
+      "off_description": "The tap sits still and dry above the sink.",
+      "on_sequence": "You turn the handle, and a clear stream answers with a soft rush as the basin begins to ring with water.",
+      "off_sequence": "You ease the handle back, and the stream thins to a drip before the sink falls quiet.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Enamel bathroom sink",
+    "descriptions": [
+      "You see a compact white basin set into a worn vanity, its rounded edges softened by years of hand soap and splashed water.",
+      "The chrome faucet catches the light in a small, tidy glint, and the sink sits ready with a faint ring of drying droplets around the drain."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean in and sip from the cold faucet stream, the water tasting clean and a little metallic as it taps against your tongue.",
+      "You cup your hand under the running tap and drink quickly, the cool water sliding down with a plain, refreshing edge."
+    ],
+    "narrative_wash_self": [
+      "You splash water over your face, and the sink echoes with soft, bright taps as the coolness wakes your skin.",
+      "You wet your hands and rinse your wrists at the basin, letting the water run thin and clear over your fingers.",
+      "You press damp palms to your cheeks, then rinse them again, the porcelain holding the quiet sound of flowing water."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.3,
+      "energy": 0.0
+    },
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [
+      [
+        "water_point"
+      ]
+    ],
+    "narrative_search": [
+      "You reach over the rim and feel along the basin edge, tracing the smooth porcelain and the damp seam where it meets the counter.",
+      "You peer into the sink and follow the curve toward the drain, where stray hairs and water marks gather in the shallow bowl.",
+      "You run your hand beneath the faucet and across the basin, checking the slick surface and the little shelf of soap residue by the tap."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "Water flows from the faucet into the basin.",
+      "off_description": "The faucet is still and the basin sits dry between uses.",
+      "on_sequence": "You turn the handle and hear the first thin rush, then the stream steadies and gathers in the white bowl below.",
+      "off_sequence": "You shut the tap and the stream thins to a drip, leaving only a faint wet shine on the porcelain.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Freestanding porcelain bathtub",
+    "descriptions": [
+      "You face a smooth white tub set alone on its feet, its glazed sides catching the soft room light like a quiet shell.",
+      "Its rounded rim and faint seams give it a lived-in, well-kept look, as if it belongs beside warm towels, tiled floors, and an unhurried evening."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean to the rim and sip the still water, cool and faintly mineral on your tongue.",
+      "The water rests clean and heavy in the basin, and when you drink, it tastes plain, fresh, and softly chilled."
+    ],
+    "narrative_wash_self": [
+      "You dip your hands and sweep the water over your forearms, feeling the porcelain basin hold the warmth around you.",
+      "You sink into the tub\u2019s edge and rinse your skin, the water sliding in quiet sheets across your shoulders and down your back."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.3,
+      "energy": 0.1
+    },
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You run your hand along the curved rim and peer into the empty basin, tracing the smooth glaze and the drain at the bottom.",
+      "You reach across the wide interior, checking the ledge and corners where water, soap, or a small forgotten thing might have settled."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The tub fills and holds water.",
+      "off_description": "The tub sits empty and still.",
+      "on_sequence": "You hear the rush of water as the basin slowly wakes, the porcelain echoing with a soft hollow sound.",
+      "off_sequence": "You drain the basin and the last shallow echo fades, leaving the porcelain quiet again.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Weathered Garden Spigot",
+    "descriptions": [
+      "You stand before a wall-mounted metal fitting with a faded handle and a short stub of pipe, its paint softened by sun, rain, and years of use.",
+      "A faint mineral bloom rings the base, and the surrounding siding shows the small scuffs and drips of ordinary days."
+    ],
+    "static": true,
+    "type": [
+      "water_point",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You lean in and drink directly from the spigot\u2019s thin stream, the water tasting cool and plain with a trace of metal.",
+      "The water hits your tongue in quick, bright sips, and you feel the dry edge in your mouth ease at once.",
+      "You catch a mouthful from the running fixture, your throat cooling as the water slips down clean and steady."
+    ],
+    "narrative_wash_self": [
+      "You wet your hands under the stream and rub the day\u2019s dust from your skin.",
+      "You cup water over your wrists and face, letting the cool splash rinse away heat and grime.",
+      "You turn under the running spigot and wash your forearms, the water beading on your skin before dripping to the ground."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.3,
+      "energy": 0.0
+    },
+    "chance": 1.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [
+    ],
+    "narrative_search": [
+      "You reach around the pipe and feel the worn handle, the wall cool where shade has settled in.",
+      "You run your fingers along the short metal outlet and the damp ring below it, searching the small space where hose and hand would meet.",
+      "You trace the fixture\u2019s edges, the surface slightly rough with age and mineral residue."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The spigot runs with a steady, narrow stream.",
+      "off_description": "The spigot sits dry and still.",
+      "on_sequence": "You turn the handle and feel the hidden pressure wake in the pipe before a clear stream spills out.",
+      "off_sequence": "You twist the handle back and the stream thins, then stops, leaving only a few cold drops on the metal.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Kitchen Stove",
+    "descriptions": [
+      "A freestanding stove with a smoothed enamel face and dark grates, warmed by the soft wear of daily use and the faint sheen of wiped-clean surfaces.",
+      "It settles into the room like a dependable fixture, its knobs and edges showing the small marks of years of ordinary meals and careful hands."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the stove and let your gaze trace the cool enamel, the rounded corners, and the line where the grates lift above the top.",
+      "You reach toward the controls and feel the slight resistance of well-used knobs beneath your fingers.",
+      "You take in the quiet bulk of it, fixed in place and ready, with a faint trace of warmth lingering in its surface.",
+      "You angle yourself beside it and notice the practical layout, the hard top, the solid face, and the small signs of repeated attention."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You reach across the stove\u2019s surface, feeling the cool enamel, the raised grates, and the shallow seams where panels meet.",
+      "You search along the front and sides, brushing past knobs, edges, and the steady solid shape that anchors the space.",
+      "You move your hand over the top and around the controls, taking in the worn texture of a surface meant to be used every day."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The stove sits lit and ready, carrying a low warmth and a faint hum of activity.",
+      "off_description": "The stove rests quiet and still, its surface cool and its burners dark.",
+      "on_sequence": "You turn the knob and feel the small click settle into place, then a soft stir of warmth gathers beneath the grates as the stove wakes.",
+      "off_sequence": "You turn the knob back and the stove eases down, the warmth withdrawing until the surface goes still again.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Countertop Microwave Oven",
+    "descriptions": [
+      "You keep a compact white box of humming heat on the counter, its glass door reflecting the room in a dim little square.",
+      "You see a familiar kitchen appliance with a smudged keypad, a tiny window, and the soft scuffs of years spent beside mugs and bread boxes."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand close to the appliance and catch the faint cool sheen of its enamel casing.",
+      "You rest your hand near the door and feel the hard, sealed face of it waiting under the kitchen light.",
+      "You angle yourself toward the keypad, taking in the worn buttons and the shallow shadow inside the window."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You reach across the front panel and trace the edge of the door seam.",
+      "You peer through the small glass window and search the dark interior.",
+      "You move along the buttons and the handle, feeling the smooth spots where hands have passed before."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "It hums with a low, steady presence and gives off a faint glow behind the door.",
+      "off_description": "It sits quiet and dark, with only the bare reflection of the room on its face.",
+      "on_sequence": "You press the controls and feel the soft click beneath your fingertip as the machine wakes, a low hum gathering behind the closed door.",
+      "off_sequence": "You press to end it and the hum falls away, leaving the casing still and the window blank again.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Programmable Slow Cooker",
+    "descriptions": [
+      "You see a countertop vessel with a matte body, a snug glass lid, and a small digital face that glows softly in the dim room.",
+      "Its rounded ceramic insert and brushed trim give it the look of something that belongs beside stacked mugs, folded towels, and an overworked wall outlet."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the slow cooker and let the quiet hum of the room gather around its smooth sides.",
+      "You rest your hand near the lid and feel the faint coolness of glass above the heavier body below.",
+      "You lean in over the control panel, reading the tiny lit markings as they wait for a choice.",
+      "You trace the curve of the ceramic insert with your eyes, noticing how neatly it sits inside the shell."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You reach across the lid handle and feel the solid shape of the appliance anchored in place.",
+      "You move your hands along the side wall and around the front panel, searching the seams and edges.",
+      "You peer beneath the rim and along the cord\u2019s line, taking in the places where it meets the counter.",
+      "You work slowly around the controls and housing, feeling for any hidden latch or pocket."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The cooker glows at the display and holds a steady, patient warmth.",
+      "off_description": "The cooker sits dark and still, its screen blank and its body cool.",
+      "on_sequence": "You press the button and the display wakes with a small glow, then the body begins to answer with a gentle heat that gathers beneath your hand.",
+      "off_sequence": "You tap the control and the light fades, the warmth easing away until the cooker settles back into silence.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Countertop Convection Toaster Oven",
+    "descriptions": [
+      "You have a compact black-and-steel appliance with a glass door, its edges softened by fingerprints and the warm hush of everyday use.",
+      "You see a tidy machine that sits close to the wall, lit by a small amber glow and marked by the quiet wear of routine meals."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You face a low, boxy appliance that feels settled into the counter like it belongs there.",
+      "You reach toward a cool glass door and a row of simple controls, all smooth plastic and brushed metal.",
+      "You stand before a small chamber that holds a faint trace of warmth and old, familiar kitchen air."
+    ],
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You run your hand along the outer casing and feel the slight give of a door seam and the clean line of the frame.",
+      "You peer through the glass and into a narrow interior outlined by metal racks and shadow.",
+      "You reach around the sides and above the appliance, tracing vents, knobs, and the hard edges of a well-used counter fixture."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The oven glows with a soft interior light and a steady hum.",
+      "off_description": "The oven rests silent and dark, its glass front reflecting the room.",
+      "on_sequence": "You turn the control and the appliance answers with a low click. A warm light blooms behind the glass, and a gentle hum settles into the air as the metal body begins to hold heat.",
+      "off_sequence": "You turn the control back and the hum fades at once. The light goes dim, the warmth withdraws behind the door, and the appliance returns to a quiet, dark stillness.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Mixer Bowl",
+    "descriptions": [
+      "You have a wide, weighty bowl with a smooth brushed finish and a soft sheen that catches the kitchen light in a gentle ring.",
+      "Its rounded sides feel familiar and steady, with a faint chill at the rim and the quiet promise of a place where things can gather without fuss."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "narrative_prepare": [
+      "You set your hands on the cool curve of the bowl and feel its solid balance right away.",
+      "You notice the even lip, the broad opening, and the calm way it settles into place before anything begins.",
+      "You draw close to the polished interior and find it waiting, plain and dependable, under the light."
+    ]
+  },
+  {
+    "name": "Knife Set",
+    "descriptions": [
+      "You see a tidy block of matched blades, their handles resting in a smooth, familiar grip and their edges catching the room\u2019s soft light.",
+      "The set looks well kept and ready for daily use, with clean lines, balanced heft, and the quiet polish of something that lives near the heart of the kitchen."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You reach toward the block and feel the cool, grounded weight of the set holding its place.",
+      "Your hand settles around a handle, and the smooth finish answers with an easy, familiar grip.",
+      "You lift one free and notice the clean edge and balanced feel before you do anything else."
+    ]
+  },
+  {
+    "name": "Ceramic Mortar and Pestle",
+    "descriptions": [
+      "A smooth ceramic bowl rests with a matching hand-ground club, its glazed surface catching a soft room glow and its rim wearing the faint traces of honest use.",
+      "You see a tidy, weighty set in pale ceramic, the kind that sits comfortably on a counter and looks at home beside everyday jars and warm wood.",
+      "The mortar feels cool and solid in your hands, while the pestle has a rounded, familiar heft that invites careful, unhurried work."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You lift the ceramic bowl and feel its cool, smooth curve settle into your palms.",
+      "You wrap your hand around the pestle and notice its balanced weight and quiet finish.",
+      "You set the two pieces near your work area, where their clean lines and worn edges feel immediately familiar."
+    ]
+  },
+  {
+    "name": "Large Shallow Ceramic Planter",
+    "descriptions": [
+      "You see a broad ceramic basin with a low rim and a smooth, hand-glazed finish that catches the room light in soft, muted glints.",
+      "You notice fine surface variations in the glaze, with a lived-in calm that makes it feel at home beside a sunny window or a well-loved shelf.",
+      "You picture it holding roots in a generous spread, its weight and balance giving it a steady, familiar presence."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [],
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Tall ceramic planter",
+    "descriptions": [
+      "You see a tall ceramic planter with a soft glaze and a smooth, hand-finished rim, its surface catching the room light in a quiet sheen.",
+      "You notice faint irregularities in the clay and a few tiny scuffs near the base, like it has spent its days beside a sunlit window or a well-loved shelf.",
+      "You get the sense of a steady, tasteful home accent\u2014simple, grounded, and made to hold something green without asking for attention."
+    ],
+    "static": true,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [],
+    "narrative_search": [
+      "You run your hand along the cool ceramic wall and trace the gentle curve of the rim.",
+      "You lean in close and inspect the glazed surface, noticing its subtle shine and the small marks of everyday use.",
+      "You reach around the planter\u2019s tall body, feeling the weight and stillness of the clay beneath your fingers."
+    ],
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Fabric pot",
+    "descriptions": [
+      "You see a soft-sided planter stitched from dark woven cloth, its rim held open by a thin reinforcing band and its sides faintly creased from use.",
+      "You notice a muted, homey container that looks like it belongs beside a bright window or a row of kitchen herbs, with a breathable body and a tidy, practical shape."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "chance": 1.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.0,
+    "refresh_rate": 0.0,
+    "reward_options": [
+      [
+        "seed"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ],
+    "narrative_search": [
+      "You run your hand along the textured fabric, feeling the soft give of the sides and the firmer ring that keeps the opening true.",
+      "You peer into the pot\u2019s dark lining, where the folds gather into a neat hollow and the cloth carries a faint trace of soil and water.",
+      "You lift the rim and let it settle back, noticing how the woven surface flexes and holds its shape in the light."
+    ],
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Terracotta pot",
+    "descriptions": [
+      "You see a small clay pot with a warm, sun-baked finish, its rim softened by tiny scuffs and a faint chalky bloom from old water. It sits steady and plain, carrying the quiet look of something that belongs by a bright window, beside a book, or on a shelf that catches the afternoon light.",
+      "You run your hand near the pot and notice the dry, grainy texture of the fired clay, with subtle rings and color shifts that hint at many seasons of use. It feels familiar and unhurried, like a little home for roots waiting in a corner of an ordinary room."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "chance": 1.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "seed"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "seed",
+        "consumable"
+      ]
+    ],
+    "narrative_search": [
+      "You reach over the rim and feel the dry inner curve of the clay.",
+      "You tip your hand toward the pot, tracing its worn edge and powdery surface.",
+      "You lean in close to the soil line and catch the faint scent of earth held in fired clay."
+    ],
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Weathered Concrete Planter",
+    "descriptions": [
+      "You see a squat concrete planter with softened corners and a pale, chalky face, its surface marked by tiny air holes and faint rain stains.",
+      "You run your fingers along the cool rim and feel a sturdy, grounded weight, the kind that settles easily beside a doorway or under a window.",
+      "You notice a few hairline cracks and a dusting of old soil at the base, giving it the lived-in look of something that has held herbs, stems, and small daily routines.",
+      "You take in its muted gray tone, worn smooth in places, as if it has spent years in the same quiet spot, gathering light from the room and the street beyond."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "chance": 1.0,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.05,
+    "reward_options": [
+      [
+        "seed"
+      ],
+      [
+        "seed",
+        "consumable"
+      ],
+      [
+        "planter_pot"
+      ]
+    ],
+    "narrative_search": [
+      "You lean over the planter and trace the rough edge where soil has dried into the stone.",
+      "You peer into the pot, following the shallow basin down to the dark, grainy earth inside.",
+      "You slide your hand around the outer wall and feel the cool, pitted texture under your palm."
+    ],
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Desk-side Berry Bush Hollow",
+    "descriptions": [
+      "You notice a small, shadowed hollow tucked where the pot meets the desk leg, lined with dry leaf litter and the faint residue of spilled coffee.",
+      "You reach into the narrow gap and feel around the roots, where a few overlooked berries have rolled out of sight among the dust and cable shadows.",
+      "You part the leaves near the base and find a hidden pocket that seems made for collecting whatever drops from above and is never quite swept away."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.28,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.08,
+    "narrative_search": [
+      "You bend close and slip your hand between the planter and the furniture leg, brushing aside dry stems and a few crumbs.",
+      "You probe the dim little opening near the soil, feeling for the cool shape of something forgotten beneath the leaves.",
+      "You tease apart the tangled growth at the base and reach into the sheltered gap where fruit likes to hide."
+    ],
+    "reward_options": [
+      [
+        "consumable"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "dust_bunnied_gleaning"
+      ]
+    ]
+  },
+  {
+    "name": "Rosemary Bush",
+    "descriptions": [
+      "You lean close to a rosemary bush trained against the patio wall, its needle-like sprigs brushing your sleeve and releasing a resinous, kitchen-bright scent.",
+      "You peer into the woody tangle where the stems fork and knot, and you notice a few tiny dried leaves caught in the shaded pockets beneath the growth.",
+      "You part the outer sprigs and search the hidden hollows near the base, where a lost pin, pebble, or twist tie might have slipped out of sight."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.45,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.08,
+    "narrative_search": [
+      "You slide your fingers through the stiff, fragrant needles and feel for anything tucked deep in the branches.",
+      "You bend the top growth aside and scan the dim little pocket where stems crowd together near the wood.",
+      "You reach into the sheltered gap at the shrub's base, careful of the scratchy leaves, and fish around for something forgotten."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "seed",
+        "consumable"
+      ]
+    ]
+  },
+  {
+    "name": "Jasmine Trained Bush",
+    "descriptions": [
+      "You see a neatly clipped jasmine bush tucked into a glazed ceramic planter, its waxy leaves glossed by soft indoor light and its white star-shaped flowers carrying a faint, sweet scent.",
+      "You find a narrow pocket between the wall and the planter rim where fallen petals and a forgotten pebble have gathered in quiet layers.",
+      "You notice the branches are gently woven to leave little hidden spaces near the base, just enough to catch a lost earring or a slipped coin.",
+      "You feel the bush has been tended with patient hands, its stems leaning in a way that makes the smallest hollows seem intentional and inviting."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.28,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You part the jasmine stems and peer into the shaded base.",
+      "You slide your fingers along the planter edge and reach into the little gap.",
+      "You bend close and search beneath the woven branches for anything that slipped out of sight."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "dust_bunnied_gleaning", "meditation_aid"
+      ]
+    ]
+  }
+]

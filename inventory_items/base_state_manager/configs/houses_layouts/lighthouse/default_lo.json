@@ -1,0 +1,31 @@
+{
+  "aliases": {
+    "Lighthouse Stairs": "Stairway",
+
+    "Storage Room": "Storage Room",
+
+    "Sleeping Nook": "Living Quarters",
+    "Lighthouse Kitchen": "Kitchen",
+
+    "Service Room": "Service Room",
+
+    "Lantern Room": "Lantern Room",
+    "Fresnel Lens": "Fresnel Lens",
+    "Lighthouse Balcony": "Balcony"
+  },
+  "initial_room": "Balcony",
+  "connections":[
+    ["Stairway","Service Room"],
+    ["Stairway","Storage Room"],
+    ["Stairway","Lantern Room"],
+    ["Stairway","Living Quarters"],
+
+    ["Lantern Room","Fresnel Lens"]
+  ],
+  "groups": {
+    "bottom": ["Storage Room"],
+    "mid": ["Living Quarters", "Kitchen"],
+    "top": ["Service Room", "Balcony", "Lantern Room"]
+  }
+
+}

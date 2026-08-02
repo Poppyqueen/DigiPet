@@ -33,8 +33,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.8)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("lettuce head"), "base_harvest_yield": 7}, # Notice, it is calling our item store and getting these harvestables, 'lettuce head', make sure that they exist if adding new plant types, or create new items, they need to be 'consumable' type, no specific harvest type yet, not sure if it is needed. 
-            {"item": cc.get_item("Lettuce Seeds"), "base_harvest_yield": 2}
+            {"item": cc.get_item("lettuce Head"), "base_harvest_yield": 7}, # Notice, it is calling our item store and getting these harvestables, 'lettuce head', make sure that they exist if adding new plant types, or create new items, they need to be 'consumable' type, no specific harvest type yet, not sure if it is needed. 
+            {"item": cc.get_item("Lettuce Seed"), "base_harvest_yield": 2}
         ],
         "life_cycle": "annual",
         "water_depletion_rate_per_tick": 0.002
@@ -48,8 +48,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.7)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("carrot"), "base_harvest_yield": 10},
-            {"item": cc.get_item("Carrot Seeds"), "base_harvest_yield": 4}
+            {"item": cc.get_item("Carrot"), "base_harvest_yield": 10},
+            {"item": cc.get_item("Carrot Seed"), "base_harvest_yield": 4}
         ],
         "life_cycle": "biennial" 
     },
@@ -61,8 +61,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.1, 0.45)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("cactus pad"), "base_harvest_yield": 7},
-            {"item": cc.get_item("Cactus Seeds"), "base_harvest_yield": 3}
+            {"item": cc.get_item("Cactus Pad"), "base_harvest_yield": 7},
+            {"item": cc.get_item("Cactus Seed"), "base_harvest_yield": 3}
 
         ],
         "life_cycle": "perennial",
@@ -81,8 +81,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.75)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("ripe tomato"), "base_harvest_yield": 6},
-            {"item": cc.get_item("Tomato Seeds"), "base_harvest_yield": 2}
+            {"item": cc.get_item("Ripe Tomato"), "base_harvest_yield": 6},
+            {"item": cc.get_item("Tomato Seed"), "base_harvest_yield": 2}
         ],
         "life_cycle": "annual"
     },
@@ -94,7 +94,7 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.4, 0.6)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("potato (tuber)"), "base_harvest_yield": 8},
+            {"item": cc.get_item("Potato"), "base_harvest_yield": 8},
         ],
         "life_cycle": "annual"
     },
@@ -108,8 +108,8 @@ plant_types = {
             {"name": "harvestable", "duration_ticks": 0, "optimal_water_level_range": (0.5, 0.7)}
         ],
         "harvest_items": [
-            {"item": cc.get_item("strawberry"), "base_harvest_yield": 6},
-            {"item": cc.get_item("Strawberry Seeds"), "base_harvest_yield": 2}
+            {"item": cc.get_item("Strawberry"), "base_harvest_yield": 6},
+            {"item": cc.get_item("Strawberry Seed"), "base_harvest_yield": 2}
         ],
         "life_cycle": "perennial"
     },
@@ -127,7 +127,7 @@ plant_types = {
     "harvest_items": [
         {"item": cc.get_item("Rose Stem"), "base_harvest_yield": 3},
         {"item": cc.get_item("Cut Rose Head"), "base_harvest_yield": 1},
-        {"item": cc.get_item("rose seed"), "base_harvest_yield": 1},
+        {"item": cc.get_item("Rose Seed"), "base_harvest_yield": 1},
         {"item": cc.get_item("Edible Rose Petals"), "base_harvest_yield": 6}
 
     ],
@@ -143,7 +143,7 @@ plant_types = {
     ],
     "harvest_items": [
         {"item": cc.get_item("Cut Sunflower Head"), "base_harvest_yield": 1},
-        {"item": cc.get_item("sunflower seed"), "base_harvest_yield": 3}
+        {"item": cc.get_item("Sunflower Seed"), "base_harvest_yield": 3}
     ],
     "life_cycle": "annual"
 },
@@ -158,7 +158,7 @@ plant_types = {
     ],
     "harvest_items": [
         {"item": cc.get_item("Fresh Mint Sprig"), "base_harvest_yield": 8},
-        {"item": cc.get_item("mint seed"), "base_harvest_yield": 2}
+        {"item": cc.get_item("Mint Seed"), "base_harvest_yield": 2}
     ],
     "life_cycle": "perennial"
 },
@@ -171,7 +171,7 @@ plant_types = {
     ],
     "harvest_items": [
         {"item": cc.get_item("Basil Leaf Bunch"), "base_harvest_yield": 7},
-        {"item": cc.get_item("basil seed"), "base_harvest_yield": 2}
+        {"item": cc.get_item("Basil Seed"), "base_harvest_yield": 2}
     ],
     "life_cycle": "annual"
 }

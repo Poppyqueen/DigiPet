@@ -1,23 +1,14 @@
 {
-    "base_state": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/prime_house.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
+    "Default Home":{
+        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/Default_Home/default_lo.json",
+        "items_config": "inventory_items/base_state_manager/configs/houses_layouts/Default_Home/default_items_lo.json"
     },
-    "dev_room": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/base_dev_room.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/dev_room_config.json"
+    "Compact Home":{
+        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_lo.json",
+        "items_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_items_lo.json"
     },
-    "no_lab": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/no_lab_house.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/prime_house_config.json"
-    },
-    "lighthouse": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/lighthouse_details.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/lighthouse_config.json"
-    },
-    "walled_garden":{
-        "b_house_path": "inventory_items/base_state_manager/houses_data/wall_garden.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/wall_garden_config.json",
-        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/wall_garden_lo.json"
+    "Access Home":{
+        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/access_Home/default_lo.json",
+        "items_config": "inventory_items/base_state_manager/configs/houses_layouts/access_Home/default_items_lo.json"
     }
 }

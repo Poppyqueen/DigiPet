@@ -1,0 +1,13 @@
+{
+  "aliases": {
+    "compact garden": "Garden",
+    "comfy kitchen": "Kitchen",
+    "compact bedroom": "Bedroom",
+    "comfy bedroom": "Bathroom",
+    "compact living room": "Living Room"
+  },
+  "initial_room": "Living Room",
+  "groups": {
+    "default": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"]
+  }
+}

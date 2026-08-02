@@ -1,0 +1,122 @@
+.constants:
+  - &coastal_style "Style: A coastal biome, small rural town environment. Hiking area."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. For the 'effects' key use second-person present tense.
+  - &items_base_prompt >
+      THEME = "cozy 21th century contemporary" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes.
+
+
+config:
+  provider: "openai"
+  model: "gpt-5.4-mini"
+  export_dir: "inventory_items/items_provider/items_data/gadgets"
+tasks:
+
+
+  # - mode: "item"
+  #   types: ["tv", "store_entry", "toggleable"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 160 to 320."
+  #   prompts:
+  #     - "Portable Retro TV"
+  #     - "Vintage Console TV"
+  #     - "Flat Screen TV"
+
+
+  # - mode: "item"
+  #   types: ["meditation_aid", "comfort_object"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 25 to 75."
+  #   prompts:
+  #     - "Teddy Bear"
+  #     - "Small soft blue blanket"
+  #     - "Small deep purple blanket"
+  #     - "Mahogany Sitting Cat Figurine"
+
+  # - mode: "item"
+  #   types: ["store_entry", "toggleable", "meditation_aid"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 45 to 110."
+  #   prompts:
+  #     - "Oil diffuser ($120)"
+  #     - "Yoga Mat"
+
+
+  - mode: "item"
+    types: ["store_entry", "toggleable", "maze_interface"]
+    context: 
+      - *writing_style_prompt
+      - *items_base_prompt
+      - "Store entry fields: All the items should be buy_and_sell, prices ranging from 80 to 220."
+    prompts:
+      - "Retro Maze Arcade, static"
+      - "Portable Retro Game Emulator"
+
+  - mode: "item"
+    types: ["toggleable", "maze_interface"]
+    context: 
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Portable gadget, minimal maze games interface, free to choose any maze at all times"
+      - "Ground embedded, protruding rock, which shines mystically with a white-blue light around etchings all around it."
+      - "Portable Victorian, mechanical gadget with a single maze type that one can randomize or restart."
+
+  # - mode: "item"
+  #   types: ["toggleable", "store_entry"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 60 to 140."
+  #   prompts:
+  #     - "Minimalist floor lamp"
+  #     - "desk retro lamp"
+  #     - "wall-mounted outdoors lantern"
+  #     - "lava lamp, yellow"
+  #     - "lava lamp, red"
+  #     - "lava lamp, green"
+  #     - "lava lamp, purple"
+
+
+  # - mode: "item"
+  #   types: ["store_entry", "toggleable", "culinary_equipment"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 80 to 220."
+  #   prompts:
+  #     - "Blender"
+  #     - "Electric Oven"
+
+
+  # - mode: "item"
+  #   types: ["store_entry", "culinary_equipment"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 80 to 220."
+  #   prompts:
+  #     - "Salad serving set"
+  #     - "whisk"
+
+
+  # - mode: "item"
+  #   types: ["store_entry", "toggleable"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_only, prices ranging from 340 to 560."
+  #   prompts:
+  #     - "Desk Computer"
+  #     - "Laptop"
+  #     - "Cellphone"
+      

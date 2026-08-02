@@ -1,0 +1,204 @@
+[
+  {
+    "name": "comfy garden",
+    "base_description": "You stand in a compact open-air garden enclosed by low masonry walls and a shallow trellis edge, with a modest canopy of overhead framing that keeps the space intimate rather than expansive. The ground is a broad, level bed of rich earth divided into neat planting plots, each section clearly holding its own space within the room\u2019s small footprint. A single opening breaks the perimeter at one side, allowing easy passage while preserving the sheltered, inward-facing layout.",
+    "movement_group": "default",
+    "is_connectoid": false,
+    "connections": null,
+    "descriptions": {
+      "early_morning": [
+        "You find the earth cool and compact, its surface held in clean, soft contours that make the small enclosure feel quietly ordered.",
+        "You feel the low walls sitting close around you, their sturdy mass lending the garden a hushed, sheltered weight."
+      ],
+      "morning": [
+        "You see the soil settled into tidy plots, each edge crisp against the next and giving the room a calm, measured geometry.",
+        "You sense the enclosed scale immediately, as the modest boundaries keep the space close and comfortable against the body."
+      ],
+      "noon": [
+        "You notice the ground presenting a warm, dry grain, with each planting bed reading as a distinct pocket of dark texture.",
+        "You feel the cozy architecture in the tight perimeter and low rise of the walls, which make the room seem gently held together."
+      ],
+      "afternoon": [
+        "You observe the soil taking on a fuller, denser look, its surface slightly ridged where the plots divide the ground into small intervals.",
+        "You feel the compact room remain pleasantly contained, its short walls and narrow opening shaping a quiet, domestic ease."
+      ],
+      "late_afternoon": [
+        "You see the earth deepen in tone and the plot lines sharpen, giving the floor a carefully tended, tactile presence.",
+        "You sense the enclosing masonry holding warmth and weight, making the garden feel snug without ever becoming cramped."
+      ],
+      "night": [
+        "You find the garden\u2019s surfaces subdued and close-textured, with the soil and wall faces settling into a soft, contained darkness.",
+        "You feel the small enclosure press gently inward, its low boundaries and level ground creating a restful, protected stillness."
+      ],
+      "late_night": [
+        "You notice the plots reduced to quiet shapes in the dark, the earth beneath them feeling heavy, resting, and unchanged.",
+        "You sense the room at its most intimate, with the cozy architecture of the low walls and enclosed bed making the space feel securely folded in on itself."
+      ]
+    },
+    "image": "garden",
+    "music": "comfort_fluff",
+    "room_types": [
+      "open_soil_zone",
+      "outdoors_area"
+    ],
+    "outdoors_type": [
+      "earth-weather",
+      "earth-astro-views",
+      "xeno-canto"
+    ],
+    "plot_number": 6
+  },
+  {
+    "name": "comfy kitchen",
+    "base_description": "You stand in a compact, enclosure-like kitchen whose proportions keep everything within easy reach. The room is bounded by solid walls and a low ceiling that presses gently over a hard, level floor, with a single opening leading out to the rest of the home. The architecture is intimate and practical, shaped to hold heat, motion, and domestic concentration in a confined volume.",
+    "movement_group": "default",
+    "is_connectoid": false,
+    "connections": null,
+    "descriptions": {
+      "early_morning": [
+        "You feel the small room settle into itself, its surfaces holding a quiet, compact firmness.",
+        "The low ceiling seems close and protective, making the space feel carefully gathered rather than cramped.",
+        "The floor and walls carry a subdued, stable weight that keeps the room anchored and calm."
+      ],
+      "morning": [
+        "You sense the enclosure as tidy and balanced, with every surface kept visually near and legible.",
+        "The walls feel smooth and dependable, while the floor reads as solid and slightly cool beneath the room's warmth.",
+        "The modest ceiling height gives the space a sheltered, human scale."
+      ],
+      "noon": [
+        "You experience the room at its clearest, where the geometry remains simple and reassuringly contained.",
+        "The surfaces hold a firm, clean edge, and the compact volume feels deliberately shaped for daily use.",
+        "The architecture keeps a quiet heaviness, but never loses its welcoming, close-set character."
+      ],
+      "afternoon": [
+        "You feel the room's cozy structure deepen, as the walls and ceiling seem to cradle the interior space.",
+        "The floor presents a stable, grounded plane, while the boundaries stay intimate and unbroken.",
+        "The whole room reads as sturdy and modest, with a soft sense of enclosure that stays constant."
+      ],
+      "late_afternoon": [
+        "You sense the small volume growing even more intimate, its hard surfaces seeming to gather into a calm, close arrangement.",
+        "The ceiling feels slightly lower in mood than in the earlier hours, emphasizing shelter and domestic quiet.",
+        "The room retains a gentle architectural weight that makes the space feel settled and lived-in."
+      ],
+      "night": [
+        "You feel the room compress into a hushed, protective enclosure, with every boundary holding close around you.",
+        "The walls and floor seem denser in the stillness, their materials keeping the room quietly self-contained.",
+        "The low ceiling gives the space a tucked-away feeling, softening its practical geometry into calm shelter."
+      ],
+      "late_night": [
+        "You experience the kitchen as a small, steadfast chamber, its compactness becoming more pronounced in the silence.",
+        "The surfaces feel cool, firm, and attentive, as if the room is folded inward on itself.",
+        "The architecture remains cozy in its restraint, with the enclosed volume offering a sense of quiet refuge."
+      ]
+    },
+    "image": "kitchen",
+    "music": "interiority_spaces",
+    "room_types": []
+  },
+  {
+    "name": "comfy bedroom",
+    "base_description": "You occupy a modest, enclosed chamber scaled to a single resting place, with a low ceiling that presses gently above you and thick walls that hold the room in a close, protective embrace. The floor is planar and continuous, formed of smooth material that reads as solid and stable underfoot, while the boundaries are cleanly joined and the openings are limited to a single controlled threshold. You sense a compact geometry built for privacy and rest, with every surface kept intimate and contained.",
+    "movement_group": "default",
+    "is_connectoid": false,
+    "connections": null,
+    "descriptions": {
+      "early_morning": [
+        "You stand within surfaces that feel softly held and quietly contained, their edges rounded by careful use and the steady patience of time. The low ceiling seems to gather the room inward, keeping the space snug and hushed around you. The floor carries a gentle firmness, warm in its restraint and calm in its weight."
+      ],
+      "morning": [
+        "You notice the room\u2019s surfaces resting in an easy, lived-in stillness, with the walls enclosing you in a soft, sheltering shell. The compact scale makes every boundary feel near and familiar rather than confining. The floor remains smooth and dependable, giving the chamber a settled, comforting steadiness."
+      ],
+      "noon": [
+        "You experience the room as a small, well-held volume, its tight proportions giving the surfaces a reassuring closeness. The walls and ceiling feel quietly dense, shaped to preserve warmth and privacy within their measured frame. The floor stays level and calm, its material presence adding to the room\u2019s settled, domestic weight."
+      ],
+      "afternoon": [
+        "You find the chamber retaining its close, cozy geometry, with the walls drawing the space inward in a gentle embrace. The ceiling feels modest and near, lending the room a protected, personal scale. The floor keeps its steady, grounded texture, making the whole place feel quietly supportive."
+      ],
+      "late_afternoon": [
+        "You stand in a room whose surfaces seem increasingly intimate as the day goes on, the enclosed walls and low ceiling deepening its sense of refuge. The materials hold their shape with a soft, enduring firmness, neither harsh nor grand. The floor remains quietly solid, anchoring the small chamber with reassuring calm."
+      ],
+      "night": [
+        "You perceive the bedroom as a compact shelter of enclosing surfaces, its walls close and its ceiling low enough to feel protective rather than cramped. The room\u2019s geometry becomes especially hushed at this hour, with every boundary seeming softened by stillness. The floor feels steady and cool in a gentle way, preserving the room\u2019s calm, enclosed character."
+      ],
+      "late_night": [
+        "You rest within a small, intimate volume where the walls, ceiling, and floor seem to gather inward and hold you quietly in place. The architecture feels at its most tender and contained, with the room\u2019s compact proportions emphasizing privacy and warmth. The floor remains a calm, reliable plane beneath you, and the whole chamber feels softly sealed against the world beyond."
+      ]
+    },
+    "image": "bedroom",
+    "music": "comfort_fluff",
+    "room_types": []
+  },
+  {
+    "name": "comfy bathroom",
+    "base_description": "You stand within a compact, enclosed chamber scaled for intimate use, with a low ceiling close above and walls that hold the room in a firm, private square. The boundaries are made of smooth, dense material with clean vertical edges, while the floor is a hard, water-resistant surface laid level from wall to wall. Openings are minimal and controlled, with a single door-sized aperture admitting passage and the fittings kept tight against the perimeter, giving the whole space a tucked-in, sheltered feel.",
+    "movement_group": "default",
+    "is_connectoid": false,
+    "connections": null,
+    "descriptions": {
+      "early_morning": [
+        "You feel the room as snug and exact, with every surface pressed into neat right angles that make the small volume seem carefully held together. The walls carry a soft, lived-in smoothness, and the floor answers with a cool, firm touch beneath your feet. The low ceiling keeps the space pleasantly close, turning the enclosure into something quietly protective."
+      ],
+      "morning": [
+        "You see the compact geometry of the room settle into a calm, orderly shape, where the surfaces read as clean and gently worn rather than stark. The enclosed walls and level floor keep the space feeling stable and intimate, never letting the scale wander beyond a cozy reach. The materials hold a mild coolness that makes the chamber feel fresh, quiet, and contained."
+      ],
+      "noon": [
+        "You find the room sharply defined in its smallness, with hard edges and smooth planes that make the enclosure feel precise and well-kept. The ceiling remains low enough to press the volume into a comforting nest-like shape, while the floor stays firm and cool underfoot. The whole room feels settled into itself, as if it is made to hold warmth without ever becoming cramped."
+      ],
+      "afternoon": [
+        "You notice the surfaces taking on a gentle density, the walls and floor forming a neat shell that keeps the space intimate and composed. The room\u2019s modest height and tight boundaries make the interior feel close, but not crowded, like a carefully fitted room meant for quiet retreat. The materials remain smooth and cool, giving the chamber a calm, tactile steadiness."
+      ],
+      "late_afternoon": [
+        "You feel the room deepen into a softly enclosed pocket, where the square boundaries and low ceiling gather the space inward. The wall surfaces appear subtly worn, yet still clean and dense, and the floor keeps its level, reassuring firmness. The whole chamber holds a cozy pressure, as though it is wrapped around you rather than merely surrounding you."
+      ],
+      "night": [
+        "You experience the room as a small, private cavity of solid walls and a close ceiling, its geometry becoming more intimate in the quiet. The surfaces seem to draw together visually, making the enclosure feel even more sheltered and compact. The floor stays cool and unyielding, while the walls preserve a calm, smooth enclosure that feels restful and secure."
+      ],
+      "late_night": [
+        "You find the chamber at its most hushed, with the compact volume and hard boundaries settling into a still, protective shape. The low ceiling and tight perimeter make the room feel tucked away, almost nest-like in its modest scale. The cool, firm surfaces keep the space feeling contained and orderly, with a quiet coziness rooted in its careful architecture."
+      ]
+    },
+    "image": "bathroom",
+    "music": "interiority_spaces",
+    "room_types": []
+  },
+  {
+    "name": "comfy living room",
+    "base_description": "You stand within a modest domestic chamber whose scale is intimate rather than grand, a contained volume with a low, sheltering ceiling and boundaries that hold close around you. The walls are finished in warm, substantial material and rise with smooth, enclosing planes, while the floor is laid in a firm, level surface that gives the room a settled, grounded presence. Openings are set in a measured way along the perimeter, creating clear access without breaking the room\u2019s protective geometry.",
+    "movement_group": "default",
+    "is_connectoid": false,
+    "connections": null,
+    "descriptions": {
+      "early_morning": [
+        "You stand in a softly compact chamber where the surfaces hold their shape with calm restraint, and the low ceiling keeps the space feeling held and near. The walls carry a gentle solidity, their finish reading as smooth and reassuring rather than ornate. The floor rests firmly beneath you, giving the room a warm, settled weight.",
+        "You remain inside a close, sheltering volume whose proportions feel deliberately human, with every boundary drawn to encourage ease. The enclosing surfaces appear even and stable, with a quiet material density that softens the room\u2019s edges. The ground plane feels level and dependable, like a steady base that invites you to linger."
+      ],
+      "morning": [
+        "You stand within an intimate room whose compact proportions make the enclosure feel friendly rather than confined. The walls present a calm, finished surface, and their thickness gives the space a reassuring sense of protection. Underfoot, the floor feels firm and quietly accommodating, reinforcing the room\u2019s cozy architecture.",
+        "You remain in a modest chamber where the ceiling sits low enough to gather the space around you without crowding it. The materials of wall and floor hold a gentle warmth, their surfaces appearing smooth, solid, and well-kept. The room\u2019s geometry stays clear and simple, with openings placed in a practical, inviting rhythm."
+      ],
+      "noon": [
+        "You stand in a neatly bounded domestic space whose small scale gives every surface a sense of nearness. The walls look stable and complete, their material body lending the room a calm thickness. The floor stretches as a flat, dependable plane, keeping the chamber grounded and serene.",
+        "You remain inside a cozy volume with a measured ceiling and contained walls that make the room feel protected from the outside world. The surfaces read as solid and softly finished, neither harsh nor fragile. The room\u2019s compact proportions stay constant, and the interior feels quietly held together by its own structure."
+      ],
+      "afternoon": [
+        "You stand within a warm, enclosed chamber where the proportions stay intimate and the architecture keeps close to you. The walls retain a smooth, settled appearance, and their weight gives the room a sense of quiet permanence. Beneath you, the floor remains even and solid, supporting the room\u2019s gentle, domestic scale.",
+        "You remain in a small, sheltering space whose low ceiling and enclosing boundaries create an immediate sense of comfort. The materials feel substantial without being severe, and the room\u2019s surfaces hold a soft, lived-in stillness. Openings are set with restraint, allowing the chamber to keep its cozy, coherent shape."
+      ],
+      "late_afternoon": [
+        "You stand in a compact room whose enclosing walls and low ceiling gather the space into a calm, protective shell. The surfaces appear steady and well-defined, their material presence giving the chamber a reassuring density. The floor stays level and grounded, making the room feel settled and complete.",
+        "You remain inside a modest domestic volume where the architecture feels intentionally close and quietly embracing. The walls keep their smooth, solid finish, and the ceiling sits low enough to preserve the room\u2019s intimate character. The ground plane holds firm beneath you, reinforcing the room\u2019s steady, cozy architecture."
+      ],
+      "night": [
+        "You stand within a snug chamber whose small scale and enclosing geometry make the room feel especially close around you. The walls present a firm, quiet mass, and the low ceiling presses the space into a protected, restful shape. The floor remains solid and even, giving the room a restful weight.",
+        "You remain in a sheltering interior where the walls and ceiling work together to create a contained, comforting volume. The surfaces feel calm and material, with a soft density that keeps the room from feeling empty. The floor holds steady beneath you, completing the room\u2019s composed, domestic enclosure."
+      ],
+      "late_night": [
+        "You stand in a hushed, compact room whose boundaries feel thick and dependable, drawing the space inward into a private shelter. The walls keep their smooth, substantial presence, and the low ceiling gives the chamber a quiet closeness. The floor lies firm and unmoving, lending the room a grounded, resting stillness.",
+        "You remain inside a small enclosed volume where the architecture stays simple, warm, and protective. The surfaces read as solid and carefully held, with no wasted height or excess breadth. The room\u2019s geometry feels intimate to the point of stillness, as if the chamber itself is settling into sleep."
+      ]
+    },
+    "image": "living_room",
+    "music": "interiority_spaces",
+    "room_types": []
+  }
+]

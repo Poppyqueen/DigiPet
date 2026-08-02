@@ -1,0 +1,13 @@
+{
+  "aliases": {
+    "Private Garden": "Garden",
+    "Micro Kitchen": "Kitchen",
+    "Elemental Bedroom": "Bedroom",
+    "Dotted Blue Bathroom": "Bathroom",
+    "Quiet Living Room": "Living Room"
+  },
+  "initial_room": "Living Room",
+  "groups": {
+    "default": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"]
+  }
+}

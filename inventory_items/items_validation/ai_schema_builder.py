@@ -27,6 +27,7 @@ from typing import List, Dict, Any, Type
 from pydantic import BaseModel, Field, ConfigDict, create_model
 
 from .contract_mixin import ContractMixin
+from pydantic_core import PydanticUndefined
 
 
 # =============================================================================
@@ -78,9 +79,16 @@ def build_llm_schema(
                 continue
             seen.add(field_name)
 
+            # Preserve default or default_factory so OpenAI doesn't demand these fields
+            kwargs = {"description": field_info.description}
+            if field_info.default is not PydanticUndefined:
+                kwargs["default"] = field_info.default
+            elif field_info.default_factory is not None:
+                kwargs["default_factory"] = field_info.default_factory
+
             fields[field_name] = (
                 field_info.annotation,
-                Field(description=field_info.description),
+                Field(**kwargs),
             )
 
     # Narrow the 'type' field to only the requested types.

@@ -1,0 +1,60 @@
+{
+    "Garden":[
+        "Large Shallow Ceramic Planter",
+        "Rosemary Bush",
+        "Lounge Outdoors Chair",
+        "Patio Chair",
+        "Weathered Garden Spigot",
+        "Tomato Seed[x20]",
+        "Rose Seed[x10]",
+        "Basil Seed[x25]",
+        "Cactus Seed[x5]",
+        "Wall-Mounted Outdoors Lantern"
+    ],
+    "Kitchen":[
+        "Kitchen Base Cupboards",
+        "Kitchen Sink",
+        "Kitchen Stove",
+        "Knife Set",
+        "Blender",
+        "Instant Coffee Granules",
+        "Green Tea Leaves (Sencha)",
+        "Pasteurized Apple Juice (Bottled)",
+        "Pineapple Chunk[x12]",
+        "Pineapple Chunk[x12]",
+        "Vegetable Cooking Oil",
+        "raw potatoes (bag, 2 kg)[x4]",
+        "Uncooked Dried Pasta[x20]",
+        "Granulated Sugar[x12]",
+        "Table salt (packet)[x50]",
+        "Sealed Canned Tomatoes[x24]",
+        "Raw Carrots (bunch)[x4]",
+        "Carton of Raw Eggs[x2]",
+        "smoked salmon (vacuum-packed)",
+        "Shepherd's Pie",
+        "Blueberry Pancake Stack with Maple Syrup",
+        "Beef jerky stick[x15]",
+        "Canned Tuna in Water (185 g)[x24]",
+        "Vinegar (250 ml)[x3]",
+        "Tube of Tomato Paste[x12]",
+        "Black Peppercorn Jar[x4]",
+        "Fresh Herb Bundle (Basil & Parsley)[x10]"
+    ],
+    "Bedroom":[
+        "Upholstered Daybed with Built-in Drawers",
+        "Low-Frame Individual Bed",
+        "Colorful Skylight",
+        "Teddy Bear",
+        "Purple Lava Lamp"
+    ],
+    "Bathroom":[
+        "Enamel bathroom sink"
+    ],
+    "Living Room":[
+        "Round Viewport",
+        "Velvet Upholstered 1-Seater Sofa",
+        "Lounge Sofa",
+        "Laptop",
+        "Minimalist Floor Lamp"
+    ]
+}

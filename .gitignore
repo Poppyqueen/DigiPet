@@ -26,6 +26,7 @@ data_archive/
 *sky_logs/
 
 *local_data/
+*archives/
 
 *repomix-output.xml
 *repomix.config.json

@@ -172,10 +172,10 @@ class BaseRoom(BaseModel):
         default=[],
         description=f"Empty, one or more room type tags. From available Literals, or empty."
     )
-    items: List[Any] = Field(
-        default_factory=list,
-        description="Always an empty list. Items currently present in this room."
-    )
+    # items: Optional[List] = Field(
+    #     default=[],
+    #     description="Always an empty list. Items currently present in this room."
+    # )
 
     @model_validator(mode="after")
     def check_room_types_are_known(self) -> "BaseRoom":

@@ -1,0 +1,39 @@
+{
+    "Garden":[
+        "Lounge Outdoors Chair",
+        "Lounge Outdoors Chair",
+        "Freshwater Pond",
+        "Terracotta pot",
+        "Terracotta pot",
+        "Jasmine Trained Bush",
+        "Yoga Mat"
+
+    ],
+    "Kitchen":[
+        "Round Viewport",
+        "Folding Garden Chair",
+        "Knife Set",
+        "Countertop Convection Toaster Oven",
+        "Kitchen Sink"
+
+    ],
+    "Bedroom":[
+        "Mahogany king-size bed",
+        "Colorful Skylight",
+        "Vanity Desk",
+        "Small Deep Purple Blanket",
+        "Minimalist Floor Lamp",
+        "Laptop"
+    ],
+    "Bathroom":[
+        "Small Framed Square Window",
+        "Enamel bathroom sink"
+    ],
+    "Living Room":[
+        "Window Walls",
+        "Lounge Sofa",
+        "Vintage Console TV",
+        "Small Soft Blue Blanket",
+        "Retro Maze Arcade"
+    ]
+}

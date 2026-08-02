@@ -1,0 +1,798 @@
+[
+  {
+    "name": "Potato Seed Tuber",
+    "descriptions": [
+      "A small, freshly dug potato tuber with pale skin and a few ready-to-wake eyes, still carrying a trace of earth in its dimples.",
+      "It feels like something lifted from a backyard row at the edge of evening: ordinary, sturdy, and waiting for a shallow bed of soil."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 64,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.5,
+      "hydration": -0.5,
+      "energy": 0.5
+    },
+    "effects": [
+      "You bite into the raw tuber and get a firm, starchy crunch that tastes faintly of damp earth.",
+      "You chew through the pale flesh and it turns chalky on your tongue, leaving your mouth dry and your jaw working.",
+      "You swallow a bland, heavy mouthful that sits uncomfortably, like something meant for the garden rather than the table."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "potato"
+  },
+  {
+    "name": "Lettuce Seed",
+    "descriptions": [
+      "A tiny pale seed, kept dry and clean, with the plain promise of a leaf crop tucked inside.",
+      "Individual and freshly sorted, it sits like a small smooth bead meant for a bright kitchen windowsill or a patch of turned soil."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "seed",
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": -0.5,
+      "energy": -0.5
+    },
+    "effects": [
+      "You crunch the dry seed between your teeth, and it tastes faintly dusty and grassy.",
+      "It leaves your mouth oddly parched, with a hard little hull that refuses to feel like food.",
+      "A brief bitter note lingers, as if you bit into something meant for soil rather than supper."
+    ],
+    "store_entry_data": {
+      "price": 35.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "lettuce"
+  },
+  {
+    "name": "Carrot Seed",
+    "descriptions": [
+      "A tiny, papery seed with a muted tan shell, held out as a single careful offering.",
+      "Freshly sorted and cleaned, it looks like something you could tuck into dark soil on an ordinary afternoon by a bright kitchen window."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.0,
+      "energy": 0.0
+    },
+    "effects": [
+      "You roll the small seed between your fingers, and it feels dry, light, and faintly ridged.",
+      "You bite down and get a brittle little crackle, with no real flavor beyond dust and a trace of earth.",
+      "You chew it once more and it turns to a grainy paste that clings to your tongue.",
+      "You swallow, and it leaves you with almost nothing at all, just a scratch of husk and a faint, earthy aftertaste."
+    ],
+    "store_entry_data": {
+      "price": 35.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "carrot"
+  },
+  {
+    "name": "Cactus Seed",
+    "descriptions": [
+      "A single pale seed with a papery shell and a desert-born promise, tucked in as if waiting for a windowsill and a patient hand.",
+      "Small enough to lose in a palm, it carries the quiet sharpness of something made for bright glass, dry soil, and slow days."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 50,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": -0.5,
+      "energy": -0.5
+    },
+    "effects": [
+      "You crunch into a dry, brittle speck that tastes faintly dusty and unfinished.",
+      "Your mouth catches on the papery shell, leaving a chalky sting on your tongue.",
+      "It offers almost nothing to swallow, only a scratchy, parched aftertaste that lingers.",
+      "The tiny bite feels hard and inert, like chewing a grain of sand with a hint of green bitterness."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "cactus"
+  },
+  {
+    "name": "Tomato Seed",
+    "descriptions": [
+      "A single tomato seed, tiny and glossy, with the dark polish of something that has only just been lifted from the fruit and set aside by careful fingers.",
+      "One individual seed, fresh from the harvest, warm-toned and faintly speckled, carrying the quiet promise of a vine yet to climb."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.0,
+      "energy": 0.1
+    },
+    "effects": [
+      "You roll the seed across your tongue, and it feels firm and almost waxy before you bite down.",
+      "A faint green, garden-like bitterness spreads quickly, dry and small, leaving a dusty trace behind.",
+      "It gives with a tiny snap, more crackle than chew, and the taste is brief, clean, and mildly earthy."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "tomato"
+  },
+  {
+    "name": "Strawberry Seed",
+    "descriptions": [
+      "A single, freshly gathered seed with a pale, papery sheen, as if it has only just been lifted from the day\u2019s work.",
+      "Tiny and quiet in the palm, it carries the promise of red fruit and green leaves, meant for a careful patch of soil and a patient hand."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": -0.1,
+      "hydration": -0.1,
+      "energy": -0.1
+    },
+    "effects": [
+      "You bite down on the seed and meet a dry, stubborn little crunch that offers no real softness.",
+      "It tastes faintly earthy and hushed, leaving a papery grit along your tongue.",
+      "Your mouth feels a touch drier after you swallow, as if you have chewed on something meant for planting, not eating."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "strawberry"
+  },
+  {
+    "name": "Rose Seed",
+    "descriptions": [
+      "A single rose seed, small and dark, with the quiet promise of a stem, leaves, and one day a bloom.",
+      "Packed as one freshly harvested seed, it looks plain at a glance, but holds a whole garden's worth of patient color inside."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.0,
+      "energy": 0.0
+    },
+    "effects": [
+      "You let the tiny seed rest on your tongue, and it tastes faintly earthy and dry.",
+      "It feels hard and grainlike between your teeth, with no juice or softness to it.",
+      "You swallow it as-is, and your mouth is left with a powdery, soil-close aftertaste."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "rose"
+  },
+  {
+    "name": "Sunflower Seed",
+    "descriptions": [
+      "A single plump seed with a matte black shell, small enough to rest on your fingertip, offered as a tiny promise of green things and bright heads tilting toward the day.",
+      "Freshly gathered and dry to the touch, it feels like the sort of humble starter that waits patiently in a paper packet on a kitchen table near a window."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": -0.1,
+      "energy": 0.0
+    },
+    "effects": [
+      "You crack the shell with a soft, papery snap and taste a faint, earthy nuttiness.",
+      "Your tongue catches on the dry, delicate husk before the seed gives way to a mild, lingering flavor.",
+      "You feel the tiny kernel disappear almost at once, leaving a whisper of grit and plant-like warmth."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "sunflower"
+  },
+  {
+    "name": "Mint Seed",
+    "descriptions": [
+      "A single pale seed, small enough to rest on a fingertip, with a faint matte sheen like it was just sorted from a fresh little pile.",
+      "It feels clean and simple, the kind of tiny thing you'd tuck into damp soil after a quiet afternoon errand."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.2,
+      "energy": 0.0
+    },
+    "effects": [
+      "You crunch lightly through the seed's tiny shell, barely tasting anything before it turns chalky and mild on your tongue.",
+      "You get a brief dry, earthy grit at the back of your mouth, like a speck of garden dust caught in a warm breath.",
+      "You feel almost nothing beyond a faint seed bitterness, clean and quiet, then it is gone."
+    ],
+    "store_entry_data": {
+      "price": 48.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "mint"
+  },
+  {
+    "name": "Basil Seed",
+    "descriptions": [
+      "A single pale seed, kept dry and intact, with the faint papery look of something meant to wake up in damp soil.",
+      "Small enough to rest on a fingertip, it feels like a neat promise tucked into an ordinary packet, ready for a windowsill start."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": -0.2,
+      "hydration": -0.3,
+      "energy": -0.1
+    },
+    "effects": [
+      "You chew a tiny, dry seed that gives almost nothing back, just a faint dusty crunch.",
+      "It sticks lightly to your teeth, leaving a grassy bitterness and a thirstier mouth.",
+      "You swallow a hard little speck that feels unfinished and bare on the tongue."
+    ],
+    "store_entry_data": {
+      "price": 45.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_only",
+      "sell_discount": 0.5
+    },
+    "plant_type": "basil"
+  },
+  {
+    "name": "Lettuce Head",
+    "descriptions": [
+      "A freshly cut head of lettuce, its pale green leaves still crisp with dew and the faint scent of garden soil, as if lifted from a backyard patch and set gently on the counter.",
+      "Bright, layered leaves curl inward in a tidy bundle, carrying the clean look of something just brought in from the morning light and left in a plain, familiar kitchen basket."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 8,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": 2.0,
+      "energy": 0.5
+    },
+    "effects": [
+      "You bite into a cool, watery leaf and it snaps softly between your teeth.",
+      "A faint grassy sweetness spreads across your tongue, clean and mild.",
+      "The crisp texture leaves your mouth feeling refreshed and lightly wet.",
+      "You chew through tender ribs and delicate frills that hold a little garden-fresh bite."
+    ],
+    "store_entry_data": {
+      "price": 22.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Lettuce Leaf",
+    "descriptions": [
+      "A crisp, freshly cut leaf with pale ribs and a clean green sheen, still carrying the faint coolness of the morning harvest.",
+      "Light and delicate, it looks ready to slip into a bowl, its edges unbruised and its surface bright with simple freshness."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 50,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.2,
+      "hydration": 0.8,
+      "energy": 0.1
+    },
+    "effects": [
+      "You bite into a cool, tender leaf that breaks with a soft snap.",
+      "You taste a mild green freshness, faintly sweet and watery on your tongue.",
+      "You feel a little clean moisture spread across your mouth as the leaf gives way.",
+      "You chew through thin crisp ribs that leave almost no weight behind."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Carrot",
+    "descriptions": [
+      "A single freshly cut carrot, bright and crisp, with a clean taper and a little trace of soil still clinging near the root end.",
+      "Its orange skin looks newly lifted from the ground, firm and cool, with the kind of simple, everyday goodness that feels right at home on a kitchen counter."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 24,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": 0.5,
+      "energy": 0.5
+    },
+    "effects": [
+      "You bite through a firm, sweet crunch that snaps cleanly under your teeth.",
+      "A fresh vegetal sweetness spreads across your tongue, ending in a faint earthy note."
+    ],
+    "store_entry_data": {
+      "price": 15.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Ripe Tomato",
+    "descriptions": [
+      "A freshly cut tomato, glossy with juice and warm color, the kind you\u2019d set beside a kitchen sink without a second thought.",
+      "Its skin is taut and bright, with a clean stem scar and the faint scent of sunlit vines still clinging to it."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 24,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 1.2,
+      "hydration": 0.8,
+      "energy": 0.3
+    },
+    "effects": [
+      "You bite through the tender skin and it gives with a soft pop, releasing a rush of bright juice.",
+      "Your mouth fills with a fresh, slightly sweet tang and a clean, vegetal finish that lingers on your tongue.",
+      "The flesh breaks down easily, cool and juicy, leaving a light, refreshing wetness behind."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Fresh Strawberry",
+    "descriptions": [
+      "A single bright berry, just picked and still carrying the hush of the garden. Its skin is glossy and red, dotted with tiny seeds, with a neat green cap that looks freshly turned by careful hands.",
+      "Small and tender, it seems made for a countertop bowl or a paper market pouch, the sort of fruit that stains your fingertips and leaves a sweet trace in the air."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 24,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.8,
+      "hydration": 0.5,
+      "energy": 0.4
+    },
+    "effects": [
+      "You bite through the thin skin and it bursts with bright juice, sweet and lightly tart against your tongue.",
+      "The flesh is soft and yielding, with a faint seed-crunch that keeps each bite lively.",
+      "A clean, fruity aroma rises as the juice settles on your lips and fingertips."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Cactus Pad",
+    "descriptions": [
+      "A freshly cut cactus pad, still cool from the morning air and bright with a slick green sheen.",
+      "Its edges are trimmed clean, the surface firm and tender-looking, like something taken in hand only moments ago from a careful harvest."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 24,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.7,
+      "hydration": 1.1,
+      "energy": 0.2
+    },
+    "effects": [
+      "You bite into the crisp flesh and get a clean, green snap, with a faint vegetal bite that tastes like wet garden skin.",
+      "Your mouth fills with a cool, slippery juiciness, and the firm texture gives way in a tidy, refreshing chew.",
+      "A mild planty tang lingers on your tongue, leaving a fresh, slightly tart aftertaste.",
+      "The cut edge feels tender and cool as you chew, with no roughness beyond a little natural fibrous pull."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Freshly Cut Prickly Pear",
+    "descriptions": [
+      "A single cactus fruit, just cut clean from the pad, with a dusty blush and jewel-toned flesh hidden beneath its skin. It looks like something gathered quickly from a sunlit shelf of a roadside stand, still carrying the sharp memory of the plant it came from.",
+      "The fruit is small and hand-held, with a few soft spines and a bright, wet center that promises sweetness once the skin is peeled away. It feels like an everyday treat picked at the edge of an ordinary afternoon, simple and vivid all at once."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 3,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": 2.0,
+      "energy": 1.0
+    },
+    "effects": [
+      "You bite into the tender flesh and get a burst of clean, sweet juice with a faint green note underneath.",
+      "Your mouth fills with soft pulp and tiny seeds, giving each chew a gentle grit against the tongue.",
+      "The flavor stays bright and refreshing, leaving a cool, fruity finish behind."
+    ],
+    "store_entry_data": {
+      "price": 24.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Edible Rose Petals",
+    "descriptions": [
+      "A small bundle of freshly cut rose petals, still carrying the faint coolness of the stem and the clean, floral scent of a garden just snipped for the day. Their edges are soft and velvety, with a dew-bright look that suggests they were gathered moments ago and placed with care.",
+      "Delicate individual petals meant to be enjoyed as they are, with a gentle bloom-fragrance and a tender bite that feels more like a whisper than a chew."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 25,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.2,
+      "hydration": 0.1,
+      "energy": 0.1
+    },
+    "effects": [
+      "You taste a light floral sweetness that fades almost as soon as it arrives.",
+      "You feel a tender, paper-thin texture melt softly against your tongue.",
+      "You catch a fresh green note at the end, crisp and clean like a just-cut stem."
+    ],
+    "store_entry_data": {
+      "price": 28.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Fresh Mint Sprig",
+    "descriptions": [
+      "A just-cut sprig with crisp green leaves and a clean scent, still carrying the brightness of the garden on its edges.",
+      "Small and vivid, it looks as if it was clipped moments ago, with tender stems and a cool, sharp aroma."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.2,
+      "energy": 0.1
+    },
+    "effects": [
+      "You bite into a leaf and get a brisk, cool snap, followed by a sharp green burst that wakes up your mouth.",
+      "The texture is delicate and a little fibrous, leaving a faintly sweet, peppery trail as you chew.",
+      "A fresh, leafy scent rises at once, light and clean, with a trace of damp stem beneath it."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Basil Leaf Bunch",
+    "descriptions": [
+      "A small hand-tied bunch of basil leaves, still bright from the garden and faintly glossy with leftover mist.",
+      "The stems are freshly cut and neatly gathered, with a clean green scent that feels right at home beside a kitchen sink and a waiting cutting board."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 5,
+    "stats_edit": {
+      "fullness": 0.2,
+      "hydration": 0.1,
+      "energy": 0.3
+    },
+    "effects": [
+      "You chew the leaves and they crush into a sweet, peppery burst that wakes up your mouth.",
+      "A cool green aroma rises as the tender bits break apart, leaving a soft herbal finish.",
+      "The stems give a slight snap between your teeth, then fade into a fresh, leafy aftertaste.",
+      "You feel a gentle garden-like brightness on your tongue, with just enough bite to linger."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Rose Stem",
+    "descriptions": [
+      "A freshly cut rose stem, trimmed clean at the base and carrying a single bloom's promise in its green, pliant length.",
+      "Its surface is cool and slightly slick with sap, the thorns still sharp, as if it was just lifted from a garden and set aside for someone to notice."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": -0.2,
+      "energy": -0.1
+    },
+    "effects": [
+      "You bite into the stem and find it fibrous and bitter, the cut end releasing a green, sap-like taste.",
+      "It snaps with a faint crackle between your teeth, leaving a dry, grassy aftertaste that lingers on your tongue.",
+      "The thorns prick at your lips and add a thin sting, while the inside stays stringy and tough.",
+      "You chew once more and feel the raw plant matter pull at your mouth, more like testing a clipping than eating."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Cut Rose Head",
+    "descriptions": [
+      "A freshly cut rose bloom, its petals still holding a soft, dewy curve and the green stem trimmed neat below the flower. It feels like something gathered a moment ago from a bright windowsill arrangement, meant to be admired before it fades.",
+      "An individual rose head with velvety petals and a clean snip at the base, carrying the quiet charm of a home interior where sunlight falls across a vase and leaves a faint sheen on the glass."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.0,
+      "energy": 0.0
+    },
+    "effects": [
+      "You press the soft petals between your teeth and taste almost nothing but green bitterness and a faint floral edge.",
+      "You chew the delicate bloom and feel it collapse into thin, damp strands that offer no real nourishment.",
+      "You swallow the petal clump, and it leaves a light, grassy dryness on your tongue."
+    ],
+    "store_entry_data": {
+      "price": 22.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Cut Sunflower Head",
+    "descriptions": [
+      "A fresh sunflower head, newly cut from the stem and still bright with the day\u2019s warmth. The petals are a little uneven at the edges, the center dense with seeds, and the cut end looks clean and recently handled.",
+      "A single harvested bloom with a sunlit face and a practical, garden-fresh feel. It carries the quiet charm of something picked moments ago and set down carefully, still vivid with color and weight."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 3,
+    "stats_edit": {
+      "fullness": 0.5,
+      "hydration": 0.5,
+      "energy": 0.5
+    },
+    "effects": [
+      "You press your teeth into the seeded center and feel the dry little kernels give way with a faint, nutty crunch.",
+      "You catch a soft, earthy taste from the petals and pollen, like a brief walk through a garden path after watering.",
+      "You swallow a small mouthful and feel a light, wholesome settle, as if you\u2019ve just nibbled something straight from a carefully tended plot."
+    ],
+    "store_entry_data": {
+      "price": 18.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Fresh-cut Onion",
+    "descriptions": [
+      "A just-cut onion with a pale, papery sheen and a clean root end, still carrying the sharp honesty of the kitchen garden.",
+      "Its layered flesh looks crisp and moist, as if it was lifted from the soil and trimmed for sale only moments ago."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 5,
+    "stats_edit": {
+      "fullness": 0.6,
+      "hydration": -0.2,
+      "energy": 0.3
+    },
+    "effects": [
+      "You bite into the crisp layers and a sharp, pungent sting rises immediately at the back of your nose.",
+      "The flesh gives with a juicy crunch, leaving a peppery bite on your tongue and a lingering oniony burn.",
+      "You chew through the crisp, moist rings, and the raw bite feels bright, biting, and a little drying.",
+      "A clean vegetal tang clings to your mouth after each mouthful, with a faint sulfur edge that wakes your senses.",
+      "You swallow the final bite and are left with a brisk, sharp aftertaste that hangs on your breath."
+    ],
+    "store_entry_data": {
+      "price": 22.0,
+      "store_type": "harvest",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  }
+]

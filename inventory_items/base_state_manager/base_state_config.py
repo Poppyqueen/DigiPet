@@ -1,4 +1,5 @@
 from inventory_items.items_provider.item_store import ItemStore
+from inventory_items.rooms_provider.room_store import RoomStore
 import json
 import os
 from pathlib import Path
@@ -6,28 +7,34 @@ from pathlib import Path
 ITEM_ID_START_COUNTER = 0
 ROOM_ID_START_COUNTER = 1
 
+
 class InitialStateConst():
-    def __init__(self, config_root_dir="inventory_items/base_state_manager/configs"):
+    def __init__(
+        self,
+        config_root_dir="inventory_items/base_state_manager/configs",
+        rooms_root_dir="inventory_items/rooms_provider/rooms_data",
+    ):
         self.items_store = ItemStore("inventory_items/items_provider/items_data")
+        self.rooms_store = RoomStore(rooms_root_dir)
         self.config_root_dir = config_root_dir
-        # new config method, use directory walking to find all config files
         self.states_configs = self._load_states_map()
+
+    # ------------------------------------------------------------------
+    # Config loading
+    # ------------------------------------------------------------------
 
     def _load_states_map(self) -> dict:
         """
         Walk through the config root directory and load all JSON config map files.
-        Each JSON file should contain a dictionary of state configurations in the same format
-        as the original state_configs_map.json
         """
         all_configs = {}
-        
+
         if not os.path.exists(self.config_root_dir):
             print(f"Config directory '{self.config_root_dir}' not found. Creating it...")
             os.makedirs(self.config_root_dir, exist_ok=True)
             return all_configs
 
         try:
-            # Walk through the directory tree
             for root, dirs, files in os.walk(self.config_root_dir):
                 for file in files:
                     if file.endswith('.json'):
@@ -35,109 +42,104 @@ class InitialStateConst():
                         try:
                             with open(file_path, 'r') as f:
                                 config_data = json.load(f)
-                            
-                            # Merge the configurations from this file into all_configs
-                            # This maintains the same structure as your original single JSON file
                             if isinstance(config_data, dict):
                                 all_configs.update(config_data)
-                                #print(f"Loaded {len(config_data)} configs from {file_path}")
                             else:
                                 print(f"Warning: {file_path} does not contain a dictionary at root level")
-                                
                         except (json.JSONDecodeError, KeyError) as e:
                             print(f"Error loading config from {file_path}: {e}")
                             continue
-                            
         except Exception as e:
             print(f"Error walking config directory: {e}")
-            
+
         return all_configs
 
     def reload_configs(self):
-        """
-        Reload all configurations from the directory structure.
-        Useful if configs have been added/modified externally.
-        """
         self.states_configs = self._load_states_map()
         print(f"Reloaded {len(self.states_configs)} configurations")
 
     def add_state_configuration(self, config_map: dict, subdirectory: str = ""):
-        """
-        Adds state configurations by saving them to a JSON file in the config directory
-        and updates self.states_configs. Maintains the same interface as the original method.
-        
-        Args:
-            config_map: Dictionary of configurations to add (same format as original)
-            subdirectory: Optional subdirectory within the config root to save the file
-                        (e.g., "local_ai_gens" will save to config_root_dir/local_ai_gens/)
-        """
         if not isinstance(config_map, dict):
             raise ValueError("Configuration must be a dictionary.")
 
-        # Load existing configurations to avoid overwriting
         current_configs = dict(self.states_configs)
-        
-        # Add the new configurations
         current_configs.update(config_map)
 
-        # Determine the target directory
         if subdirectory:
             target_dir = os.path.join(self.config_root_dir, subdirectory)
         else:
             target_dir = self.config_root_dir
 
-        # Save to a new JSON file (you can customize the filename)
         import time
         timestamp = int(time.time())
         config_file_path = os.path.join(target_dir, f"added_configs_{timestamp}.json")
-        
-        # Ensure the target directory exists
         os.makedirs(target_dir, exist_ok=True)
 
         try:
-            # Save only the new configurations to the file
             with open(config_file_path, 'w') as f:
                 json.dump(config_map, f, indent=4)
-
-            # Update the in-memory state
             self.states_configs.update(config_map)
             print(f"Added {len(config_map)} configurations to {config_file_path}")
-            
         except Exception as e:
             print(f"Error saving configurations: {e}")
             raise
 
     def remove_state_configuration(self, config_name: str):
-        """
-        Remove a state configuration by deleting its JSON file and updating self.states_configs
-        """
         if config_name not in self.states_configs:
             raise ValueError(f"Configuration '{config_name}' not found.")
 
         config_file_path = os.path.join(self.config_root_dir, f"{config_name}.json")
-        
         try:
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
-            
-            # Remove from in-memory state
             del self.states_configs[config_name]
             print(f"Removed configuration '{config_name}'")
-            
         except Exception as e:
             print(f"Error removing configuration '{config_name}': {e}")
             raise
 
     def list_available_configs(self):
-        """
-        Return a list of all available configuration names
-        """
         return list(self.states_configs.keys())
+
+    # ------------------------------------------------------------------
+    # Layout helpers
+    # ------------------------------------------------------------------
+
+    def _extract_room_names_from_layout(self, layout: dict) -> list[str]:
+        """
+        Derive the ordered, deduplicated list of room names declared by a layout file.
+
+        Every room that exists in the house is named in one of two places:
+          - groups:      { group_name: [room_name, ...] }
+          - connections: [[roomA, roomB], ...]
+
+        When an aliases map is present, groups and connections are authored using
+        alias names — this method returns those alias names as-is. Resolution against
+        the RoomStore (using the store_name side of the alias) happens in create_state.
+
+        The returned order is: group members first (in declaration order), then any
+        connectoid names that appear only in connections, also in declaration order.
+        This is stable and deterministic across runs.
+        """
+        seen = {}  # name -> first-seen index, for stable dedup
+
+        groups = layout.get("groups", {})
+        for members in groups.values():
+            for name in members:
+                if name not in seen:
+                    seen[name] = len(seen)
+
+        for edge in layout.get("connections", []):
+            for name in edge:
+                if name not in seen:
+                    seen[name] = len(seen)
+
+        return sorted(seen, key=lambda n: seen[n])
 
     def _apply_layout_config(self, rooms: list, layout_config_path: str) -> list:
         """
-        Applies movement group and connectoid connection data from a layout config file
-        onto the room list. Ignores any existing movement keys already present on rooms.
+        Applies movement group and connectoid connection data from a layout config
+        file onto the room list.
 
         Layout config format:
         {
@@ -152,11 +154,11 @@ class InitialStateConst():
 
         Rules:
         - Rooms listed in "groups" receive movement_group, is_connectoid=False, connections=null.
-        - Rooms that appear in "connections" edges but not in any group are treated as connectoids:
-          is_connectoid=True, movement_group=null, connections=[all their neighbors].
+        - Rooms that appear in "connections" edges but not in any group are connectoids:
+          is_connectoid=True, movement_group=null, connections=[all their neighbours].
         - Rooms not mentioned in either get movement_group="default".
-        - Connections are always bidirectional — each edge is expanded to both directions.
-        - Warns on any name in the layout that has no matching room in the house file.
+        - Connections are always bidirectional.
+        - Warns on any name in the layout that has no matching room in the house.
         """
         with open(layout_config_path, 'r') as f:
             layout = json.load(f)
@@ -164,16 +166,13 @@ class InitialStateConst():
         groups = layout.get("groups", {})
         edges = layout.get("connections", [])
 
-        # Build a lookup by room name for quick access
         room_by_name = {room["name"]: room for room in rooms}
 
-        # Validate all names in groups
         for group_name, members in groups.items():
             for name in members:
                 if name not in room_by_name:
                     print(f"Layout warning: '{name}' in group '{group_name}' has no matching room.")
 
-        # Build adjacency map from edges (bidirectional)
         adjacency = {}
         for edge in edges:
             if len(edge) != 2:
@@ -190,11 +189,9 @@ class InitialStateConst():
             if a not in adjacency[b]:
                 adjacency[b].append(a)
 
-        # Determine which names are group members vs connectoids
         group_members = {name for members in groups.values() for name in members}
         connectoid_names = {name for name in adjacency if name not in group_members}
 
-        # Stamp group members
         for group_name, members in groups.items():
             for name in members:
                 if name in room_by_name:
@@ -203,7 +200,6 @@ class InitialStateConst():
                     room["is_connectoid"] = False
                     room["connections"] = None
 
-        # Stamp connectoids
         for name in connectoid_names:
             if name in room_by_name:
                 room = room_by_name[name]
@@ -211,94 +207,119 @@ class InitialStateConst():
                 room["movement_group"] = None
                 room["connections"] = adjacency[name]
 
-        # Default for any room not mentioned in the layout at all
         mentioned = group_members | connectoid_names
         for room in rooms:
             if room["name"] not in mentioned:
-                room.setdefault("movement_group", "default")
-                room.setdefault("is_connectoid", False)
-                room.setdefault("connections", None)
+                room["movement_group"] = "default"
+                room["is_connectoid"] = False
+                room["connections"] = None
 
         return rooms
+
+    # ------------------------------------------------------------------
+    # State creation
+    # ------------------------------------------------------------------
 
     def create_state(self, select_state):
         """
         Creates the complete initial game state based on a selected configuration.
-        This includes populating rooms with items, setting the starting room,
-        and adding all other necessary state data.
+
+        Config format (b_house_path is gone — the layout file is the manifest):
+        {
+            "items_config":  "path/to/items_config.json",
+            "layout_config": "path/to/layout.json"
+        }
         """
-        # Load the selected state's configuration from states_configs
         selected_config = self.states_configs.get(select_state)
         if not selected_config:
             available_configs = self.list_available_configs()
-            raise ValueError(f"State configuration '{select_state}' not found. Available configs: {available_configs}")
+            raise ValueError(
+                f"State configuration '{select_state}' not found. "
+                f"Available configs: {available_configs}"
+            )
 
-        base_house_path = selected_config["b_house_path"]
         items_config_path = selected_config["items_config"]
+        layout_config_path = selected_config["layout_config"]
 
-        # Load the base room data from the provided JSON file
-        with open(base_house_path, 'r') as f:
-            base_rooms_data = json.load(f)
-
-        # Load the items configuration data
+        # Load items config
         with open(items_config_path, 'r') as f:
             items_config = json.load(f)
 
-        # Separate the initial room to ensure it's at the start of the list
-        initial_room_name = items_config.get("initial_room")
+        # Load layout — source of truth for room manifest, topology, and starting room
+        with open(layout_config_path, 'r') as f:
+            layout = json.load(f)
+
+        initial_room_name = layout.get("initial_room")
         if not initial_room_name:
-            raise ValueError("Configuration must specify an 'initial_room'.")
+            raise ValueError(
+                f"Layout file '{layout_config_path}' must specify an 'initial_room'."
+            )
 
-        initial_room_dict = None
-        other_rooms = []
+        room_names = self._extract_room_names_from_layout(layout)
 
-        for room in base_rooms_data:
-            if room["name"] == initial_room_name:
-                initial_room_dict = room
+        if initial_room_name not in room_names:
+            raise ValueError(
+                f"initial_room '{initial_room_name}' is not declared in the layout's "
+                f"groups or connections."
+            )
+
+        # aliases in the layout are authored as { store_name: alias_name }
+        # We need the reverse to go from alias_name -> store_name during resolution
+        aliases: dict[str, str] = layout.get("aliases", {})
+        alias_to_store: dict[str, str] = {v: k for k, v in aliases.items()}
+
+        # Resolve each layout name through the RoomStore, applying aliases where needed
+        resolved_rooms = []
+        missing = []
+        for alias_name in room_names:
+            store_name = alias_to_store.get(alias_name, alias_name)
+            room = self.rooms_store.get_room(store_name)
+            if room is None:
+                missing.append(f"'{alias_name}' (store name: '{store_name}')" if alias_name != store_name else f"'{alias_name}'")
             else:
-                other_rooms.append(room)
+                # Rename the room to the alias so the engine only ever sees the alias
+                room["name"] = alias_name
+                resolved_rooms.append(room)
 
-        if initial_room_dict is None:
-            raise ValueError(f"Initial room '{initial_room_name}' not found in the base house data.")
+        if missing:
+            raise ValueError(
+                f"Layout references rooms not found in RoomStore: {missing}"
+            )
 
-        # Assign an 'id' of 0 only to the initial room
-        initial_room_dict["id"] = 0
-        final_rooms_list = [initial_room_dict]
+        # Move initial room to index 0 and assign id=0
+        initial_idx = next(i for i, r in enumerate(resolved_rooms) if r["name"] == initial_room_name)
+        initial_room = resolved_rooms.pop(initial_idx)
+        initial_room["id"] = 0
+        final_rooms_list = [initial_room] + resolved_rooms
 
-        # The other rooms are added to the list without an 'id' key
-        final_rooms_list.extend(other_rooms)
+        # Apply movement groups and connectoid connections from the layout
+        final_rooms_list = self._apply_layout_config(final_rooms_list, layout_config_path)
 
-        # Apply layout config for movement groups and connectoid connections if provided
-        layout_config_path = selected_config.get("layout_config")
-        if layout_config_path:
-            final_rooms_list = self._apply_layout_config(final_rooms_list, layout_config_path)
-
-        # Populate the 'items' list for each room using the new items_config map
+        # Populate items for each room
         for room in final_rooms_list:
             item_config_for_room = items_config.get(room["name"])
 
-            if isinstance(item_config_for_room, str):  # Check if it's a path
+            if isinstance(item_config_for_room, str):
                 filters = {'__source_path__': item_config_for_room}
                 room["items"] = self.items_store.find_items(filters)
-            elif isinstance(item_config_for_room, list):  # Check if it's a list of names
+            elif isinstance(item_config_for_room, list):
                 items_dict = self.items_store.get_item(item_config_for_room)
                 room["items"] = list(items_dict.values())
             else:
-                # If no items are configured or format is wrong, it remains an empty list
                 room["items"] = []
 
-        # Handle inventory population based on config type (path or list)
+        # Populate inventory
         inventory_items = []
-        inventory_config = items_config.get("inventory", [])  # Default to empty list
+        inventory_config = items_config.get("inventory", [])
 
-        if isinstance(inventory_config, str):  # Check if it's a path
+        if isinstance(inventory_config, str):
             filters = {'__source_path__': inventory_config}
             inventory_items = self.items_store.find_items(filters)
-        elif isinstance(inventory_config, list) and inventory_config:  # Check if it's a non-empty list
+        elif isinstance(inventory_config, list) and inventory_config:
             items_dict = self.items_store.get_item(inventory_config)
             inventory_items = list(items_dict.values())
 
-        # Assemble the final, complete state dictionary
+        # Assemble final state
         initial_state = {
             "next_item_id": ITEM_ID_START_COUNTER,
             "next_room_id": ROOM_ID_START_COUNTER,

@@ -1,0 +1,174 @@
+.constants:
+  - &coastal_style "Style: A coastal biome, small rural town environment. Hiking area."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. Always use second-person present tense.
+  - &items_base_prompt >
+      THEME = "cozy 21th century contemporary" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openai"
+  model: "gpt-5.4-mini"
+  export_dir: "inventory_items/items_provider/items_data/furniture"
+
+tasks:
+
+  # - mode: "item"
+  #   types: ["fenestration_aperture", "toggleable"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Large round window"
+  #     - "Small framed square window"
+
+  # - mode: "item"
+  #   types: ["fenestration_aperture"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Round viewport"
+  #     - "Wide rectangular window, embedded"
+  #     - "Window walls"
+  #     - "Clear Skylight"
+  #     - "Colorful Skylight"
+
+
+  # - mode: "item"
+  #   types: ["bookmaking_implements"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Stationary furniture"
+
+  # - mode: "item"
+  #   types: ["bookmaking_implements", "toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Portable device"
+  #     - "Thermal label printer"
+
+
+  # - mode: "item"
+  #   types: ["sleepable_spot", "seatable", "cranny_host"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Lounge sofa"
+  #     - "Lounge outdoors chair"
+  #     - "Mahogany king-size bed"
+  #     - "Individual bed"
+  #     - "low-frame individual bed"
+  #     - "Loveseat sofa"
+  #     - "Upholstered daybed with built-in drawers"
+
+  # - mode: "item"
+  #   types: ["sleepable_spot", "seatable", "toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "folding bed"
+  #     - "static, Murphy bed"
+
+
+  # - mode: "item"
+  #   types: ["seatable", "cranny_host"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Patio Chair"
+  #     - "fake leather 1-seater sofa"
+  #     - "Velvet upholstered 1-seater sofa"
+  #     - "upholstered ottoman"
+
+  # - mode: "item"
+  #   types: ["seatable", "toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Folding Garden Chair"
+  #     - "Folding Director's Chair"
+
+
+  - mode: "item"
+    types: ["cranny_host"]
+    context:
+      - *writing_style_prompt
+      - *items_base_prompt
+      - "Fill all the required fields for a cranny host"
+    prompts:
+      # - "fruit bearing wild bush (specify fruit)"
+      # - "herbal bush (specify herb)"
+      - "ornamental bush (specify what flowers it is)"
+      # - "vanity desk"
+      # - "clothes closet"
+      # - "wall-mounted kitchen cupboards"
+      # - "kitchen base cupboards"
+      # - "low-profile livingroom cabinet"
+
+  # - mode: "item"
+  #   types: ["water_point","cranny_host"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "freshwater pond"
+  #     - "Tiered garden fountain"
+  #     - "Stone birdbath bowl"
+
+  # - mode: "item"
+  #   types: ["water_point","toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "kitchen sink"
+  #     - "bathroom sink"
+  #     - "Freestanding porcelain bathtub"
+  #     - "Outdoor garden hose spigot"
+      
+      
+  # - mode: "item"
+  #   types: ["culinary_equipment", "toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Kitchen stove"
+  #     - "Microwave oven"
+  #     - "Programmable slow cooker"
+  #     - "Convection toaster oven"
+
+
+  # - mode: "item"
+  #   types: ["culinary_equipment"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "mixer bowl"
+  #     - "knife set"
+  #     - "ceramic mortar and pestle"
+
+  # - mode: "item"
+  #   types: ["planter_pot"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "large, shallow ceramic planter"
+  #     - "Tall ceramic planter"
+  #     - "Fabric pot"
+  #     - "Terracotta pot"
+  #     - "concrete planter"
