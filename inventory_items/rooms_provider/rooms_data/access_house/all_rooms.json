@@ -11,191 +11,30 @@
 
         "plot_number": 6,
         "outdoors_type": [
-          "ocean-views",
-          "earth-weather",
-          "earth-astro-views",
-          "xeno-canto"
-        ],
-
-        "base_description": "A roofless area enclosed by fieldstone rising around 15 feet, sharp-edged black rock with mortar sitting in between gaps. Seams between such barriers and the ground are perfect hosts for unidentified mosses, grasses, some wild dandelion and clover alongside a variety of small critters to hide and thrive. The floor is delicate, soft, compound, mulch-spotted black soil. Looking up, one can see a few treetops alongside an encompassing sky, only to be prematurely sliced by the tall, hugging, rock-ringing construct walls. At your feet, areas to sow and care for vegetation abound. The soil appears self-sustaining, with sparse micro-movements from down below, a sort of occasional gurgling, lovingly disturbing the top bedding.",
-        "descriptions": {
-            "early morning": [
-                "Early dawn, this garden swallowed, drenched in a morning hue, muted, quiet shine that cleses corners of their dense darkness, to be replaced with pale straightforwardness.",
-                "Crisp moss, shivering grass, flowers extending upwards, light-washed stones, steel blue above all of us.",
-                "Bits and pieces shredded and mixed in the dark bedding of soil below, sticking in and sticking out, dry grass and dry leaves in the cocktail, the floor gorges on."
-            ],
-            "morning": [
-                "Sharp edges, sunbeams at odd angles break into this enclosed area, hitting against every member in the scenery, fracturing, elongating shadows casted from them.",
-                "Light marches across the walls and into the floors of this circular enclosure, the area is growing lighter and lighter, so much every single worm, every soil grain, and the eager stone walls seem to be wanting to float upwards."
-            ],
-            "noon": [
-                "",
-                ""
-            ],
-            "afternoon": [
-                "",
-                ""
-            ],
-            "late afternoon": [
-                "",
-                ""
-            ],
-            "night": [
-                "",
-                ""
-            ],
-            "late night": [
-                "",
-                ""
-            ]
-        }
+        "ocean-views",
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
     },
     {
         "name": "Elemental Bedroom",
         "image": "bedroom",
-        "music": "open_arms",
-
-        "base_description": "A dome structure, perfect half sphere with walls covered by bone white plaster and bone white paint. Cold beige granite, a giant disc of it rests below. Standing inside feels spacious, the uppermost section in this room is crammed with shadows refusing to give their entrenched position. There is more than enough space to pace in circles and to fully stretch upwards, stretching above towards the round apex, upside-down cradle-like point, highlights its gaping distance against the floor, distance that would require 10 or 12 more feet from you to reach, the more you look at it, the space seems to change, grow and shrink, as if expanding, inflating, and then contracting back, deflating.",
-        "descriptions": {
-            "early morning": [
-                "",
-                ""
-            ],
-            "morning": [
-                "",
-                ""
-            ],
-            "noon": [
-                "",
-                ""
-            ],
-            "afternoon": [
-                "",
-                ""
-            ],
-            "late afternoon": [
-                "",
-                ""
-            ],
-            "night": [
-                "",
-                ""
-            ],
-            "late night": [
-                "",
-                ""
-            ]
-        }
+        "music": "open_arms"
     },
     {
         "name": "Micro Kitchen",
         "image": "kitchen",
-        "music": "interiority_spaces",
-
-        "base_description": "A tiny, compact area one can maneuver around without much effort. It has been designed with a low ceiling and close-up walls that allow anyone to reach anywhere from anyplace. The cupboard-lined enclosure is packed with shelves, wall-mounted hangers and an extensive animal decoration collection; some few slots and gaps barely reveal in betrayal the raw red brick structure behind. Dust seems to huddle around the edges on all the furniture of this room.",
-        "descriptions": {
-            "early morning": [  
-                "",
-                ""
-            ],
-            "morning": [
-                "",
-                ""
-            ],
-            "noon": [
-                "",
-                ""
-            ],
-            "afternoon": [
-                "",
-                ""
-            ],
-            "late afternoon": [
-                "",
-                ""
-            ],
-            "night": [
-                "",
-                ""
-            ],
-            "late night": [
-                "",
-                ""
-            ]
-        }
+        "music": "interiority_spaces"
     },
     {
         "name": "Dotted Blue Bathroom",
         "image": "bathroom",
-        "music": "comfort_fluff",
-
-        "base_description": "An assault to the eyes, a blue polka-dotted room, hundreds, maybe thousands of little blue disc-shaped chips at every inch of this ceramic covered room. Tiny blue dots thoughtfully placed with detailed precision and care, exorbitant attention to the space between each one. On rare occasions standing here causes a sort of worry, that with a single swing, one might shatter the whole room into splinters like a delicate decorative piece. Each of the blue, chip-disc dots stares forward, with unwavering conviction at whatever is in front of them.",
-        "descriptions": {
-            "early morning": [
-                "",
-                ""
-            ],
-            "morning": [
-                "",
-                ""
-            ],
-            "noon": [
-                "",
-                ""
-            ],
-            "afternoon": [
-                "",
-                ""
-            ],
-            "late afternoon": [
-                "",
-                ""
-            ],
-            "night": [
-                "",
-                ""
-            ],
-            "late night": [
-                "",
-                ""
-            ]
-        }
+        "music": "comfort_fluff"
     },
     {
         "name": "Quiet Living Room",
         "image": "living_room",
-        "music": "aware_drifter",
-
-        "base_description": "The floor is solid, there are no reverberations, no give, no response, it might as well be a large, singular rectangular mortar chunk embedded into the depths below. There is a tingling sensation at your feet, a downwards pull, as if the floor were tugging down with a force of its own, trying to compact anything small and feeble enough to be dragged onto it. There is soft fabric lining the ceiling, given enough slack, it hangs and forms into mounds and waves, creating the imagery of an upside-down ocean-like sheet of silky water hovering above the room. At points, this varied patterned-silk droops in streaks alongside walls, some falling all the way down, clumping into the floor with unintentional grace.",
-        "descriptions": {
-            "early morning": [
-                "The previously flowing ceiling freezes in place, while it is clensed by a pale gray wash of ambient light and bare morning cold.",
-                ""
-            ],
-            "morning": [
-                "",
-                ""
-            ],
-            "noon": [
-                "",
-                ""
-            ],
-            "afternoon": [
-                "",
-                ""
-            ],
-            "late afternoon": [
-                "",
-                ""
-            ],
-            "night": [
-                "",
-                ""
-            ],
-            "late night": [
-                "",
-                ""
-            ]
-        }
+        "music": "aware_drifter"
     }
 ]

@@ -8,7 +8,6 @@
     "static": false,
     "type": [
       "tv",
-      "store_entry",
       "toggleable"
     ],
     "stackable": false,
@@ -40,7 +39,6 @@
     "static": true,
     "type": [
       "tv",
-      "store_entry",
       "toggleable"
     ],
     "stackable": false,
@@ -71,7 +69,6 @@
     "static": true,
     "type": [
       "tv",
-      "store_entry",
       "toggleable"
     ],
     "stackable": false,
@@ -200,7 +197,6 @@
     ],
     "static": false,
     "type": [
-      "store_entry",
       "toggleable",
       "meditation_aid"
     ],
@@ -234,7 +230,6 @@
     ],
     "static": false,
     "type": [
-      "store_entry",
       "toggleable",
       "meditation_aid"
     ],
@@ -487,8 +482,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -514,8 +508,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -541,8 +534,7 @@
     ],
     "static": true,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -567,8 +559,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -593,8 +584,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -619,8 +609,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -645,8 +634,7 @@
     ],
     "static": false,
     "type": [
-      "toggleable",
-      "store_entry"
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
@@ -672,7 +660,6 @@
     "static": false,
     "type": [
       "store_entry",
-      "toggleable",
       "culinary_equipment"
     ],
     "stackable": false,
@@ -705,7 +692,6 @@
     ],
     "static": true,
     "type": [
-      "store_entry",
       "toggleable",
       "culinary_equipment"
     ],
@@ -739,7 +725,6 @@
     ],
     "static": false,
     "type": [
-      "store_entry",
       "culinary_equipment"
     ],
     "stackable": true,
@@ -759,7 +744,6 @@
     ],
     "static": true,
     "type": [
-      "store_entry",
       "culinary_equipment"
     ],
     "stackable": false,
@@ -779,7 +763,6 @@
     ],
     "static": true,
     "type": [
-      "store_entry",
       "toggleable",
       "youtube_playlists_endpoint", 
       "discogs_endpoint", 
@@ -812,7 +795,6 @@
     ],
     "static": false,
     "type": [
-      "store_entry",
       "toggleable",
       "youtube_playlists_endpoint", 
       "discogs_endpoint", 
@@ -844,7 +826,6 @@
     ],
     "static": false,
     "type": [
-      "store_entry",
       "toggleable",
       "youtube_playlists_endpoint", 
       "discogs_endpoint", 

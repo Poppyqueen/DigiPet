@@ -25,7 +25,8 @@ mapped_models={
 
     "functiongemma:270m-it-fp16": "google/functiongemma-270m-it",
     "ministral-3:3b": "ministral/Ministral-3b-instruct",
-    "unsloth/gemma-4-E2B-it-GGUF:Q4_K_M": "google/gemma-4-e2b-it"
+    "unsloth/gemma-4-E2B-it-GGUF:Q4_K_M": "google/gemma-4-e2b-it",
+    "deepseek-v4-flash-latest": "deepseek-ai/DeepSeek-V4-Flash"
 }
 
 # This should map the models to use from Groq or Ollama (or other opensource provider)

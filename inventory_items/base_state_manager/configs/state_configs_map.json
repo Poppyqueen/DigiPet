@@ -6,9 +6,5 @@
     "Compact Home":{
         "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_lo.json",
         "items_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_items_lo.json"
-    },
-    "Access Home":{
-        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/access_Home/default_lo.json",
-        "items_config": "inventory_items/base_state_manager/configs/houses_layouts/access_Home/default_items_lo.json"
     }
 }

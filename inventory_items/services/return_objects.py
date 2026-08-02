@@ -368,18 +368,21 @@ class RoomDataResult(BaseModel):
     @classmethod
     def from_room_dict(cls, room: dict) -> RoomDataResult:
         time_tag = get_time_tag_from_now()
-        base_desc = room.get("base_description", "")
-        descriptions_by_time = room.get("descriptions", {})
+
+
+
+        # base_desc = room.get("base_description", "")
+        # descriptions_by_time = room.get("descriptions", {})
         
         # Get the list of strings for the current time (default to empty list)
-        time_desc_list = descriptions_by_time.get(time_tag, [])
+        # time_desc_list = descriptions_by_time.get(time_tag, [])
         
         # Combine the base description with the time-specific strings
         # We ensure everything is a flat list of strings
-        all_fragments = [base_desc] + (time_desc_list if isinstance(time_desc_list, list) else [time_desc_list])
+        # all_fragments = [base_desc] + (time_desc_list if isinstance(time_desc_list, list) else [time_desc_list])
         
         # Clean up any empty strings and join
-        final_description = " ".join(str(d) for d in all_fragments if d)
+        # final_description = " ".join(str(d) for d in all_fragments if d)
 
         name = room.get("name", "Unknown Room")
         group = str(room.get("movement_group") or "").replace('_', ' ').title()
@@ -391,7 +394,8 @@ class RoomDataResult(BaseModel):
             name=name,
             image=room.get("image", ""),
             music=room.get("music", ""),
-            description=final_description,
+            # description=final_description,
+            description="", # Return empty string, quick dirty way to remove descriptions
             room_types=room.get("room_types", []),
             title_display=title_display,
             extra_data={k: v for k, v in room.items() if k not in ROOM_BASE_KEYS},

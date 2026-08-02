@@ -116,7 +116,7 @@ class RoomManager:
         room_data = RoomDataResult.from_room_dict(target_room)
         return (
             f"You move to the {room_data.title_display}. "
-            f"Tools pool has changed. {room_data.description}"
+            f"Tools pool has changed." # removed: {room_data.description}
         )
 
     # ------------------------------------------------------------------

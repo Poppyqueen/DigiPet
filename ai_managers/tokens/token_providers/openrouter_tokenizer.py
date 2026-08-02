@@ -14,6 +14,7 @@ class OpenRouterTokenizer(TokenizerProvider):
         "google":    "_load_google", # this works
         "meta-llama":"_load_opensource", # this works
         # "mistralai": "_load_opensource", # TODO: implement Mistral-common tokenizer
+        "~deepseek":"_load_opensource" # works! 
 
         # Add more providers as needed, see https://openrouter.ai/models 
         # use _load_opensource for... open source models...

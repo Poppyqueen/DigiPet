@@ -295,7 +295,7 @@ class FunctionBuilder:
             "#############",
             "Current State:",
             f"Current time: {now}, {get_time_tag_from_now()}",
-            f"Currently, you are in: {room_title_display}\nRoom Description: {room_description}\n",
+            f"Currently, you are in: {room_title_display}", # Removed room description string from here
             "\n#############\n",
             "Current accessible areas: ",
             rooms_summary,
@@ -333,7 +333,7 @@ class FunctionBuilder:
         return mapper.get_all_items_tool_map()
 
     def get_item_info_with_tools(self, item_id) -> dict:
-        item_result = self.state_manager.find_item(item_id)
+        item_result = self.state_manager.find_item(item_id,None,"accessible",False)
         if not item_result.success:
             return {"error": item_result.error}
         item_data = item_result.item_data
@@ -351,7 +351,7 @@ class FunctionBuilder:
         if "error" in info:
             return info["error"]
 
-        item_object = self.state_manager.find_item(item_id)
+        item_object = self.state_manager.find_item(item_id,None,"accessible",False) # Fix to allow the examination of items that are toggled off.
         if not item_object.success:
             return item_object.error
         data = item_object.item_data

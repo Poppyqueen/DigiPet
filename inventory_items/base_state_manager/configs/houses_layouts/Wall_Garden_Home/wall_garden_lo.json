@@ -9,8 +9,8 @@
   "connections": [
     ["Hallway", "living_room"],
     ["Hallway", "bathroom"],
-    ["Hallway", "garden"],
     ["Hallway", "bedroom"],
+    ["Hallway", "garden"],
 
     ["garden", "Section A2"],
     

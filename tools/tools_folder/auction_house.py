@@ -234,6 +234,7 @@ class StoreController:
             item_id=item_id,
             required_type=None,
             required_location="inventory",
+            check_toggle=False
         )
         if not item_result.success:
             return f"Could not find item {item_id} in inventory: {item_result.error}"
