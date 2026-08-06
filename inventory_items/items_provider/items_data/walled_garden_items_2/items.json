@@ -1,0 +1,601 @@
+[
+  {
+    "name": "Ornamental Lavender Bush",
+    "descriptions": [
+      "A compact lavender bush with silvery-green leaves and spikes of violet flowers, nestled in a matte concrete planter. The air around it carries a soft, herbal scent, and the warm lamplight casts gentle shadows through its branches.",
+      "At the base, the stems twist into a dense, woody tangle, forming a natural little hollow that seems to collect forgotten trinkets and fallen seeds."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.25,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You crouch down and gently part the fragrant lavender stems, peering into the shadowy hollow at the base.",
+      "Running your fingers through the woody crevices, you feel something small and cool nestled among the dry soil and fallen petals.",
+      "You brush aside a few brittle leaves, and the tangle of branches opens just enough to reveal a hidden pocket."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable",
+        "seed"
+      ]
+    ]
+  },
+  {
+    "name": "Boston Ivy Covered Red Brick Wall",
+    "descriptions": [
+      "A dense mat of Boston ivy climbs a tired red-brick wall, each leaf a slightly different shade of green, some blushing orange at the edges. Beneath the weave, the mortar has crumbled into narrow pockets that trap lint, seed husks, and the occasional dropped coin.",
+      "The wall carries the low ambient murmur of the street beyond: a delivery van idling, a kettle coming to a boil in an upper flat, someone's playlist drifting through an open window. The ivy shivers, and a few brick-sized shadows look almost like tiny drawers waiting to be pulled.",
+      "In the gaps where tendrils detach from the masonry, there are slits of darkness wide enough for a hand, narrow enough for secrets. The bricks still hold the day's heat, and the air smells faintly of dust, pressed leaves, and sun-warmed clay."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.18,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You slide your hand between the cool leaves and into a gap where the mortar has crumbled away, feeling small ridges of grit and something papery tucked at the back.",
+      "You part a curtain of ivy stems and run your fingertips along the brick until they catch on a seam; you work a loose chip of mortar loose and peer into the dark slot behind it.",
+      "You crouch and reach into a shadowy hollow near the base of the wall, brushing aside dried leaf skeletons and spider silk before your knuckles scrape the rough clay.",
+      "You press your palm flat against the brick, tracing the veins of the vine until your ring finger catches on a hidden fissure, cool air breathing out from somewhere deep inside.",
+      "You use two fingers to widen a crack where a steel trowel once gouged the mortar, and something shifts within\u2014a faint rustle that might be leaf litter or something left behind long ago."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "candy_bag"
+      ]
+    ]
+  },
+  {
+    "name": "Translucent Purple Mushrooms Patch",
+    "descriptions": [
+      "A cluster of violet-tinted mushrooms grows where the herringbone oak boards lap against the skirting in the corner by the last radiator. Their caps are so pale and see-through that lamplight seeps through like tinted glass, throwing soft lilac arcs across the floorboards.",
+      "The meaty stems lean together at different heights, and in the dark hollow between them, scattered grit and a few lost matchsticks have made a quiet little grotto \u2014 the kind of tucked-away place you only notice when you kneel and lower your head.",
+      "At the base of the cluster, there's a crack in the wood where the boards never quite fit, shadowed by moss and the occasional pinprick reflection from a speck of fallen jewelry or foil."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.13,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You kneel on the soft-bristled carpet that swallows your tread and push the translucent caps apart with your fingertips, peeking into the coolness below.",
+      "Your fingers brush the lamp-veined stalks as you wedge your hand beneath the lowest cap, feeling the texture of dried leaf and thumbnail, and the spring of coiled lint.",
+      "You scoop your hand around the small hollow at the base, your skin reading the smooth oak and the rough seam where the boards meet, arriving at some loose pieces in the dust.",
+      "The caps wobble with the pressure of your knuckles as you rake through the gash between them, the pale tissue of the mushroom flexing like a contact lens held to light."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed",
+        "consumable"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "dust_bunnied_gleaning",
+        "seed"
+      ]
+    ]
+  },
+  {
+    "name": "Ornamental Lavender Bush",
+    "descriptions": [
+      "A compact lavender bush with silvery-green leaves and spikes of violet flowers, nestled in a matte concrete planter. The air around it carries a soft, herbal scent, and the warm lamplight casts gentle shadows through its branches.",
+      "At the base, the stems twist into a dense, woody tangle, forming a natural little hollow that seems to collect forgotten trinkets and fallen seeds."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.25,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You crouch down and gently part the fragrant lavender stems, peering into the shadowy hollow at the base.",
+      "Running your fingers through the woody crevices, you feel something small and cool nestled among the dry soil and fallen petals.",
+      "You brush aside a few brittle leaves, and the tangle of branches opens just enough to reveal a hidden pocket."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable",
+        "seed"
+      ]
+    ]
+  },
+  {
+    "name": "Clover Patch in a Wide Ceramic Tray",
+    "descriptions": [
+      "A dense mat of clover spills over the rim of a wide, matte ceramic tray set low against the wall, its leaves a deep, restful green.",
+      "The stems are thick and interwoven, and the dark soil beneath them stays cool and slightly damp, gathering small forgotten things in the shadowy hollows between roots."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.2,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You kneel and gently part the clover stems, your fingertips brushing soft soil and the faint slickness of something smooth and out of place.",
+      "The leaves are springy and cool, and you sweep your hand through the center of the patch, feeling for hard edges beneath the tangle.",
+      "You lift a fan of clover leaves and peer into the little hollow underneath, where dust and small stray objects have made a quiet home."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable"
+      ]
+    ]
+  },
+  {
+    "name": "Willow's Crevice",
+    "descriptions": [
+      "Tucked into the base of a sleek walnut sideboard, a narrow slot reveals itself only when you brush aside a cascade of dried willow twigs that hang like a beaded curtain. Behind it, a felt-lined recess waits, dimly lit by a faint amber LED that hums with a low warmth.",
+      "The nook is barely wide enough for a hand, but its soft interior cradles forgotten things like a cat\u2019s purr. The woven pattern on the wood grain mimics the drooping lines of a willow, and the air inside carries a faint scent of cedar and green leaves."
+    ],
+    "static": true,
+    "type": [
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "chance": 0.1,
+    "yield_pool": 1.0,
+    "yield_cost": 0.25,
+    "refresh_rate": 0.1,
+    "narrative_search": [
+      "You slide your fingers between the twig curtain, feeling the cool, smooth wood of the hidden slit.",
+      "Your knuckles brush against the felt as you probe deeper, the LED flickering as if to whisper encouragement.",
+      "You hook a finger around the lip and tug, the panel obliging with a stifled click, revealing the shadowy hollow.",
+      "You reach in, the space confined but not tight, and your fingertips encounter the grit of dust bunnies and tiny seeds."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "seed"
+      ],
+      [
+        "consumable"
+      ],
+      [
+        "book"
+      ]
+    ]
+  },
+  {
+    "name": "Glass-Bubble World Watercolor",
+    "descriptions": [
+      "A slim, matte-black frame holds a quiet watercolor of translucent spheres nested like soap bubbles, each one cradling a miniature landscape.",
+      "The paper has a soft, fibrous tooth, and the pigments bleed gently at the edges, making the glass worlds feel humid and alive.",
+      "In the lower corner, a faint pencil note reads 'still breathing' in a looping hand, as if the artist left a secret for the viewer.",
+      "The glass catches a smudge of warm window light, so the painting seems to exhale softly each time you look at it."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "The overlapping bubbles create a slow, drifting rhythm\u2014each one draws your focus inward and hushes the noise around you.",
+      "Pale aqua, blush, and foggy gold mingle on the paper, shifting subtly with the angle of the light and inviting long, unhurried contemplation.",
+      "The cool metal frame and the faint dust on the glass remind you of a well-loved wall in a calm apartment, where time softens and your breath slows without effort."
+    ]
+  },
+  {
+    "name": "Sunbeam Clover Watercolor",
+    "descriptions": [
+      "A watercolor painting viewed from a bug's perspective, showing a lush clover garden with a single sunbeam piercing through the canopy. The hand-painted washes of green and gold bleed softly into each other, evoking the quiet hush of a summer morning. The frame is crafted from pale oak with rounded corners and a satin finish, its surface marked with faint hairline scratches from gentle handling over the years."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "The painting's layered translucency draws the eye into a gentle, repetitive study, allowing thoughts to slow and dissolve. The soft glow of the sunbeam in the artwork seems to echo the real light filtering into the room, creating a seamless connection between art and environment that anchors the mind in the present moment.",
+      "The subtle texture of the watercolor paper and the warm grain of the wooden frame offer a tactile sense of groundedness, while the clover garden's intricate details provide an endlessly renewable focus for mindfulness meditation."
+    ]
+  },
+  {
+    "name": "Pastoral Watercolor of a Gentle Alien Wanderer",
+    "descriptions": [
+      "A watercolor painting bathed in muted tones of sage green, dusty lavender, and pale amber, depicts a long-limbed creature with gentle eyes grazing on a rolling alien meadow.",
+      "The scene is softly blurred, as if seen through a dream, with delicate paper texture visible under the translucent washes. The frame is a slim, brushed aluminum strip, its cool metal contrast offset by a warm, off-white mat.",
+      "It hangs at eye level, catching the late afternoon light that filters through sheer curtains, casting a faint, dappled glow on the wall."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "The painting emits a tranquil pastel aura, drawing the eye into its hazy horizon where the creature rests, urging slow, measured breaths.",
+      "Soft watercolor blooms ripple like quiet thoughts, each brushstroke a gentle reminder to release tension and settle into the present.",
+      "The interplay of cool and warm hues creates a soothing visual hum, like the distant murmur of a calm stream, encouraging a meditative state."
+    ]
+  },
+  {
+    "name": "Oil Painting: Bagpipes and Dried Herbs",
+    "descriptions": [
+      "An oil painting on linen canvas, its surface alive with impasto peaks and valleys. The composition centers on a set of bagpipes, their wooden drones oiled to a deep chestnut, silver rings catching a faint glimmer. Around them, a small constellation of spices\u2014cardamom pods, a broken cinnamon stick, a bundle of dried lavender\u2014spill from a ceramic bowl.",
+      "The lighting is diffuse, like a late afternoon through sheer curtains, softening edges and mellowing shadows. The frame is reclaimed oak with an unfinished grain, revealing subtle circular saw marks near the corners."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "A low hum seems to emanate from the drone pipes, a steadying note that draws wandering thoughts back to the body.",
+      "The scattered spices and herbs in the painting suggest a quiet pantry at dusk, evoking memories of brewing tea and preparing slow meals.",
+      "The thick brushwork invites the fingertips to trace, as if reading a tactile language, settling a racing mind into meditative observation."
+    ]
+  },
+  {
+    "name": "Frankincense Incense Stick",
+    "descriptions": [
+      "A slender stick of compressed frankincense resin, scented with warm, balsamic notes.",
+      "Hand-rolled in a minimalist studio, this incense stick pairs ancient ritual with sleek, uncluttered living."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "toggleable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "meditation_aid_ambience": [
+      "Its gentle smoke dances, creating a quiet sanctuary in the middle of a busy day.",
+      "The timeless scent of frankincense grounds you, weaving through the hum of modern life like a whispered anchor.",
+      "Each wisp carries away the day's mental clutter, leaving behind a clear, calm surface."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 1,
+      "on_description": "The stick glows at its tip, releasing a thin stream of fragrant smoke.",
+      "off_description": "The stick rests unlit, its resinous soul waiting.",
+      "on_sequence": "You bring a flame to the tip; it catches and smolders, sending a ribbon of smoke upward. The ancient scent melds with the hum of your daily life, creating a pocket of stillness.",
+      "off_sequence": "You gently press the ember into a flat surface, watching the glow fade. The smoke thins and disappears, leaving a lingering trace of warmth in the air.",
+      "perishable": true,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Sandalwood Incense Stick",
+    "descriptions": [
+      "A single sandalwood incense stick, wrapped in a matte paper sleeve with subtle geometric embossing. The tip is coated in a dark, resinous paste, promising a slow, contemplative burn.",
+      "The stick is slim and straight, with a slight grain visible in the wood compound. It feels light and fragile, yet purposeful."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "toggleable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "meditation_aid_ambience": [
+      "The scented smoke unspools in elegant spirals, catching the soft light from the nearby floor lamp and turning it into a dancing ribbon.",
+      "A quiet, grounding aroma of creamy sandalwood fills the space..",
+      "The gentle crackle of the ember is barely audible, a tiny hearth for the mind that invites you to slow down and breathe."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 3,
+      "on_description": "The sandalwood stick glows with a cherry-red ember, wisps of aromatic smoke curling upward.",
+      "off_description": "The sandalwood stick rests unlit, its tip a scuffed charcoal from previous burns.",
+      "on_sequence": "You run a flame along the tip; it catches, sputters, then settles into a steady burn. A silken thread of smoke rises, bearing the scent of old libraries and sun-warmed wood.",
+      "off_sequence": "You press the ember into the edge of a ceramic dish; it extinguishes with a tiny hiss, leaving a stubborn curl of smoke that dissipates into the air.",
+      "perishable": true,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "White Sage Incense Stick",
+    "descriptions": [
+      "A slender wand of sage leaves tightly bound with natural twine, its pale green and silver foliage dry and brittle to the touch."
+    ],
+    "static": false,
+    "type": [
+      "meditation_aid",
+      "toggleable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "meditation_aid_ambience": [
+      "A soft haze of pale smoke drifts through the space, carrying the grounded perfume of parched earth, clean rain, and wild gardens.",
+      "The quiet crackle of the ember punctuates long, slow breaths, coaxing your shoulders to drop and your mind to settle into the present.",
+      "The scent lingers like a memory of sun-warmed stone after a summer shower, wrapping the room in a gentle stillness."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 3,
+      "on_description": "The tip smolders with a soft orange glow, trailing a thin ribbon of pale smoke upward.",
+      "off_description": "Unlit, the sage bundle is dry and fragrant, its silver-green leaves tight against the stem.",
+      "on_sequence": "You bring the flame to the tip; it catches, sputters, then settles into a steady ember. You wave it gently, and a veil of smoke curls upward, filling the air with a quiet, herbaceous warmth.",
+      "off_sequence": "You press the smoldering tip into the ceramic dish, watching the glow fade. The smoke thins to a thread, then disappears, leaving only the smell of sage steeped in stillness.",
+      "perishable": true,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Atomic Era Brass Gooseneck Lamp",
+    "descriptions": [
+      "A vintage lamp with a gracefully curved brass neck and a small conical shade. The metal has a warm patina, with minor scuffs and a slightly tarnished base that speaks of decades of quiet companionship.",
+      "Its pull chain dangles expectantly, promising a soft pool of light for late-night reading or quiet reflection."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The lamp casts a warm, honeyed glow across the desk, illuminating dust motes in the air.",
+      "off_description": "The lamp sits quietly, its brass surface catching the ambient light from the window.",
+      "on_sequence": "You pull the chain, and a soft click is followed by a gentle hum. The bulb flickers to life, spilling a golden cone of light that makes the shadows retreat.",
+      "off_sequence": "You tug the chain again, and the light dies instantly, leaving the lamp silent and still, its brass surface cool to the touch.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Polished River Stone Lounger",
+    "descriptions": [
+      "A massive, ovoid slab of river-smoothed granite, its surface buffed to a soft, matte sheen. The stone radiates a gentle warmth, as if it has absorbed the afternoon sun for centuries. Slight concavities in its surface curve to welcome a reclining body, the edges worn soft by countless hands and restless moments. A thin woven mat rests at one end, and the faint mineral scent of petrichor lingers in the porous grain."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lower yourself onto the cool, smooth stone, and it cradles your spine with a firm, unyielding comfort. The surface warms slowly beneath you, a quiet heat seeping into your muscles as your eyelids grow heavy. Dappled light from the overhead skylight dances across the pale veining, and you drift into a deep, weightless rest, the stone humming a silent, ancient lullaby.",
+      "Lying back, you feel the subtle contours of the rock press against your shoulders and hips, a natural ergonomic curve that seems made for you. The stone's surface is so finely polished it feels almost like silk, cool at first, then gradually sharing its stored heat. Around you, the room holds its breath, and the gentle murmur of a water feature becomes the only boundary between waking and dreaming."
+    ],
+    "narrative_sitting": [
+      "You perch on the edge of the stone, its smooth surface cool and reassuring beneath your thighs. The weight of the day seems to settle into the rock, absorbed by its dense, patient mass. You run a hand along its grain, tracing the faint swirls of grey and charcoal, and feel a quiet grounding in its immovable presence.",
+      "Sitting cross-legged on the sun-warmed stone, you let your gaze wander the soft textures of the room. The stone holds you gently, its surface just yielding enough to feel like a quiet embrace. A cup of tea steams beside you, and the world feels slower here, anchored by this single, silent slab of earth."
+    ]
+  },
+  {
+    "name": "Rocking Recliner Red Velvet Individual Sofa",
+    "descriptions": [
+      "Upholstered in a rich berry-toned fabric that seems to absorb the warm lamplight, the chair\u2019s velvet nap gleams faintly with each shift of the body.",
+      "The curved wooden rocker base gives a gentle, rhythmic sway, while the recliner\u2019s padded armrests bear subtle indentations from countless afternoons of lingering.",
+      "A hidden lever smoothly extends the footrest, transforming the seat into a cocoon of plush support."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You recline fully, the backrest tilting until you lie nearly flat, the velvet cradling your spine like a gentle hand.",
+      "The rocking motion slows to a barely perceptible sway, lulling your eyelids heavy as the footrest supports your legs.",
+      "You curl sideways, burying your face into the soft armrest, the fabric warm against your cheek, and the world fades into a mellow hum."
+    ],
+    "narrative_sitting": [
+      "You sink into the deep seat, the velvet yielding softly beneath you, and set the chair rocking with a light push of your feet.",
+      "The recliner\u2019s lever is smooth to your touch; you pull it and lean back, letting the chair hold you in a semi-reclined embrace.",
+      "You sit upright, your hands resting on the plush armrests, feeling the gentle give of the fabric with each slight movement."
+    ]
+  },
+  {
+    "name": "Receding Shoreline with Sea",
+    "descriptions": [
+      "A broad expanse of dark rock and wet sand where the tide pulls back, revealing tide pools, barnacles, and the distant hiss of retreating foam.",
+      "The air smells of salt and iodine, with a breeze that carries the sound of water over stone like a low, steady exhale."
+    ],
+    "static": true,
+    "type": [
+      "comfort_object",
+      "water_point",
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_hug": [
+      "You crouch low and wrap your arms around a boulder, its rough surface pressing against your cheek like a living, breathing weight.",
+      "You press your palms flat against the wet stone, feeling the vibration of the last wave's retreat travel up your arms, grounding you in the moment.",
+      "You kneel and scoop a handful of gritty sand, closing your fist around it, the fine grains slipping like a tiny hourglass between your fingers as you hug your own knees to your chest, the shoreline holding you in its vast lap."
+    ],
+    "narrative_drinking": [
+      "You cup your hands and bring the briny water to your lips. The salt stings your tongue, a sharp slap of mineral that leaves your mouth feeling drier and more parched than before.",
+      "The taste is harsh and metallic, like licking a battery, and your throat clenches in protest as the sea withdraws its brief gift.",
+      "A sip of the frothy edge leaves a gritty film on your teeth and a burning in your gut, the sea's hospitality turning to a warning."
+    ],
+    "narrative_wash_self": [
+      "You dip your hands into the cold tide, the salt water stinging the small cuts on your fingers as you rinse the dirt away, leaving a tacky residue like a second skin.",
+      "You use a handful of wet sand to scrub your arms, the abrasive grit sloughing off dead skin, then rinse with a splash of brine, feeling oddly cleansed despite the mineral sting.",
+      "You let the receding water wash over your bare feet, the chill seeping into your bones, each wave a miniature ritual of renewal."
+    ],
+    "stats_edit": {
+      "fullness": -2.0,
+      "hydration": -5.0,
+      "energy": -1.5
+    },
+    "meditation_aid_ambience": [
+      "The rhythmic pulse of the retreating water creates a metronome for your thoughts, slowing your breath to match its patient ebb.",
+      "The sand on the wet rocks and tide pools offers a moving canvas, each glint a momentary koan.",
+      "The cool breeze carries the salt and the sound of water over stone, a white noise that drowns the chatter of your mind."
+    ]
+  },
+  {
+    "name": "Time-Worn Shoreward Monoliths",
+    "descriptions": [
+      "A cluster of cylindrical stones rising from the sand, their surfaces polished by countless tides into smooth, rounded forms.",
+      "The rocks are arranged in a natural grouping, their bases buried in the beach, with the tallest reaching up to a person's waist.",
+      "Their color is a muted gray-beige, with subtle bands of darker sediment tracing the history of their formation."
+    ],
+    "static": true,
+    "type": [
+      "meditation_aid"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "meditation_aid_ambience": [
+      "The gentle, rhythmic pulse of the waves against these ancient stones creates a soothing, hypnotic pattern that anchors your awareness in the present moment.",
+      "As your gaze follows the smooth contours, the coolness of the stone seems to radiate a calming stillness, inviting a deep, quiet focus.",
+      "The way the sunlight catches the water-worn surfaces casts soft, shifting highlights that encourage a meditative, unhurried observation."
+    ]
+  },
+  {
+    "name": "Weeping Willow Tree",
+    "descriptions": [
+      "Its cascading boughs drape like a living waterfall, each slender branch swaying with a languid grace that filters the afternoon light into a soft, dappled mosaic. The leaves, a muted sage, rustle with a sound like gently turning pages, while the bark bears the weathered patina of years spent in quiet vigil beside a reflecting pool. Moss hugs its base in a velvety cushion, and the understated elegance of its silhouette complements the clean lines of the glass-walled home nearby, offering a private, shaded nook that feels both timeless and effortlessly serene."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Low Canopy Tree",
+    "descriptions": [
+      "A short, broad tree that forms a natural umbrella of dense foliage. Its leaves are so tightly packed that they filter the afternoon sun into a dappled, golden glow, painting shifting patterns across the ground.",
+      "The trunk is thick and low, almost sculptural, with a slight curve that invites one to lean against it. The air beneath the canopy feels hushed and protected, as if the tree itself is a quiet shelter within the open air."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Sea Lavender Bush",
+    "descriptions": [
+      "A dense, slightly unruly clump of slender stems and narrow sage-green leaves, holding pale purple blossoms that look dusted with frost.",
+      "The dried flowers rasp faintly when brushed, and their soft color seems to have been pulled from a faded photograph left in daylight.",
+      "It is planted in a heavy handmade ceramic pot with a finger-smudged glaze, sitting low on a plain wooden sideboard where the afternoon light picks out every tiny bloom.",
+      "A handful of petals have scattered onto the surface beneath it, as if the bush has already decided this corner of the room belongs to it."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Rosemary Bush",
+    "descriptions": [
+      "A thriving rosemary bush in a matte, speckled ceramic pot, its woody stems crowded with slender, gray-green needles. The pot rests on a wide windowsill where afternoon sun warms the leaves, releasing a faint, piney tang into the air.",
+      "The soil is slightly damp, and a few dried sprigs are tucked along the rim\u2014a small effort to keep an ever-growing green companion in check. The pot's surface shows faint water rings, evidence of frequent, careful watering."
+    ],
+    "static": false,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Seaweed-covered Stepping Stones",
+    "descriptions": [
+      "A series of large, flat stones, their surfaces polished by years of gentle tides, arranged in a deliberate path that winds along the water's edge. Each stone is a study in contrast: the cool, smooth granite against the vivid, slippery green of seaweed that clings to its edges. The arrangement feels intentional yet organic, as if a landscape architect had consulted the ocean itself.",
+      "The rocks are spaced just far enough to require a mindful step, inviting a pause. In the soft light of late afternoon, their wet surfaces catch glints of amber and slate, while the seaweed adds a splash of deep emerald. The whole scene evokes a sense of calm, a quiet nook where the rush of modern life recedes."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Empty Beach Flag Pole",
+    "descriptions": [
+      "A slender column of powder-coated aluminum, its hue a muted tide-pool grey, stands sunk into the sand. The pole is unadorned, but its surface carries the faint patina of countless salt breezes, a fine grain like beach glass. At its peak, a small, softly rounded cap catches the low sun, glowing like a polished pebble. The base is a broad, drum-like weight, its edges worn smooth by bare feet and drifting sand. Though vacant of fabric, the pole feels purposeful, a quiet sentinel that marks a boundary between land and sea.",
+      "In the hush of late afternoon, this pole casts a long, gentle shadow across the shoreline. Its proportions are pleasing, not industrial but artfully minimal, with a matte finish that never glares. Around its base, the sand is furrowed in concentric rings, evidence of the last tide. It stands steady, neither leaning nor swaying, as if it has found its place. There is a certain gentle reassurance in its permanence, a subtle calm that some things remain anchored."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  }
+]

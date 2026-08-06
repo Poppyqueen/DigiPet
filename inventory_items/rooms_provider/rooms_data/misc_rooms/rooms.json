@@ -1,0 +1,104 @@
+[
+    {
+        "name": "no 1 library",
+        "image": "library",
+        "room_types": [
+        ],
+        "music": "interiority_spaces",
+        "items": []
+    },
+    {
+        "name": "Nature Heaven",
+        "image": "secret_pond",
+        "room_types": [
+            "outdoors_area"
+
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "stasis",
+        "items": []
+    },
+    {
+        "name": "no 1 hallway",
+        "image": "hallway",
+        "room_types": [
+        ],
+        "music": "keep_it_moving",
+        "items": []
+    },
+    {
+        "name": "Section A2",
+        "image": "straight_walls",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "keep_it_moving",
+        "items": []
+    },
+    {
+        "name": "Section A",
+        "image": "straight_path_forest",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "specimens_walk",
+        "items": []
+    },
+    {
+        "name": "Section B",
+        "image": "willow",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "comfort_fluff",
+        "items": []
+    },
+    {
+        "name": "Section B2",
+        "image": "brick_path",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "what_might_there_be",
+        "items": []
+    },
+    {
+        "name": "Section C",
+        "image": "seashore",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "ocean-views",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "aware_drifter",
+        "items": []
+    }
+]

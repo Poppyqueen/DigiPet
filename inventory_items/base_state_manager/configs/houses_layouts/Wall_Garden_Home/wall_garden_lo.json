@@ -1,13 +1,24 @@
 {
+  "aliases": {
+    "compact garden": "garden",
+    "comfy kitchen": "kitchen",
+    "compact bedroom": "bedroom",
+    "comfy bathroom": "bathroom",
+    "compact living room": "living room",
+    "no 1 library": "library",
+    "no 1 hallway": "Hallway"
+
+  },
+  "initial_room":"living room",
   "groups": {
-    "left_gray": ["living_room", "kitchen"],
+    "left_gray": ["living room", "kitchen"],
     "right_gray": ["library", "bedroom"],
     "center_gray": ["bathroom"],
     "main_gray": ["garden"],
     "turquoise": ["Nature Heaven"]
   },
   "connections": [
-    ["Hallway", "living_room"],
+    ["Hallway", "living room"],
     ["Hallway", "bathroom"],
     ["Hallway", "bedroom"],
     ["Hallway", "garden"],

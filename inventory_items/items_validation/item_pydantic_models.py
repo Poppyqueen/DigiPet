@@ -721,7 +721,7 @@ def validate_item_dict(data: dict, check_id: bool = False) -> tuple[dict | None,
         return None, f"Base contract failed: {e}"
 
     errors = []
-    for type_str in data.get("type", []):
+    for type_str in (data.get("type") or []):
         contract = TYPE_FIELD_CONTRACTS.get(type_str)
         if contract is None:
             continue

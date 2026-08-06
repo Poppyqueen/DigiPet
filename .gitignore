@@ -59,3 +59,4 @@ htmlcov/
 .idea/
 *spider_output/
 *tarantula_output/
+*blackwidow_output/

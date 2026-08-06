@@ -1,0 +1,106 @@
+.constants:
+  - &coastal_style "Style: A coastal biome, small rural town environment. Hiking area."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language.
+  - &items_base_prompt >
+      THEME = "cozy 21th century contemporary" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openrouter"
+  model: "~deepseek/deepseek-v4-flash-latest"
+  export_dir: "inventory_items/items_provider/items_data/walled_garden_items_2"
+
+tasks:
+
+  # - mode: "item"
+  #   types: ["sleepable_spot", "seatable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "lounging smooth natural stone"
+  #     - "Rocking Recliner Red Velvet Individual Sofa"
+
+
+  # - mode: "item"
+  #   types: ["cranny_host"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Fill all the required fields for a cranny host"
+  #   prompts:
+  #     - "ornamental bush, lavender"
+  #     - "ground clover patch"
+  #     - "weeping willow"
+  #     - "Boston Ivy covered wall, red brick"
+  #     - "Translucent Purple Mushrooms Patch"
+
+
+  # - mode: "item"
+  #   types: ["meditation_aid"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #   - "Watercolor framed painting of a world made out of glass bubbles"
+  #   - "Watercolor framed painting of a sunbeam hitting a clover garden, worm's-eye view"
+  #   - "Watercolor of a pastoral extraterrestrial 4 legged creature"
+  #   - "Oil painting, still life featuring bagpipes, spices and aromatic herbs"
+
+
+  # - mode: "item"
+  #   types: ["meditation_aid","toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #   - "Frankincense incense stick"
+  #   - "Sandalwood  incense stick"
+  #   - "white sage incense stick"
+
+
+  # - mode: "item"
+  #   types: ["comfort_object", "water_point", "meditation_aid"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #   - "Sea, receding, rocky shoreline. Literally a whole shoreline and sea as a single item. Hugging actions should represent a small expression of interaction with the shoreline or waters."
+
+
+
+  # - mode: "item"
+  #   types: ["toggleable"]
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #   - "Atomic era brass gooseneck lamp"
+
+  # - mode: "item"
+  #   types: []
+  #   context:
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #   - "Weeping willow tree"
+  #   - "Short tree with dense canopy overhead"
+  #   - "Protruding set of sea rocks, cylindrical eroded rocks beached on the sand"
+  #   - "Sea lavender bush"
+  #   - "Rosemary bush"
+  #   - "Seaweed covered smooth stepping rocks alongside shoreline"
+  #   - "Empty beach flag pole"
+
+
+
+  - mode: "item"
+    types: ["meditation_aid"]
+    context:
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+    - "Protruding set of sea rocks, cylindrical eroded rocks beached on the sand"

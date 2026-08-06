@@ -1,0 +1,89 @@
+{
+    "living room":[
+        "Flat Screen TV",
+        "Window Walls",
+        "Terracotta pot",
+        "Loveseat Sofa"
+    ],
+    "kitchen":[
+        "Kitchen Stove",
+        "Programmable Slow Cooker",
+        "Mixer Bowl",
+        "Kitchen Base Cupboards",
+        "Kitchen Sink",
+        "Small Framed Square Window"
+    ],
+    "library":[
+        "Desk Computer",
+        "Compact Bookbinding Workbench",
+        "Atomic Era Brass Gooseneck Lamp",
+        "Ornate Silk-Upholstered Rocking Sofa"
+    ],
+    "bedroom":[
+        "Small Deep Purple Blanket",
+        "Mahogany Sitting Cat Figurine",
+        "Red Lava Lamp",
+        "Round Viewport",
+        "Mahogany king-size bed",
+        "Vanity Desk"
+    ],
+    "bathroom":[
+        "Freestanding porcelain bathtub",
+        "Oil Diffuser",
+        "Small Framed Square Window"
+    ],
+    "garden":[
+        "Patio Chair[x4]",
+        "Tiered garden fountain",
+        "Weathered Garden Spigot",
+        "Wall-Mounted Outdoors Lantern",
+        "Ancient Crooked Pine"
+    ],
+    "Hallway":[
+        "Tall ceramic planter",
+        "Large Round Window",
+        "Sandalwood Incense Stick[x20]",
+        "Frankincense Incense Stick[x20]",
+        "White Sage Incense Stick[x20]",
+        "Pastoral Watercolor of a Gentle Alien Wanderer"
+    ],
+    "Nature Heaven":[
+        "Jasmine Trained Bush[x10]",
+        "Pocket Brass Maze Box",
+        "Freshwater Pond",
+        "Translucent Purple Mushrooms Patch",
+        "Low Canopy Tree"
+    ],
+    "Section A2":[
+        "Boston Ivy Covered Red Brick Wall[x3]",
+        "Rosemary Bush[x2]"
+    ],
+    "Section A":[
+        "Rosemary Bush[x2]",
+        "Clover Patch in a Wide Ceramic Tray[x4]",
+        "Small Tuft of Coastal Grass"
+    ],
+    "Section B":[
+        "Jasmine Trained Bush[x5]",
+        "Stone birdbath bowl",
+        "Etched Lantern Stone[x3]",
+        "Weeping Willow Tree"
+    ],
+    "Section B2":[
+        "Boston Ivy Covered Red Brick Wall[x3]",
+        "Polished River Stone Lounger",
+        "Ornamental Lavender Bush[x2]",
+        "Small Tuft of Coastal Grass",
+        "Tall Coastal Shrub"
+    ],
+    "Section C":[
+        "Receding Shoreline with Sea",
+        "Empty Beach Flag Pole",
+        "Seaweed-covered Stepping Stones",
+        "Rosemary Bush[x3]",
+        "Sea Lavender Bush[x3]",
+        "Etched Lantern Stone",
+        "Weathered Driftwood Log[x2]",
+        "Time-Worn Shoreward Monoliths"
+    ]
+}

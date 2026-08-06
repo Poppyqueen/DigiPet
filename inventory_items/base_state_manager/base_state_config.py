@@ -25,34 +25,27 @@ class InitialStateConst():
 
     def _load_states_map(self) -> dict:
         """
-        Walk through the config root directory and load all JSON config map files.
+        Load the single JSON config map file that defines available states.
         """
-        all_configs = {}
+        config_file_path = os.path.join(self.config_root_dir, "state_configs_map.json")
 
-        if not os.path.exists(self.config_root_dir):
-            print(f"Config directory '{self.config_root_dir}' not found. Creating it...")
+        if not os.path.exists(config_file_path):
+            print(f"Config file '{config_file_path}' not found. Creating an empty one...")
             os.makedirs(self.config_root_dir, exist_ok=True)
-            return all_configs
+            with open(config_file_path, 'w') as f:
+                json.dump({}, f, indent=4)
+            return {}
 
         try:
-            for root, dirs, files in os.walk(self.config_root_dir):
-                for file in files:
-                    if file.endswith('.json'):
-                        file_path = os.path.join(root, file)
-                        try:
-                            with open(file_path, 'r') as f:
-                                config_data = json.load(f)
-                            if isinstance(config_data, dict):
-                                all_configs.update(config_data)
-                            else:
-                                print(f"Warning: {file_path} does not contain a dictionary at root level")
-                        except (json.JSONDecodeError, KeyError) as e:
-                            print(f"Error loading config from {file_path}: {e}")
-                            continue
-        except Exception as e:
-            print(f"Error walking config directory: {e}")
-
-        return all_configs
+            with open(config_file_path, 'r') as f:
+                config_data = json.load(f)
+            if not isinstance(config_data, dict):
+                print(f"Warning: {config_file_path} does not contain a dictionary at root level")
+                return {}
+            return config_data
+        except json.JSONDecodeError as e:
+            print(f"Error loading config from {config_file_path}: {e}")
+            return {}
 
     def reload_configs(self):
         self.states_configs = self._load_states_map()

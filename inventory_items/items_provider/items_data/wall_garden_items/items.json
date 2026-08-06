@@ -76,8 +76,7 @@
         "name": "Verdant Coastal Pond",
         "descriptions": [
           "A secluded, crystal-clear freshwater pond nestled within the coastal hiking trails.",
-          "Lush aquatic vegetation weaves through the depths, swaying gently in the stillness.",
-          "The water is exceptionally translucent, revealing the soft, rippled sandy floor ten feet below."
+          "Lush aquatic vegetation weaves through the depths, swaying gently in the stillness."
         ],
         "static": true,
         "type": [
@@ -104,7 +103,6 @@
         },
         "meditation_aid_ambience": [
           "The rhythmic, soft lapping of water against the sandy banks creates a natural metronome for deep breathing.",
-          "Sunlight filters through the translucent water, casting dancing, hypnotic patterns of light on the sandy bottom.",
           "The gentle rustle of aquatic plants provides a soothing, white-noise backdrop for quiet reflection."
         ]
       },
@@ -117,8 +115,7 @@
         ],
         "static": true,
         "type": [
-          "seatable",
-          "cranny_host"
+          "seatable"
         ],
         "stackable": false,
         "quantity": 1,
@@ -290,7 +287,6 @@
         ],
         "static": true,
         "type": [
-          "cranny_host",
           "seatable",
           "sleepable_spot"
         ],

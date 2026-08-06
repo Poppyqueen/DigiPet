@@ -180,21 +180,38 @@ class StateStore(GenericJsonTool):
 
     def _is_item_valid_for_this_agent(self, item: dict, check_id: bool) -> tuple[bool, str | None]:
         item_types = item.get("type", [])
+        if item_types is None:
+            item_types = []
+
+        print(f"[DEBUG] _is_item_valid_for_this_agent: "
+            f"name={item.get('name', '?')!r}, id={item.get('id', '?')!r}, "
+            f"raw_type={item.get('type', '<missing>')!r}, "
+            f"resolved_type={item_types!r}")
+
+        if not isinstance(item_types, list):
+            print(f"[DEBUG] item_types is not a list (got {type(item_types).__name__}); "
+                f"coercing to list for safety.")
+            item_types = [item_types] if item_types else []
+
+        item["type"] = item_types  
+
+
         unknown_types = [t for t in item_types if t not in self._valid_types]
-        
+
         if unknown_types:
+            print(f"[DEBUG] Unknown types for item {item.get('name', '?')!r}: {unknown_types} "
+                f"(valid_types has {len(self._valid_types)} entries, fresh_state={self._is_fresh_state})")
             if self._is_fresh_state:
-                # Items came from default state template — reject unknown types,
-                # they shouldn't be in the template if the server isn't connected.
                 return False, f"Item has unknown types {unknown_types} — cannot create."
             else:
-                # Loaded from existing saved state — quarantine.
-                # Could be a disconnected MCP server.
                 print(f"Info: Item '{item.get('name', '?')}' has unrecognized types {unknown_types}. "
                     f"Keeping (types may belong to a disconnected MCP server).")
                 return True, None
-        
-        return validate_item_dict(item, check_id=check_id)
+
+        result, error = validate_item_dict(item, check_id=check_id)
+        if result is None:
+            print(f"[DEBUG] validate_item_dict failed for item {item.get('name', '?')!r}: {error}")
+        return result, error
 
     def _post_init_state_validation(self):
         # This method needs to *modify* self._state.

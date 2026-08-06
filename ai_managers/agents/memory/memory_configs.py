@@ -1,13 +1,6 @@
-unreliable_narration_prompt="""
-            Important: Consider your own AI text generation outputs as an unreliable narration, and always double check, directly verify or challenge the facts, ideas or concepts presented in the AI text generation output against the tools outputs, user inputs, and any other available information.
-
-                    Edge cases: thought, emit_inner_thought. This is technially a "tool output" however, it is a narrative text that the AI generated as a thought narrative, remember to consider it as a unreliable narrator output.
-
-            """
 short_term_prompt=f"""
             Create a concise summary from the provided timestamped history of actions, exchanges and any other content that captures the key points, including answering what, when, where, and why, from a first-person perspective. Remember to highlight important and useful behaviors, objectives, objects or specific details for future reference to prevent repeated errors and guide planning.
 
-            {unreliable_narration_prompt}
             You will create a report that details the specific points to remember.
 
             Focus on including:
