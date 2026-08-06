@@ -87,6 +87,20 @@
         "items": []
     },
     {
+        "name": "Section B3",
+        "image": "mooglies_spot",
+        "room_types": [
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+            "earth-weather",
+            "xeno-canto",
+            "earth-astro-views"
+        ],
+        "music": "open_arms",
+        "items": []
+    },
+    {
         "name": "Section C",
         "image": "seashore",
         "room_types": [

@@ -11,10 +11,21 @@ class ItemStore:
     ):
         self._items = {}
         self._item_to_file_map = {}
+        self._normalized_to_name = {}  # NEW: normalized_name -> canonical stored name
         self._root_dir = Path(root_dir_path)
         # None means "accept everything" — existing behavior preserved
         self._valid_types: set[str] | None = set(valid_types) if valid_types is not None else None
         self._load_items()
+
+    @staticmethod
+    def normalize_name(name: str) -> str:
+        """
+        Normalize an item name for comparison purposes: collapse internal
+        whitespace and casefold. Used only as a fallback for lookups/duplicate
+        detection — canonical storage keys are left untouched so existing exact
+        matches, file paths, etc. are unaffected.
+        """
+        return " ".join(name.strip().split()).casefold()
 
     def _item_passes_type_filter(self, item_data: dict) -> bool:
         """
@@ -45,6 +56,20 @@ class ItemStore:
                         if item_name and self._item_passes_type_filter(item_data):  # NEW check
                             self._items[item_name] = item_data
                             self._item_to_file_map[item_name] = str(path)
+
+                            # NEW: maintain a normalized-name index for
+                            # case/whitespace-insensitive fallback lookups.
+                            normalized = self.normalize_name(item_name)
+                            existing_canonical = self._normalized_to_name.get(normalized)
+                            if existing_canonical is not None and existing_canonical != item_name:
+                                print(
+                                    f"Warning: '{item_name}' in '{path}' normalizes the same as "
+                                    f"already-loaded item '{existing_canonical}'. Keeping "
+                                    f"'{existing_canonical}' as the canonical match for lookups; "
+                                    f"consider renaming one of them to avoid ambiguity."
+                                )
+                            else:
+                                self._normalized_to_name[normalized] = item_name
             except (IOError, json.JSONDecodeError) as e:
                 print(f"Error loading from '{path}': {e}")
 
@@ -64,7 +89,14 @@ class ItemStore:
             """Get item(s) by name (with optional [xN] syntax)."""
             clean_name, quantity = parse_name(name)
             item = self._items.get(clean_name)
-            
+
+            # NEW: fall back to a normalized (case/whitespace-insensitive) match
+            # if the exact name wasn't found. Canonical keys/storage are untouched.
+            if item is None:
+                canonical_name = self._normalized_to_name.get(self.normalize_name(clean_name))
+                if canonical_name is not None:
+                    item = self._items.get(canonical_name)
+
             if item is None:
                 return None
             
@@ -171,6 +203,11 @@ class ItemStore:
 
         self._items[item_name] = copy.deepcopy(item_data)
         self._item_to_file_map[item_name] = None
+
+        # NEW: keep the normalized index in sync for newly-added items too.
+        normalized = self.normalize_name(item_name)
+        self._normalized_to_name.setdefault(normalized, item_name)
+
         return True, f"Item '{item_name}' added successfully."
     
 

@@ -6,6 +6,7 @@ Enhanced version with detailed missing item location tracking
 import ast
 import json
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
 from dataclasses import dataclass, field
@@ -13,6 +14,32 @@ from collections import defaultdict
 import fnmatch
 import argparse
 import difflib
+
+
+_QUANTITY_SUFFIX_RE = re.compile(r'^(.*)\[x\d+\]$')
+
+
+def strip_quantity_suffix(item_name: str) -> str:
+    """
+    Strip a trailing '[xN]' quantity suffix from an item name, e.g.
+    'Boston Ivy Covered Red Brick Wall[x3]' -> 'Boston Ivy Covered Red Brick Wall'.
+    Mirrors the parsing logic ItemStore.get_item uses for stack quantities.
+    Names without the suffix are returned unchanged.
+    """
+    match = _QUANTITY_SUFFIX_RE.match(item_name)
+    if match:
+        return match.group(1)
+    return item_name
+
+
+def normalize_item_name(item_name: str) -> str:
+    """
+    Normalize an item name for comparison purposes: collapse internal
+    whitespace and casefold. Mirrors ItemStore.normalize_name so the scanner's
+    set-based existence checks (which don't go through ItemStore.get_item)
+    agree with what the store itself would resolve.
+    """
+    return " ".join(item_name.strip().split()).casefold()
 
 
 @dataclass
@@ -104,7 +131,8 @@ class GitignoreParser:
             'venv',
             '.env',
             'node_modules',
-            '.pytest_cache'
+            '.pytest_cache',
+            'build'
         ]
         self.patterns.extend(default_patterns)
     
@@ -160,13 +188,15 @@ class ConfigAnalyzer:
             print(f"Warning: Config directory '{directory}' does not exist")
             return dict(item_references)
         
-        for config_file in directory.glob('*.json'):
+        for config_file in directory.rglob('*.json'):
             try:
                 with open(config_file, 'r') as f:
                     data = json.load(f)
                 
                 items_found = defaultdict(int)
                 context_info = []
+                
+                print(f"[DEBUG] {config_file}: keys = {list(data.keys())}")
                 
                 for key, value in data.items():
                     if key == ignore_key:
@@ -176,12 +206,22 @@ class ConfigAnalyzer:
                         # Assume all list items are item names (strings)
                         for item in value:
                             if isinstance(item, str):
-                                items_found[item] += 1
+                                clean_item = strip_quantity_suffix(item)
+                                items_found[clean_item] += 1
                                 context_info.append(f"in '{key}' list")
+                            else:
+                                print(f"[DEBUG]   SKIPPED non-string list item in '{key}': "
+                                      f"{item!r} (type={type(item).__name__})")
                     elif isinstance(value, str):
                         # Single item as string
-                        items_found[value] += 1
+                        clean_value = strip_quantity_suffix(value)
+                        items_found[clean_value] += 1
                         context_info.append(f"as '{key}' value")
+                    else:
+                        print(f"[DEBUG]   SKIPPED key '{key}': value is {type(value).__name__}, "
+                              f"not list/str -> {value!r}")
+                
+                print(f"[DEBUG]   items_found in {config_file.name}: {dict(items_found)}")
                 
                 # Create ConfigReference objects
                 for item_name, count in items_found.items():
@@ -220,7 +260,7 @@ class ConfigAnalyzer:
             print(f"Warning: Config directory '{directory}' does not exist")
             return dict(item_references)
         
-        for config_file in directory.glob('*.json'):
+        for config_file in directory.rglob('*.json'):
             try:
                 with open(config_file, 'r') as f:
                     data = json.load(f)
@@ -234,7 +274,8 @@ class ConfigAnalyzer:
                         if isinstance(items_list, list):
                             for item in items_list:
                                 if isinstance(item, str):
-                                    items_found[item].append(config_name)
+                                    clean_item = strip_quantity_suffix(item)
+                                    items_found[clean_item].append(config_name)
                 
                 # Create ConfigReference objects
                 for item_name, config_sections in items_found.items():
@@ -644,11 +685,18 @@ class GameAssetAnalyzer:
         
         # Combine code and config references
         all_referenced_items = set(code_references.keys()) | config_items
+
+        # Normalize referenced names (case/whitespace-insensitive) so that e.g.
+        # a config referencing "Raw ground beef" is recognized as using the
+        # store item "Raw Ground Beef" and isn't flagged as orphaned.
+        normalized_referenced = {
+            normalize_item_name(name) for name in all_referenced_items
+        }
         
         orphaned = []
         for item in all_items:
             item_name = item.get('name')
-            if item_name and item_name not in all_referenced_items:
+            if item_name and normalize_item_name(item_name) not in normalized_referenced:
                 orphaned.append(item_name)
         
         return orphaned
@@ -932,7 +980,7 @@ def main():
         
         # # # Add your actual config patterns here:
 
-        analyzer.add_config_pattern('inventory_items/base_state_manager/houses_configs', 'room_configs', ignore_key='initial_room')
+        analyzer.add_config_pattern('inventory_items/base_state_manager/configs/houses_layouts', 'room_configs', ignore_key='initial_room')
 
         analyzer.add_config_pattern('inventory_items/items_provider/care_packages_data', 'nested_items', items_key='items')
         if args.check_item:

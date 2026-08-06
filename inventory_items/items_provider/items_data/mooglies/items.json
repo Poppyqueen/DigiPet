@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Blanc & Vermilion Diamond-Tufted Moogly",
+    "descriptions": [
+      "This Moogly bobs in place, its spherical body a patchwork of cream and crimson diamond shapes that seem to have been stitched from old upholstery and torn theater curtains. The white patches carry the faint ghost of a floral print, while the red ones glisten like polished apple skins. Its two stumpy feet patter on the ground, restless, as if counting invisible steps. Its eyes are glazed, looking somewhere past you, but its tiny hands\u2014which it only reveals when gesturing\u2014are surprisingly dexterous, awkwardly offering a miniature sofa cushion or a cracked circuit board.",
+      "It carries the faint scent of varnished wood and ozone. When it moves, it leaves behind a thin trail of dust motes that linger in the air like unanswered questions. Its shrill, abstract vocalizations sound like a broken music box trying to hum a lullaby. The missing screws and mismatched buttons stitched into its fur are not accidental\u2014they are its inventory, its memories, its quiet obsession."
+    ],
+    "static": true,
+    "type": [
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_endpoint_data": {
+      "store_name": "The Swaying Armchair & Bolt",
+      "store_types": [
+        "furniture",
+        "electronics"
+      ],
+      "welcome_message": "Welcome, wandering soul. Take a seat that hasn't seen a shadow. No, not that one\u2014the one that hums with forgotten power. Both are for trade. | The Moogly bobs twice, then squints at you as if trying to remember why it opened a store in the first place."
+    }
+  },
+  {
+    "name": "Polka-Dot Pale Blue Moogly",
+    "descriptions": [
+      "A plump, apple-sized spirit creature with white fur speckled in pale blue polka dots. It bobs gently on two tiny feet, its shrill vocalizations a bubbling melody of half-formed thoughts. This Moogly operates a small trading nook offering drinks and plant-based fare, though its rambling asides about the dreams of root vegetables often distract from the transaction.",
+      "Despite its tendency to wander into incomprehensible tangents about dew on spiderwebs or the migrations of clover, this Moogly is a genuine merchant. Its stock glimmers with bottled sunsets and leaf-wrapped wonders, each item priced in riddles that somehow feel fairer than coin."
+    ],
+    "static": true,
+    "type": [
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_endpoint_data": {
+      "store_name": "Dapple's Drinkery & Sprout Nook",
+      "store_types": [
+        "drinks",
+        "plant_based_foods"
+      ],
+      "welcome_message": "Welcome, wanderer! *bounce* I have waters that taste of morning, teas that hum secrets, and salads that wriggle free of bowls! But oh, have you seen the way the moon sleeps on the pond? ...Where was I? Ah, yes\u2014what shall I fetch for you?"
+    }
+  },
+  {
+    "name": "Star-Stamped Moogly Trading Spirit",
+    "descriptions": [
+      "A small, apple-shaped creature with fur that appears as if a night sky has been splattered onto a snowbank, each star a tiny scorch mark. Its movements are a series of hopeful, lunging bounces, as if the ground itself is a trampoline made of marshmallow clouds.",
+      "When it speaks, the sounds are a percussive jumble of bell-taps and kettle whistles, yet somehow you understand every nuance. Its eyes hold a crackling campfire glow, and it leans forward with an eagerness that makes the air around it feel charged with cinnamon and urgency.",
+      "This Moogly carries an invisible stall of pantry wonders\u2014jars of amber preserves, sacks of flour that whisper old songs, and brittle snacks that taste like childhood sunshine. Each item is presented with a flourish, as if it were a precious relic from a world that never quite decided its own rules."
+    ],
+    "static": true,
+    "type": [
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_endpoint_data": {
+      "store_name": "The Bounce-and-Squeak Emporium",
+      "store_types": [
+        "staples",
+        "condiments",
+        "snacks"
+      ],
+      "welcome_message": "Welcome, traveler! Spin a coin, trade a tale\u2014my wares are weird, worn, and wonderful. Pick your necessities and I'll throw in a dash of unexpected luck."
+    }
+  },
+  {
+    "name": "Checkered Yellow-White Moogly",
+    "descriptions": [
+      "This tiny creature is a sphere of soft, plush fur patterned in alternating squares of marigold and clotted cream, as if a dollmaker had stitched together scraps of sun-bleached sailcloth and curdled milk. It rests on two stubby feet that tap impatiently, bouncing occasionally like a dried gourd on a spring. Its vocalizations are a cascade of chimes and hiccups, each note carrying the scent of toasted grain and warm metal. Where it stands, the ground beneath seems to wear a faint circular stain, as if countless stews have been spilled and wiped away. Its eyes are twin chips of obsidian, glinting with the single-minded gleam of a merchant who counts coins in his dreams."
+    ],
+    "static": true,
+    "type": [
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_endpoint_data": {
+      "store_name": "Moogly's Hearth & Pot",
+      "store_types": [
+        "hearty_meals",
+        "cookware&tableware"
+      ],
+      "welcome_message": "The Moogly hops twice and lets out a trilling whistle. 'Oh, you've come seeking sustenance and vessels to hold it!' it chirps, nudging a worn iron pot with one foot. 'Browse freely \u2014 every ladle tells a story, every stew a secret.'"
+    }
+  },
+  {
+    "name": "Damascus Patterned Moogly",
+    "descriptions": [
+      "A plump, apple-shaped spirit the size of a large grapefruit, with a sleek coat of black and violet fur folded into Damascus-like whirls\u2014dark oil-slick shimmering over deep berry tones. Its only two feet, tiny and expressive, tap and sweep as it sways side to side, whistling snatches of abstract, shrill tunes. Around its round body hang small woven pouches, bulging with seed pods, dry roots, and papery harvest keepsakes, which it offers to any wanderer who lingers in its path."
+    ],
+    "static": true,
+    "type": [
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "store_endpoint_data": {
+      "store_name": "The Whistling Seed-Pouch",
+      "store_types": [
+        "seeds",
+        "harvest"
+      ],
+      "welcome_message": "The Moogly bobs up and down, letting out a whistle that trails into a hum. It rocks, and from its side pouches rustles the crisp, faint smell of earth and dried leaves. It nudges a woven basket forward, full of pods and wild roots, and waits."
+    }
+  }
+]

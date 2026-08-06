@@ -7,7 +7,6 @@
         ],
         "static": true,
         "type": [
-            "cranny_host"
         ],
         "stackable": false,
         "quantity": 1,
@@ -22,7 +21,6 @@
         ],
         "static": true,
         "type": [
-          "cranny_host"
         ],
         "stackable": false,
         "quantity": 1,
@@ -37,7 +35,6 @@
         ],
         "static": true,
         "type": [
-          "cranny_host"
         ],
         "stackable": false,
         "quantity": 1,
@@ -244,7 +241,6 @@
         ],
         "static": true,
         "type": [
-          "cranny_host"
         ],
         "stackable": false,
         "quantity": 1,
@@ -343,7 +339,6 @@
         ],
         "static": true,
         "type": [
-          "cranny_host"
         ],
         "stackable": false,
         "quantity": 1,
@@ -390,7 +385,7 @@
           "goal": null,
           "steps_taken": 0,
           "goal_reached": false,
-          "maze_type": "coastal",
+          "maze_type": "Gibraltar_2.0",
           "type_locked": true,
           "props_seed": null
         }

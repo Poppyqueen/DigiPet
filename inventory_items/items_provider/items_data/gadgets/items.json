@@ -681,7 +681,13 @@
       "You take hold of the pitcher and feel the lid fit in with a practiced, everyday snugness.",
       "You reach for the control and the smooth plastic gives under your fingers with no fuss.",
       "You meet the clear container against the light and see the measured markings waiting inside."
-    ]
+    ],
+    "store_entry_data": {
+      "price": 40.0,
+      "store_type": "electronics",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    }
   },
   {
     "name": "Electric Oven",

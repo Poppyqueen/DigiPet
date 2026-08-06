@@ -6,7 +6,8 @@
     "comfy bathroom": "bathroom",
     "compact living room": "living room",
     "no 1 library": "library",
-    "no 1 hallway": "Hallway"
+    "no 1 hallway": "Hallway",
+    "mooglies_hideout": "Section B3"
 
   },
   "initial_room":"living room",
@@ -29,6 +30,7 @@
     ["Section A", "Section B"],
     ["Section B", "Section B2"],
     ["Section B2", "Nature Heaven"],
+    ["Section B2", "Section B3"],
     ["Section B", "Section C"]
   ]
 }

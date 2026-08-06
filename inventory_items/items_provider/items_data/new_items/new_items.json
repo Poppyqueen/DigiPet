@@ -221,22 +221,6 @@
         "max_stack_size": 20
     },
     {
-        "name": "Porcelain Cameo Brooch",
-        "descriptions": [
-            "Small oval porcelain cameo set in a slightly tarnished brass frame, the carved profile of a Victorian woman tinted with faint rose hues and a hairline hair crack on the reverse.",
-            "Found tucked behind an old jewelry box in a dusty dressing table drawer; carries a whisper of old perfume and threadbare velvet residue along the pin.",
-            "Can be used as a meditation focal object — hold between thumb and forefinger, trace the carved profile slowly to ground attention, or place on a lapel during quiet reflection to anchor memory and breath."
-        ],
-        "static": false,
-        "type": [
-            "dust_bunnied_gleaning",
-            "meditation_aid"
-        ],
-        "stackable": false,
-        "quantity": 1,
-        "max_stack_size": 1
-    },
-    {
         "name": "Embroidered Velvet Bolster Pillow",
         "descriptions": [
             "A deeply padded cylindrical bolster covered in crushed ruby velvet, its surface subtly faded at the center where generations have rested.",
@@ -294,27 +278,6 @@
         }
     },
     {
-        "name": "Harmonic Mist Diffuser Lamp",
-        "descriptions": [
-            "A compact ceramic diffuser topped with a frosted glass dome; when active it releases a slow, patterned plume of scented mist and a soft amber glow.",
-            "Designed for meditation corners or bedside altars — the lamp hums almost inaudibly and includes a subtle bell-tone chime on cycle changes."
-        ],
-        "static": false,
-        "type": [
-            "meditation_aid",
-            "toggleable"
-        ],
-        "stackable": false,
-        "quantity": 1,
-        "max_stack_size": 1,
-        "meditation_aid_ambience": [
-            "A warm, honeyed light bathes nearby surfaces, pulling focus inward and easing visual tension.",
-            "Rhythmic, slow breaths of mist scent the air with sandalwood and bergamot, anchoring attention to the present.",
-            "Every few minutes a barely-there bell tone rings like a distant tide, marking a gentle return to posture and breath."
-        ],
-        "power_toggle": false
-    },
-    {
         "name": "Floor-Mounted Commercial Convection Oven",
         "descriptions": [
             "A heavy-duty stainless-steel convection oven with a reinforced door, tempered-glass window, and a multi-shelf interior.",
@@ -365,22 +328,6 @@
         "quantity": 10,
         "max_stack_size": 50,
         "plant_type": "sunflower"
-    },
-    {
-        "name": "Stained Glass Bay Window",
-        "descriptions": [
-            "A three-panel bay window set in a carved oak frame, each pane filled with jewel-toned stained glass depicting stylized ivy. The central sash is fixed while the two flanking casements open outward on brass hinges. It projects slightly from the wall, creating a shallow seat inside and casting colored light across the room when the sun hits.",
-            "Ornamental lead came holds the glass together; the wooden frame is painted deep mahogany and shows signs of age but is structurally sound. The window provides a clear view of the garden at certain angles when backlit, and a thin brass latch secures each casement."
-        ],
-        "static": true,
-        "type": [
-            "fenestration_aperture"
-        ],
-        "stackable": false,
-        "quantity": 1,
-        "max_stack_size": null,
-        "accessible": true,
-        "outdoors_type": "earth-weather"
     },
     {
         "name": "Sea-facing Panoramic Window",
@@ -548,22 +495,6 @@
             "A polite pinch of salt and a whisper of lemon lift the flavor; the cucumber's crispness snaps thin and clean, leaving a cooling thread across your tongue.",
             "You swallow the last bite and feel pleasantly sated — the sandwich's delicate simplicity lingers like the memory of floral steam rising from a teacup."
         ]
-    },
-    {
-        "name": "Gravity-Plated Vanity Desk (Starborne)",
-        "descriptions": [
-            "A compact vanity desk bolted to the cabin deck, its shell lined with micro-gravity plating that keeps toiletries from drifting during maneuvers. The surface is scuffed, and a small holo-mirror folds out from a recessed slot.",
-            "Numerous crannies: a thin shadow-gap between the top drawer and the apron, a curved, recessed lip behind the stowage wells where hairpins and reactor shims collect, a magnetic dust-rail along the underside edge that traps metallic flakes, and a maintenance seam beneath the left leg hiding a tiny access cavity.",
-            "Several panels are reachable if you kneel and slide the lower kickplate — the seam is faint but audible when nudged. Common finds include loose cred-chips, bent pins, micro-screws, and the occasional lost data-fob wedged deep in the rear corner.",
-            "Fixed to the deck with anti-shear bolts; it's intended as installed furniture and can't reasonably be carried off by one person."
-        ],
-        "static": true,
-        "type": [
-            "cranny_host"
-        ],
-        "stackable": false,
-        "quantity": 1,
-        "max_stack_size": null
     },
     {
       "name": "Wikipedia Access Terminal",

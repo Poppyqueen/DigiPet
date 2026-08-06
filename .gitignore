@@ -57,6 +57,12 @@ htmlcov/
 # IDE Specific Files (VS Code, PyCharm, etc.)
 .vscode/
 .idea/
+
+
+
+
+
 *spider_output/
 *tarantula_output/
 *blackwidow_output/
+*items_report_details.json
