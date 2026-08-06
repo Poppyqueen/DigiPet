@@ -87,7 +87,7 @@
         "items": []
     },
     {
-        "name": "Section B3",
+        "name": "mooglies_hideout",
         "image": "mooglies_spot",
         "room_types": [
             "outdoors_area"

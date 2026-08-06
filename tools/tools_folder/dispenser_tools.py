@@ -59,7 +59,7 @@ class DispenserTools:
 
         selected_candy = random.choices(list(contents.keys()), weights=list(contents.values()), k=1)[0]
 
-        single_candy_blueprint = self.item_store.get_item(selected_candy) or self.item_store.get_item("Single Candy")
+        single_candy_blueprint = self.item_store.get_item(selected_candy)
         if not single_candy_blueprint:
             return f"Error: Could not find candy definition for '{selected_candy}'."
 

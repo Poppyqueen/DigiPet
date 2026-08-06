@@ -1,6 +1,6 @@
 [
   {
-    "name": "Potato Seed Tuber",
+    "name": "Potato",
     "descriptions": [
       "A small, freshly dug potato tuber with pale skin and a few ready-to-wake eyes, still carrying a trace of earth in its dimples.",
       "It feels like something lifted from a backyard row at the edge of evening: ordinary, sturdy, and waiting for a shallow bed of soil."
@@ -471,7 +471,7 @@
     }
   },
   {
-    "name": "Fresh Strawberry",
+    "name": "Strawberry",
     "descriptions": [
       "A single bright berry, just picked and still carrying the hush of the garden. Its skin is glossy and red, dotted with tiny seeds, with a neat green cap that looks freshly turned by careful hands.",
       "Small and tender, it seems made for a countertop bowl or a paper market pouch, the sort of fruit that stains your fingertips and leaves a sweet trace in the air."

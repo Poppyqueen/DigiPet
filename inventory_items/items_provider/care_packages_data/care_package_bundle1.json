@@ -28,7 +28,7 @@
         "items": [
             "Bottled Water",
             "Dark Chocolate Bar",
-            "Fresh Salad Cup (mixed greens, tomato, cucumber)"
+            "Fresh Salad Cup"
         ]
     },
     "general_survival_5": {
@@ -43,7 +43,7 @@
         "package_color": "combo",
         "items": [
             "Cola",
-            "Chicken Salad Sandwich (pre-cooked)",
+            "Chicken Salad Sandwich",
             "Single-serve potato chips"
         ]
     },
@@ -90,15 +90,15 @@
     "fullness_kit_2": {
         "package_color": "fullness",
         "items": [
-            "Instant cup noodles (ready-to-eat)",
-            "Sweet fruit gummies pack",
-            "Microwave buttered popcorn (bag)"
+            "Instant cup noodles",
+            "Fruit Gummies Pouch",
+            "Caramel Popcorn Bag"
         ]
     },
     "fullness_kit_3": {
         "package_color": "fullness",
         "items": [
-            "Fresh Salad Cup (mixed greens, tomato, cucumber)",
+            "Fresh Salad Cup",
             "Hummus Single-Serve (60g)",
             "Dark Chocolate Bar"
         ]
@@ -116,7 +116,7 @@
         "items": [
             "Creamy Coconut Chickpea Curry with Brown Rice",
             "Pulled BBQ Pork Sandwich with Coleslaw",
-            "candied caramel square"
+            "Dark Chocolate Square"
         ]
     },
     "ingredients_kit_1": {
@@ -167,7 +167,7 @@
             "bag of white rice",
             "Raw ground beef",
             "vegetable cooking oil",
-            "onion",
+            "Fresh-cut Onion",
             "all-purpose flour",
             "Basil Leaf Bunch"
         ]
@@ -185,9 +185,9 @@
     "seeds_pack_1": {
         "package_color": "cheat",
         "items": [
-            "Lettuce Seeds",
-            "Carrot Seeds",
-            "Tomato Seeds"
+            "Lettuce Seed",
+            "Carrot Seed",
+            "Tomato Seed"
         ]
     },
     "seeds_pack_2": {
@@ -206,14 +206,7 @@
     "gadgets_pack": {
         "package_color": "cheat",
         "items": [
-            "Cellphone",
-            "Music HandHeld Console"
-        ]
-    },
-    "lighthouse_kit": {
-        "package_color": "cheat",
-        "items": [
-            "Kerosene container"
+            "Cellphone"
         ]
     },
     "lighthouse_kit_2": {
