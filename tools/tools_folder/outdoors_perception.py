@@ -162,6 +162,7 @@ class OutdoorsPerception:
                 print(f"Error sending signal from {self.__class__.__name__}: {e}")
 
     def _get_outdoors_types_from_item(self, item_data: dict) -> list[str]:
+        # TODO: Change _get_outdoors_types_from_item, move outdoors types entirely to current item room, force defining a list of outdoor types on all rooms, or to define a list of outdoor defaults on the whole environment. If defult and outdoor types of room are missing, return a 'walled window' type or something?
         raw = item_data.get("outdoors_type", _DEFAULT_OUTDOORS_TYPE)
         if isinstance(raw, list) and raw:
             return raw
@@ -233,7 +234,7 @@ class OutdoorsPerception:
 
         parts = []
         for window in windows:
-            outdoors_types = self._get_outdoors_types_from_item(window.item_data)
+            outdoors_types = self._get_outdoors_types_from_item(window.item_data) 
             parts.append(self._collect_text(outdoors_types, level="limited"))
         return _PROVIDER_SEPARATOR.join(parts)
 

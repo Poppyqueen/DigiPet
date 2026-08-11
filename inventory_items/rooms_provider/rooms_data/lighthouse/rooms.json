@@ -24,8 +24,14 @@
         "image": "lighthouse_gallery",
         "room_types": [
             "lighthouse_gallery",
-            "outdoors_area",
-            "accessible_light_viewing_room"
+            "accessible_light_viewing_room",
+            "outdoors_area"
+        ],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
         ],
         "music": "stasis",
         "items": []
@@ -70,5 +76,20 @@
         ],
         "music": "specimens_walk",
         "items": []
+    },
+    {
+        "name": "Islet Base",
+        "image": "",
+        "room_types": [
+        "open_soil_zone",
+        "outdoors_area"
+        ],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ],
+        "plot_number": 2
     }
 ]
