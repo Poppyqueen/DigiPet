@@ -20,21 +20,41 @@
     {
         "name": "Elemental Bedroom",
         "image": "bedroom",
-        "music": "open_arms"
+        "music": "open_arms",
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
     },
     {
         "name": "Micro Kitchen",
         "image": "kitchen",
-        "music": "interiority_spaces"
+        "music": "interiority_spaces",
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
     },
     {
         "name": "Dotted Blue Bathroom",
         "image": "bathroom",
-        "music": "comfort_fluff"
+        "music": "comfort_fluff",
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
     },
     {
         "name": "Quiet Living Room",
         "image": "living_room",
-        "music": "aware_drifter"
+        "music": "aware_drifter",
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
     }
 ]

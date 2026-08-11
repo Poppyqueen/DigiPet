@@ -89,21 +89,22 @@ room_types.extend(lighthouse_room_types)
 RoomType = Literal[tuple(room_types)]
 room_type_names = ", ".join(room_types)
 
+
 # =============================================================================
 # SHARED SUB-MODELS
 # =============================================================================
 
 
-class RoomTimeDescriptions(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+# class RoomTimeDescriptions(BaseModel):
+#     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
-    early_morning: List[str] = Field(alias="early morning", description="Descriptions shown during early morning.")
-    morning: List[str] = Field(description="Descriptions shown during morning.")
-    noon: List[str] = Field(description="Descriptions shown at noon.")
-    afternoon: List[str] = Field(description="Descriptions shown during afternoon.")
-    late_afternoon: List[str] = Field(alias="late afternoon", description="Descriptions shown during late afternoon.")
-    night: List[str] = Field(description="Descriptions shown at night.")
-    late_night: List[str] = Field(alias="late night", description="Descriptions shown during late night.")
+#     early_morning: List[str] = Field(alias="early morning", description="Descriptions shown during early morning.")
+#     morning: List[str] = Field(description="Descriptions shown during morning.")
+#     noon: List[str] = Field(description="Descriptions shown at noon.")
+#     afternoon: List[str] = Field(description="Descriptions shown during afternoon.")
+#     late_afternoon: List[str] = Field(alias="late afternoon", description="Descriptions shown during late afternoon.")
+#     night: List[str] = Field(description="Descriptions shown at night.")
+#     late_night: List[str] = Field(alias="late night", description="Descriptions shown during late night.")
 
 
 # =============================================================================
@@ -176,6 +177,10 @@ class BaseRoom(BaseModel):
     #     default=[],
     #     description="Always an empty list. Items currently present in this room."
     # )
+    outdoors_type: Optional[List[OutdoorsType]] = Field(
+        default=[],
+        description=f"This refers to what kind of outdoors a room has. It doesn't mean it is accessible, just answers 'what's surrounding this structure'. Any of the following: {room_type_names}"
+    )
 
     @model_validator(mode="after")
     def check_room_types_are_known(self) -> "BaseRoom":
@@ -204,14 +209,10 @@ class PlantingGardenFields(ContractMixin):
     plot_number: PositiveInt = Field(
         description="Number of planting plots available in this garden room. Each plot can hold 1 individual plant. Ranging from 1 to 4 for small areas, 5 to 8 for medium areas, and 9 to 16+ for large areas."
     )
-
+    
 class OutdoorsAreaFields(ContractMixin):
-    model_description: ClassVar[str] = "This type represents an outdoors area, open ceiling, can vary from concrete playgrounds to deep jungles."
+    model_description: ClassVar[str] = "This type represents an accessible outdoors area, open ceiling, can vary from concrete playgrounds to deep jungles."
 
-    outdoors_type: List[OutdoorsType] = Field(
-        default=[_outdoors_type_keys[0]],
-        description=f"A list of Literals from valid options, they represent where this outdoors area is located."
-    )
 
 
 # =============================================================================
@@ -225,7 +226,7 @@ class OutdoorsAreaFields(ContractMixin):
 
 ROOM_TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
     "open_soil_zone": PlantingGardenFields,
-    "outdoors_area": OutdoorsAreaFields,
+    #"outdoors_area": OutdoorsAreaFields,
 }
 
 

@@ -1,60 +1,61 @@
 [
   {
     "name": "compact garden",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "collage_porch",
     "music": "stasis",
     "room_types": [
       "outdoors_area",
       "open_soil_zone"
     ],
-    "items": [],
-    "outdoors_type": [
-      "earth-weather"
-    ],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ],
     "plot_number": 6
   },
   {
     "name": "compact kitchen",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "collage_kitchen",
     "music": "interiority_spaces",
     "room_types": [],
-    "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "compact bedroom",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "bedroom",
     "music": "interiority_spaces",
     "room_types": [],
-    "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "compact bathroom",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "collage_bathroom",
     "music": "interiority_spaces",
     "room_types": [],
-    "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "compact living room",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "collage_stasis_room",
     "music": "interiority_spaces",
     "room_types": [],
-    "items": [
-    ]
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   }
 ]

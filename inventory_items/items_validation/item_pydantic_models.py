@@ -453,16 +453,11 @@ class ArtBookFields(ContractMixin): # Does not define any fields, but injects a 
 
 
 class FenetreApertureFields(ContractMixin):
-    model_description: ClassVar[str] = "These are architectural designs, ornamental, functional, furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world."
+    model_description: ClassVar[str] = "These are architectural designs, ornamental, functional, furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world. Describe only the object itself and not the outdoors it gives access to."
 
     accessible: bool = Field(
         default=True,
         description="This true or false flag represents the accessibility, and reachability for the opening fixture. It asks if it is possible to stand no more than 1 feet besides it, if so, it should be set to true. Features like raised windows or skylights and other inaccessible apertures should be set as false."
-    )
-
-    outdoors_type: List[OutdoorsType] = Field(
-        default=[_outdoors_type_keys[0]],
-        description=f"A list of outdoors types that can be seen from this aperture. From valid literals."
     )
 
 class BookMakingImplementsFields(ContractMixin): # No required fields, just adding model description

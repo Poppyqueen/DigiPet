@@ -1,9 +1,6 @@
 [
   {
     "name": "comfy garden",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "garden",
     "music": "comfort_fluff",
     "room_types": [
@@ -19,38 +16,46 @@
   },
   {
     "name": "comfy kitchen",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "kitchen",
     "music": "interiority_spaces",
-    "room_types": []
+    "room_types": [],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "comfy bedroom",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "bedroom",
     "music": "comfort_fluff",
-    "room_types": []
+    "room_types": [],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "comfy bathroom",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "bathroom",
     "music": "interiority_spaces",
-    "room_types": []
+    "room_types": [],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   },
   {
     "name": "comfy living room",
-    "movement_group": "default",
-    "is_connectoid": false,
-    "connections": null,
     "image": "living_room",
     "music": "interiority_spaces",
-    "room_types": []
+    "room_types": [],
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto"
+        ]
   }
 ]

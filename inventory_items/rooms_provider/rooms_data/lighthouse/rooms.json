@@ -7,7 +7,13 @@
             "accessible_light_viewing_room"
         ],
         "music": "specimens_walk",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
+
     },
     {
         "name": "Service Room",
@@ -17,7 +23,12 @@
         ],
         "plot_number": 3,
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Lighthouse Balcony",
@@ -33,8 +44,7 @@
         "xeno-canto",
         "ocean-views"
         ],
-        "music": "stasis",
-        "items": []
+        "music": "stasis"
     },
     {
         "name": "Fresnel Lens",
@@ -44,14 +54,24 @@
             "accessible_light_viewing_room"
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Storage Room",
         "image": "oil_room",
         "room_types": [],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Sleeping Nook",
@@ -59,7 +79,12 @@
         "room_types": [
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Lighthouse Kitchen",
@@ -67,7 +92,12 @@
         "room_types": [
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Lighthouse Stairs",
@@ -75,7 +105,12 @@
         "room_types": [
         ],
         "music": "specimens_walk",
-        "items": []
+        "outdoors_type": [
+        "earth-weather",
+        "earth-astro-views",
+        "xeno-canto",
+        "ocean-views"
+        ]
     },
     {
         "name": "Islet Base",

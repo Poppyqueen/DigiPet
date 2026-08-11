@@ -8,12 +8,13 @@ if TYPE_CHECKING:
 from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import OutdoorsProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.earth_weather_prov import EarthWeatherProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.marine_weather_prov import MarineWeatherProvider
+from tools.tools_folder.tools_helpers.outdoors_helpers.walled_window_prov import WalledWindowProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 
 import os
 
 _PROVIDER_SEPARATOR = "\n" + "-" * 30 + "\n"
-_DEFAULT_OUTDOORS_TYPE = ["earth-weather"]
+_DEFAULT_OUTDOORS_TYPE = ["walled-window"]
 
 
 @dataclass
@@ -41,6 +42,7 @@ class OutdoorsPerception:
         self._providers: dict[str, OutdoorsProvider] = {}
         self._register_provider(EarthWeatherProvider(open_meteo))
         self._register_provider(MarineWeatherProvider(open_meteo))
+        self._register_provider(WalledWindowProvider())
         self._load_conditionals()
 
         for type_name in OUTDOORS_TYPES:
@@ -161,19 +163,34 @@ class OutdoorsPerception:
             except Exception as e:
                 print(f"Error sending signal from {self.__class__.__name__}: {e}")
 
-    def _get_outdoors_types_from_item(self, item_data: dict) -> list[str]:
-        # TODO: Change _get_outdoors_types_from_item, move outdoors types entirely to current item room, force defining a list of outdoor types on all rooms, or to define a list of outdoor defaults on the whole environment. If defult and outdoor types of room are missing, return a 'walled window' type or something?
-        raw = item_data.get("outdoors_type", _DEFAULT_OUTDOORS_TYPE)
+    def _get_raw_room_outdoors_type(self, room_id: int | None = None) -> list[str]:
+        """
+        Returns whatever outdoors_type list is defined on the room, with no
+        defaulting applied. Empty list means the room genuinely has none.
+        room_id=None means "current room".
+        """
+        room_data = (
+            self.state_manager.get_current_room_data()
+            if room_id is None
+            else self.state_manager.get_room_data(room_id)
+        )
+        raw = room_data.extra_data.get("outdoors_type", [])
         if isinstance(raw, list) and raw:
             return raw
-        return _DEFAULT_OUTDOORS_TYPE
+        return []
 
-    def _get_outdoors_types_from_room(self) -> list[str]:
-        room_data = self.state_manager.get_current_room_data()
-        raw = room_data.extra_data.get("outdoors_type", _DEFAULT_OUTDOORS_TYPE)
-        if isinstance(raw, list) and raw:
-            return raw
-        return _DEFAULT_OUTDOORS_TYPE
+    def _get_outdoors_types_from_item(self, location_id: int | None) -> list[str]:
+        """
+        Items no longer carry their own outdoors_type — the room is canon.
+        A window in a room with no outdoors_type defined has nothing to see:
+        falls back to walled-window.
+        """
+        raw = self._get_raw_room_outdoors_type(location_id)
+        return raw if raw else _DEFAULT_OUTDOORS_TYPE
+
+    def _get_outdoors_types_from_room(self, room_id: int | None = None) -> list[str]:
+        raw = self._get_raw_room_outdoors_type(room_id)
+        return raw if raw else _DEFAULT_OUTDOORS_TYPE
 
 # ------------------------------------------------------------------
     # The "Single-Pass" Helper
@@ -234,7 +251,7 @@ class OutdoorsPerception:
 
         parts = []
         for window in windows:
-            outdoors_types = self._get_outdoors_types_from_item(window.item_data) 
+            outdoors_types = self._get_outdoors_types_from_item(window.location_id)
             parts.append(self._collect_text(outdoors_types, level="limited"))
         return _PROVIDER_SEPARATOR.join(parts)
 
@@ -256,11 +273,7 @@ class OutdoorsPerception:
         accessibility_flag = item_details.get("accessible", True)
         item_name          = self.state_manager.format_item_for_display(item_details, False)
 
-        outdoors_types = (
-            self._get_outdoors_types_from_item(item_details)
-            if "outdoors_type" in item_details
-            else self._get_outdoors_types_from_room()
-        )
+        outdoors_types = self._get_outdoors_types_from_item(item_object.location_id)
 
         if accessibility_flag:
             weather_info = self._process_full_perception(outdoors_types)
