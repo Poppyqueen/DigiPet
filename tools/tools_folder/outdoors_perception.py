@@ -9,6 +9,9 @@ from tools.tools_folder.tools_helpers.outdoors_helpers.base_provider import Outd
 from tools.tools_folder.tools_helpers.outdoors_helpers.earth_weather_prov import EarthWeatherProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.marine_weather_prov import MarineWeatherProvider
 from tools.tools_folder.tools_helpers.outdoors_helpers.walled_window_prov import WalledWindowProvider
+
+from tools.tools_folder.tools_helpers.outdoors_helpers.lunar_dome_provider import LunarDomeViewProvider
+
 from tools.tools_folder.tools_helpers.outdoors_helpers.outdoors_type_definitions import OUTDOORS_TYPES
 
 import os
@@ -43,6 +46,7 @@ class OutdoorsPerception:
         self._register_provider(EarthWeatherProvider(open_meteo))
         self._register_provider(MarineWeatherProvider(open_meteo))
         self._register_provider(WalledWindowProvider())
+        self._register_provider(LunarDomeViewProvider(self.config_manager, self.lat,self.long))
         self._load_conditionals()
 
         for type_name in OUTDOORS_TYPES:

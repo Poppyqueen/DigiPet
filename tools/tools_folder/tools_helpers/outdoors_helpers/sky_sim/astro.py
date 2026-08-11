@@ -19,7 +19,7 @@ from .atmosphere import sun_magnitude_loss
 # Data paths
 # ---------------------------------------------------------------------------
 _PARENT = Path(__file__).parent
-_DATA_DIR = _PARENT / "local_data"
+_DATA_DIR = _PARENT.parent / "local_data"   # .../outdoors_helpers/local_data
 
 _HYG_DERIVATIVE_FOLDER = _PARENT / "HYG_Database" 
 _HYG_LOCAL_FILTERED = _HYG_DERIVATIVE_FOLDER / "hyg_v42_naked_eye.csv"

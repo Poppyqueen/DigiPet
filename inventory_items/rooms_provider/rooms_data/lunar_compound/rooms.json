@@ -5,17 +5,19 @@
         "room_types": [
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Room 101 kitchenette",
         "image": "",
         "room_types": [
         ],
-        "outdoors_type": [
-        ],
         "music": "interiority_spaces",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Room 101 Bathroom",
@@ -23,7 +25,9 @@
         "room_types": [
         ],
         "music": "interiority_spaces",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Hallway 001",
@@ -31,15 +35,20 @@
         "room_types": [
         ],
         "music": "ashen_bell",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Lavender Sky Walkway",
         "image": "",
         "room_types": [
+            "outdoors_area"
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Moonar Local Library",
@@ -47,7 +56,9 @@
         "room_types": [
         ],
         "music": "comfort_fluff",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Moon-Cheese Cake Cafe",
@@ -55,23 +66,31 @@
         "room_types": [
         ],
         "music": "keep_it_moving",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Marigold Sky Walkway",
         "image": "",
         "room_types": [
+            "outdoors_area"
         ],
         "music": "specimens_walk",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Pedestrian Flying Roundabout",
         "image": "",
         "room_types": [
+            "outdoors_area"
         ],
         "music": "neon_corridor",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Lorie's Stationary Furnishings",
@@ -79,7 +98,9 @@
         "room_types": [
         ],
         "music": "stasis",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "MachiaTron Electron's Jumbletrons",
@@ -87,7 +108,9 @@
         "room_types": [
         ],
         "music": "train",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Star Touched Corner Store",
@@ -95,7 +118,9 @@
         "room_types": [
         ],
         "music": "comfort_fluff",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Hydronew Greenery Warehouse",
@@ -103,15 +128,20 @@
         "room_types": [
         ],
         "music": "keep_it_moving",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Ground Floor Public Square",
         "image": "",
         "room_types": [
+            "outdoors_area"
         ],
         "music": "glass_tide",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     },
     {
         "name": "Dome Main Airlock Room",
@@ -119,7 +149,9 @@
         "room_types": [
         ],
         "music": "lost&threatened",
-        "items": []
+        "outdoors_type": [
+            "lunar-dome-view"
+        ]
     }
 
 ]
