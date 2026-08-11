@@ -11,7 +11,33 @@
         "Mixer Bowl",
         "Kitchen Base Cupboards",
         "Kitchen Sink",
-        "Small Framed Square Window"
+        "Small Framed Square Window",
+
+        "Vinegar (250 ml)[x12]",
+        "Canned Mixed Beans (400 g)[x10]",
+        "500 g Pack of Dry Pasta[x20]",
+        "Loaf of Whole Wheat Bread[x2]",
+        "10 kg Bag of White Rice[x3]",
+        "Bottle of Olive Oil (500 ml)[x10]",
+        "Fresh Apple[x6]",
+        "Frozen Cooked Shrimp (Thawed)[x12]",
+        "Raw Salmon Filet (Fresh)[x4]",
+        "Russet potatoes (4 count)[x5]",
+        "Whole Raw Chicken (uncooked)",
+        "Sealed Canned Tomatoes[x20]",
+        "Table salt (packet)[x50]",
+        "Wheat flour (bag)[x10]",
+        "Vegetable Cooking Oil[x10]",
+        "Granulated Sugar (500 g)[x3]",
+        "Celery Stalk[x24]",
+        "Carrot Stick[x20]",
+        "Trail Mix Bag[x20]",
+        "Jar of Peanut Butter[x6]",
+        "Black Sesame Paste[x12]",
+        "Fresh-squeezed Orange Juice (300ml)",
+        "Canned Iced Latte[x15]"
+
+        
     ],
     "library":[
         "Desk Computer",
@@ -37,7 +63,8 @@
         "Tiered garden fountain",
         "Weathered Garden Spigot",
         "Wall-Mounted Outdoors Lantern",
-        "Ancient Crooked Pine"
+        "Ancient Crooked Pine",
+        "Avocado & Tomato Open Sandwich"
     ],
     "Hallway":[
         "Tall ceramic planter",

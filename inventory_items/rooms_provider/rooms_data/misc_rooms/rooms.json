@@ -114,5 +114,15 @@
         ],
         "music": "aware_drifter",
         "items": []
+    },
+    {
+        "name": "Balls-Room",
+        "image": "sphere_chamber",
+        "room_types": [
+        ],
+        "outdoors_type": [
+        ],
+        "music": "quiet_jumpy",
+        "items": []
     }
 ]

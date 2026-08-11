@@ -1,0 +1,62 @@
+{
+    "Room 101":[
+        "Spherical Lunar Nook",
+        "Geometric Monolith Lounger",
+        "Tiered Blocks Desk Lamp",
+        "Paper Sheet Visualographer"
+
+    ],
+    "Room 101 kitchenette":[
+        "Shaker Shack Desk Decoration",
+        "Last Drop Juicer Bullet Thermos",
+        "Aurelia Thermal Module",
+        "Orbital Pivot-Pane"
+    ],
+    "Room 101 Bathroom":[
+        "Pressurized Air walk-in-shower",
+        "Vacuum Based Latrine",
+        "Geometric Hydro-Spout"
+    ],
+
+    "Hallway 001":[
+        "Primary Cube Planter"
+    ],
+    
+    "Lavender Sky Walkway":[
+        "Giant Public Ribbon Sculpture"
+        ],
+    "Moonar Local Library":[],
+    "Moon-Cheese Cake Cafe":[
+        "Grav-Zero Kinetic Prism-Window",
+        "Neon-Geometric Memory Foam Lounge[x5]"
+    ],
+
+    "Pedestrian Flying Roundabout":[
+        "Giant Public Ribbon Sculpture"
+    ],
+    "Lorie's Stationary Furnishings":[
+        "Neon-Tinted Poly-Fiber Vessel"
+    ],
+    "MachiaTron Electron's Jumbletrons":[
+        "Earth Fish Temporal Transposer"
+    ],
+    "Star Touched Corner Store":[
+        "Grav-Zero Kinetic Prism-Window[x10]"
+    ],
+    "Hydronew Greenery Warehouse":[
+        "Orbital Pivot-Pane[x8]"
+    ],
+
+    "Marigold Sky Walkway":[
+        "Prismatic Hydration Spout"
+    ],
+    "Balls-Room":[],
+
+    "Ground Floor Public Square":[
+        "Ascension Prism Mural",
+        "Vibrant Geometric Wedge-Pane[x24]",
+        "Geometric Rest-Node 04",
+        "Prism-Flow Hydro-Monolith[x6]"
+    ],
+    "Dome Main Airlock Room":[]
+}

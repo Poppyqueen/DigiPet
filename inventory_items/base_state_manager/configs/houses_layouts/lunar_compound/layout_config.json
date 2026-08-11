@@ -1,0 +1,18 @@
+{
+  "initial_room":"Room 101",
+
+  "groups": {
+    "Private_Room_101": ["Room 101", "Room 101 kitchenette", "Room 101 Bathroom"],
+    "Lavender Hallway Spots": ["Lavender Sky Walkway", "Moonar Local Library", "Moon-Cheese Cake Cafe"],
+    "Roundabout": ["Pedestrian Flying Roundabout", "Lorie's Stationary Furnishings", "MachiaTron Electron's Jumbletrons", "Star Touched Corner Store", "Hydronew Greenery Warehouse", "Balls-Room"],
+    "Ground Floor": ["Ground Floor Public Square", "Dome Main Airlock Room"]
+  },
+
+  "connections": [
+    ["Hallway 001", "Room 101"],
+    ["Hallway 001", "Lavender Sky Walkway"],
+    ["Lavender Sky Walkway", "Marigold Sky Walkway"],
+    ["Marigold Sky Walkway", "Pedestrian Flying Roundabout"],
+    ["Pedestrian Flying Roundabout", "Ground Floor Public Square"]
+  ]
+}

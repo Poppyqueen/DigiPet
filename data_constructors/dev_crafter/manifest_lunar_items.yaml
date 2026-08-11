@@ -1,0 +1,146 @@
+.constants:
+  - &base_style "Style: A Lunar Compound Dome Artificial Soft Athmosphere. This is a large dome compound/housing development area made for inhabiting the moon, with a synthetic athmosphere and an intermitent gravity simulator tuned to that of earth. Fiberglass and Concrete."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. Always use second-person present tense.
+  - &items_base_prompt >
+      THEME = "Colorful Playful Brutalism and Futurism mix, pop colors, Hard-edge geometric painting, abstraction" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openrouter"
+  model: "google/gemma-4-26b-a4b-it:free"
+  export_dir: "inventory_items/items_provider/items_data/lunar_items"
+
+tasks:
+
+  - mode: "item"
+    types: ["fenestration_aperture", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "A round viewport window mounted on a central horizontal axis. When unlocked, the pane pivots freely 360 degrees—like a paddle wheel blade or flip-tile—to capture breezes from any angle before locking flush into place."
+      - "Grav Zero Spinning windows, A square frame housing a tessellated matrix of individual diamond tiles, each mounted on its own internal pivot axis. When toggled open, the diamond panes flutter and rotate independently in response to air currents—behaving like a kinetic wind sculpture—to modulate breeze and light. When closed, the array aligns flush into a single sealed geometric surface."
+
+
+  - mode: "item"
+    types: ["fenestration_aperture"]
+    context:  
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Thick Glass Dome Walls Section (A wedge wall rising hundreds of meters, with metal seams holding each other, surrounding and forming a dome, sealed)"
+
+
+  - mode: "item"
+    types: ["sleepable_spot", "seatable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Memory Foam Lounge sofa"
+      - "Concrete four-posted bed"
+      - "Gravity supported matress pod, Fiberglass"
+      - "Upholstered Protruding Concrete Spherical Ground-embedded Chair"
+      - "Concrete Ground Protruding Public Bench"
+
+  - mode: "item"
+    types: ["sleepable_spot", "seatable", "cranny_host"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "'Contrived Laying Around' seatable sculpture, geometric shapes abstract public area sculpture one can find nooks to lay and rest on"
+
+  - mode: "item"
+    types: ["toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Powder based dry wash ceramic bathtub"
+      - "Pressurized Air walk-in-shower"
+      - "Vacuum Based Latrine"
+      - "Tiered Blocks Desk Lamp"
+      - "'Shaker Shack' Desk Decoration"
+      - "Earth Fish Temporal Transposer fishbowl (this bowl somehow places a few random set of earthly fish into the bowl, and sends them back after a few minutes. Running in a loop)"
+
+  - mode: "item"
+    types: ["water_point"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Public Fresh Water Fountain, utilitarian"
+      - "Public Fresh Water Fountain, stylized"
+      - "Public Fresh Water Fountain, sculpture"
+      - "Public Fresh Water Fountain, play area"
+
+      
+  - mode: "item"
+    types: ["culinary_equipment", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Octopod AutoCook Station"
+      - "Last Drop Juicer Bullet Thermos"
+      - "Oven"
+      - ""
+
+  - mode: "item"
+    types: ["tv", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Paper Sheet Visualographer, Wall mountable"
+      - "Holographer RetroRadio Reciever"
+      - "Console TV"
+      - "Morse Code Reality TV Streamlab"
+    
+
+  - mode: "item"
+    types: ["culinary_equipment"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "knife set"
+      - "ceramic mortar and pestle"
+
+  - mode: "item"
+    types: ["planter_pot"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "large, shallow ceramic planter"
+      - "Large Vegetage raised Concrete bed"
+      - "Tall ceramic planter"
+      - "concrete planter"
+      - "individual fiber glass pot"
+
+  - mode: "item"
+    types: []
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Giant Public  Colorful geometric shapes sculpture"
+      - "Giant Public Ribbon sculpture"
+      - "Public art 'Reaching upwards' mural art"

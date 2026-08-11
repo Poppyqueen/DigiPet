@@ -487,7 +487,7 @@ class SleepableSpotFields(ContractMixin):
 # Then add "cranny_host": CrannyHostFields to TYPE_FIELD_CONTRACTS.
 
 class CrannyHostFields(ContractMixin):
-    model_description: ClassVar[str] = "A nook, cranny, crevice, or hidden hollow within a piece of furniture or room feature that may conceal small forgotten or lost objects."
+    model_description: ClassVar[str] = "A nook, cranny, crevice, or hidden hollow bellow, bedind or under a piece of furniture or room feature that may conceal small forgotten or lost objects."
     
     chance: float = Field(
         default=0.05,

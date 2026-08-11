@@ -1,0 +1,125 @@
+[
+    {
+        "name": "Room 101",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "stasis",
+        "items": []
+    },
+    {
+        "name": "Room 101 kitchenette",
+        "image": "",
+        "room_types": [
+        ],
+        "outdoors_type": [
+        ],
+        "music": "interiority_spaces",
+        "items": []
+    },
+    {
+        "name": "Room 101 Bathroom",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "interiority_spaces",
+        "items": []
+    },
+    {
+        "name": "Hallway 001",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "ashen_bell",
+        "items": []
+    },
+    {
+        "name": "Lavender Sky Walkway",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "stasis",
+        "items": []
+    },
+    {
+        "name": "Moonar Local Library",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "comfort_fluff",
+        "items": []
+    },
+    {
+        "name": "Moon-Cheese Cake Cafe",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "keep_it_moving",
+        "items": []
+    },
+    {
+        "name": "Marigold Sky Walkway",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "specimens_walk",
+        "items": []
+    },
+    {
+        "name": "Pedestrian Flying Roundabout",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "neon_corridor",
+        "items": []
+    },
+    {
+        "name": "Lorie's Stationary Furnishings",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "stasis",
+        "items": []
+    },
+    {
+        "name": "MachiaTron Electron's Jumbletrons",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "train",
+        "items": []
+    },
+    {
+        "name": "Star Touched Corner Store",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "comfort_fluff",
+        "items": []
+    },
+    {
+        "name": "Hydronew Greenery Warehouse",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "keep_it_moving",
+        "items": []
+    },
+    {
+        "name": "Ground Floor Public Square",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "glass_tide",
+        "items": []
+    },
+    {
+        "name": "Dome Main Airlock Room",
+        "image": "",
+        "room_types": [
+        ],
+        "music": "lost&threatened",
+        "items": []
+    }
+
+]

@@ -2545,9 +2545,9 @@
       "consumable",
       "store_entry"
     ],
-    "stackable": false,
+    "stackable": true,
     "quantity": 1,
-    "max_stack_size": null,
+    "max_stack_size": 6,
     "consume_uses_left": 12,
     "stats_edit": {
       "fullness": 2.5,
@@ -4710,9 +4710,9 @@
     "type": [
       "store_entry"
     ],
-    "stackable": false,
+    "stackable": true,
     "quantity": 1,
-    "max_stack_size": null,
+    "max_stack_size": 10,
     "consume_uses_left": 25,
     "stats_edit": {
       "fullness": 0.5,
@@ -4871,9 +4871,9 @@
       "consumable",
       "store_entry"
     ],
-    "stackable": false,
+    "stackable": true,
     "quantity": 1,
-    "max_stack_size": null,
+    "max_stack_size": 10,
     "consume_uses_left": 4,
     "stats_edit": {
       "fullness": 4.5,

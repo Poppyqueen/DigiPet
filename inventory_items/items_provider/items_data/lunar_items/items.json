@@ -1,0 +1,905 @@
+[
+  {
+    "name": "Orbital Pivot-Pane",
+    "descriptions": [
+      "A heavy, circular slice of reinforced polymer encased in a vivid, cobalt-blue concrete frame.",
+      "A rotating ocular aperture that slices through the synthetic atmosphere to pull in lunar breezes."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather",
+      "earth-astro-views"
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The pane spins with fluid, rhythmic precision, catching the filtered light of the lunar sky.",
+      "off_description": "The glass sits motionless and silent, a flat geometric eye looking out onto the gray expanse.",
+      "on_sequence": "You release the heavy locking lever, and the pane begins to whirl around its central axis like a spinning cog in a grand, candy-colored machine.",
+      "off_sequence": "You press the pane firmly into its recessed housing, sealing the interior stillness from the whirling exterior winds.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Grav-Zero Kinetic Prism-Window",
+    "descriptions": [
+      "A massive square aperture constructed from heavy, matte-finished grey concrete, inset with a mesmerizing grid of vibrant, polychromatic diamond tiles.",
+      "An architectural sculpture that manipulates both airflow and sunlight through a restless dance of geometric shapes."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "outdoors_type": [
+      "earth-weather"
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The diamond tiles spin and flutter in a chaotic, rhythmic kaleidoscope, scattering fragments of primary hues across the room.",
+      "off_description": "The tiles lock into a rigid, seamless plane of solid, unyielding color.",
+      "on_sequence": "As you engage the mechanism, you hear the frantic, musical clatter of a thousand hard-edged facets clicking against their pivots, turning the air into a swirling prism of light.",
+      "off_sequence": "With a heavy, pressurized thud, the rotating tiles snap into perfect alignment, instantly sealing the breach and silencing the dancing light.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Vibrant Geometric Wedge-Pane",
+    "descriptions": [
+      "You gaze up at a towering expanse of crystalline silica, where massive segments of transparent mass lean heavily against one another. The sunlight refracts through the thick layers, casting sharp, saturated streaks of cobalt and tangerine across the polished concrete floors. Between these translucent cliffs, heavy manganese-steel seams bite into the edges, creating strict, unyielding lines that divide the sky. You feel the immense pressure of the artificial breath held within the dome, knowing this structural titan stands as your only barrier against the silent, airless void beyond."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": false,
+    "outdoors_type": [
+      "earth-astro-views"
+    ]
+  },
+  {
+    "name": "Neon-Geometric Memory Foam Lounge",
+    "descriptions": [
+      "A massive, angular expanse of memory foam sculpted into sharp, overlapping planes of cobalt, magenta, and lemon yellow.",
+      "The surface is encased in a high-gloss, seamless polymer that catches the artificial sunlight of the dome.",
+      "A heavy, brutalist block of comfort that defies the surrounding concrete austerity with its vibrant, clashing hues."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink deeply into the pressurized foam, feeling the heavy pull of Earth-standard gravity slowly swallowing your weight as the bright, saturated colors fade into a soft blur above you.",
+      "The dense, springy material molds perfectly to your form, cradling you in a cocoon of synthetic softness amidst the cold lunar structure."
+    ],
+    "narrative_sitting": [
+      "You drop onto the firm, geometric edge, feeling the high-tech foam yield to your weight before pushing back with a steady, supportive pressure.",
+      "As you settle into the bright, sculpted curves, the rhythmic hum of the atmosphere generator vibrates faintly through the dense padding beneath you."
+    ]
+  },
+  {
+    "name": "Prismatic Monolith Sleep-Platform",
+    "descriptions": [
+      "A heavy, rectangular slab of pigmented polymer-concrete held aloft by four thick, cylindrical pillars.",
+      "The surface is finished in a high-gloss, electric tangerine sheen that defies the grey lunar dust outside the dome.",
+      "Brutalist geometry meets neon optimism in this structural sleeping unit."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink into the cushioned surface, the heavy weight of the concrete frame providing a sense of absolute permanence against the vacuum outside.",
+      "The neon reflections from the dome's ceiling dance across your eyelids as you rest upon the solid, unyielding slab."
+    ],
+    "narrative_sitting": [
+      "You settle onto the hard, vibrant edge, feeling the coolness of the synthetic stone through your clothes.",
+      "The rigid angles of the frame support you, creating a stark, geometric silhouette against the soft artificial light."
+    ]
+  },
+  {
+    "name": "Gravity-Neutralized Sleep Pod",
+    "descriptions": [
+      "A suspended fiberglass shell featuring sharp, primary-colored geometric facings that catch the shifting synthetic light.",
+      "A modular resting unit engineered from high-gloss reinforced resins and stark, cast concrete anchors."
+    ],
+    "static": false,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink into the pressurized cushion as the simulated pull of the moon fades, feeling the smooth, unyielding curve of the neon-tinted fiberglass cradling your weight.",
+      "As you settle, the low hum of the atmosphere processors vibrates softly through your spine, muffled by the thick, vibrant layers of your cocoon."
+    ],
+    "narrative_sitting": [
+      "You perch upon the firm, angled surface, where the intersection of bright cobalt and lemon-yellow panels meets beneath you.",
+      "The cold, polished edge of the fiberglass shell provides a rigid support that contrasts with the warmth of the recycled air hitting your skin."
+    ]
+  },
+  {
+    "name": "Spherical Lunar Nook",
+    "descriptions": [
+      "A heavy, semi-spherical concrete protrusion emerging from the floor, cradling a thick layer of neon-pink velvet padding.",
+      "A chunky, geometric bubble of polished cement, its interior lined with high-contrast cyan and yellow fabric that resists the lunar dust.",
+      "A massive, rounded slab of industrial gray stone that hosts a plush, multi-colored cushion within its concave embrace."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink into the vibrant, soft core of the concrete bulb, feeling the rhythmic hum of the artificial gravity through the thick padding.",
+      "The neon fibers press against you as you curl up within the heavy, geometric curve of the stone pod.",
+      "Wrapped in high-saturation velvet, you drift off while the lunar dome's light catches the edge of your heavy sanctuary."
+    ],
+    "narrative_sitting": [
+      "You drop into the cushioned crater, feeling the sharp contrast between the rigid exterior and the yielding, colorful interior.",
+      "The sphere holds you firmly in its center, offering a soft, chromatic respite from the sterile industrial surroundings.",
+      "You nestle into the plush indentation, surrounded by bold, saturated hues that defy the gray lunar architecture."
+    ]
+  },
+  {
+    "name": "Geometric Monolith Lounger",
+    "descriptions": [
+      "A heavy, low-slung slab of pigment-infused concrete that rises from the lunar floor in sharp, unapologetic angles.",
+      "This structural extrusion features vibrant, high-saturation streaks of cobalt and vermillion applied in precise, flat planes against the grey masonry.",
+      "Its surfaces are polished to a matte smoothness, offering a stark contrast to the raw, textured grain of the lunar-base flooring."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You press your weight into the unyielding, colorful slab and find that the intermittent gravity dampens the impact, cradling your form against the cold, hard geometry.",
+      "As you lie back, the sharp edges of the architecture frame a slice of the synthetic sky, grounding your senses in a world of flat planes and solid color."
+    ],
+    "narrative_sitting": [
+      "You settle onto the cold, vibrant surface, feeling the rigid certainty of the concrete beneath you.",
+      "The stark intersection of bright pigment and grey stone supports you, offering a sense of permanence amidst the shifting lunar light."
+    ]
+  },
+  {
+    "name": "Geometric Rest-Node 04",
+    "descriptions": [
+      "A massive, interlocking assembly of polished magenta fiberglass and raw, cast-concrete prisms.",
+      "An abstract labyrinth of sharp angles and sudden, sweeping curves that defy conventional utility.",
+      "A playground of high-contrast pigments and unyielding structural forms."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable",
+      "cranny_host"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You stretch your limbs across the cold, smooth violet expanse, feeling the rigid geometry press against your spine.",
+      "You curl up within a shallow, angular alcove, finding a strange comfort in the unyielding synthetic textures."
+    ],
+    "narrative_sitting": [
+      "You perch upon a sharp-edged cyan slab, the hard surface grounding you amidst the dome's artificial hum.",
+      "You balance on a lemon-yellow wedge, watching the way the light catches the matte finish of the concrete base."
+    ],
+    "chance": 0.15,
+    "yield_pool": 1.0,
+    "yield_cost": 0.3,
+    "refresh_rate": 0.05,
+    "narrative_search": [
+      "You reach your hand into the deep, shadowed gap where two massive geometric blocks collide.",
+      "You slide your fingers into a narrow crevice between the vibrant fiberglass and the heavy, grey stone."
+    ],
+    "reward_options": [
+      [
+        "dust_bunnied_gleaning"
+      ],
+      [
+        "consumable"
+      ]
+    ]
+  },
+  {
+    "name": "Powder-Based Ceramic Basin",
+    "descriptions": [
+      "A heavy, sculpted vessel of matte-finished porcelain, shaped in sharp, unyielding angles that catch the neon-tinted light of the dome."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A fine mist of ceramic powder hangs in the air as the basin fills with cleaning particulates.",
+      "off_description": "The vessel sits empty, its stark, primary-colored geometric planes resting in silence.",
+      "on_sequence": "You press the activation stud and hear the hum of pressurized canisters, watching as a thick cloud of pastel-hued dust descends to coat the hard edges.",
+      "off_sequence": "You cut the flow, and the swirling pigments settle into a motionless, velvet-like layer across the floor of the tub.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Pressurized Air walk-in-shower",
+    "descriptions": [
+      "A sleek, geometric alcove of reinforced concrete and glossy, primary-colored fiberglass panels.",
+      "A high-tech hygiene station encased in a sharp, faceted capsule of safety-treated glass."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A concentrated mist of purified particles swirls within the vibrant, angular enclosure.",
+      "off_description": "The chamber sits silent and still, a sculpture of matte surfaces and unlit neon accents.",
+      "on_sequence": "You strike the oversized, circular button; immediately, a pressurized roar fills the compartment as a fine, swirling fog erupts from the recessed vents, enveloping you in a sudden, opaque cloud.",
+      "off_sequence": "You tap the control panel, and the violent rush of air abruptly vanishes, leaving only the soft hum of the dome's life support echoing against the smooth, pigmented walls.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Vacuum Based Latrine",
+    "descriptions": [
+      "A geometric capsule of reinforced fiberglass and matte concrete.",
+      "A sanitary necessity encased in a high-contrast, polychrome shell."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A violent, high-pitched rush of air pulses through the colorful alcove.",
+      "off_description": "The chamber remains silent and eerily still.",
+      "on_sequence": "You press the rounded, cobalt-blue button and feel the sudden, sharp suction tugging at the air around you.",
+      "off_sequence": "You depress the heavy, crimson lever and the roar of the intake abruptly dies away into a hum.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Tiered Blocks Desk Lamp",
+    "descriptions": [
+      "A sculptural stack of primary-colored geometric volumes that casts a sharp, saturated glow across your workstation."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A vibrant burst of intense, chromatic light radiates from the faceted edges of the stacked cubes.",
+      "off_description": "The object sits as a silent arrangement of matte-finished cylinders and cuboids in bold hues.",
+      "on_sequence": "You press the heavy, rectangular switch, and a sudden surge of lemon-yellow light slices through the dimness, defining every sharp angle of the pigment-saturated casing.",
+      "off_sequence": "As you click the toggle, the brilliant spectrum collapses instantly into a hollow, unlit shape of concrete-textured plastic.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Shaker Shack Desk Decoration",
+    "descriptions": [
+      "A vibrant, chunky geometric sculpture perched atop a workspace.",
+      "A playful assembly of matte-finished resins and polished chrome accents."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The sculpture pulses with a rhythmic, saturated glow that casts sharp, trapezoidal shadows across your desk.",
+      "off_description": "The object sits as a silent, matte block of solid pigment and heavy weight.",
+      "on_sequence": "You press the recessed button and a low hum vibrates through the desk as neon magenta light bleeds from the seams of the block.",
+      "off_sequence": "As the switch clicks, the intense color drains away, leaving only the cold, unyielding geometry of the form.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Earth Fish Temporal Transposer",
+    "descriptions": [
+      "A thick, geometric glass prism housed within a heavy, primary-yellow concrete pedestal.",
+      "A swirling, neon-lit aquatic loop that punctures the sterile lunar silence."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "Vibrant, transient life darts through saturated cyan waters within a sharp-edged crystalline block.",
+      "off_description": "The vessel sits as a silent, hollow cube of heavy silica and pigmented cement.",
+      "on_sequence": "You tap the control, and a sudden hum vibrates through the floor; suddenly, flashes of vivid orange and emerald streak through the water as temporal rifts materialize the aquatic visitors.",
+      "off_sequence": "You depress the switch, and the light collapses into a flat, dark void as the rhythmic splashing fades into nothingness.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Prism-Tier Hydration Hub",
+    "descriptions": [
+      "A stark, blocky monolith of cast gray concrete, its sharp corners sliced at impossible angles by vibrant streaks of canary yellow and cyan resin.",
+      "You encounter a geometric totem where polished chrome spouts erupt from heavy, matte-finished hemispheres.",
+      "The surface is a clash of aggressive, unyielding shapes and glossy, candy-colored light reflections dancing across the industrial grain."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You press your lips against the cool, vibrating metal and swallow a steady stream of chilled, purified liquid.",
+      "The rush of cold fluid hits your throat, cutting through the recycled air of the dome.",
+      "A sharp, refreshing surge washes away the dryness of the artificial breeze."
+    ],
+    "narrative_wash_self": [
+      "You splash your face with the pressurized spray, the water beads glistening against your skin like liquid jewels under the neon-tinted skylights.",
+      "You rinse the grit of lunar dust from your hands under the steady, rhythmic pulse of the chrome nozzle.",
+      "The cold mist clings to your skin, a refreshing contrast to the constant hum of the gravity generators."
+    ],
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.5,
+      "energy": 0.2
+    }
+  },
+  {
+    "name": "Geometric Hydro-Spout",
+    "descriptions": [
+      "A faceted monolith of polished concrete, accented with vibrant streaks of cobalt and magenta polymer. It rises from the floor in sharp, unapologetic angles, defying the curves of the dome.",
+      "A sculpture of liquid and hard lines, where water cascades over matte-finished triangles and neon-bright ridges, creating a rhythmic percussion against the basin below."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You press your lips against the cool, smooth edge and swallow the crisp, recycled liquid, feeling the revitalizing chill slide down your throat.",
+      "The stream hits your tongue with a sharp, clean precision, cutting through the recycled air of the dome."
+    ],
+    "narrative_wash_self": [
+      "You cup your hands under the steady jet, splashing the cool moisture over your face to shake off the lunar dust.",
+      "You rinse the grime from your skin against the rhythmic pulse of the water hitting the heavy, colored stone."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    }
+  },
+  {
+    "name": "Prism-Flow Hydro-Monolith",
+    "descriptions": [
+      "A massive, cantilevered slab of polished concrete rises from the floor, intersected by sharp, neon-hued acrylic planes that refract the dome's artificial sunlight.",
+      "Water cascades down geometric facets in a rhythmic, choreographed dance, splashing against matte-finished cyan and magenta basins.",
+      "The structure stands as a stark intersection of unyielding grey geometry and vibrant, translucent pigment, serving as a focal point in the sterile corridor."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You cup your hands under the controlled stream, feeling the crisp, chemically purified liquid splash against your skin.",
+      "A cool, steady jet hits your tongue, washing away the recycled dryness of the artificial atmosphere.",
+      "You lean in to catch the rhythmic pulse of the flow, savoring the startlingly fresh temperature of the lunar-grade supply."
+    ],
+    "narrative_wash_self": [
+      "You splash the cool liquid over your face, the droplets catching the bright, saturated colors of the basin below.",
+      "As you rinse your hands, the spray mists against the vivid, hard-edged acrylic panels, creating dancing rainbows in the air.",
+      "You press your palms against the vibrating surface of the concrete, letting the stream cleanse your skin with precision."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    }
+  },
+  {
+    "name": "Prismatic Hydration Spout",
+    "descriptions": [
+      "A chunky, geometric pillar of polished concrete, accented with thick stripes of cobalt and canary yellow enamel. It stands as a structural statement amidst the playground's sharp-angled topography.",
+      "The water erupts from a recessed cylinder in a perfect, crystalline arc, catching the artificial sunlight that bounces off nearby tangerine-colored composite panels."
+    ],
+    "static": true,
+    "type": [
+      "water_point"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [
+      "You cup your hands beneath the cool, steady stream, feeling the sudden shock of moisture against your skin.",
+      "The liquid is crisp and metallic, quenching the dry, recycled air lingering in your throat."
+    ],
+    "narrative_wash_self": [
+      "You splash the splashing liquid over your face, rinsing away the fine lunar dust that clings to your skin.",
+      "The rhythmic pulse of the water helps clear your senses under the dome's steady glow."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    }
+  },
+  {
+    "name": "Octopod AutoCook Station",
+    "descriptions": [
+      "A massive, eight-legged monolith of poured grey cement, accented with vibrant stripes of cobalt and canary yellow.",
+      "A heavy, geometric kitchen hub anchored to the lunar floor, its surfaces polished to a high gloss."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You approach the towering structure, your hands brushing against the cool, smooth finish of the primary plating.",
+      "As you reach for the interface, the sharp angles of the machine catch the overhead neon glare.",
+      "You feel the low hum of the gravity stabilizers vibrating through the concrete base and into your boots."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The machine hums with a steady, rhythmic pulse, casting a warm magenta glow across the floor.",
+      "off_description": "The station stands silent and inert, a still geometric sculpture of matte grey and bright primary hues.",
+      "on_sequence": "You press the recessed button, and a sudden surge of energy causes the internal lights to flicker into a brilliant, saturated violet.",
+      "off_sequence": "You slide the heavy lever down, and the vibrant light fades into a dull, static shadow.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Last Drop Juicer Bullet Thermos",
+    "descriptions": [
+      "A high-gloss, cobalt-blue cylinder with sharp, angular facets that catch the harsh artificial light.",
+      "The surface features striking stripes of canary yellow and magenta, sliced through by hard shadows.",
+      "A heavy, matte-grey base provides a weighted contrast to the vibrant, saturated body."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You grip the smooth, uncompromising edges of the vessel, feeling the coolness of the polished casing against your palm.",
+      "You reach for the mechanical switch, your fingers tracing the sharp intersection where the bright pigment meets the dark, industrial base.",
+      "You brace yourself against the weight of the reinforced canister, preparing to activate its internal mechanism."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 5,
+      "on_description": "The device hums with a rhythmic, high-pitched vibration, shedding brilliant light from its seams.",
+      "off_description": "The cylinder sits silent and still, its vibrant colors waiting in a steady, unmoving state.",
+      "on_sequence": "You flip the toggle, and a sudden, buzzing energy surges through the core, accompanied by a rapid, oscillating pulse.",
+      "off_sequence": "You depress the lever, and the internal vibration tapers off into a final, muffled click.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Aurelia Thermal Module",
+    "descriptions": [
+      "A massive, slab-like monolith of poured concrete, its surfaces interrupted by vibrant streaks of cobalt and tangerine enamel.",
+      "An imposing geometric furnace encased in thick, reinforced fiberglass, radiating a rhythmic, artificial warmth."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You press your palm against the smooth, brightly lacquered paneling, feeling the hum of heavy machinery vibrating through the thick concrete base.",
+      "You stare at the sharp, angular edges of the casing, where primary-colored sealant fills the seams of the composite shell.",
+      "Your fingers trace the stark, unyielding line where a magenta-hued metal slab meets the grey, brutalist texture of the unit's housing."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The unit emits a steady, low-frequency thrum and a soft, saturated glow from its internal vents.",
+      "off_description": "The module sits in silent, heavy stillness, a dormant sculpture of pigment and stone.",
+      "on_sequence": "You depress the recessed switch, and a sudden, energetic buzz ripples through the metal, accompanied by a surge of intense, concentrated heat.",
+      "off_sequence": "You cut the power, and the vibrant hum fades into a hollow silence, leaving only the residual warmth trapped within the thick walls.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Chromium-Vibrant Thermal Induction Slab",
+    "descriptions": [
+      "A heavy, slab-like workstation of cast magenta concrete and reinforced fiberglass.",
+      "A monolithic cooking surface featuring sharp, geometric patterns in primary hues."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You run your palm over the cool, unyielding surface of the heavy slab.",
+      "Your fingers trace the precise, razor-sharp edges where the bright violet fiberglass meets the coarse gray cement.",
+      "You reach for the recessed control panel embedded within the thick, colorful mass."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The slab hums with a low-frequency vibration and glows with an internal, electric cyan light.",
+      "off_description": "The slab sits silent and dark, a heavy geometric block in the room.",
+      "on_sequence": "You press the recessed button and feel a deep, rhythmic pulse surge through the floor as the surface warms.",
+      "off_sequence": "You tap the command and the humming fades into a hollow, mechanical sigh.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Paper Sheet Visualographer",
+    "descriptions": [
+      "A slab of matte-finished polymer framed in thick, uncompromising cobalt-blue concrete.",
+      "A geometric light-projection surface that cuts through the grey lunar dust with sharp, saturated hues."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A vivid kaleidoscope of overlapping rectangles dances across the matte surface.",
+      "off_description": "The slab remains a silent, opaque block of charcoal and primary-blue hues.",
+      "on_sequence": "You press the recessed button and a sudden burst of lemon yellow and magenta washes over the surface, shattering the dim grey shadows of the dome.",
+      "off_sequence": "The light recedes into a single, shrinking point of cyan before the screen settles into a heavy, silent stillness.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Holographer RetroRadio Receiver",
+    "descriptions": [
+      "A chunky, rectangular monolith of matte-finished teal polymer and raw concrete housing.",
+      "Static-filled geometric patterns dance across its glass face in neon pink and mustard yellow."
+    ],
+    "static": false,
+    "type": [
+      "tv",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The device emits a rhythmic hum while vivid, pixelated shapes pulse against the dim lunar interior.",
+      "off_description": "The unit sits as a silent, heavy block of industrial color.",
+      "on_sequence": "You press the heavy, rounded knob and feel a sudden vibration as the internal vacuum tubes glow, casting a vibrant, artificial light across your fingertips.",
+      "off_sequence": "As you click the switch, the flickering light collapses into a single point before fading into total darkness.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Prism-Glazed Command Console",
+    "descriptions": [
+      "A heavy, blocky slab of reinforced concrete finished in a high-gloss cobalt lacquer.",
+      "The screen is a thick slab of polished synthetic quartz, framing a chaotic dance of neon light."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The quartz pane hums with vibrant, saturated bursts of magenta and electric cyan.",
+      "off_description": "The unit sits as a silent, matte-finished geometric monolith of gray cement.",
+      "on_sequence": "You press the heavy plastic toggle and a surge of high-voltage energy pulses through the chassis, igniting the display into a frantic, colorful spectrum of light.",
+      "off_sequence": "You click the switch and the vivid luminescence collapses into a single, shrinking dot of light before vanishing into darkness.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Morse Code Reality TV Streamlab",
+    "descriptions": [
+      "A bulky, geometric monolith of polished concrete and vibrant yellow fiberglass.",
+      "A centerpiece of the lunar housing module, broadcasting chaotic life from the void."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen flickers with high-contrast, saturated hues that slice through the dim habitat light.",
+      "off_description": "The matte surface sits as a silent, silent block of heavy geometry.",
+      "on_sequence": "You press the hard-edged primary colored switch, and suddenly a rhythmic pulse of light pierces the lunar gloom, translating frantic signals into a kaleidoscope of rapid movements.",
+      "off_sequence": "You click the heavy lever, and the vivid explosion of light collapses back into a cold, unmoving slab of pigment and stone.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Prismatic Blade Array",
+    "descriptions": [
+      "A collection of razor-sharp instruments housed within a heavy, blocky structure of matte-finished polymer.",
+      "Aggressive geometric angles meet vibrant, saturated hues of cobalt and magenta, creating a stark contrast against the sterile grey of the lunar module."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "narrative_prepare": [
+      "You reach toward the block, your fingers brushing against the cold, unyielding surfaces of the saturated geometric forms.",
+      "The light from the dome's artificial sun catches the steep, unmoving edges of the handles, casting sharp, colorful shadows across your palm.",
+      "You grasp the weight of a single handle, feeling the tension between the smooth, industrial coating and the precision of the heavy steel hidden beneath."
+    ]
+  },
+  {
+    "name": "Geometric Ceramic Grinder",
+    "descriptions": [
+      "A heavy, chunky vessel of high-gloss cobalt glaze, its silhouette defined by sharp, unapologetic angles and striking intersections of primary hues.",
+      "This tactile weight of smooth, unyielding ceramic provides a stark contrast to the low-gravity hum of the surrounding dome."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You grasp the solid, unyielding weight of the neon-blue cylinder, feeling the cool, glass-like surface press against your palm.",
+      "Your hand finds the heavy, faceted pestle, a piece of solid pigment that feels substantial and intentional in your grip.",
+      "You steady the vibrant, angular basin upon the workstation, readying the strike against its impenetrable, polished face."
+    ]
+  },
+  {
+    "name": "Citadel Bloom Basin",
+    "descriptions": [
+      "You run your fingers along the sharp, uncompromising edges of this thick-walled vessel. It feels massive and unyielding, a slab of pigmented clay that anchors your space against the hum of the gravity generators.",
+      "Its surface is a bold, saturated expanse of primary hues, cut through by heavy black outlines that defy the soft lunar light. It stands as a geometric anchor amidst the swirling synthetic mists of the dome."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "capacity": 1,
+    "size_multiplier": 1.2
+  },
+  {
+    "name": "Primrose Geometric Raised Bed",
+    "descriptions": [
+      "You run your hand along the raw, abrasive grain of the poured cement, feeling the sharp, intentional angles where the bright yellow pigment meets a shock of cyan trim. It stands as a heavy, uncompromising block amidst the lunar dust, a vibrant geometric interruption in the sterile corridor.",
+      "This massive structure anchors the room with its unapologetic weight, its flat surfaces painted in unapologetic primary hues that clash beautifully against the soft, recycled air of the dome."
+    ],
+    "static": true,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "capacity": 4,
+    "size_multiplier": 1.5
+  },
+  {
+    "name": "Geometric Monolith Vessel",
+    "descriptions": [
+      "You run your hand along its sharp, unyielding edges, feeling the cool smoothness of high-gloss glazed ceramic. It stands as a towering pillar of vibrant cobalt and sun-yellow, cutting through the gray lunar dust with a bold, calculated silhouette.",
+      "This structural prism defies the muted tones of the dome, asserting its presence through intense, saturated hues and aggressive, clean-cut lines that slice through the artificial light."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "capacity": 2,
+    "size_multiplier": 1.2
+  },
+  {
+    "name": "Primary Cube Planter",
+    "descriptions": [
+      "You run your fingers over the cold, abrasive surface of a heavy concrete slab, shaped into a sharp, uncompromising cuboid. It stands as a solid anchor against the artificial breeze of the dome, its edges cutting through the air with mathematical precision.",
+      "A single, unapologetic stripe of electric cyan is lacquered across its grey face, a defiant splash of pigment against the lunar dust. It feels heavy, unyielding, and perfectly rhythmic in its geometry."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Neon-Tinted Poly-Fiber Vessel",
+    "descriptions": [
+      "You run your fingers across the glossy, non-porous surface of this molded geometric basin. Its electric cyan hue cuts sharply against the grey lunar-crete floor, standing out like a loud exclamation mark in the sterile compound. The edges are crisp and unapologetically hard, defining a space where rigid structural forms meet the saturated vibrance of synthetic life."
+    ],
+    "static": false,
+    "type": [
+      "planter_pot"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "capacity": 1,
+    "size_multiplier": 1.0
+  },
+  {
+    "name": "Prismatic Monolith Array",
+    "descriptions": [
+      "You stand beneath a towering configuration of interlocking polyhedrons that pierce the synthetic sky. The massive forms are cast in raw, unyielding cement, yet their surfaces are slashed with bold, saturated pigments\u2014canary yellow, electric cyan, and deep magenta\u2014that pop against the gray industrial landscape.",
+      "As you trace your hand along the structure, you feel the abrasive grit of the lunar-concrete paired with the impossibly smooth, slick finish of high-gloss enamel. The sharp, unapologetic angles of the sculpture slice through the soft, pressurized air of the dome, creating a rhythmic dance of light and shadow.",
+      "This is a playground of heavy geometry where the crushing weight of construction meets the joyous energy of a neon dreamscape."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Giant Public Ribbon Sculpture",
+    "descriptions": [
+      "You gaze up at a massive, winding loop of polished resin that snakes through the concrete plaza, twisting in impossible, sharp-angled arcs.",
+      "The surface catches the artificial sunlight, reflecting intense streaks of cobalt, vermillion, and citron across the gray brutalist walls.",
+      "Its silhouette cuts through the air with uncompromising precision, a bold geometric gesture that defies the dusty lunar landscape outside the dome.",
+      "As you walk beside it, the glossy pigment seems to vibrate against the matte, heavy texture of the reinforced bunkers surrounding you."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1
+  },
+  {
+    "name": "Ascension Prism Mural",
+    "descriptions": [
+      "You gaze up at a sweeping geometric expanse where jagged shards of cobalt and tangerine intersect against raw, grey cement. The sharp silhouettes of the shapes seem to slice through the simulated sky, pulling your eyes toward the reinforced ceiling.",
+      "The surface is a rhythmic collision of high-gloss pigments and matte concrete, creating a visual vibration that dances with the artificial light. Every angle is a deliberate, unyielding strike of vivid color against the cold, industrial grain of the dome's interior."
+    ],
+    "static": true,
+    "type": [],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1
+  }
+]
