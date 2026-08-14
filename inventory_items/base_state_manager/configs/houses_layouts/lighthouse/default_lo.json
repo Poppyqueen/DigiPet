@@ -19,13 +19,14 @@
     ["Stairway","Storage Room"],
     ["Stairway","Lantern Room"],
     ["Stairway","Living Quarters"],
-
-    ["Lantern Room","Fresnel Lens"]
+    ["Stairway", "Islet Base"],
+    
+    ["Lantern Room","Fresnel Lens"],
+    ["Lantern Room", "Balcony"]
   ],
   "groups": {
-    "bottom": ["Storage Room"],
     "mid": ["Living Quarters", "Kitchen"],
-    "top": ["Service Room", "Balcony", "Lantern Room"]
+    "top": ["Service Room", "Lantern Room"]
   }
 
 }

@@ -8,7 +8,7 @@ call .snapshot() to get an immutable read of current state for rendering.
 
 from __future__ import annotations
 import random
-from datetime import datetime, timezone
+from utils.loc_datetime import datetime
 
 from .types import (
     LunarSnapshot, SunResult, EarthResult, SpaceWeather, DomeStatus,
@@ -114,7 +114,7 @@ class LunarSkySimulator:
     # -- read ----------------------------------------------------------
 
     def snapshot(self, dt: datetime | None = None) -> LunarSnapshot:
-        dt = dt or datetime.now(timezone.utc)
+        dt = dt or datetime.now()
 
         sun_alt, sun_az = eph.sun_look_angle(self.lat, self.lon, dt)
         sun_phase = self._sun_phase(sun_alt)

@@ -1,0 +1,149 @@
+.constants:
+  - &base_style "Style: Early 20th (1920s) Century American Lighthouse. Granite structure, late victorian style, early 20th century."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. When describing interactions always use second-person present tense.
+  - &items_base_prompt >
+      THEME = "Early 20th century American lighthouse" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openrouter"
+  model: "qwen/qwen3.7-flash"
+  export_dir: "inventory_items/items_provider/items_data/lighthouse_revival"
+
+tasks:
+
+# # --- fenestration / apertures (Lantern Room, Gallery, Stairs) ---
+#   - mode: "item"
+#     types: ["fenestration_aperture", "toggleable"]
+#     context: 
+#       - *base_style
+#       - *writing_style_prompt
+#       - *items_base_prompt
+#     prompts:
+#       - "A round viewport window."
+#       - "Narrow slit window in the stairwell granite"
+#       - "Storm shutter, iron-hinged"
+#       - "Ventilation louver, brass"
+
+#   # --- sleepable / seatable (Sleeping Nook, Service Room, Kitchen) ---
+#   - mode: "item"
+#     types: ["sleepable_spot", "seatable"]
+#     context: 
+#       - *base_style
+#       - *writing_style_prompt
+#       - *items_base_prompt
+#     prompts:
+#       - "Wooden stool"
+#       - "Bed nook (Part of the building, a slab of granite protuding from the floor, with a small individual mattress on top.)"
+#       - "Wooden desk"
+#       - "Cracked leather armchair with brass tack trim"
+#       - "Ladder-back kitchen chair, rush seat"
+#       - "Low milking-stool style perch, three-legged"
+
+#   # --- toggleable light/heat sources (Lantern Room, Service Room, Sleeping Nook) ---
+#   - mode: "item"
+#     types: ["toggleable"]
+#     context: 
+#       - *base_style
+#       - *writing_style_prompt
+#       - *items_base_prompt
+#     prompts:
+#       - "taper candle"
+#       - "Heavy iron foghorn nozzle"
+#       - "Brass hurricane lantern with tarnished base"
+#       - "Kerosene wall sconce with mica shade"
+#       - "Ship's bell, weathered bronze"
+#       - "Signal flag locker with pull-hooks"
+#       - "Mechanical fog signal lever"
+
+
+#   # --- water point (Service Room / Kitchen) ---
+#   - mode: "item"
+#     types: ["water_point", "toggleable"]
+#     context: 
+#       - *base_style
+#       - *writing_style_prompt
+#       - *items_base_prompt
+#     prompts:
+#       - "Sea water plumbed washing basin"
+
+  # --- consumables (Storage Room, Kitchen) ---
+  - mode: "item"
+    types: ["consumable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      # - "Hardtack"
+      # - "bully beef can"
+      # - "bacon strip"
+      # - "molasses ration"
+      # - "Water Keg"
+      # - "Tin of loose-leaf black tea"
+      # - "Salted pork barrel portion"
+      # - "Sourdough starter crock"
+      # - "Glass flask of dark rye whiskey"
+      # - "Dried cod, bundled and salt-crusted"
+      - "Jar of preserved lemons"
+      - "Ship's biscuit tin, dented"
+      - "Wheel of hard cheese, waxed rind"
+      - "Bottle of cod liver oil"
+
+  # --- culinary equipment, stovetop-scale (Kitchen) ---
+  - mode: "item"
+    types: ["culinary_equipment", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Cast-iron potbelly stove top"
+      - "Copper tea kettle with salt-green patina"
+      - "Cast-iron skillet, well-seasoned"
+      - "Coffee grinder, hand-crank, mounted"
+      - "Butter churn, wooden staves"
+
+  # --- culinary equipment, oven-scale (Kitchen) ---
+  - mode: "item"
+    types: ["culinary_equipment", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Oven"
+      - "Bread proofing box, warmed by stovepipe"
+
+  # --- radio/tv equivalent (Service Room) ---
+  - mode: "item"
+    types: ["tv", "toggleable"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "vacuum tube radio"
+
+  # --- decorative / miscellaneous (Service Room, Sleeping Nook) ---
+  - mode: "item"
+    types: []
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Carved Wooden Duck, desk decoration"
+      - "Origami Boat"
+      - "Coiled Ropes stack"
+      - "Framed hand-drawn nautical chart"
+      - "Ship-in-a-bottle, dusty"
+      - "Logbook, leather-bound, ink-stained"
+      - "Brass spyglass, collapsed"
+      - "Pressed sea-glass collection in a jar"
+      - "Model lighthouse whittled from driftwood"
+      - "Embroidered Pastoral scene Pillow "

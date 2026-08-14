@@ -6,20 +6,19 @@
             "lantern_room",
             "accessible_light_viewing_room"
         ],
-        "music": "specimens_walk",
+        "music": "what_might_there_be",
         "outdoors_type": [
         "earth-weather",
         "earth-astro-views",
         "xeno-canto",
         "ocean-views"
         ]
-
     },
     {
         "name": "Service Room",
         "image": "service_room",
         "room_types": [
-            "accessible_light_viewing_room"
+            "meanwhile_smile"
         ],
         "plot_number": 3,
         "music": "stasis",
@@ -44,7 +43,7 @@
         "xeno-canto",
         "ocean-views"
         ],
-        "music": "stasis"
+        "music": "glass_tide"
     },
     {
         "name": "Fresnel Lens",
@@ -65,7 +64,7 @@
         "name": "Storage Room",
         "image": "oil_room",
         "room_types": [],
-        "music": "stasis",
+        "music": "AAAAA",
         "outdoors_type": [
         "earth-weather",
         "earth-astro-views",
@@ -78,7 +77,7 @@
         "image": "sleeping_nook",
         "room_types": [
         ],
-        "music": "stasis",
+        "music": "ashen_bell",
         "outdoors_type": [
         "earth-weather",
         "earth-astro-views",
@@ -91,7 +90,7 @@
         "image": "kitchen",
         "room_types": [
         ],
-        "music": "stasis",
+        "music": "comfort_fluff",
         "outdoors_type": [
         "earth-weather",
         "earth-astro-views",
@@ -115,6 +114,7 @@
     {
         "name": "Islet Base",
         "image": "",
+        "music":"quiet_jumpy",
         "room_types": [
         "open_soil_zone",
         "outdoors_area"

@@ -62,7 +62,7 @@ class ItemContext:
         for item in items_to_check:
             if not isinstance(item, dict):
                 continue
-            if any(itype in item.get("type", []) for itype in item_types):
+            if any(itype in (item.get('type') or []) for itype in item_types):
                 matching.append(item)
         return matching
 

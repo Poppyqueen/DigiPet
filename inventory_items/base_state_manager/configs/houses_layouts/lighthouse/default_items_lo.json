@@ -1,12 +1,49 @@
 {
-    "Garden":[
+    "Stairway":[
+        "Narrow Granite Slit[x4]",
+        "Kerosene Wall Sconce[x4]"
+    ],
+    "Storage Room":[
+        "Tapered Wax Wick[x5]",
+        "Tapered Wax Wick[x5]",
+        "Tapered Wax Wick[x5]",
+        "Tapered Wax Wick[x5]",
+        "Hardtack[x12]",
+        "Hardtack[x12]",
+        "Hardtack[x12]",
+        "Hardtack[x12]",
+        "Tinned Bully Beef[x8]",
+        "Salt-Cured Slab"
 
     ],
-    "Kitchen":[],
-    "Bedroom":[
+
+    "Living Quarters":[
+        "Sunbeam Clover Watercolor",
+        "Iron-Hinged Storm Shutter",
+        "Granite Alcove[x3]",
+        "Weathered Captain's Armchair"
     ],
-    "Bathroom":[],
-    "Living Room":[
     
+    "Kitchen":[
+        "Weathered Rush-Seat Chair[x4]"
+    ],
+    "Service Room":[
+        "Circular Brass-Framed Porthole",
+        "Weather-Worn Oak Stool",
+        "The Keeper's Heavy Oak Desk",
+        "Brass Hurricane Lantern",
+        "Mechanical Fog Signal Lever"
+    ],
+    "Lantern Room":[],
+    "Fresnel Lens":[],
+    "Balcony":[
+        "Signal Flag Locker"
+    ],
+
+    "Islet Base":[
+        "Receding Shoreline with Sea",
+        "Heavy Iron Foghorn Nozzle",
+        "Kerosene Wall Sconce"
     ]
+
 }

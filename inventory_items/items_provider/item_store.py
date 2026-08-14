@@ -136,7 +136,7 @@ class ItemStore:
 
     def get_items_by_type(self, item_type: str) -> list[dict]:
         """Retrieves a list of all items that include the specified type."""
-        return [copy.deepcopy(item) for item in self._items.values() if item_type in item.get('type', [])]
+        return [copy.deepcopy(item) for item in self._items.values() if item_type in (item.get('type') or [])]
     
     def find_items(self, filters: dict = None) -> list[dict]:
         """

@@ -1,0 +1,1162 @@
+[
+  {
+    "name": "Circular Brass-Framed Porthole",
+    "descriptions": [
+      "A thick, heavy pane of salt-crusted glass set deep within a tarnished brass ring.",
+      "The curved glass distorts the spray and the grey horizon into swirling, watery shapes."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The heavy glass pane stands clear, offering a sharp view of the crashing whitecaps below.",
+      "off_description": "A thick, opaque layer of dried brine and sea spray obscures the view completely.",
+      "on_sequence": "You wipe away the accumulated grit with a heavy cloth, revealing the churning, grey Oceans through the crystalline surface.",
+      "off_sequence": "You splash a bucket of fresh water against the pane, watching the salt film melt into streaked, murky lines.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Narrow Granite Slit",
+    "descriptions": [
+      "A vertical laceration in the heavy masonry, allowing a thin ribbon of salt-sprayed light to cut through the gloom of the spiraling stone ascent.",
+      "A cold, sharp aperture sliced into the rugged grey granite, framing the swirling grey mist of the Oceans."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The slit admits a piercing shaft of pale, oceanic light into the dim stairwell.",
+      "off_description": "The heavy masonry remains unyielding, sealing the interior against the howling gale.",
+      "on_sequence": "You pull back the heavy iron shutter, and a sharp blade of daylight slices through the darkness, illuminating the swirling dust and the damp sheen of the stone.",
+      "off_sequence": "You heave the rusted iron latch shut, plunging the stairwell back into a heavy, crushing silence as the light vanishes.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Iron-Hinged Storm Shutter",
+    "descriptions": [
+      "A heavy slab of forged iron, pitted by salt spray and coated in thick, chipping grey paint.",
+      "Its presence offers a grim reassurance against the howling gales and the relentless drumming of the Oceans."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The metal barrier seals the frame, blocking the spray of the sea.",
+      "off_description": "An open breach allows the freezing gale to howl through the glass.",
+      "on_sequence": "You heave the cold iron plate across the frame; it grinds against the granite socket until a heavy, muffled thud signals the seal.",
+      "off_sequence": "You pull back the heavy latch, and the screech of metal against metal lets the roar of the ocean flood your senses.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Polished Brass Ventilation Louvers",
+    "descriptions": [
+      "A series of angled brass slats, tarnished slightly by the relentless salt spray and heavy Oceans winds.",
+      "Fine metal vanes designed to channel the rushing air, their surfaces reflecting a dull, golden sheen amidst the grey stone."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The slats stand open, allowing a frantic, salt-crusted breeze to howl through the interior.",
+      "off_description": "The metal plates are drawn tight, sealing the room against the biting maritime gale.",
+      "on_sequence": "You slide the heavy brass lever; you feel the sudden, violent rush of wind whistling through the narrowed gaps.",
+      "off_sequence": "You heave the latch shut, and the roar of the storm is instantly muffled to a dull, rhythmic thrum against the granite walls.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Weather-Worn Oak Stool",
+    "descriptions": [
+      "A sturdy, three-legged seat fashioned from thick oak, its grain darkened by decades of salt spray and humidity.",
+      "The wood feels heavy and solid, bearing the scuffs of heavy boots and the relentless coastal air.",
+      "Patinaed by the spray of the Oceans, the grain is worn smooth in places where many have perched to watch the horizon."
+    ],
+    "static": false,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You lower yourself onto the rough timber, finding the wood surprisingly firm against your spine as you drift off to the rhythm of the crashing tides.",
+      "As you curl up on the seasoned oak, the faint scent of brine and old cedar envelops your senses."
+    ],
+    "narrative_sitting": [
+      "You settle onto the uneven surface, feeling the cool, salt-crusted grain through your trousers.",
+      "As you perch upon the sturdy frame, you feel the weight of the iron-heavy air pressing against you, supported by the unyielding wood."
+    ]
+  },
+  {
+    "name": "Granite Alcove",
+    "descriptions": [
+      "A heavy, cold outcrop of grey stone built directly into the foundation of the tower, providing a hollowed refuge against the salt spray.",
+      "A narrow, rectangular sanctuary carved from the very bones of the cliff, topped with a thin, coarse wool mattress that smells faintly of brine and cedar."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You press your weight into the thin padding, feeling the unyielding chill of the mountain beneath you as the rhythmic pulse of the beacon sweeps overhead.",
+      "As you settle into the hollow, the relentless drumming of the Oceans against the cliffs becomes a heavy, hypnotic lullaby."
+    ],
+    "narrative_sitting": [
+      "You rest upon the worn fabric, the rugged texture of the granite wall pressing against your back as you watch the fog roll across the dark waves.",
+      "Sitting amidst the damp shadows, you feel the immense, vibrating weight of the masonry supporting you against the howling wind."
+    ]
+  },
+  {
+    "name": "The Keeper's Heavy Oak Desk",
+    "descriptions": [
+      "A massive, deep-grained piece of weathered oak, scarred by decades of salt-crusted ink and rhythmic kerosene lamp flickers.",
+      "The thick timber surface bears the indentation of countless logbook entries, smelling faintly of cedar oil and dried seawater."
+    ],
+    "static": true,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You rest your head upon the cold, hard expanse of the wood, feeling the faint, rhythmic vibration of the crashing waves through the stone floor beneath you.",
+      "The scent of old parchment and brine fills your senses as you succumb to exhaustion atop this unyielding timber."
+    ],
+    "narrative_sitting": [
+      "You settle into the steady weight of the furniture, feeling the grain of the ancient wood through your coat.",
+      "As you lean forward, the sturdy structure holds you firmly against the howling gale outside the thick glass panes."
+    ]
+  },
+  {
+    "name": "Weathered Captain's Armchair",
+    "descriptions": [
+      "Deeply creased leather, the color of dried kelp, bound by gleaming brass studs along the worn armrests.",
+      "A heavy, sturdy piece of furniture that smells of salt spray, tobacco, and aged cedarwood."
+    ],
+    "static": false,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink into the yielding, cracked surface, feeling the deep contours of the leather embrace your weary frame as the distant roar of the surf lulls you into a heavy slumber.",
+      "The scent of old brine and worn hide settles over you as you succumb to exhaustion in this salt-stained refuge."
+    ],
+    "narrative_sitting": [
+      "As you settle into the embrace of the grain, the cool brass studs bite slightly against your skin, grounding you against the rhythmic pulse of the beacon's rotation.",
+      "You feel the weight of your fatigue pressing into the aged, supple hide, finding a moment of stillness amidst the relentless Oceans wind."
+    ]
+  },
+  {
+    "name": "Weathered Rush-Seat Chair",
+    "descriptions": [
+      "A sturdy ladder-back piece, its dark oak frame worn smooth by decades of salt-laden air.",
+      "The woven seat of dried reeds holds a faint scent of sea spray and old beeswax.",
+      "Scuffed by heavy boots, this utilitarian furniture stands against the whitewashed stone walls of the keeper's quarters."
+    ],
+    "static": false,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You sink into the rigid frame, letting the coarse texture of the rushes press against your weary limbs as the lantern's rhythmic sweep casts long shadows across the floor.",
+      "Resting here, you feel the vibration of the crashing surf far below through the solid wood, lulling you into a shallow, salt-tinged slumber."
+    ],
+    "narrative_sitting": [
+      "You settle onto the uneven woven reeds, feeling the unyielding support of the timber against your spine.",
+      "As you sit, the creak of the wood joins the whistling wind outside the thick masonry walls."
+    ]
+  },
+  {
+    "name": "Brass-Rimmed Three-Legged Perch",
+    "descriptions": [
+      "A stout, weathered piece of maritime utility, its three legs worn smooth by decades of salt-crusted boots.",
+      "The dark, heavy oak seat is reinforced with aged brass, echoing the utilitarian elegance of a keeper's quarters."
+    ],
+    "static": false,
+    "type": [
+      "sleepable_spot",
+      "seatable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_sleeping": [
+      "You rest your head against the cold, unyielding edge of the wood, listening to the rhythmic pulse of the rotating beam overhead.",
+      "As you curl up on this small platform, the damp chill of the Oceans seems to seep through the floorboards."
+    ],
+    "narrative_sitting": [
+      "You settle your weight onto the hard, polished timber, steadying yourself against the swaying of the lantern room.",
+      "The worn grain of the oak presses into your palms as you sit, anchoring you amidst the relentless roar of the gale outside."
+    ]
+  },
+  {
+    "name": "Tapered Wax Wick",
+    "descriptions": [
+      "A slender pillar of ivory tallow, slightly bowed from the weight of its own making.",
+      "A flicker of warmth standing defiant against the salt-crusted dampness of the tower."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 3,
+      "on_description": "A steady, golden bead of light dances atop the melting wick.",
+      "off_description": "A thin, smoking thread of blackened hemp remains in the cooling wax.",
+      "on_sequence": "You strike a match against the flint and touch the flame to the tip, watching the darkness retreat as the glow blooms into a warm, rhythmic pulse.",
+      "off_sequence": "You pinch the wick between your fingers, causing the light to snap and vanish into a swirling ribbon of grey smoke.",
+      "perishable": true,
+      "ticks_lasting": 22,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Heavy Iron Foghorn Nozzle",
+    "descriptions": [
+      "A massive, flared conduit of pitted cast iron, crusted with salt spray and streaks of oxidation.",
+      "The cold, dark metal feels imposing and damp to the touch, bearing the weight of centuries of maritime warnings."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "A low, guttural roar vibrates through the air, shaking the very foundation of the stone tower.",
+      "off_description": "The mechanism sits silent and hollow, waiting for the next swell to trigger its cry.",
+      "on_sequence": "You pull the heavy lever and feel the violent tremor travel from the brass fittings through your very bones as a deafening blast pierces the gloom.",
+      "off_sequence": "You release the pressure valve and the dying groan of escaping steam fades into the crashing waves below.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Brass Hurricane Lantern",
+    "descriptions": [
+      "A heavy, hand-held beacon encased in weathered metal and thick, salt-crusted glass.",
+      "A reliable companion against the encroaching dark and the spray of the Oceans."
+    ],
+    "static": false,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 5,
+      "on_description": "A warm, flickering amber glow radiates through the grime-streaked panes.",
+      "off_description": "The lantern sits cold and silent, its metal surface dull and pitted by brine.",
+      "on_sequence": "You strike a match and touch it to the wick; the flame catches, dancing wildly before steadying into a golden luminescence that pushes back the shadows.",
+      "off_sequence": "You twist the wick adjuster, and the flame shrinks into a tiny, dying spark before vanishing into the dark.",
+      "perishable": true,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Kerosene Wall Sconce",
+    "descriptions": [
+      "A heavy brass fixture bolted firmly into the damp, salt-crusted masonry.",
+      "The mica shade is thin and fractured, casting a fractured, warm glow across the stone walls."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": 12,
+      "on_description": "A steady, amber radiance flickers through the translucent mineral pane.",
+      "off_description": "The iron bracket holds only a cold, dark glass reservoir.",
+      "on_sequence": "You strike a match and touch it to the wick; the flame catches, a sudden bloom of warmth that dances against the damp granite.",
+      "off_sequence": "You pinch the wick between your fingers, cutting the heat and leaving only a thin trail of acrid grey smoke drifting into the dark.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Signal Flag Locker",
+    "descriptions": [
+      "A heavy, weathered oak cabinet bolted firmly to the damp granite wall.",
+      "The wood is darkened by sea salt and age, smelling faintly of brine and linseed oil.",
+      "Small, tarnished brass hooks protrude from the inner lining to hold colorful bunting."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The heavy door stands open, revealing organized rows of braided rope and heavy canvas pennants.",
+      "off_description": "The wooden door sits flush against the frame, sealing away the colorful signals from the salt air.",
+      "on_sequence": "You heave the weight of the oak door open, and the scent of dry hemp and dyed fabric meets you.",
+      "off_sequence": "You pull the latch tight, hearing the solid thud of wood meeting wood as the cabinet seals.",
+      "perishable": false,
+      "ticks_lasting": 0,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Mechanical Fog Signal Lever",
+    "descriptions": [
+      "A heavy, cast-iron handle worn smooth by decades of salt-laden air and frantic hands.",
+      "An industrial piece of maritime hardware, coated in chipped cream paint and stained with grease."
+    ],
+    "static": true,
+    "type": [
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The iron mechanism vibrates with a rhythmic, low-frequency thrum.",
+      "off_description": "The lever sits cold and silent against its mounting plate.",
+      "on_sequence": "You pull the heavy iron handle, feeling the immense tension of the internal gears snap into place as a deep, guttural moan erupts from the bell below.",
+      "off_sequence": "You release the grip, and the violent shuddering of the metal plates slowly dies into a hollow, echoing silence.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cast-Iron Basin and Scoured Stone Pedestal",
+    "descriptions": [
+      "A heavy, salt-crusted receptacle fashioned from dark metal, anchored to a pedestal of rugged, salt-sprayed granite.",
+      "The surface is pitted by decades of ocean mist, yet the basin remains a steadfast fixture against the relentless spray of the Oceans."
+    ],
+    "static": true,
+    "type": [
+      "water_point",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_drinking": [],
+    "narrative_wash_self": [
+      "You cup your hands under the rhythmic drip, splashing the frigid, bracing liquid against your face to shock the sleep from your eyes.",
+      "As you scrub your hands, the gritty residue of salt and coal dust swirls down the dark metal, leaving your skin stinging and refreshed."
+    ],
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.4,
+      "energy": 0.1
+    },
+    "toggle_state": {
+      "toggle_state": "on",
+      "toggle_uses_left": null,
+      "on_description": "A steady stream of cool fluid flows from the brass spout.",
+      "off_description": "The basin sits silent and still, waiting for the next tide.",
+      "on_sequence": "You crank the heavy brass lever, and a revitalizing torrent begins to splash against the bottom of the iron bowl.",
+      "off_sequence": "You shut the valve with a metallic clunk, silencing the flowing stream.",
+      "perishable": false,
+      "ticks_lasting": 10,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Hardtack",
+    "descriptions": [
+      "A heavy, pale slab of flour and water, baked repeatedly until it possesses the density of the very granite foundation of the tower.",
+      "An austere, utilitarian ration designed to withstand the relentless salt spray and the rhythmic crashing of the Oceans against the shore."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 3,
+    "stats_edit": {
+      "fullness": 4.0,
+      "hydration": -3.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You bite into the rock-hard surface, feeling the relentless pressure against your molars as it resists every attempt to yield.",
+      "The dry, dusty fragments cling to the roof of your mouth, demanding moisture to break down their chalky mass.",
+      "A heavy, bland weight settles in your stomach, providing a dull sustenance that lingers long after the salt has coated your tongue."
+    ]
+  },
+  {
+    "name": "Tinned Bully Beef",
+    "descriptions": [
+      "A dented, heavy tin container, its label faded by salt air and the relentless humidity of the coast.",
+      "The contents consist of thick, salty chunks of preserved meat submerged in a viscous, brownish brine."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 8,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 4.5,
+      "hydration": -5.0,
+      "energy": 3.0
+    },
+    "effects": [
+      "You puncture the lid, and the metallic scent of preserved salt and iron rises immediately to meet you.",
+      "Each heavy, salty morsel coats your tongue, leaving a thick, oily residue that makes you crave a long drink of fresh water.",
+      "The dense texture sits heavily in your stomach, providing a coarse sort of sustenance against the damp evening chill."
+    ]
+  },
+  {
+    "name": "Salt-Cured Slab",
+    "descriptions": [
+      "A thick, glistening ribbon of porcine fat and muscle, heavily cured with coarse sea salt.",
+      "Smoked over hickory embers, it carries the heavy, primal scent of a coastal kitchen."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 2,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": -3.0,
+      "energy": 2.5
+    },
+    "effects": [
+      "You bite into the greasy, salt-crusted edges, feeling the intense sting of brine on your tongue.",
+      "The warm, smoky fat coats your palate, leaving a heavy, lingering richness that makes your throat crave a long draught of water."
+    ]
+  },
+  {
+    "name": "Molasses Ration",
+    "descriptions": [
+      "A heavy, viscous sludge trapped within a dented tin, smelling of burnt sugar and iron.",
+      "Thick, dark liquid that clings to the sides of its vessel like tar against a salt-crusted pier.",
+      "A dense, soot-colored syrup designed to stave off the biting chill of a coastal gale."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 3,
+    "stats_edit": {
+      "fullness": 4.5,
+      "hydration": -3.0,
+      "energy": 6.0
+    },
+    "effects": [
+      "You scrape a thick, dark glob onto your spoon, feeling its immense weight against your tongue.",
+      "The intense, cloying sweetness coats your throat, thick enough to slow your very breathing.",
+      "You struggle to swallow the heavy sludge, which leaves your mouth feeling parched and coated in grit."
+    ]
+  },
+  {
+    "name": "Water Keg",
+    "descriptions": [
+      "A stout wooden vessel bound by rusted iron hoops, smelling faintly of salt spray and damp oak.",
+      "The condensation on the exterior makes your hands slick, mirroring the perpetual mist clinging to the granite cliffs below."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 8,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": 4.0,
+      "energy": 0.0
+    },
+    "effects": [
+      "You tilt the heavy vessel, swallowing the cool, metallic liquid that tastes of iron and old barrels.",
+      "The moisture trickles down your throat, providing a fleeting relief from the biting, salt-laden wind."
+    ]
+  },
+  {
+    "name": "Tin of Loose-Leaf Black Tea",
+    "descriptions": [
+      "A tarnished metal canister, smelling faintly of salt spray and old brass.",
+      "Dark, curled leaves rest within, reminiscent of the shadows cast by a rotating Fresnel lens against a granite wall."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 15,
+    "stats_edit": {
+      "fullness": -0.5,
+      "hydration": -2.5,
+      "energy": 4.0
+    },
+    "effects": [
+      "You bite into a dry, brittle leaf that tastes of bitter tannin and woodsmoke."
+    ]
+  },
+  {
+    "name": "Salted Pork Portion",
+    "descriptions": [
+      "A thick, translucent slab of cured meat, resting heavily in a brine-soaked wooden vessel.",
+      "The greyish-pink flesh is tightly packed with coarse grains of sea-salt, preserved against the relentless Oceans spray.",
+      "It carries the heavy, greasy scent of a galley kitchen during a gale."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10,
+    "consume_uses_left": 4,
+    "stats_edit": {
+      "fullness": 4.5,
+      "hydration": -5.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You bite into the tough, saline flesh, feeling the aggressive crunch of salt crystals against your teeth.",
+      "A heavy, greasy film coats your tongue, demanding an immediate draught of water to wash away the brine.",
+      "The richness of the fat settles heavily in your stomach, providing a slow, warming weight."
+    ]
+  },
+  {
+    "name": "Sourdough Starter Crock",
+    "descriptions": [
+      "A heavy, salt-glazed stoneware vessel, its surface mottled with the grey of a tempestuous Oceans morning.",
+      "Within the thick, cool ceramic walls, a bubbling, living culture rests, breathing softly like the rhythmic pulse of the tide against granite cliffs."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "consume_uses_left": 12,
+    "stats_edit": {
+      "fullness": 3.5,
+      "hydration": -0.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You lift the heavy clay, feeling the faint, rhythmic vibration of fermentation against your palms.",
+      "The sharp, tangy aroma of yeast cuts through the salty mist of the room.",
+      "As you take a spoonful of the thick, pale liquid, a pungent acidity blooms across your tongue."
+    ]
+  },
+  {
+    "name": "Flask of Dark Rye",
+    "descriptions": [
+      "A heavy, dimpled glass vessel that feels cold against your palm, its surface slightly frosted by the salty mist rolling off the Oceans.",
+      "The liquid inside is a deep, bruised amber, swirling with a viscosity that suggests a potent, biting heat."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 4,
+    "stats_edit": {
+      "fullness": -0.5,
+      "hydration": -4.5,
+      "energy": 2.5
+    },
+    "effects": [
+      "The liquid burns a trail of fire down your throat, momentarily masking the chill of the spray-soaked air.",
+      "A sharp, grain-heavy heat blossoms in your chest, offering a fleeting warmth against the unrelenting dampness."
+    ]
+  },
+  {
+    "name": "Salt-Crusted Cod",
+    "descriptions": [
+      "Wrapped tightly in coarse burlap and layered with crystals of white brine, this bundle carries the heavy, pungent scent of the Oceans.",
+      "The fish is stiff and dessicated, preserved by the very element that sought to claim it."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10,
+    "consume_uses_left": 3,
+    "stats_edit": {
+      "fullness": 4.0,
+      "hydration": -3.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You bite into the rigid, leathery flesh, feeling the sharp sting of salt crystals scraping against your teeth.",
+      "The flavor is intense and oceanic, leaving a heavy, briny coating on your tongue that demands water."
+    ]
+  },
+  {
+    "name": "Jar of Preserved Lemons",
+    "descriptions": [
+      "A heavy glass vessel, its base thick with the imperfections of early industrial blowing, sealed by a tarnished metal clasp that has surrendered to centuries of salt air.",
+      "Inside, pale yellow wedges float in a brine so clear it looks like distilled moonlight, suspended in a quiet, amber-hued suspension that holds the scent of the Oceans coast."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 4,
+    "consume_uses_left": 6,
+    "stats_edit": {
+      "fullness": 0.8,
+      "hydration": -2.5,
+      "energy": 0.5
+    },
+    "effects": [
+      "You lift a single wedge; it is slick and gelatinous, lacking the firm bite of fresh fruit. It yields easily between your teeth, offering no juice, only a dense, salty paste.",
+      "The flavor is an aggressive shock of saline and fermented citrus, dry and chalky on the tongue. It draws the moisture from your mouth instantly, leaving a lingering, harsh aftertaste that demands water rather than satisfaction.",
+      "As you swallow, the heavy salinity sits low in your stomach, a dense weight that pulls at your hydration reserves, making your throat feel parched despite having just consumed liquid."
+    ]
+  },
+  {
+    "name": "Dented Ship's Biscuit Tin",
+    "descriptions": [
+      "A rectangular tin of flattened, salt-cured hardtack, its metal casing scarred by decades of ocean spray and rough handling.",
+      "The biscuit inside is as hard as stone, preserved by brine and neglect, offering sustenance in a pinch but little comfort."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": null,
+    "consume_uses_left": 4,
+    "stats_edit": {
+      "fullness": -2.0,
+      "hydration": -3.5,
+      "energy": -1.0
+    },
+    "effects": [
+      "You bite down on the jagged edge; it shatters rather than chewing, sending shards of dry, dusty flour into your mouth like swallowed gravel.",
+      "The taste is purely of old salt and stale wheat, coating your throat in a gritty film that demands immediate water to wash away.",
+      "Swallowing feels like forcing down sand; your jaw aches from the resistance, and the dryness clings to the back of your palate long after you've finished."
+    ]
+  },
+  {
+    "name": "Wheel of Hard Cheese",
+    "descriptions": [
+      "A dense, golden disk of aged curds encased in a thick, natural wax rind.",
+      "The exterior bears the rough, matte texture of hand-applied beeswax, darkened by time and air, while the cut surface reveals a crystalline, brittle interior."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "consume_uses_left": 5,
+    "stats_edit": {
+      "fullness": 4.0,
+      "hydration": -2.5,
+      "energy": 3.0
+    },
+    "effects": [
+      "You lift the heavy, unyielding wheel; it feels cold and dense against your palms, like a stone harvested from the cellar floor.",
+      "Peeling back the waxy, parchment-like skin releases a sharp, pungent aroma of salted milk and old wood that cuts through the damp coastal air.",
+      "Your teeth crack into the brittle, crystalline shard, releasing a burst of salty umami that instantly dries out your mouth.",
+      "The dry, granular pulp clings to your tongue, demanding water to wash away the intense, lingering savory residue."
+    ]
+  },
+  {
+    "name": "Bottle of Cod Liver Oil",
+    "descriptions": [
+      "A small, amber-colored glass bottle sealed with a waxed cork, the liquid inside thick and yellow as captured sunlight.",
+      "The label is faded script on brittle paper, stained by salt air and decades of neglect in a damp storage closet."
+    ],
+    "static": false,
+    "type": [
+      "consumable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 4,
+    "stats_edit": {
+      "fullness": -0.5,
+      "hydration": -1.5,
+      "energy": 0.2
+    },
+    "effects": [
+      "You unscrew the waxed top with a gritty click, the scent of deep, briny cold rushing out to meet you.",
+      "The first sip is heavy and slick, coating your throat in a layer of viscous gold that tastes faintly of iron and ancient ocean depths.",
+      "You grimace as the rich, oily texture resists swallowing, leaving a lingering, metallic aftertaste that clings to the back of your palate like sea mist."
+    ]
+  },
+  {
+    "name": "Cast-iron Potbelly Stove Top",
+    "descriptions": [
+      "A rugged, blackened plate of cast iron with a pronounced convex belly, standing silent and heavy against the chilled granite floor.",
+      "The surface is pitted with age, holding the memory of countless fires lit to ward off the Oceans damp."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the imposing, matte-black silhouette of the stove, feeling the residual chill radiating from its flanks despite the day's warmth.",
+      "Your hand hovers over the rough, textured lid, sensing the weight of the metal and the potential for heat stored within its cast core.",
+      "The scent of old ash and sea salt lingers in the air as you prepare to engage with this steadfast companion against the cold."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The stove roars with vitality, casting dancing orange shadows across the white-washed walls and warming the biting coastal air.",
+      "off_description": "The stove sits dormant, its dark iron skin cooling slowly while embers glow faintly beneath the ash layer.",
+      "on_sequence": "You slide back the heavy lid, revealing the grate, and feed in the split oak logs. Striking the match, you watch the flame catch, grow, and spread until a steady, comforting heat begins to pulse from the belly of the iron.",
+      "off_sequence": "You push the lid shut, smothering the roar into a soft crackle. You rake the ashes down, cutting off the oxygen, until the hissing fades and only the slow, fading warmth remains in the metal.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Patina Copper Tea Kettle",
+    "descriptions": [
+      "A sturdy copper vessel resting on the granite hearth, its surface mottled with verdigris that speaks of decades spent battling coastal damp.",
+      "The handle is wrapped in frayed hemp, worn smooth by the grip of countless mornings before dawn.",
+      "It sits heavy and immovable, a silent sentinel against the biting chill of the watchtower kitchen."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the iron stove, the air thick with the scent of dried kelp and old stone.",
+      "Your hand reaches for the hemp-wrapped handle, feeling the cold, rough texture of the aged cord.",
+      "You notice the subtle shift in the kettle\u2019s posture, ready to be coaxed into heat."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The copper belly glows dull red as water within begins to shudder and hum.",
+      "off_description": "The kettle sits dark and silent, cooling slowly on the granite.",
+      "on_sequence": "You twist the brass valve. A sharp hiss answers you as blue flame leaps up, kissing the soot-blackened base. The metal groans softly, a low vibration traveling through the stone floor as the water inside awakens from its slumber.",
+      "off_sequence": "You release the valve. The hissing dies away, leaving only the slow, rhythmic ticking of contracting metal. The glow fades back into shadow, returning the kettle to its stoic silence.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cast-iron skillet",
+    "descriptions": [
+      "A heavy, black iron pan with a thick, handle-like grip. The surface is dark and glossy from years of use.",
+      "It sits on the stove like a permanent fixture, ready to sear or bake."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You approach the heavy stove, the metal cool against your palms as you lift the lid off the cast iron companion.",
+      "The scent of old grease and heat hangs in the air, promising a hearty meal from the durable vessel waiting on the burner grate."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The iron pan glows faintly red at the bottom, radiating intense, steady heat across its flat base.",
+      "off_description": "The iron pan sits dark and inert on the grates, cooling slowly after its fiery work is done.",
+      "on_sequence": "You twist the gas valve with a satisfying click, watching the blue flame lick up around the heavy base of the pan. You feel the warmth begin to build, traveling up the sides of the iron, turning it into a reservoir of consistent heat.",
+      "off_sequence": "You reach out and turn the knob, silencing the roar of the burner. The glowing red hue under the pan fades to black, leaving only the memory of heat radiating from the dense metal into the kitchen air.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cast-Iron Hand Grinder",
+    "descriptions": [
+      "A sturdy, blackened cast-iron cylinder bolted to the oak counter, its surface pitted with the salt air of decades.",
+      "The brass crank handle shines dimly against the heavy metal body, waiting for the friction of a turn."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the heavy iron fixture anchored to the worn wooden countertop.",
+      "Your hand finds the cold, smooth curve of the brass lever protruding from the side.",
+      "The weight of the device feels permanent, rooted firmly against the vibration of the sea outside."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The internal burrs grind slowly, releasing a rich aroma into the coastal air.",
+      "off_description": "The mechanism is still and silent, holding whole beans in silence.",
+      "on_sequence": "You grip the brass handle firmly and apply steady pressure. The resistance builds as the metal teeth catch the beans, turning a rhythmic, grinding friction that vibrates up your arm. A low, consistent shushing sound emerges, punctuated by the occasional crack of the husks breaking apart.",
+      "off_sequence": "You ease your hand off the lever, allowing the residual momentum to fade. The grinding stops abruptly, leaving a ringing silence in the quiet kitchen as the dust settles.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Weathered Butter Churn",
+    "descriptions": [
+      "A sturdy vessel crafted from vertical oak staves, bound by iron hoops that have darkened with age and moisture.",
+      "The wooden planks bear the scars of decades of rhythmic agitation, their surfaces smoothed yet scarred by the constant churn."
+    ],
+    "static": false,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 3,
+    "narrative_prepare": [
+      "You lift the heavy wooden lid, feeling the cold resistance of the damp timber against your palms.",
+      "Your fingers brush against the rough grain of the staves, sensing the history of labor embedded in the wood.",
+      "You brace yourself, planting your feet firmly as you reach for the central dasher handle, ready to begin the physical rhythm."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The churn is being agitated vigorously, its internal mechanism working to separate cream into butter.",
+      "off_description": "The churn sits still and quiet, holding its contents in silence.",
+      "on_sequence": "You grip the handle tightly and drive it upward and downward in a steady, punishing rhythm. The liquid inside sloshes violently, splashing against the inner walls, while the air fills with the heavy, earthy scent of churning dairy.",
+      "off_sequence": "You release the handle, letting your arm drop to your side. The violent motion ceases, replaced by the gentle settling of the mixture within the confined space.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Coal-Fired Hearth Oven",
+    "descriptions": [
+      "A heavy, cast-iron beast set within a fieldstone archway, its surface blackened by decades of soot and heat.",
+      "The door is thick, reinforced with rivets, featuring a small glass porthole that glows with the amber breath of burning anthracite."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "narrative_prepare": [
+      "You stand before the massive iron mouth, feeling the residual warmth radiating from the stones even when it is cold.",
+      "Your hand rests on the cold, rough-levered latch, listening to the silence of the ash-choked chamber waiting for fire.",
+      "You grip the handle, ready to disturb the stillness and invite the flame back into this stone-walled sanctuary."
+    ],
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The oven burns with a steady, roaring heat, the flames licking the interior bricks.",
+      "off_description": "The oven sits silent and dark, filled with gray ash and cooling embers.",
+      "on_sequence": "You shove the heavy iron door open, revealing the hollow darkness. You arrange the split oak logs and strike the match against the flint, watching the orange tongue catch the dry kindling. The fire catches, growing from a whisper to a crackle as you pull the door shut, sealing the heat within the stone walls.",
+      "off_sequence": "You pull the heavy lever, drawing out the remaining hot coals into the ash pit. The roar fades to a gentle hiss, then to silence. You close the door tight, letting the heat bleed slowly into the room as the black iron begins to cool.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cast-Iron Proofing Box",
+    "descriptions": [
+      "A sturdy, rectangular chamber of blackened cast iron, designed to cradle dough in a gentle, enclosed warmth.",
+      "It sits adjacent to the main heating stove, connected by a slender, ribbed pipe that transfers ambient heat without direct flame.",
+      "The metal surface is worn smooth by years of handling, bearing the faint scorch marks of decades of kitchen labor."
+    ],
+    "static": true,
+    "type": [
+      "culinary_equipment",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": 1,
+    "narrative_prepare": [
+      "You approach the heavy iron box standing silent beside the roaring hearth.",
+      "Your hand rests on the cool, textured lid, feeling the vibration of the heat traveling through the connecting flue.",
+      "You pause, assessing whether the internal temperature is ready for the delicate yeast activity within."
+    ],
+    "toggle_state": {
+      "toggle_state": "on",
+      "toggle_uses_left": null,
+      "on_description": "The box radiates a steady, dry warmth suitable for rising bread.",
+      "off_description": "The box is cold and inert, offering no thermal protection.",
+      "on_sequence": "You engage the dampener valve on the connecting pipe. The rush of hot air from the stove fills the box, and you feel the subtle shift as the cast iron begins to absorb and hold the heat, glowing with a quiet intensity.",
+      "off_sequence": "You close the valve tightly, cutting off the flow of warm air. The hum of the exhaust fades, and the box begins its slow descent into silence and chill.",
+      "perishable": false,
+      "ticks_lasting": 6,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Cathode Ray Monitor and Transmitter Console",
+    "descriptions": [
+      "A heavy, dark-wood cabinet housing the glass eyes of modern communication, sitting with the stoic permanence of coastal stone.",
+      "Warm amber glow emanates from within, fighting back the encroaching sea mist with electric warmth."
+    ],
+    "static": true,
+    "type": [
+      "tv",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "tv_state": {
+      "tv_type": "standard",
+      "current_channel": ""
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen hums to life, casting a soft, flickering blue light that reflects off the polished mahogany casing.",
+      "off_description": "The glass face cools into darkness, leaving only the faint scent of ozone in the air.",
+      "on_sequence": "You press the bakelite knob. A high-pitched whine rises, steady as a foghorn, before the phosphor grid ignites with a silent burst of static that clears into clarity.",
+      "off_sequence": "You release the knob. The image dissolves into a shrinking white dot on the black glass, accompanied by a final, dying sigh of electricity.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "Carved Wooden Duck",
+    "descriptions": [
+      "You hold the smooth, cool weight of the oak figure in your palm. Its surface is polished by years of coastal salt air and careful hands, gleaming with a dull, amber luster against the stark white plaster walls.",
+      "The grain of the wood swirls around the bird's wing, carved with the rigid, symmetrical precision of a workshop that values order over organic whimsy. It sits heavy on your desk, anchoring your papers like a small, silent buoy in a sea of ledgers.",
+      "A faint smell of linseed oil and old timber clings to it, mixing with the scent of rain hammering against the granite tower windows nearby."
+    ],
+    "static": false,
+    "type": [],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20
+  },
+  {
+    "name": "Folded Paper Craft",
+    "descriptions": [
+      "A small vessel formed from crisp, white stationery, its geometric folds sharp and precise.",
+      "The paper carries a faint scent of the salt air and damp stone that permeates the lighthouse keeper's quarters.",
+      "It rests in your palm, light as a gull\u2019s feather, with creases worn smooth from anxious fingers during long nights watching the storm."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 100
+  },
+  {
+    "name": "Coiled Ropes",
+    "descriptions": [
+      "Thick, braided hemp lines, coiled tightly and secured with a simple toggle. The fibers are weathered by salt air and time, bearing the rough texture of countless tugs and turns.",
+      "These coils rest heavy in your hands, dense and fibrous, smelling faintly of dried ocean spray and aged timber. They are ready to secure a vessel or bind a load, their strength tested by the harsh coastal elements.",
+      "The knots are tight and functional, typical of maritime gear from an era when survival depended on the integrity of every strand."
+    ],
+    "static": false,
+    "type": [],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5
+  },
+  {
+    "name": "Framed Hand-Drawn Nautical Chart",
+    "descriptions": [
+      "You hold a heavy, oil-rubbed mahogany frame that bears the fine silver scratches of decades spent in salty air. Inside, under thick, slightly yellowed glass, lies a single sheet of cream-colored vellum. The ink is sepia-toned, meticulously hand-lettered with a copperplate script that details the treacherous contours of the coastline. Faint stains from candle wax dot the corners, and a brass hanging hook rusts at the top, swaying gently as if recalling the rhythmic rocking of a ship\u2019s deck.",
+      "Your fingers trace the raised lines of the shoals and reefs, each curve representing a silent warning to sailors who once navigated by these very stars. The paper feels brittle yet durable, smelling faintly of old tobacco and dried lavender. You can see where the artist hesitated before drawing the breakwater, a moment of uncertainty preserved in ink, reminding you of the precarious balance between land and sea.",
+      "The chart does not spin or beam; it simply exists, an anchor of calm amidst the chaos of the storm outside. It evokes the quiet solitude of the lantern room keeper, watching over the dark water, relying on this tangible map to ensure safe passage. You feel a sense of historical weight, as if holding a secret whispered by the coast itself."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5
+  },
+  {
+    "name": "Dusty Ship-in-a-Bottle",
+    "descriptions": [
+      "You hold the cool, heavy glass sphere, feeling the weight of decades settled into its thick walls.",
+      "Inside, a tiny schooner drifts in eternal calm, its sails furled tight against a silence you can almost hear.",
+      "A fine layer of gray silt coats the exterior, blurring the edges of the miniature world within, as if time itself has fogged up the lens."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10
+  },
+  {
+    "name": "Worn Keeper's Logbook",
+    "descriptions": [
+      "The heavy leather cover, stained with decades of salt spray and the dark smudges of iron-gall ink, feels cool and rigid against your palm.",
+      "Inside, the yellowed pages whisper of tidal charts, wind velocities, and lonely nights spent watching the beam cut through the fog off the granite coast.",
+      "The spine cracks softly as you open it, revealing meticulous handwriting that has faded to a ghostly sepia under the lens of time."
+    ],
+    "static": false,
+    "type": [],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Collapsed Brass Spyglass",
+    "descriptions": [
+      "A barrel of tarnished yellow metal rests in your palm, its segments collapsed inward like a tired lung. The brass bears the dull, pitted sheen of salt air and decades of neglect, lacking the gleam of a polished deck.",
+      "The lens glass is clouded with a fine layer of grime, obscuring any horizon it might once have scanned from a stone tower against a grey Oceans sky. It feels heavy, solid, and cold, evoking the lonely vigil of a keeper who watched the waves break against granite walls."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10
+  },
+  {
+    "name": "Pressed sea-glass collection in a jar",
+    "descriptions": [
+      "A stout, cylindrical jar of pressed green glass sits heavy on the desk, its surface fogged with decades of salt spray and coastal humidity. Inside, dozens of tumbled shards\u2014smooth as river stones and soft as frosted sugar\u2014rest in layers of muted aquamarine and deep sea-green.",
+      "Each fragment has been beaten raw by the Oceans\u2019s relentless churn until every sharp edge surrendered to the waves. They catch the weak, grey light filtering through the high windows, glowing with an internal, aquatic luminescence that mimics the shallow reef waters below."
+    ],
+    "static": false,
+    "type": [],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Model Lighthouse",
+    "descriptions": [
+      "Carved from a piece of grey, sun-bleached driftwood that has weathered decades on the rocky shore.",
+      "The miniature tower features distinct stone-like grooves etched into the wood grain to mimic granite blocks.",
+      "A small brass lantern housing is affixed to the top, currently dark and tarnished with age.",
+      "The base is rough and unpolished, retaining the natural curves of the original log.",
+      "Held in your hand, it carries the faint, salty scent of dried kelp and old sea air."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": null
+  },
+  {
+    "name": "Embroidered Pastoral Scene Pillow",
+    "descriptions": [
+      "Soft cotton fabric worn smooth by decades of sea breeze and solitude.",
+      "Hand-stitched hills and woolen sheep evoke a gentle countryside, a stark contrast to the rugged granite coastline.",
+      "A comforting relic from shore-side quarters, where watchful eyes find rest between shifts."
+    ],
+    "static": false,
+    "type": null,
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 50
+  }
+]
