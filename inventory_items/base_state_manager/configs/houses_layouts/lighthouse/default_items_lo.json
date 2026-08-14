@@ -4,42 +4,75 @@
         "Kerosene Wall Sconce[x4]"
     ],
     "Storage Room":[
-        "Tapered Wax Wick[x5]",
-        "Tapered Wax Wick[x5]",
-        "Tapered Wax Wick[x5]",
-        "Tapered Wax Wick[x5]",
-        "Hardtack[x12]",
-        "Hardtack[x12]",
-        "Hardtack[x12]",
-        "Hardtack[x12]",
-        "Tinned Bully Beef[x8]",
-        "Salt-Cured Slab"
-
+        "Tapered Wax Wick[x50]",
+        "Hardtack[x48]",
+        "Tinned Bully Beef[x25]",
+        "Salt-Cured Slab[x12]",
+        "Molasses Ration[x25]",
+        "Water Keg[x120]",
+        "Tin of Loose-Leaf Black Tea[x35]",
+        "Salted Pork Portion[x35]",
+        "Flask of Dark Rye[x25]",
+        "Salt-Crusted Cod[x30]",
+        "Wheel of Hard Cheese[x8]",
+        "Bottle of Cod Liver Oil[x25]",
+        "Coiled Ropes[x10]",
+        "Model Lighthouse",
+        "Soft cleaning cloth[x10]",
+        "Kerosene container[x80]",
+        "IOV Mantle[x120]",
+        "IOV Spirit Pan[x4]",
+        "Denatured alcohol barrel[x100]",
+        "Set of matches[x50]"
     ],
 
     "Living Quarters":[
         "Sunbeam Clover Watercolor",
         "Iron-Hinged Storm Shutter",
         "Granite Alcove[x3]",
-        "Weathered Captain's Armchair"
+        "Embroidered Pastoral Scene Pillow[x6]",
+        "Weathered Captain's Armchair",
+        "Carved Wooden Duck",
+        "Pressed sea-glass collection in a jar"
     ],
     
     "Kitchen":[
-        "Weathered Rush-Seat Chair[x4]"
+        "Weathered Rush-Seat Chair[x4]",
+        "Sourdough Starter Crock",
+        "Cast-iron Potbelly Stove Top",
+        "Patina Copper Tea Kettle",
+        "Cast-iron skillet",
+        "Cast-Iron Hand Grinder",
+        "Coal-Fired Hearth Oven",
+        "Dusty Ship-in-a-Bottle"
     ],
     "Service Room":[
         "Circular Brass-Framed Porthole",
         "Weather-Worn Oak Stool",
         "The Keeper's Heavy Oak Desk",
         "Brass Hurricane Lantern",
-        "Mechanical Fog Signal Lever"
+        "Mechanical Fog Signal Lever",
+        "Framed Hand-Drawn Nautical Chart",
+        "IOV Mantle",
+        "Denatured alcohol barrel",
+        "Kerosene container",
+        "IOV Pressure system",
+        "Fresnel lens clockwork apparatus"
     ],
-    "Lantern Room":[],
-    "Fresnel Lens":[],
+    "Lantern Room":[
+        "Folded Paper Craft",
+        "Soft cleaning cloth",
+        "Fresnel lens"
+    ],
+    "Fresnel Lens":[
+        "IOV Spirit Pan",
+        "Set of matches",
+        "IOV Burner"
+    ],
     "Balcony":[
-        "Signal Flag Locker"
+        "Signal Flag Locker",
+        "Coiled Ropes[x2]"
     ],
-
     "Islet Base":[
         "Receding Shoreline with Sea",
         "Heavy Iron Foghorn Nozzle",

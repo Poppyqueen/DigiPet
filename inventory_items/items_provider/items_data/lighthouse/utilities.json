@@ -9,7 +9,8 @@
         "type": [
             "cleaning_rag"
         ],
-        "stackable": true
+        "stackable": true,
+        "max_stack_size": 10
     },
     {
         "name": "Window curtains",
@@ -47,7 +48,9 @@
         "type": [
             "kerosene_container"
         ],
-        "stackable": true
+        "stackable": true,
+        "max_stack_size": 25
+
     },
     {
         "name": "IOV Mantle",
@@ -60,7 +63,9 @@
         "type": [
             "iov_mantle"
         ],
-        "stackable": true
+        "stackable": true,
+        "max_stack_size": 55
+
     },
     {
         "name": "IOV Spirit Pan",
@@ -73,7 +78,7 @@
         "type": [
             "iov_spirit_pan"
         ],
-        "stackable": true,
+        "stackable": false,
         "filled": false
     },
     {
@@ -88,6 +93,7 @@
             "spirit_source"
         ],
         "stackable": true,
+        "max_stack_size": 30,
         "spirit_quantity": 1.0
     },
     {
@@ -100,6 +106,7 @@
         "type": [
             "hand_fire_source"
         ],
-        "stackable": true
+        "stackable": true,
+        "max_stack_size": 35
     }
 ]

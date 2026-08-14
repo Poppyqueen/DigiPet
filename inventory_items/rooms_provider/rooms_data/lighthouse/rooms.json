@@ -102,6 +102,7 @@
         "name": "Lighthouse Stairs",
         "image": "lighthouse_stairway",
         "room_types": [
+            "accessible_light_viewing_room"
         ],
         "music": "specimens_walk",
         "outdoors_type": [
@@ -117,7 +118,8 @@
         "music":"quiet_jumpy",
         "room_types": [
         "open_soil_zone",
-        "outdoors_area"
+        "outdoors_area",
+        "accessible_light_viewing_room"
         ],
         "outdoors_type": [
         "earth-weather",

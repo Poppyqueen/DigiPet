@@ -183,10 +183,10 @@ class StateStore(GenericJsonTool):
         if item_types is None:
             item_types = []
 
-        print(f"[DEBUG] _is_item_valid_for_this_agent: "
-            f"name={item.get('name', '?')!r}, id={item.get('id', '?')!r}, "
-            f"raw_type={item.get('type', '<missing>')!r}, "
-            f"resolved_type={item_types!r}")
+        # print(f"[DEBUG] _is_item_valid_for_this_agent: "
+        #     f"name={item.get('name', '?')!r}, id={item.get('id', '?')!r}, "
+        #     f"raw_type={item.get('type', '<missing>')!r}, "
+        #     f"resolved_type={item_types!r}")
 
         if not isinstance(item_types, list):
             print(f"[DEBUG] item_types is not a list (got {type(item_types).__name__}); "

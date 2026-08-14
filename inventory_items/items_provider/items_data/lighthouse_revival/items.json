@@ -546,7 +546,7 @@
     ],
     "stackable": true,
     "quantity": 1,
-    "max_stack_size": 5,
+    "max_stack_size": 25,
     "consume_uses_left": 8,
     "stats_edit": {
       "fullness": 1.5,
@@ -594,7 +594,7 @@
     ],
     "stackable": true,
     "quantity": 1,
-    "max_stack_size": 10,
+    "max_stack_size": 20,
     "consume_uses_left": 4,
     "stats_edit": {
       "fullness": 4.5,
@@ -668,7 +668,7 @@
     ],
     "stackable": true,
     "quantity": 1,
-    "max_stack_size": 10,
+    "max_stack_size": 15,
     "consume_uses_left": 3,
     "stats_edit": {
       "fullness": 4.0,
@@ -742,7 +742,7 @@
     ],
     "stackable": false,
     "quantity": 1,
-    "max_stack_size": 1,
+    "max_stack_size": 2,
     "consume_uses_left": 5,
     "stats_edit": {
       "fullness": 4.0,
@@ -768,7 +768,7 @@
     ],
     "stackable": true,
     "quantity": 1,
-    "max_stack_size": 5,
+    "max_stack_size": 8,
     "consume_uses_left": 4,
     "stats_edit": {
       "fullness": -0.5,
@@ -1095,34 +1095,9 @@
     "max_stack_size": 10
   },
   {
-    "name": "Worn Keeper's Logbook",
-    "descriptions": [
-      "The heavy leather cover, stained with decades of salt spray and the dark smudges of iron-gall ink, feels cool and rigid against your palm.",
-      "Inside, the yellowed pages whisper of tidal charts, wind velocities, and lonely nights spent watching the beam cut through the fog off the granite coast.",
-      "The spine cracks softly as you open it, revealing meticulous handwriting that has faded to a ghostly sepia under the lens of time."
-    ],
-    "static": false,
-    "type": [],
-    "stackable": true,
-    "quantity": 1,
-    "max_stack_size": null
-  },
-  {
-    "name": "Collapsed Brass Spyglass",
-    "descriptions": [
-      "A barrel of tarnished yellow metal rests in your palm, its segments collapsed inward like a tired lung. The brass bears the dull, pitted sheen of salt air and decades of neglect, lacking the gleam of a polished deck.",
-      "The lens glass is clouded with a fine layer of grime, obscuring any horizon it might once have scanned from a stone tower against a grey Oceans sky. It feels heavy, solid, and cold, evoking the lonely vigil of a keeper who watched the waves break against granite walls."
-    ],
-    "static": false,
-    "type": null,
-    "stackable": true,
-    "quantity": 1,
-    "max_stack_size": 10
-  },
-  {
     "name": "Pressed sea-glass collection in a jar",
     "descriptions": [
-      "A stout, cylindrical jar of pressed green glass sits heavy on the desk, its surface fogged with decades of salt spray and coastal humidity. Inside, dozens of tumbled shards\u2014smooth as river stones and soft as frosted sugar\u2014rest in layers of muted aquamarine and deep sea-green.",
+      "A stout, cylindrical jar of pressed green glass, its surface fogged with decades of salt spray and coastal humidity. Inside, dozens of tumbled shards\u2014smooth as river stones and soft as frosted sugar\u2014rest in layers of muted aquamarine and deep sea-green.",
       "Each fragment has been beaten raw by the Oceans\u2019s relentless churn until every sharp edge surrendered to the waves. They catch the weak, grey light filtering through the high windows, glowing with an internal, aquatic luminescence that mimics the shallow reef waters below."
     ],
     "static": false,
@@ -1155,8 +1130,8 @@
     ],
     "static": false,
     "type": null,
-    "stackable": true,
+    "stackable": false,
     "quantity": 1,
-    "max_stack_size": 50
+    "max_stack_size": null
   }
 ]

@@ -25,7 +25,7 @@
         "type": [
             "iov_lamp_top"
         ],
-        "stackable": true
+        "stackable": false
     },
     {
         "name": "Fresnel lens clockwork apparatus",

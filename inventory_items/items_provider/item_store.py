@@ -102,17 +102,36 @@ class ItemStore:
             
             # Stackable: return one item with adjusted quantity
             if item.get("stackable"):
-                item_copy = copy.deepcopy(item)
-                item_copy["quantity"] = item_copy.get("quantity", 1) * quantity
-                return {name: item_copy}
-            
+                max_stack_size = item.get("max_stack_size")
+                total_units = item.get("quantity", 1) * quantity
+
+                # No cap, or we fit in one stack -> old behavior
+                if not max_stack_size or total_units <= max_stack_size:
+                    item_copy = copy.deepcopy(item)
+                    item_copy["quantity"] = total_units
+                    return {name: item_copy}
+
+                # Exceeds max_stack_size -> split into multiple capped stacks
+                result = {}
+                remaining = total_units
+                i = 0
+                while remaining > 0:
+                    stack_qty = min(remaining, max_stack_size)
+                    item_copy = copy.deepcopy(item)
+                    item_copy["quantity"] = stack_qty
+                    key = f"{name}_{i}"
+                    result[key] = item_copy
+                    remaining -= stack_qty
+                    i += 1
+                return result
+
             # Non-stackable: return multiple separate copies with unique keys
             result = {}
             for i in range(quantity):
-                key =  f"{name}_{i}" if quantity > 1 else name
+                key = f"{name}_{i}" if quantity > 1 else name
                 result[key] = copy.deepcopy(item)
             return result
-        
+
         # Batch request
         if isinstance(name, (list, tuple, set)):
             result = {}
