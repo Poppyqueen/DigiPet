@@ -23,9 +23,10 @@
         "IOV Mantle[x120]",
         "IOV Spirit Pan[x4]",
         "Denatured alcohol barrel[x100]",
-        "Set of matches[x50]"
+        "Set of matches[x50]",
+        "Oiler Set[x90]",
+        "Window curtains[x9]"
     ],
-
     "Living Quarters":[
         "Sunbeam Clover Watercolor",
         "Iron-Hinged Storm Shutter",
@@ -35,7 +36,6 @@
         "Carved Wooden Duck",
         "Pressed sea-glass collection in a jar"
     ],
-    
     "Kitchen":[
         "Weathered Rush-Seat Chair[x4]",
         "Sourdough Starter Crock",
@@ -57,17 +57,21 @@
         "Denatured alcohol barrel",
         "Kerosene container",
         "IOV Pressure system",
-        "Fresnel lens clockwork apparatus"
+        "Fresnel lens clockwork apparatus",
+        "The Keeper's Log",
+        "The Keeper's Guide"
     ],
     "Lantern Room":[
         "Folded Paper Craft",
         "Soft cleaning cloth",
-        "Fresnel lens"
+        "Fresnel lens",
+        "Window curtains"
     ],
     "Fresnel Lens":[
         "IOV Spirit Pan",
         "Set of matches",
-        "IOV Burner"
+        "IOV Burner",
+        "Diamond-Lattice Surrounding Storm Panes"
     ],
     "Balcony":[
         "Signal Flag Locker",

@@ -22,7 +22,9 @@
         "type": [
             "sheet"
         ],
-        "stackable": false
+        "stackable": true,
+        "max_stack_size": 15
+
     },
     {
         "name": "Oiler Set",
@@ -35,7 +37,9 @@
         "type": [
             "oiler_set"
         ],
-        "stackable": false
+        "stackable": true,
+        "max_stack_size": 40
+
     },
     {
         "name": "Kerosene container",

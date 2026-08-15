@@ -72,13 +72,13 @@ tasks:
 #       - "Sea water plumbed washing basin"
 
   # --- consumables (Storage Room, Kitchen) ---
-  - mode: "item"
-    types: ["consumable"]
-    context: 
-      - *base_style
-      - *writing_style_prompt
-      - *items_base_prompt
-    prompts:
+  # - mode: "item"
+  #   types: ["consumable"]
+  #   context: 
+  #     - *base_style
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
       # - "Hardtack"
       # - "bully beef can"
       # - "bacon strip"
@@ -89,61 +89,72 @@ tasks:
       # - "Sourdough starter crock"
       # - "Glass flask of dark rye whiskey"
       # - "Dried cod, bundled and salt-crusted"
-      - "Jar of preserved lemons"
-      - "Ship's biscuit tin, dented"
-      - "Wheel of hard cheese, waxed rind"
-      - "Bottle of cod liver oil"
+  #     - "Jar of preserved lemons"
+  #     - "Ship's biscuit tin, dented"
+  #     - "Wheel of hard cheese, waxed rind"
+  #     - "Bottle of cod liver oil"
 
-  # --- culinary equipment, stovetop-scale (Kitchen) ---
+  # # --- culinary equipment, stovetop-scale (Kitchen) ---
+  # - mode: "item"
+  #   types: ["culinary_equipment", "toggleable"]
+  #   context: 
+  #     - *base_style
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Cast-iron potbelly stove top"
+  #     - "Copper tea kettle with salt-green patina"
+  #     - "Cast-iron skillet, well-seasoned"
+  #     - "Coffee grinder, hand-crank, mounted"
+  #     - "Butter churn, wooden staves"
+
+  # # --- culinary equipment, oven-scale (Kitchen) ---
+  # - mode: "item"
+  #   types: ["culinary_equipment", "toggleable"]
+  #   context: 
+  #     - *base_style
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Oven"
+  #     - "Bread proofing box, warmed by stovepipe"
+
+  # # --- radio/tv equivalent (Service Room) ---
+  # - mode: "item"
+  #   types: ["tv", "toggleable"]
+  #   context: 
+  #     - *base_style
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "vacuum tube radio"
+
+  # # --- decorative / miscellaneous (Service Room, Sleeping Nook) ---
+  # - mode: "item"
+  #   types: []
+  #   context: 
+  #     - *base_style
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #   prompts:
+  #     - "Carved Wooden Duck, desk decoration"
+  #     - "Origami Boat"
+  #     - "Coiled Ropes stack"
+  #     - "Framed hand-drawn nautical chart"
+  #     - "Ship-in-a-bottle, dusty"
+  #     - "Logbook, leather-bound, ink-stained"
+  #     - "Brass spyglass, collapsed"
+  #     - "Pressed sea-glass collection in a jar"
+  #     - "Model lighthouse whittled from driftwood"
+  #     - "Embroidered Pastoral scene Pillow "
+
+
+# --- fenestration / apertures (Lantern Room, Gallery, Stairs) ---
   - mode: "item"
-    types: ["culinary_equipment", "toggleable"]
+    types: ["fenestration_aperture"]
     context: 
       - *base_style
       - *writing_style_prompt
       - *items_base_prompt
     prompts:
-      - "Cast-iron potbelly stove top"
-      - "Copper tea kettle with salt-green patina"
-      - "Cast-iron skillet, well-seasoned"
-      - "Coffee grinder, hand-crank, mounted"
-      - "Butter churn, wooden staves"
-
-  # --- culinary equipment, oven-scale (Kitchen) ---
-  - mode: "item"
-    types: ["culinary_equipment", "toggleable"]
-    context: 
-      - *base_style
-      - *writing_style_prompt
-      - *items_base_prompt
-    prompts:
-      - "Oven"
-      - "Bread proofing box, warmed by stovepipe"
-
-  # --- radio/tv equivalent (Service Room) ---
-  - mode: "item"
-    types: ["tv", "toggleable"]
-    context: 
-      - *base_style
-      - *writing_style_prompt
-      - *items_base_prompt
-    prompts:
-      - "vacuum tube radio"
-
-  # --- decorative / miscellaneous (Service Room, Sleeping Nook) ---
-  - mode: "item"
-    types: []
-    context: 
-      - *base_style
-      - *writing_style_prompt
-      - *items_base_prompt
-    prompts:
-      - "Carved Wooden Duck, desk decoration"
-      - "Origami Boat"
-      - "Coiled Ropes stack"
-      - "Framed hand-drawn nautical chart"
-      - "Ship-in-a-bottle, dusty"
-      - "Logbook, leather-bound, ink-stained"
-      - "Brass spyglass, collapsed"
-      - "Pressed sea-glass collection in a jar"
-      - "Model lighthouse whittled from driftwood"
-      - "Embroidered Pastoral scene Pillow "
+      - "Storm Panes of a lighthouse on the lantern room, these are surrounding windows, sliced into diamond patterns by its iron astragals. Describe the raw and inmediate windows themeselves, instead of any surrounding temporal, location context, climate nor cleanliness. "

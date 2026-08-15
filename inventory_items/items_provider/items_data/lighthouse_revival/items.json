@@ -1133,5 +1133,22 @@
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null
+  },
+  {
+    "name": "Diamond-Lattice Surrounding Storm Panes",
+    "descriptions": [
+      "These are wholly surrounding windows, sliced into diamond patterns by its iron astragals.",
+      "Thick, hand-blown glass panes cut into precise rhomboids, held tightly by heavy black iron bars that curve outward like ribs of a dormant beast.",
+      "The glass surface is slightly wavy and rippled, distorting the view with a subtle haze that feels cool to the touch.",
+      "Dark lead solder lines connect the iron astragals, creating a rigid geometric cage against the vastness outside."
+    ],
+    "static": true,
+    "type": [
+      "fenestration_aperture"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "accessible": true
   }
 ]
