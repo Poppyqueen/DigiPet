@@ -308,8 +308,16 @@
     "static": false,
     "type": [
       "meditation_aid",
-      "toggleable"
+      "toggleable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 3.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+
     "stackable": true,
     "quantity": 1,
     "max_stack_size": 20,
@@ -339,8 +347,15 @@
     "static": false,
     "type": [
       "meditation_aid",
-      "toggleable"
+      "toggleable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 3.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": true,
     "quantity": 1,
     "max_stack_size": 20,
@@ -369,8 +384,15 @@
     "static": false,
     "type": [
       "meditation_aid",
-      "toggleable"
+      "toggleable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 3.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": true,
     "quantity": 1,
     "max_stack_size": 20,
@@ -399,8 +421,15 @@
     ],
     "static": false,
     "type": [
-      "toggleable"
+      "toggleable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 60.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,

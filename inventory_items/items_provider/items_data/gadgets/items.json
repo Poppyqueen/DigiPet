@@ -219,8 +219,15 @@
     "static": false,
     "type": [
       "toggleable",
-      "meditation_aid"
+      "meditation_aid",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 20.0,
+      "store_type": "electronics",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": 1,

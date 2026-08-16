@@ -157,8 +157,15 @@
     ],
     "static": true,
     "type": [
-      "bookmaking_implements"
+      "bookmaking_implements",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 120.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null
@@ -198,8 +205,15 @@
     "static": false,
     "type": [
       "bookmaking_implements",
-      "toggleable"
+      "toggleable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 120.0,
+      "store_type": "electronics",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -224,8 +238,15 @@
     "static": true,
     "type": [
       "sleepable_spot",
-      "seatable"
+      "seatable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 90.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -502,8 +523,15 @@
     "static": true,
     "type": [
       "sleepable_spot",
-      "seatable"
+      "seatable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 50.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -575,8 +603,15 @@
     ],
     "static": false,
     "type": [
-      "seatable"
+      "seatable",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -776,8 +811,15 @@
     ],
     "static": true,
     "type": [
-      "cranny_host"
+      "cranny_host",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 100.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -1287,16 +1329,6 @@
       "You take in the quiet bulk of it, fixed in place and ready, with a faint trace of warmth lingering in its surface.",
       "You angle yourself beside it and notice the practical layout, the hard top, the solid face, and the small signs of repeated attention."
     ],
-    "chance": 0.0,
-    "yield_pool": 1.0,
-    "yield_cost": 0.0,
-    "refresh_rate": 0.0,
-    "reward_options": [],
-    "narrative_search": [
-      "You reach across the stove\u2019s surface, feeling the cool enamel, the raised grates, and the shallow seams where panels meet.",
-      "You search along the front and sides, brushing past knobs, edges, and the steady solid shape that anchors the space.",
-      "You move your hand over the top and around the controls, taking in the worn texture of a surface meant to be used every day."
-    ],
     "toggle_state": {
       "toggle_state": "off",
       "toggle_uses_left": null,
@@ -1532,8 +1564,15 @@
     ],
     "static": true,
     "type": [
-      "planter_pot"
+      "planter_pot",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 30.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
@@ -1558,31 +1597,18 @@
     ],
     "static": false,
     "type": [
-      "planter_pot"
+      "planter_pot",
+      "store_entry"
     ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "furniture",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
     "stackable": true,
     "quantity": 1,
     "max_stack_size": 12,
-    "chance": 1.0,
-    "yield_pool": 1.0,
-    "yield_cost": 0.0,
-    "refresh_rate": 0.0,
-    "reward_options": [
-      [
-        "seed"
-      ],
-      [
-        "consumable"
-      ],
-      [
-        "dust_bunnied_gleaning"
-      ]
-    ],
-    "narrative_search": [
-      "You run your hand along the textured fabric, feeling the soft give of the sides and the firmer ring that keeps the opening true.",
-      "You peer into the pot\u2019s dark lining, where the folds gather into a neat hollow and the cloth carries a faint trace of soil and water.",
-      "You lift the rim and let it settle back, noticing how the woven surface flexes and holds its shape in the light."
-    ],
     "capacity": 1,
     "size_multiplier": 1.0
   },
