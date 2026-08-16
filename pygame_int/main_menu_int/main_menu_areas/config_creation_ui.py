@@ -103,11 +103,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
     current_y = draw_labeled_dropdown_or_input(font, "general_ai_provider", "General AI Provider:", current_y, screen_width, elements, options=AVAILABLE_AGENTS)
     current_y = draw_labeled_dropdown_or_input(font, "memory_ai_provider", "Memory AI Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
-    current_y = draw_labeled_dropdown_or_input(font, "cook_provider", "Cook Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
+    current_y = draw_labeled_dropdown_or_input(font, "cook_provider", "Runtime Crafter Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
     current_y = draw_labeled_dropdown_or_input(font, "pets_folder", "Pet's Folder:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "general_model", "General Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "memory_model", "Memory Model:", current_y, screen_width, elements, is_dropdown=False)
-    current_y = draw_labeled_dropdown_or_input(font, "cook_model", "Cook Model:", current_y, screen_width, elements, is_dropdown=False)
+    current_y = draw_labeled_dropdown_or_input(font, "cook_model", "Runtime Crafter Model:", current_y, screen_width, elements, is_dropdown=False)
 
     title_surface, title_rect = draw_section_title(font, "Token Limits", current_y, screen_width)
     elements.append((title_surface, title_rect)); current_y = title_rect.bottom + gui_config.SECTION_TITLE_SPACING_BOTTOM
