@@ -154,7 +154,10 @@ class OutdoorsPerception:
 
         outdoors_types = self._get_outdoors_types_from_room()
         # This replaces the separate _play_audio and _collect_with_popups calls
-        self._process_full_perception(outdoors_types)
+        room_data = self.state_manager.get_current_room_data()
+        room_types = getattr(room_data, "room_types", [])
+        if "outdoors_area" in room_types:
+            self._process_full_perception(outdoors_types)
 
     # ------------------------------------------------------------------
     # Internal helpers

@@ -18,10 +18,9 @@
         "name": "Service Room",
         "image": "service_room",
         "room_types": [
-            "meanwhile_smile"
         ],
         "plot_number": 3,
-        "music": "stasis",
+        "music": "meanwhile_smile",
         "outdoors_type": [
         "earth-weather",
         "earth-astro-views",
@@ -114,7 +113,7 @@
     },
     {
         "name": "Islet Base",
-        "image": "",
+        "image": "lighthouse_islet",
         "music":"quiet_jumpy",
         "room_types": [
         "open_soil_zone",

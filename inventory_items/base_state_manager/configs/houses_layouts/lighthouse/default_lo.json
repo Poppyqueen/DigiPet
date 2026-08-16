@@ -7,11 +7,10 @@
     "Sleeping Nook": "Living Quarters",
     "Lighthouse Kitchen": "Kitchen",
 
-    "Service Room": "Service Room",
-
     "Lantern Room": "Lantern Room",
     "Fresnel Lens": "Fresnel Lens",
     "Lighthouse Balcony": "Balcony"
+
   },
   "initial_room": "Balcony",
   "connections":[
