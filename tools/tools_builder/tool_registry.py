@@ -33,7 +33,7 @@ from tools.tools_folder.items_toggle import ItemToggleTool
 from tools.tools_folder.book_tools import BookTools
 from tools.tools_folder.consumables import ConsumablesTools
 
-from tools.tools_folder.tv_controller import TVController
+from tools.tools_folder.receiver_controller import ReceiverController
 
 from tools.tools_folder.outdoors_perception import OutdoorsPerception
 from tools.tools_folder.comfort_affordances import ComfortAffordances
@@ -74,7 +74,7 @@ from .my_tools import (
     toggle_item_power_tool,
 
     fenestration_apertures_tools,
-    tv_tools,
+    receiver_tools,
     creating_books_tools,
     comfort_tools,
     water_source_tools,
@@ -183,7 +183,7 @@ class ToolRegistry:
         self.book_tools     = BookTools(state_manager, signal)
         self.consumables_tools = ConsumablesTools(state_manager, signal)
 
-        self.tv_controller     = TVController(state_manager, signal, config_manager)
+        self.receiver_controller     = ReceiverController(state_manager, signal, config_manager)
         self.outdoors_perception = OutdoorsPerception(state_manager, signal, open_meteo, config_manager)
         self.comfort = ComfortAffordances(state_manager, signal, memory_manager, self.items_crafter, self.item_store)
 
@@ -412,17 +412,17 @@ class ToolRegistry:
                 "use_level": "dual_use"
             },
 
-            "tv": { # rename this, could be a TV or a radio, specifically a one to many and channel/station based information reciever device.
-                "functions": { # Also add more TV types
-                    "watch_tv": self.tv_controller.watch_tv,
-                    "browse_channels": self.tv_controller.browse_channels,
-                    "change_channel": self.tv_controller.change_channel,
+            "receiver": {
+                "functions": {
+                    "Receiver-tune_in":        self.receiver_controller.tune_in,
+                    "Receiver-browse_channels": self.receiver_controller.browse_channels,
+                    "Receiver-change_channel":  self.receiver_controller.change_channel,
                 },
-                "definitions": tv_tools,
+                "definitions": receiver_tools,
                 "item_types": ["tv"],
                 "use_level": "dual_use",
-                "display_information": self.tv_controller.get_current_accessible_tv_gui, # non-blocking
-                "agent_information": self.tv_controller.get_current_accessible_tv_agent, # blocking
+                "display_information": self.receiver_controller.get_current_accessible_receiver_gui,
+                "agent_information": self.receiver_controller.get_current_accessible_receiver_agent,
             },
 
 

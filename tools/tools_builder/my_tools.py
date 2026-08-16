@@ -1884,54 +1884,53 @@ fenestration_apertures_tools = [
 
 ]
 
-
-tv_tools = [
+receiver_tools = [
     {
         "type": "function",
-        "name": "watch_tv",
-        "description": "Watch some TV. Whatever is on right now.",
+        "name": "Receiver-tune_in",
+        "description": "Tune into the receiver. Hear or see whatever is currently on the tuned channel.",
         "parameters": {
             "type": "object",
             "properties": {
-                "tv_id": {
+                "receiver_id": {
                     "type": "number",
-                    "description": "The ID of the TV to watch."
+                    "description": "The ID of the receiver to tune into."
                 }
             },
             "required": [
-                "tv_id"
-            ],
-            "additionalProperties": False
-        }
-    },    
-    {
-        "type": "function",
-        "name": "browse_channels",
-        "description": "Browse through the available channels on the TV.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "tv_id": {
-                    "type": "number",
-                    "description": "The ID of the TV to browse channels on."
-                }
-            },
-            "required": [
-                "tv_id"
+                "receiver_id"
             ],
             "additionalProperties": False
         }
     },
     {
         "type": "function",
-        "name": "change_channel",
-        "description": "Change the channel on the TV.",
+        "name": "Receiver-browse_channels",
+        "description": "Browse through the available channels on the receiver.",
         "parameters": {
             "type": "object",
             "properties": {
-                "tv_id": {
+                "receiver_id": {
                     "type": "number",
-                    "description": "The ID of the TV to change channels on."
+                    "description": "The ID of the receiver to browse channels on."
+                }
+            },
+            "required": [
+                "receiver_id"
+            ],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "Receiver-change_channel",
+        "description": "Change the channel on the receiver.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "receiver_id": {
+                    "type": "number",
+                    "description": "The ID of the receiver to change channels on."
                 },
                 "channel_name": {
                     "type": "string",
@@ -1939,7 +1938,7 @@ tv_tools = [
                 }
             },
             "required": [
-                "tv_id",
+                "receiver_id",
                 "channel_name"
             ],
             "additionalProperties": False

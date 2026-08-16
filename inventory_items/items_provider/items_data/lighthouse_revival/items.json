@@ -1014,7 +1014,7 @@
     "quantity": 1,
     "max_stack_size": null,
     "tv_state": {
-      "tv_type": "standard",
+      "tv_type": "Era World Radio",
       "current_channel": ""
     },
     "toggle_state": {
@@ -1150,5 +1150,35 @@
     "quantity": 1,
     "max_stack_size": null,
     "accessible": true
+  },
+{
+  "name": "Vacuum-Tube Radio",
+  "descriptions": [
+    "A heavy, arched walnut cabinet housing a series of visible glass vacuum tubes and a polished brass tuning dial.",
+    "Warm amber light glows through the rear vents as the internal components warm up during operation."
+  ],
+  "static": true,
+  "type": [
+    "tv",
+    "toggleable"
+  ],
+  "stackable": false,
+  "quantity": 1,
+  "max_stack_size": null,
+  "tv_state": {
+    "tv_type": "Era World Radio",
+    "current_channel": ""
+  },
+  "toggle_state": {
+    "toggle_state": "off",
+    "toggle_uses_left": null,
+    "on_description": "The cloth speaker grill hums with life, casting a warm amber radiance from the glowing vacuum tubes inside the casing.",
+    "off_description": "The glass tubes cool into darkness, leaving only the polished wooden cabinet and cold brass dial.",
+    "on_sequence": "You turn the heavy brass knob. A warm crackle fills the air, followed by a brief rise in static before settling onto a clear broadcast signal.",
+    "off_sequence": "You click the brass knob back into place. The broadcast cuts out immediately with a brief, fading electric hum.",
+    "perishable": false,
+    "ticks_lasting": 5,
+    "ticks_elapsed": 0
   }
+}
 ]

@@ -1,0 +1,9 @@
+{
+  "aliases": {
+    "Room 101": "Room 101"
+  },
+  "initial_room": "Room 101",
+  "groups": {
+    "default": ["Room 101"]
+  }
+}
