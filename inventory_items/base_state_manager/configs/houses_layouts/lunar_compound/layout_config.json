@@ -4,7 +4,8 @@
   "groups": {
     "Private_Room_101": ["Room 101", "Room 101 kitchenette", "Room 101 Bathroom"],
     "Lavender Hallway Spots": ["Lavender Sky Walkway", "Moonar Local Library", "Moon-Cheese Cake Cafe"],
-    "Roundabout": ["Pedestrian Flying Roundabout", "Lorie's Stationary Furnishings", "MachiaTron Electron's Jumbletrons", "Star Touched Corner Store", "Hydronew Greenery Warehouse", "Balls-Room"],
+    "Roundabout": ["Pedestrian Flying Roundabout", "Lorie's Stationary Furnishings", "MachiaTron Electron's Jumbletrons", "Star Touched Corner Store", "Hydronew Greenery Warehouse"],
+    "Reah's Walkway Spots": ["Reah's Sky Walkway", "AcetylCabinets Enterprise",  "Balls-Room"],
     "Ground Floor": ["Ground Floor Public Square", "Dome Main Airlock Room"]
   },
 
@@ -13,6 +14,11 @@
     ["Hallway 001", "Lavender Sky Walkway"],
     ["Lavender Sky Walkway", "Marigold Sky Walkway"],
     ["Marigold Sky Walkway", "Pedestrian Flying Roundabout"],
-    ["Pedestrian Flying Roundabout", "Ground Floor Public Square"]
+
+    ["Pedestrian Flying Roundabout", "Ground Floor Public Square"],
+
+    ["Pedestrian Flying Roundabout", "Rhea's Sky Walkway"],
+    ["Rhea's Sky Walkway", "Fairies' Sky Walkway"],
+    ["Fairies' Sky Walkway", "Hallway 002"]
   ]
 }

@@ -1,0 +1,142 @@
+[
+  {
+    "name": "The Verdant Labyrinth Cabinet",
+    "descriptions": [
+      "You stand before a glowing wooden pedestal, its surfaces etched with intricate floral patterns that catch the flickering neon ambiance of the room. You reach out to touch the joystick, feeling the worn, smooth plastic that has seen decades of eager hands.",
+      "As the screen hums to life, a lush, pixelated world of ivy and stone paths unfurls before you. The soft click-clack of the buttons echoes in the dim light as you begin your journey through the digital greenery."
+    ],
+    "static": true,
+    "type": [
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "maze_state": {
+      "seed": 48291,
+      "size": [
+        20,
+        20
+      ],
+      "difficulty": "normal",
+      "pos": [
+        0,
+        0
+      ],
+      "goal": [
+        19,
+        19
+      ],
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": "garden",
+      "type_locked": true,
+      "props_seed": 9921
+    }
+  },
+  {
+    "name": "Void-Runner Cabinet",
+    "descriptions": [
+      "You stand before a towering monolith of scuffed wood and brushed chrome. The glass screen hums with a faint, electric vibration, casting a flickering violet glow across your knuckles.",
+      "Beneath the joystick, shadows seem to dance within the pixelated depths. Every movement of the knob sends a jittery signal into a dark labyrinth of stone and torchlight."
+    ],
+    "static": true,
+    "type": [
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "maze_state": {
+      "seed": null,
+      "size": [
+        20,
+        20
+      ],
+      "difficulty": "hardcore",
+      "pos": [
+        0,
+        0
+      ],
+      "goal": [
+        19,
+        19
+      ],
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": "dungeon",
+      "type_locked": true,
+      "props_seed": 4829
+    }
+  },
+  {
+    "name": "Explorers' Ruins Maze",
+    "descriptions": [
+      "A weathered wooden cabinet stands in the dim corner, its laminate peeling to reveal particle board beneath. You press the joystick, and the CRT screen flickers to life with a soft, high-pitched hum. As you navigate the pixelated corridors, the glowing scanlines dance across the cracked glass, illuminating a crumbling labyrinth of stone and moss. Each movement of the lever triggers a rhythmic, 8-bit chime that echoes through the neon-lit gloom."
+    ],
+    "static": true,
+    "type": [
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "maze_state": {
+      "seed": 88291,
+      "size": [
+        20,
+        20
+      ],
+      "difficulty": "hardcore",
+      "pos": [
+        1,
+        1
+      ],
+      "goal": [
+        18,
+        18
+      ],
+      "steps_taken": 0,
+      "goal_reached": false,
+      "maze_type": "ruins",
+      "type_locked": true,
+      "props_seed": 4421
+    }
+  },
+  {
+    "name": "Neon Pastoral Mountain Maze",
+    "descriptions": [
+      "You stand before a towering cabinet, its side panels vibrating with the hum of high-voltage electricity. A soft, magenta glow spills from the screen, casting long, flickering shadows across the linoleum floor.",
+      "The control joystick feels smooth and worn from countless frenzied movements, while the colorful buttons click with a satisfying, mechanical snap. As you tilt the controls, you guide a glowing cursor through a stylized landscape of pixelated peaks and valleys.",
+      "The scent of ozone and warm electronics wafts from the ventilation slats, pulling you deeper into the digitized wilderness."
+    ],
+    "static": true,
+    "type": [
+      "maze_interface"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "maze_state": {
+      "seed": 482910,
+      "size": [
+        32,
+        32
+      ],
+      "difficulty": "hardcore",
+      "pos": [
+        5,
+        5
+      ],
+      "goal": [
+        27,
+        28
+      ],
+      "steps_taken": 42,
+      "goal_reached": false,
+      "maze_type": "Gibraltar_2.0",
+      "type_locked": true,
+      "props_seed": 99283
+    }
+  }
+]

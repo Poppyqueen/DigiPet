@@ -144,6 +144,41 @@
         ]
     },
     {
+        "name": "Rhea's Sky Walkway",
+        "image": "",
+        "room_types":[
+            "outdoors_area"
+        ],
+        "music": "what_might_there_be",
+        "outdoors_type":["lunar-dome-view"]
+    },
+    {
+        "name": "Fairies' Sky Walkway",
+        "image": "",
+        "room_types":[
+            "outdoors_area"
+        ],
+        "music": "glass_tide",
+        "outdoors_type":["lunar-dome-view"]
+    },
+    {
+        "name": "AcetylCabinets Enterprise",
+        "image": "",
+        "room_types":[
+        ],
+        "music": "meanwhile_smile",
+        "outdoors_type":["lunar-dome-view"]
+    },
+    {
+        "name": "Hallway 002",
+        "image": "",
+        "room_types":[
+            "outdoors_area"
+        ],
+        "music": "train",
+        "outdoors_type":["lunar-dome-view"]
+    },
+    {
         "name": "Dome Main Airlock Room",
         "image": "",
         "room_types": [

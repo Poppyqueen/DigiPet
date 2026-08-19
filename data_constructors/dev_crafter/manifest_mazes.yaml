@@ -1,0 +1,31 @@
+.constants:
+  - &base_style "Arcade machines, these are all varied, thematic cabinet machines, their type_locked maze_type determines how they look and are described."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. When describing interactions always use second-person present tense.
+  - &items_base_prompt >
+      THEME = "Retro Arcade Room" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openrouter"
+  model: "google/gemma-4-26b-a4b-it:free"
+  export_dir: "inventory_items/items_provider/items_data/maze_arcade_cabinets"
+
+tasks:
+
+  - mode: "item"
+    types: ["maze_interface"]
+    context: 
+      - *base_style
+      - *writing_style_prompt
+      - *items_base_prompt
+    prompts:
+      - "Victorian Garden style maze cabinet (garden)"
+      - "Dark fantasy dungeon maze (dungeon)"
+      - "Explorers' Ruins Maze (ruins)"
+      - "Neon Pastoral Mountain Maze (Gibraltar_2.0)"
+
+
