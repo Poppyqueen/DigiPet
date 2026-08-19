@@ -28,7 +28,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "potato"
@@ -62,7 +62,7 @@
     "store_entry_data": {
       "price": 35.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "lettuce"
@@ -97,7 +97,7 @@
     "store_entry_data": {
       "price": 35.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "carrot"
@@ -132,7 +132,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "cactus"
@@ -166,7 +166,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "tomato"
@@ -200,7 +200,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "strawberry"
@@ -234,7 +234,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "rose"
@@ -268,7 +268,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "sunflower"
@@ -302,7 +302,7 @@
     "store_entry_data": {
       "price": 48.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "mint"
@@ -336,7 +336,7 @@
     "store_entry_data": {
       "price": 45.0,
       "store_type": "seeds",
-      "trade_mode": "buy_only",
+      "trade_mode": "buy_and_sell",
       "sell_discount": 0.5
     },
     "plant_type": "basil"

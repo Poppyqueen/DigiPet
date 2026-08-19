@@ -1,0 +1,52 @@
+.constants:
+  - &base_style "Gardening and harvesting items. 'seed' items represent a singular seed. 'seeds' can represent plant offshoots, seed tubers, seeds directly, or others, it is a 'plant spawn point' of sorts. Harvest items should represent raw, freshly harvested, whole specimens."
+  - &writing_style_prompt >
+      To describe and write the following data structures, use creative, atmospheric, and clear language. When describing interactions always use second-person present tense.
+  - &items_base_prompt >
+      THEME = "Cozy Gardening Game" 
+      Describe the following item by quietly characterizing it through the lens of the THEME above. 
+      
+      CRITICAL CONSTRAINT: You must NEVER use the exact words of the THEME (or its direct synonyms) in your description. Instead, translate the THEME into specific textures, materials, lighting, and environmental wear. Focus on the *feeling* the object evokes rather than just stating its purpose.
+
+
+config:
+  provider: "openrouter"
+  model: "google/gemma-4-26b-a4b-it:free"
+  export_dir: "inventory_items/items_provider/items_data/new_gardening"
+
+tasks:
+
+  - mode: "item"
+    types: ["consumable", "store_entry"]
+    context: 
+      - *writing_style_prompt
+      - *items_base_prompt
+      - "Store entry fields: All the items should be sell_only, prices ranging from 20 to 35. These entries should represent freshly cut, just harvested, individual items."
+    prompts:
+      # - "Blackberry"
+      - "Watermelon"
+      # - "Corn Cob"
+      # - "Aloe Leaf"
+      # - "Kale Leaf Bunch"
+
+  # - mode: "item"
+  #   types: ["consumable", "store_entry", "seed"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 55 to 70. These entries should represent freshly cut, just harvested, individual items."
+  #   prompts:
+  #     - "Watermelon Seed"
+  #     - "Corn Seed"
+  #     - "Aloe Pup"
+  #     - "Blackberry seed"
+  #     - "Kale Seed"
+
+  # - mode: "item"
+  #   types: ["store_entry", "seed"]
+  #   context: 
+  #     - *writing_style_prompt
+  #     - *items_base_prompt
+  #     - "Store entry fields: All the items should be buy_and_sell, prices ranging from 60 to 80. These entries should represent freshly cut, just harvested, individual items."
+  #   prompts:
+  #     - "Blackberry Cane Cutting"

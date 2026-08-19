@@ -172,7 +172,9 @@ class GardenController:
             for room in self.state_manager.get_all_rooms_data()
             if OUTDOORS_AREA_TYPE in room.room_types
         }
-        rain_level = self.garden_manager._get_rain()
+        weather    = self.garden_manager._get_weather()
+        rain_level = weather.get("precipitation", 0.0) or 0.0
+        rain_active = self.garden_manager.rain_is_active()
 
         all_pots = self.state_manager.get_all_items_by_type(POT_TYPE)
         for item_entry in all_pots:
@@ -181,14 +183,20 @@ class GardenController:
             if not pot_state:
                 continue
 
-            pot_gets_rain = (
-                item_entry.location == "room"
-                and item_entry.location_id in outdoor_room_ids
-            )
+            in_room = item_entry.location == "room"
+            if in_room and item_entry.location_id in outdoor_room_ids:
+                exposure = self.garden_manager.settings["OUTDOOR_EXPOSURE_MULTIPLIER"]
+            elif in_room:
+                exposure = self.garden_manager.settings["INDOOR_EXPOSURE_MULTIPLIER"]
+            else:
+                exposure = 0.0  # e.g. sitting in inventory — fully sheltered
+
             updated, events = self.garden_manager.tick_pot(
                 pot_state,
-                rain_level=rain_level if pot_gets_rain else 0.0,
-                apply_rain=pot_gets_rain,
+                rain_level=rain_level,
+                apply_rain=exposure > 0.0 and rain_active,
+                exposure_multiplier=exposure,
+                weather=weather,
             )
             self._save_pot_state(pot_id, updated)
             for ev in events:

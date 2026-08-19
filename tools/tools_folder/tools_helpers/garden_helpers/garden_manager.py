@@ -45,6 +45,11 @@ from tools.tools_folder.tools_data.harvesting_data import plant_types
 from tools.tools_folder.tools_data.garden_settings import GARDEN_SETTINGS
 from utils.loc_datetime import datetime
 
+# Mirrors plants_controller.OUTDOORS_AREA_TYPE. Kept as a local constant
+# (rather than importing the controller) to avoid a manager -> controller
+# dependency; both must stay in sync with the room-type taxonomy.
+OUTDOORS_AREA_TYPE = "outdoors_area"
+
 
 # ---------------------------------------------------------------------------
 # PlantTarget — abstracts "where does this plant live"
@@ -98,6 +103,15 @@ class GardenManager:
         if "_last_rain_applied_timestamp" not in self._state:
             self._state["_last_rain_applied_timestamp"] = datetime.now().isoformat()
         self._logical_tick: int = self._state.get("_garden_logical_tick_counter", 0)
+
+        # Room plots only get full outdoor weather exposure if their room is
+        # tagged outdoors_area — a garden room that's only open_soil_zone
+        # (indoor bed, greenhouse) gets the dampened indoor multiplier,
+        # same rule pots already follow.
+        self._outdoor_room_ids: set = {
+            room.id for room in room_definitions
+            if OUTDOORS_AREA_TYPE in room.room_types
+        }
 
         self._initialize_plots(room_definitions)
 
@@ -195,12 +209,40 @@ class GardenManager:
                         uids.add(uid)
         return uids
 
-    def _get_rain(self) -> float:
+    def _get_weather(self) -> dict:
+        """Full structured weather dict, or {} if the API call fails."""
         try:
-            return self.open_meteo.get_structured_weather().get("precipitation", 0.0)
+            return self.open_meteo.get_structured_weather()
         except Exception as exc:
             print(f"GardenManager: weather error — {exc}")
-            return 0.0
+            return {}
+
+    def _get_rain(self) -> float:
+        return self._get_weather().get("precipitation", 0.0) or 0.0
+
+    def rain_is_active(self) -> bool:
+        """
+        True if it's currently raining AND the shared rain cooldown has
+        elapsed. Room plots and pots both gate on this same check so a
+        drizzle doesn't water everyone twice as often just because pots
+        are ticked separately by the controller.
+        """
+        now           = datetime.now()
+        last_rain_str = self._state.get("_last_rain_applied_timestamp")
+        last_rain_dt  = datetime.fromisoformat(last_rain_str) if last_rain_str else now
+        cooldown      = timedelta(minutes=self.settings["RAIN_COOLDOWN_MINUTES"])
+        rain_level    = self._get_rain()
+        return rain_level > 0.0 and (now - last_rain_dt) >= cooldown
+
+    def get_exposure_multiplier(self, room_id) -> float:
+        """
+        1.0 for a room tagged outdoors_area, else the dampened indoor value.
+        Used for both room plots and (via the controller) pots sitting in
+        a room — walls help, they don't fully block the weather.
+        """
+        if room_id in self._outdoor_room_ids:
+            return self.settings["OUTDOOR_EXPOSURE_MULTIPLIER"]
+        return self.settings["INDOOR_EXPOSURE_MULTIPLIER"]
 
     # -----------------------------------------------------------------------
     # PlantTarget — resolve and commit
@@ -299,6 +341,23 @@ class GardenManager:
     # Game loop
     # -----------------------------------------------------------------------
 
+    def _handle_harvest_expired(self, plant: PlantState) -> PlantState:
+        """
+        Called when a ripe harvest has fully decayed away (see
+        HARVEST_DECAY_GRACE_TICKS / HARVEST_DECAY_TICKS_TO_ZERO). The plant
+        itself is unharmed — perennials cycle back to 'mature' exactly as
+        after a real harvest, annuals are left as-is for the caller to
+        clear (same as an annual after harvest). Returns the plant to store
+        back; caller is responsible for clearing annual plots.
+        """
+        info       = self.simulation.get_plant_types().get(plant.plant_type, {})
+        life_cycle = info.get("life_cycle", "annual")
+        if life_cycle == "perennial":
+            updated_plant, err = self.simulation.reset_perennial(plant, self._logical_tick)
+            if not err:
+                return updated_plant
+        return plant
+
     def tick(self) -> dict[str, list[GardenEvent]]:
         """
         Advance all room-garden plants by one logical tick.
@@ -311,7 +370,8 @@ class GardenManager:
         now           = datetime.now()
         last_rain_str = self._state.get("_last_rain_applied_timestamp")
         last_rain_dt  = datetime.fromisoformat(last_rain_str) if last_rain_str else now
-        rain_level    = self._get_rain()
+        weather       = self._get_weather()
+        rain_level    = weather.get("precipitation", 0.0) or 0.0
         cooldown      = timedelta(minutes=self.settings["RAIN_COOLDOWN_MINUTES"])
         apply_rain    = rain_level > 0.0 and (now - last_rain_dt) >= cooldown
 
@@ -324,13 +384,29 @@ class GardenManager:
             if not isinstance(garden, dict) or "room_id" not in garden:
                 continue
 
+            exposure = self.get_exposure_multiplier(garden["room_id"])
+
             room_events: list[GardenEvent] = []
             for plot in garden.get("plots", []):
                 if not plot.get("plants"):
                     continue
                 plant = PlantState.from_dict(plot["plants"][0])
-                plant, events = self.simulation.tick_plant(plant, tick, rain_level, apply_rain)
-                plot["plants"] = [plant.to_dict()]
+                plant, events = self.simulation.tick_plant(
+                    plant, tick, rain_level, apply_rain,
+                    exposure_multiplier=exposure, weather=weather,
+                )
+
+                if any(e.event_type == "harvest_expired" for e in events):
+                    plant = self._handle_harvest_expired(plant)
+                    info       = self.simulation.get_plant_types().get(plant.plant_type, {})
+                    life_cycle = info.get("life_cycle", "annual")
+                    if life_cycle != "perennial":
+                        plot["plants"] = []
+                    else:
+                        plot["plants"] = [plant.to_dict()]
+                else:
+                    plot["plants"] = [plant.to_dict()]
+
                 room_events.extend(events)
 
             if room_events:
@@ -344,10 +420,14 @@ class GardenManager:
         pot_state: dict,
         rain_level: float = 0.0,
         apply_rain: bool = False,
+        exposure_multiplier: float = 0.0,
+        weather: dict | None = None,
     ) -> tuple[dict, list[GardenEvent]]:
         """
         Advance all slots in a single pot by one logical tick.
-        Rain params supplied by the controller based on room type.
+        Rain/exposure/weather params supplied by the controller based on
+        the pot's room (0.0 exposure if the pot isn't in any room at all —
+        e.g. sitting in inventory, fully sheltered).
         Returns (updated_pot_state, events).
         """
         all_events: list[GardenEvent] = []
@@ -360,9 +440,19 @@ class GardenManager:
             if plant_raw:
                 plant = PlantState.from_dict(plant_raw)
                 plant, events = self.simulation.tick_plant(
-                    plant, self._logical_tick, rain_level=rain_level, apply_rain=apply_rain
+                    plant, self._logical_tick,
+                    rain_level=rain_level, apply_rain=apply_rain,
+                    exposure_multiplier=exposure_multiplier, weather=weather,
                 )
-                slot["plant"] = plant.to_dict()
+
+                if any(e.event_type == "harvest_expired" for e in events):
+                    plant      = self._handle_harvest_expired(plant)
+                    info       = self.simulation.get_plant_types().get(plant.plant_type, {})
+                    life_cycle = info.get("life_cycle", "annual")
+                    slot["plant"] = None if life_cycle != "perennial" else plant.to_dict()
+                else:
+                    slot["plant"] = plant.to_dict()
+
                 all_events.extend(events)
             updated_slots.append(slot)
 
@@ -491,12 +581,14 @@ class GardenManager:
         w_desc  = self.simulation.describe_water_status(plant)
         w_state = self.simulation.get_water_state(plant)
         w_label = {0: "Low", 1: "Optimal", 2: "High"}.get(w_state, "Unknown")
+        h_desc  = self.simulation.describe_health_status(plant)
         label   = "slot" if pot_state is not None else "plot"
 
         msg = (
             f"{plant.plant_type} (UID: {plant.plant_uid}) in {label} {plot_id} — "
             f"stage: {plant.current_stage_name} ({elapsed} logical ticks elapsed). "
-            f"Water: {plant.water_level:.2f} ({w_label}) — {w_desc}"
+            f"Water: {plant.water_level:.2f} ({w_label}) — {w_desc} "
+            f"Health: {plant.health_state} — {h_desc}"
         )
         return None, msg, True
 
@@ -524,14 +616,18 @@ class GardenManager:
             for entry in raw_items
         ]
 
-        quality      = harvest_result["life_cycle_quality"]
-        penalty      = harvest_result["penalty"]
-        bonus        = harvest_result["bonus"]
+        quality          = harvest_result["life_cycle_quality"]
+        penalty          = harvest_result["penalty"]
+        bonus            = harvest_result["bonus"]
+        weather_bonus    = harvest_result.get("weather_bonus", 0)
+        decay_multiplier = harvest_result.get("decay_multiplier", 1.0)
         q_msg        = self.simulation.get_quality_messages().get(quality, "")
         quality_line = (
             f"Life cycle quality: '{quality}'. {q_msg} "
-            f"Penalty: {penalty:.0f}, Bonus: {bonus:.0f}."
+            f"Penalty: {penalty:.0f}, Water bonus: {bonus:.0f}, Weather bonus: {weather_bonus:.0f}."
         )
+        if decay_multiplier < 1.0:
+            quality_line += f" Harvest left unclaimed too long — yield reduced to ×{decay_multiplier:.2f}."
         if size_multiplier != 1.0:
             quality_line += f" Size multiplier: ×{size_multiplier}."
 
@@ -604,6 +700,7 @@ class GardenManager:
                 f"  Plot {pid}:\n"
                 f"    Plant : {plant.plant_type} (UID: {plant.plant_uid})"
                 f" stage: {plant.current_stage_name} water: {self.simulation.describe_water_status(plant)}"
+                f" health: {plant.health_state}"
             )
 
         return "\n".join(lines)
@@ -632,6 +729,7 @@ class GardenManager:
             lines.append(
                 f"  Slot {sid}:\n"
                 f"    Plant : {plant.plant_type} (UID: {plant.plant_uid}) stage: {plant.current_stage_name} water: {self.simulation.describe_water_status(plant)}"
+                f" health: {plant.health_state}"
             )
 
         return "\n".join(lines)

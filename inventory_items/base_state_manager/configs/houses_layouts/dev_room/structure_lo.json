@@ -4,6 +4,6 @@
   },
   "initial_room": "Room 101",
   "groups": {
-    "default": ["Room 101"]
+    "default": ["Room 101", "comfy garden"]
   }
 }

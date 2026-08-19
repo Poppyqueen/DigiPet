@@ -1,0 +1,345 @@
+[
+  {
+    "name": "Wild Blackberry",
+    "descriptions": [
+      "A plump, ink-dark jewel still dusted with a fine, silvery bloom from the morning dew.",
+      "Its skin is tight and glistening, promising a burst of tart sweetness at the slightest pressure."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.5,
+      "hydration": 1.2,
+      "energy": 1.6
+    },
+    "effects": [
+      "Your teeth sink into the soft, yielding fruit, releasing a sudden flood of warm, dark nectar.",
+      "A stained sweetness coats your tongue, leaving a hint of sun-warmed brambles in its wake."
+    ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "snacks",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Golden Husked Cob",
+    "descriptions": [
+      "A warm, heavy weight resting in your palms, still carrying the faint scent of sun-drenched earth and morning dew.",
+      "Individual kernels cling to the core like tiny, glistening amber beads, tightly wrapped in soft, pale silk."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 4.5,
+      "hydration": -4.5,
+      "energy": -1.0
+    },
+    "effects": [
+      "You tear through the papery outer layers to reveal the sweet, bright treasure hidden within.",
+      "The crunch of the golden kernels releases a burst of starchy, earthy sweetness on your tongue."
+    ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "plant_based_foods",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Aloe Leaf",
+    "descriptions": [
+      "A thick, fleshy spear of verdant green, still cool from the morning dew.",
+      "Its skin is waxy and taut, hiding a translucent, soothing essence within its jagged edges.",
+      "Heavy with moisture, it feels substantial and life-giving in your palm."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10,
+    "consume_uses_left": 6,
+    "stats_edit": {
+      "fullness": 1.5,
+      "hydration": 4.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You bite into the cool, gelatinous center, feeling an immediate rush of moisture soothing your throat.",
+      "The mild, slightly bitter gel slides down, leaving your mouth feeling refreshed and calm."
+    ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "plant_based_foods",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Kale Leaf Bunch",
+    "descriptions": [
+      "A dense collection of deep emerald fronds, still weeping with morning dew.",
+      "The texture is rugged and curly, feeling cool and crisp against your fingertips."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 12,
+    "stats_edit": {
+      "fullness": 3.5,
+      "hydration": 1.5,
+      "energy": 2.0
+    },
+    "effects": [
+      "You tear a jagged piece away, feeling the snap of fresh fiber.",
+      "The earthy, slightly bitter moisture coats your tongue."
+    ],
+    "store_entry_data": {
+      "price": 25.0,
+      "store_type": "plant_based_foods",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  },
+  {
+    "name": "Sun-Kissed Watermelon Seed",
+    "descriptions": [
+      "A tiny, obsidian-like teardrop, slick with the residue of sweet summer nectar.",
+      "You hold a small, dark vessel of potential, still warm from the heavy humidity of a mid-July afternoon."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.2,
+      "energy": 0.2
+    },
+    "effects": [
+      "You bite into the hard casing, feeling the dry, gritty texture against your teeth.",
+      "A flash of bitterness hits your tongue as you struggle with the unyielding, woody shell."
+    ],
+    "store_entry_data": {
+      "price": 65.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "plant_type": "watermelon"
+  },
+  {
+    "name": "Golden Kernel Spark",
+    "descriptions": [
+      "A tiny, sun-drenched treasure nestled within a papery, translucent husk.",
+      "The warmth of a midsummer afternoon captured in a singular, hard speck of amber."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": -0.1,
+      "hydration": -0.2,
+      "energy": -0.2
+    },
+    "effects": [
+      "You bite into the hard, unyielding grain, feeling its jagged edges scrape against your teeth.",
+      "A dry, starchy powder coats your tongue, instantly stealing every drop of moisture from your mouth.",
+      "The flavor is dull and earthy, leaving you craving a cool drink."
+    ],
+    "store_entry_data": {
+      "price": 62.5,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "plant_type": "corn"
+  },
+  {
+    "name": "Aloe Pup",
+    "descriptions": [
+      "A tiny, succulent sprout with fleshy, translucent green leaves that feel cool to the touch.",
+      "A miniature marvel, brimming with life and ready to nestle into a ceramic pot."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 12,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.0,
+      "hydration": 0.5,
+      "energy": 1.0
+    },
+    "effects": [
+      "You bite into the thick, gelatinous center of the leaf, feeling a burst of cold moisture that quickly turns to a gritty, unpleasant texture in your mouth."
+    ],
+    "store_entry_data": {
+      "price": 65.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "plant_type": "aloe_vera"
+  },
+  {
+    "name": "Tarnished Blackberry Seed",
+    "descriptions": [
+      "A tiny, dark speck of potential nestled within a dusty, linen pouch.",
+      "Biting into this raw seed offers nothing but a gritty sensation against your teeth."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 20,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.2,
+      "energy": 0.2
+    },
+    "effects": [
+      "You crunch down on the hard, miniature core, feeling its sharp edges scrape against your palate.",
+      "The dry, earthy taste lingers on your tongue, leaving you yearning for a cool drink."
+    ],
+    "store_entry_data": {
+      "price": 62.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.4
+    },
+    "plant_type": "blackberry"
+  },
+  {
+    "name": "Kale Seed",
+    "descriptions": [
+      "A tiny, crinkled speck of potential, resting within a worn burlap pouch.",
+      "It holds the promise of deep forest hues and crisp, morning-dew textures."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 99,
+    "consume_uses_left": 1,
+    "stats_edit": {
+      "fullness": 0.1,
+      "hydration": 0.2,
+      "energy": 0.2
+    },
+    "effects": [
+      "You bite into the hard, dry casing, feeling only a gritty residue on your tongue.",
+      "Your throat feels parched as the tiny husk scrapes against your palate."
+    ],
+    "store_entry_data": {
+      "price": 65.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "plant_type": "kale"
+  },
+  {
+    "name": "Blackberry Cane Cutting",
+    "descriptions": [
+      "You hold a supple, dark emerald stem that still drips with the morning dew. Its tiny, sharp thorns gently prick your thumb, a tactile reminder of the wild thicket it calls home.",
+      "The wood feels sturdy and alive in your hands, fragrant with a deep, sweet musk that suggests a summer bounty yet to come."
+    ],
+    "static": false,
+    "type": [
+      "store_entry",
+      "seed"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 10,
+    "store_entry_data": {
+      "price": 75.0,
+      "store_type": "seeds",
+      "trade_mode": "buy_and_sell",
+      "sell_discount": 0.5
+    },
+    "plant_type": "blackberry"
+  },
+  {
+    "name": "Whole Watermelon",
+    "descriptions": [
+      "A heavy, sun-warmed sphere with a thick, striped rind, still smelling of damp earth and morning dew.",
+      "You run your hands over the cool, waxy surface, feeling the immense weight of the juice held within."
+    ],
+    "static": false,
+    "type": [
+      "consumable",
+      "store_entry"
+    ],
+    "stackable": true,
+    "quantity": 1,
+    "max_stack_size": 5,
+    "consume_uses_left": 30,
+    "stats_edit": {
+      "fullness": 2.0,
+      "hydration": 4.0,
+      "energy": 2.0
+    },
+    "effects": [
+      "You bite into the crisp, sugary flesh and feel a cool rush of sweetness flood your mouth.",
+      "The refreshing juice drips down your chin, washing away the heat of the afternoon sun."
+    ],
+    "store_entry_data": {
+      "price": 30.0,
+      "store_type": "plant_based_foods",
+      "trade_mode": "sell_only",
+      "sell_discount": 0.5
+    }
+  }
+]
