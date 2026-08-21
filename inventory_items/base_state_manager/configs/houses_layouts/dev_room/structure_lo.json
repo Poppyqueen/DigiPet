@@ -1,7 +1,5 @@
 {
-  "aliases": {
-    "Room 101": "Room 101"
-  },
+  "rooms": ["Room 101", "comfy garden"],
   "initial_room": "Room 101",
   "groups": {
     "default": ["Room 101", "comfy garden"]

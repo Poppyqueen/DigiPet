@@ -65,10 +65,7 @@
         "room_types": [],
         "music": "AAAAA",
         "outdoors_type": [
-        "earth-weather",
-        "earth-astro-views",
-        "xeno-canto",
-        "ocean-views"
+        "walled-window"
         ]
     },
     {

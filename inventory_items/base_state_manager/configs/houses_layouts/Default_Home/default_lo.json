@@ -6,6 +6,7 @@
     "comfy bathroom": "Bathroom",
     "comfy living room": "Living Room"
   },
+  "rooms": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"],
   "initial_room": "Living Room",
   "groups": {
     "default": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"]

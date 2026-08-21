@@ -100,34 +100,76 @@ class InitialStateConst():
 
     def _extract_room_names_from_layout(self, layout: dict) -> list[str]:
         """
-        Derive the ordered, deduplicated list of room names declared by a layout file.
+        Returns the ordered, deduplicated list of room names declared by a layout file's
+        explicit "rooms" roster, after validating it against "groups" and "connections".
 
-        Every room that exists in the house is named in one of two places:
-          - groups:      { group_name: [room_name, ...] }
-          - connections: [[roomA, roomB], ...]
+        The "rooms" key is the single source of truth for which rooms exist in the Scene:
+            "rooms": ["Room 101", "Room 101 Kitchenette", "Hallway 001", ...]
 
-        When an aliases map is present, groups and connections are authored using
-        alias names — this method returns those alias names as-is. Resolution against
-        the RoomStore (using the store_name side of the alias) happens in create_state.
+        "groups" and "connections" describe pathing only — every name they reference must
+        already be declared in "rooms", and every name in "rooms" must appear in at least
+        one of them. Both directions are enforced here, as hard failures:
 
-        The returned order is: group members first (in declaration order), then any
-        connectoid names that appear only in connections, also in declaration order.
-        This is stable and deterministic across runs.
+          - A name in "groups" or "connections" that isn't in "rooms" raises immediately
+            (catches typos and rooms that were wired up but never declared).
+          - A name in "rooms" that never appears in "groups" or "connections" raises
+            immediately (catches rooms that were declared but never wired up — they'd
+            otherwise be silently unreachable).
+
+        When an aliases map is present, "rooms", "groups", and "connections" are all
+        authored using alias names — this method returns those alias names as-is.
+        Resolution against the RoomStore (using the store_name side of the alias) happens
+        in create_state.
         """
+        rooms_roster = layout.get("rooms")
+        if rooms_roster is None:
+            raise ValueError(
+                "Layout file must declare a 'rooms' key: the explicit list of every room "
+                "name in this Scene. 'groups' and 'connections' only describe pathing "
+                "between rooms already listed here."
+            )
+        if not isinstance(rooms_roster, list):
+            raise ValueError("Layout 'rooms' key must be a list of room names.")
+
         seen = {}  # name -> first-seen index, for stable dedup
+        for name in rooms_roster:
+            if name not in seen:
+                seen[name] = len(seen)
+            else:
+                print(f"Layout warning: '{name}' is listed more than once in 'rooms'.")
+
+        roster = set(seen.keys())
+        referenced = set()
 
         groups = layout.get("groups", {})
-        for members in groups.values():
+        for group_name, members in groups.items():
             for name in members:
-                if name not in seen:
-                    seen[name] = len(seen)
+                referenced.add(name)
+                if name not in roster:
+                    raise ValueError(
+                        f"Layout error: '{name}' in group '{group_name}' is not declared "
+                        f"in 'rooms'. Add it to 'rooms' or fix the name."
+                    )
 
         for edge in layout.get("connections", []):
+            if len(edge) != 2:
+                raise ValueError(f"Layout error: malformed connection edge {edge!r}, expected [roomA, roomB].")
             for name in edge:
-                if name not in seen:
-                    seen[name] = len(seen)
+                referenced.add(name)
+                if name not in roster:
+                    raise ValueError(
+                        f"Layout error: '{name}' in connections is not declared in "
+                        f"'rooms'. Add it to 'rooms' or fix the name."
+                    )
 
-        return sorted(seen, key=lambda n: seen[n])
+        unreferenced = roster - referenced
+        if unreferenced:
+            raise ValueError(
+                f"Layout error: room(s) declared in 'rooms' but never used in 'groups' or "
+                f"'connections', so they would be unreachable: {sorted(unreferenced)}."
+            )
+
+        return list(seen.keys())
 
     def _apply_layout_config(self, rooms: list, layout_config_path: str) -> list:
         """
@@ -136,6 +178,7 @@ class InitialStateConst():
 
         Layout config format:
         {
+            "rooms": ["room_name", ...],
             "groups": {
                 "group_name": ["room_name", ...]
             },
@@ -149,9 +192,13 @@ class InitialStateConst():
         - Rooms listed in "groups" receive movement_group, is_connectoid=False, connections=null.
         - Rooms that appear in "connections" edges but not in any group are connectoids:
           is_connectoid=True, movement_group=null, connections=[all their neighbours].
-        - Rooms not mentioned in either get movement_group="default".
         - Connections are always bidirectional.
-        - Warns on any name in the layout that has no matching room in the house.
+
+        By the time this runs, `rooms` is guaranteed (by _extract_room_names_from_layout
+        and create_state's RoomStore resolution) to contain exactly the layout's "rooms"
+        roster, and every name in "groups"/"connections" is guaranteed to be a member of
+        that roster. So every room here ends up with either a movement_group or a
+        connectoid connections list — there is no "unmentioned room" case left to handle.
         """
         with open(layout_config_path, 'r') as f:
             layout = json.load(f)
@@ -161,20 +208,8 @@ class InitialStateConst():
 
         room_by_name = {room["name"]: room for room in rooms}
 
-        for group_name, members in groups.items():
-            for name in members:
-                if name not in room_by_name:
-                    print(f"Layout warning: '{name}' in group '{group_name}' has no matching room.")
-
         adjacency = {}
-        for edge in edges:
-            if len(edge) != 2:
-                print(f"Layout warning: skipping malformed edge {edge}")
-                continue
-            a, b = edge
-            for name in (a, b):
-                if name not in room_by_name:
-                    print(f"Layout warning: '{name}' in connections has no matching room.")
+        for a, b in edges:
             adjacency.setdefault(a, [])
             adjacency.setdefault(b, [])
             if b not in adjacency[a]:
@@ -187,25 +222,16 @@ class InitialStateConst():
 
         for group_name, members in groups.items():
             for name in members:
-                if name in room_by_name:
-                    room = room_by_name[name]
-                    room["movement_group"] = group_name
-                    room["is_connectoid"] = False
-                    room["connections"] = None
-
-        for name in connectoid_names:
-            if name in room_by_name:
                 room = room_by_name[name]
-                room["is_connectoid"] = True
-                room["movement_group"] = None
-                room["connections"] = adjacency[name]
-
-        mentioned = group_members | connectoid_names
-        for room in rooms:
-            if room["name"] not in mentioned:
-                room["movement_group"] = "default"
+                room["movement_group"] = group_name
                 room["is_connectoid"] = False
                 room["connections"] = None
+
+        for name in connectoid_names:
+            room = room_by_name[name]
+            room["is_connectoid"] = True
+            room["movement_group"] = None
+            room["connections"] = adjacency[name]
 
         return rooms
 
@@ -222,6 +248,9 @@ class InitialStateConst():
             "items_config":  "path/to/items_config.json",
             "layout_config": "path/to/layout.json"
         }
+
+        The layout file must declare a "rooms" roster; see _extract_room_names_from_layout
+        for the validation rules enforced against it.
         """
         selected_config = self.states_configs.get(select_state)
         if not selected_config:
@@ -253,7 +282,7 @@ class InitialStateConst():
         if initial_room_name not in room_names:
             raise ValueError(
                 f"initial_room '{initial_room_name}' is not declared in the layout's "
-                f"groups or connections."
+                f"'rooms' roster."
             )
 
         # aliases in the layout are authored as { store_name: alias_name }

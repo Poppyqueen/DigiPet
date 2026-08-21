@@ -14,15 +14,17 @@ The live world the agent inhabits is made of three things: **Rooms**, **objects*
 
 Rooms are the navigable spaces the agent moves between. The agent is always in exactly one room at a time, and rooms are where most of the framework's logic is grounded.
 
-Each room has a visual appearance, ambient descriptions that shift with time of day, background music, and — most importantly — **room types**.
+Each room has a visual appearance, ambient background music, and — most importantly — **room types**.
 
-Room types are tags that directly shape what the agent can do and perceive. A room tagged `planting_garden` unlocks gardening actions. A room tagged `darkroom` could unlock photo development. A room tagged `outdoors_view` gives the agent passive weather awareness without it needing to ask. You define a room's character and capabilities by choosing its types.
+Room types are tags that directly shape what the agent can do and perceive. A room tagged `open_soil_zone` unlocks gardening actions, and requires an extra `plot_number` field declaring how many planting plots it has. A room tagged `outdoors_area` marks it as an accessible outdoor space. Every room also carries an `outdoors_type` — a separate field (not a type tag) describing what kind of outdoors it exposes access to, which shapes what a window or similar object in that room lets the agent perceive.
+
+The room-type registry itself is intentionally short. Most of what you'd expect to be a room type — a kitchen, a bedroom, a library — isn't one anymore. Those capabilities now live on the **objects** placed in the room instead: a room is a kitchen because it contains an object typed `culinary_equipment`, a bedroom because it contains something typed `sleepable_spot`. A room's own types mainly govern its outdoor/planting character and a few specialized cases (lighthouse rooms, for instance); day-to-day affordances come from what you populate it with.
 
 ### objects
 
 objects are anything that can exist in the world — placed in a room, or carried in the agent's inventory. objects are defined as JSON blueprints with a name, descriptions, and one or more **type tags**.
 
-Type tags are how the framework knows what an item *is* and what it *enables*. A `consumable` item has stat effects. A `seed` can be planted. A `book` has chapters. A `seat` can be sat on. The type tag connects the item to the behaviors the framework knows about.
+Type tags are how the framework knows what an item *is* and what it *enables*. A `consumable` item has stat effects. A `seed` can be planted. A `book` has chapters. A `seatable` item can be sat on. The type tag connects the item to the behaviors the framework knows about.
 
 objects can belong to multiple types at once — both `seed` and `consumable`, or both `furniture` and `dispenser`. The framework validates that every required field for each type is present.
 

@@ -1,45 +1,76 @@
 # Designing Scenes
 
-A Scene is the authored starting point for an agent's world — a collection of rooms, the objects placed inside them, and what the agent begins with in its inventory. This guide covers everything you need to design one, from scratch, without writing any Python.
+A Scene is the authored starting point for an agent's world — a set of rooms, how they connect to one another, the objects placed inside them, and what the agent begins with in its inventory. This guide covers how to design one using the current **store + layout** system, without writing any Python.
 
-Two example Scenes ship with the project: **DevRoom** and **PrimeHouse**. Both are worth reading before designing your own.
+Scenes currently shipping with the project (see `inventory_items/base_state_manager/configs/state_configs_map.json`):
+
+- **Default Home**
+- **Compact Home**
+- **Walled Garden**
+- **Lighthouse Keeper**
+
+All are worth reading before designing your own.
+
+---
+
+## The Store Paradigm
+
+Before you touch a single Scene, understand the shift from how this used to work: rooms and items are **no longer authored inline inside a Scene's files**. Both live in shared, reusable **stores** — a flat catalogue of definitions that any number of Scenes can draw from.
+
+| | Store | Loaded by |
+|---|---|---|
+| Rooms | `inventory_items/rooms_provider/rooms_data/` | `RoomStore` |
+| Items | `inventory_items/items_provider/items_data/` | `ItemStore` |
+
+Both stores recursively scan their root directory for `.json` files — a file may contain a single object or a list of them. Subfolders (`furniture/contemporary/`, `compact_house/`, etc.) are **pure organization**, not a requirement the loader cares about. Every room definition needs a unique `name`; every item definition needs a unique `name`. Those names are how everything else in the system refers to them.
+
+A Scene, then, is really just **a manifest that says which store entries to use and how to arrange them** — it doesn't define rooms or items itself. This is what makes rooms and items reusable across multiple houses: the same store room can be dressed up differently, aliased to a different display name, and dropped into completely different Scenes.
 
 ---
 
 ## How a Scene Is Structured
 
-A Scene is defined across two JSON files:
+A Scene is defined across **two files**, registered together as one entry in a Config Map:
 
-- **The House file** — defines the rooms: their layout, appearance, types, and descriptions.
-- **The Config file** — populates those rooms with objects, sets the starting inventory, and declares which room the agent begins in.
+- **The Layout file** — the topology. Which rooms (from the store) this Scene uses, what to call them, how they connect to each other, and which room the agent starts in. Contains **no item data**.
+- **The Items file** — populates the rooms named in the layout with objects (from the store), and optionally sets the agent's starting inventory. Contains **no topology data**.
 
-Both files are then registered together in a Config Map, which is how the framework discovers them.
+```
+inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_lo.json        ← layout
+inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_items_lo.json  ← items
+```
+
+Both paths get registered together under a Scene name in the Config Map:
+
+```json
+// inventory_items/base_state_manager/configs/state_configs_map.json
+{
+    "Compact Home": {
+        "layout_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_lo.json",
+        "items_config": "inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_items_lo.json"
+    }
+}
+```
+
+The key (`"Compact Home"`) is the Scene's identifier — the name used when initializing a new agent. `InitialStateConst.create_state(select_state)` is what reads both files and assembles the full live state.
 
 ---
 
-## 1. The House File
+## 1. The Room Store
 
-**Location:** `inventory_items/base_state_manager/houses_data/`
+**Location:** `inventory_items/rooms_provider/rooms_data/` (any subfolder structure you like)
 
-A house file is a JSON array of room objects. Each room in the array becomes a navigable space in the Scene.
+A room store file is a JSON array of room objects — reusable definitions, not tied to any one Scene.
 
 ```json
 [
     {
-        "name": "Living Room",
-        "image": "living_room",
-        "music": "ambient_home",
-        "room_types": ["living_room"],
-        "descriptions": {
-            "early_morning": ["The room is quiet, pale light just beginning to filter through the curtains."],
-            "morning": ["Soft morning light fills the space."],
-            "noon": ["The room is bright and warm."],
-            "afternoon": ["A comfortable afternoon stillness."],
-            "late_afternoon": ["Long shadows stretch across the floor."],
-            "night": ["The room is dim, lit only by the glow of the street outside."],
-            "late_night": ["Everything is still. The house is asleep."]
-        },
-        "items": []
+        "name": "compact garden",
+        "image": "collage_porch",
+        "music": "stasis",
+        "room_types": ["outdoors_area", "open_soil_zone"],
+        "outdoors_type": ["earth-weather", "earth-astro-views", "xeno-canto"],
+        "plot_number": 6
     }
 ]
 ```
@@ -48,350 +79,235 @@ A house file is a JSON array of room objects. Each room in the array becomes a n
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `name` | string | ✅ | The room's display name. Free-form. |
-| `image` | string | ✅ | Filename without extension. Place the image at `style/images/my_unique_rooms_images/<name>.jpg` |
-| `room_types` | list of strings | ✅ | One or more type tags — see valid types below |
-| `descriptions` | object | ✅ | All seven time-of-day keys required — see below |
-| `music` | string or null | — | Filename without extension. Place at `style/sounds/music/rooms/<name>.mp3`. Omit or set `null` for silence. |
-| `items` | list | ✅ | Initialize as an empty list `[]` — items are added via the Config file |
+| `name` | string | ✅ | The room's canonical store name. This is what layouts reference (directly, or through an alias — see below). |
+| `image` | string | ✅ | **Must match an existing filename** (no extension) under `style/images/area_images/`. This is a `Literal` type validated at import time — you can't invent a name and add the asset later; add the asset first. |
+| `music` | string or null | — | Same rule, against `style/sounds/music/rooms/`. Omit or `null` for silence. |
+| `room_types` | list of strings | — | Zero or more type tags. See below — this list is much shorter than it used to be. |
+| `outdoors_type` | list of strings | — | What kind of outdoors surrounds this room (used by fenestration items and outdoors-tagged behavior). See its own section below. Defaults to `[]`. |
+| `movement_group` / `is_connectoid` / `connections` | — | — | **Do not set these in the store.** They're pathing data, assigned per-Scene by the layout file, not a property of the room definition itself. |
 
-### Descriptions
-
-The `descriptions` field takes all seven time-of-day keys. Each key maps to a list of strings — the runtime picks one at random for the current time. Write at least one string per key, and consider writing two or three for variety.
-
-```json
-"descriptions": {
-    "early morning": ["One string", "Or multiple for variety"],
-    "morning":       ["..."],
-    "noon":          ["..."],
-    "afternoon":     ["..."],
-    "late afternoon":["..."],
-    "night":         ["..."],
-    "late night":    ["..."]
-}
-```
-
-All seven keys are required. The key names exactly as shown.
+Notably absent from the current contract: `descriptions` (the old seven-time-of-day text blocks) and `items`. Neither exists on a room anymore — items are never embedded in a room definition; they're only ever attached at Scene-build time from the items file.
 
 ### Room Types
 
-Room types define what the agent can do and perceive while in that room. A room can have multiple types — their affordances combine.
+This is the biggest behavioral change from the old system, worth reading carefully: **most of the old room-type affordances are gone.** The full current registry (`inventory_items/items_validation/room_pydantic_models.py`) is:
 
-| Room Type | What it enables |
+| Room Type | What it does |
 |---|---|
-| `living_room` | General living space affordances |
-| `bedroom` | Bed and rest affordances |
-| `bathroom` | Bathroom affordances |
-| `kitchen` | Food preparation affordances |
-| `library` | Reading and study affordances |
-| `garden` | General garden awareness |
-| `planting_garden` | Active planting, watering, and harvesting tools ⚠ |
-| `outdoors_view` | Passive weather perception — agent receives weather info automatically |
-| `white_room` | Minimal environment |
-| `computer_room` | Computer and digital affordances |
-| `ALIFE_research` | A-Life simulation lab affordances |
-| `lantern_room` | Lighthouse lantern room affordances |
-| `lighthouse_gallery` | Lighthouse gallery affordances |
-| `accessible_light_viewing_room` | Lighthouse viewing affordances |
+| `outdoors_area` | Marks the room as an accessible outdoors space. |
+| `open_soil_zone` | Enables planting/watering/harvesting. **Requires an extra field:** `plot_number` (int) — number of planting plots. |
+| `lantern_room` | Lighthouse lantern-room affordances. |
+| `lighthouse_gallery` | Lighthouse gallery affordances. |
+| `accessible_light_viewing_room` | Lighthouse viewing affordances. |
+| `fresnel_lens_interior` | Lighthouse-specific interior. |
 
-⚠ **`planting_garden` requires an extra field on the room:** `plot_number` (integer) — the number of planting plots available.
+There is no more `kitchen`, `bedroom`, `bathroom`, `living_room`, `library`, `computer_room`, `white_room`, or `ALIFE_research` room type. **Room-level affordances for everyday activities have moved onto items.** A room is a kitchen because it contains an item typed `culinary_equipment`, not because the room itself is tagged `kitchen`. A room is a bedroom because it contains a `sleepable_spot` item. A room has drinking water because it contains a `water_point` item. This means when you're designing a new room, the room's `room_types` list is usually going to be empty (or just `outdoors_area` if it applies) — the interesting affordance work happens when you populate it with items, not when you tag the room. See `ITEM_SYSTEM_DOCS.md` for the full item-type catalogue that now carries this weight.
 
-```json
-{
-    "name": "Back Garden",
-    "image": "garden_back",
-    "room_types": ["planting_garden", "outdoors_view"],
-    "plot_number": 4,
-    "descriptions": { ... },
-    "items": []
-}
-```
+`room_types` absent from `ROOM_TYPE_FIELD_CONTRACTS` (i.e. everything except `open_soil_zone` right now) require no extra fields.
 
-A room can have multiple types. `["planting_garden", "outdoors_view"]` gives the agent both gardening tools and passive weather awareness.
+### `outdoors_type`
 
-> **Adding new room types** is covered in [Extending Behaviors](EXTENDING_BEHAVIORS.md). If none of the existing types fit what you're designing, you're not stuck — new types are straightforward to register.
+A separate axis from `room_types`, and easy to conflate with it, so here's the distinction:
+
+- **`room_types: ["outdoors_area"]`** answers *"is this room itself an outdoor space?"* — it changes what the agent can directly do while standing in the room.
+- **`outdoors_type: [...]`** answers *"what environment does this room expose a view/access to?"* — regardless of whether the room itself is indoors or outdoors. It's what a `fenestration_aperture` item (a window, skylight, porthole, etc.) placed in that room reads from at runtime to decide what the agent perceives through it. Valid values live in `tools/tools_folder/tools_helpers/outdoors_helpers/outdoors_type_definitions.py` (currently `earth-weather`, `ocean-views`, `xeno-canto`, `earth-astro-views`, `walled-window`, `lunar-dome-view`).
+
+Every room carries this field, indoor or outdoor — you don't need to set it for a normal interior room with no windows worth describing. If you leave it as the default `[]`, the perception tools fall back to a hardcoded `walled-window` behavior on your behalf. You only need to set it explicitly when a room's outdoors access is meaningfully different from a plain walled room — e.g. the lunar dome rooms in `manifest_lunar_items.yaml`, or a garden that should expose real weather and astronomy data.
 
 ---
 
-## 2. The Config File
+## 2. The Items File
 
-**Location:** `inventory_items/base_state_manager/houses_configs/`
+**Location:** alongside its paired layout file, e.g. `inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_items_lo.json`
 
-The config file populates your rooms with objects and sets up the agent's starting conditions. It's a single JSON object.
+A flat JSON object: keys are room names **as they appear in the layout** (alias name if the room is aliased — see below), values are the objects to place there. An optional `"inventory"` key sets the agent's starting inventory.
 
 ```json
 {
-    "initial_room": "Living Room",
-    "Living Room": ["sofa", "coffee_table", "lamp[x1]"],
-    "Back Garden": ["garden_bed[x4]"],
+    "Garden": [
+        "Lounge Outdoors Chair",
+        "Lounge Outdoors Chair",
+        "Freshwater Pond",
+        "Terracotta pot"
+    ],
+    "Kitchen": [
+        "Knife Set",
+        "Countertop Convection Toaster Oven"
+    ],
     "inventory": ["notebook", "pen"]
 }
 ```
 
-### Config Fields
-
-| Key | Type | Notes |
-|---|---|---|
-| `initial_room` | string | The room name the agent starts in. Must match a room `name` in your house file exactly. |
-| `<Room Name>` | list or string | Objects to place in that room at initialization. |
-| `inventory` | list or string | Objects the agent starts with in their inventory. Optional. |
+There is **no `initial_room` key here** — that lives in the layout file now, not the items file.
 
 ### Specifying Objects
 
-There are two ways to specify objects for a room or inventory slot:
+Two ways to populate a room or the inventory, both still handled by `ItemStore`:
 
-**As a list of names** — each name is looked up in the Item Store by name:
+**A list of names** — each looked up directly in the Item Store:
 ```json
-"Living Room": ["sofa", "lamp", "coffee_table"]
+"Kitchen": ["Knife Set", "Kitchen Sink"]
 ```
 
-**As a file path** — loads all objects defined in that file:
+**A file path string** — pulls in every item under that path in the store (file or directory prefix):
 ```json
-"Living Room": "inventory_items/items_provider/items_data/furniture/living_room_set.json"
+"Kitchen": "inventory_items/items_provider/items_data/furniture/contemporary/items.json"
 ```
 
-**Stacking syntax** — append `[xN]` to a name to create a stack of N units. Only valid for stackable objects:
+**Stacking syntax** — append `[xN]` to a name for N units of an item, if stackable it will create stacks for it, if not, will create the given individual entries:
 ```json
 "inventory": ["carrot_seeds[x5]", "apple[x3]", "notebook"]
 ```
 
-Object names come from the Item Store — the files inside `inventory_items/items_provider/items_data/`. The name you use must match the `name` field in the object's blueprint exactly.
+Names must match an item's `name` field in the store exactly (a case/whitespace-insensitive fallback match exists, but don't rely on it — keep names exact).
 
 ---
 
-## 3. The Config Map
+## 3. The Layout File
 
-**Location:** `inventory_items/base_state_manager/configs/`
+**Location:** paired with its items file, e.g. `inventory_items/base_state_manager/configs/houses_layouts/Compact_Home/default_lo.json`
 
-Config Maps are JSON files that tell the framework where to find your Scene's two files. You can add your Scene to an existing config map file, or create a new one — the framework recursively loads all JSON files in this directory and merges them.
+This is where topology, naming, and the starting room live.
 
 ```json
 {
-    "my_scene": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/my_house.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/my_house_config.json"
-    }
+  "aliases": {
+    "compact garden": "Garden",
+    "comfy kitchen": "Kitchen",
+    "compact bedroom": "Bedroom",
+    "compact living room": "Living Room"
+  },
+  "initial_room": "Living Room",
+  "rooms": ["Living Room", "Kitchen", "Bedroom", "Garden"],
+  "groups": {
+    "default": ["Living Room", "Kitchen", "Bedroom", "Garden"]
+  },
+  "connections": []
 }
 ```
 
-The key (`"my_scene"`) becomes the Scene's identifier — the name used when initializing a new agent with this Scene.
+### `rooms` — the roster
 
-Once registered, the Scene is immediately available. No code changes needed.
+`"rooms"` is the **single explicit list of every room name in this Scene**, and it's the first thing to write when starting a new layout. `groups` and `connections` describe pathing *between* rooms already declared here — they don't declare rooms on their own. This is validated strictly at build time, in both directions:
+
+- Any name used in `groups` or `connections` that isn't in `rooms` fails immediately — this catches typos (e.g. wiring up `"Rhea's Sky Walkway"` when the room is actually named `"Reah's Sky Walkway"`) before they silently create a disconnected phantom room instead of erroring.
+- Any name in `rooms` that never shows up in `groups` or `connections` also fails immediately — this catches a room you declared but forgot to wire in, which would otherwise be built but permanently unreachable with no warning.
+
+Every room in your Scene needs to appear in all the places it's relevant: once in `rooms`, and then wired into either a `groups` entry or a `connections` edge (or both aren't required — one is enough).
+
+### Aliases
+
+Rooms are authored once in the store under a generic name (`"compact garden"`) so they can be reused across multiple houses, then given a Scene-specific display name via `aliases`: `{ store_name: alias_name }`. Every other part of the layout and items file — `rooms`, `groups`, `connections`, `initial_room`, and the item-file's room keys — is written using the **alias name**, never the store name. At build time the engine resolves alias → store name, pulls the room from the `RoomStore`, then renames it to the alias so the rest of the engine only ever sees the alias. If a room isn't aliased, its store name is used as-is.
+
+### `initial_room`
+
+Must exactly match a name in the `rooms` roster. This room becomes room `id: 0` and is where the agent begins.
+
+### Pathing: `groups` vs. `connections`
+
+The layout supports two ways of describing how rooms connect, and you can mix them in the same Scene:
+
+**`groups`** — the simple case. A named bucket of rooms that are all mutually reachable from one another — the "every room in my house is accessible at all times" model most Scenes want. A room can only belong to one group.
+
+**`connections`** — for maze-like structures. A list of `[roomA, roomB]` edges between named nodes. Any node that shows up in `connections` but is **not** also listed in `groups` becomes a **connectoid** — a bridge/hallway/road node rather than a regular room:
+- A connectoid can only reach the specific rooms listed in its edges — it has no group of its own.
+- A regular room in a group can reach every connectoid that lists it as a connection, in addition to its group-mates.
+- Connections are bidirectional regardless of edge order.
+
+```json
+"connections": [
+    ["Living Room", "Garden Path"],
+    ["Garden Path", "Garden"]
+]
+```
+Here `"Garden Path"` (not in any group) becomes a connectoid — a gate the agent must pass through to get from the Living Room group to the Garden, rather than a direct group member.
+
+Whether a room is a connectoid isn't a flag you set — it's derived from group membership: a room in a `groups` entry has full clique access to its group-mates, which is mutually exclusive with the narrower "only these specific neighbours" access a connectoid has. If it's not in any group, and it appears in `connections`, it's a connectoid.
+
+**If you forget to declare a room properly, the build now fails loudly rather than silently misbehaving** — see the `rooms` roster validation above. There's no more silent catch-all fallback to worry about.
+
+The runtime traversal rules themselves live in `inventory_items/services/connections_graph.py` if you want the exact reachability logic (`ConnectionsGraph.get_accessible_ids`, `is_accessible`, etc.) — it's built once per state from the fully-resolved room list produced by the layout.
 
 ---
 
 ## Designing Objects
 
-Objects are JSON blueprints stored in `inventory_items/items_provider/items_data/`. You can add new blueprints to existing files or create new files in any subdirectory — the Item Store walks the entire directory tree.
+Item definitions and their type contracts are large enough to warrant their own document, which is **auto-generated directly from the Pydantic contract registry** — so it never drifts out of date the way this doc can. See:
 
-### Base Fields
+**[`ITEM_SYSTEM_DOCS.md`](./ITEM_SYSTEM_DOCS.md)**
 
-Every object requires these fields:
+It covers the base item contract (`name`, `descriptions`, `static`, `type`, `stackable`, `quantity`, `max_stack_size`) and every specialized type's required fields — from `consumable` and `seed` to `fenestration_aperture`, `sleepable_spot`, `culinary_equipment`, `toggleable`, the various information-endpoint types, and the lighthouse-specific set. New item files just get dropped anywhere under `inventory_items/items_provider/items_data/`; the store picks them up recursively.
 
-| Field | Type | Notes |
-|---|---|---|
-| `name` | string | Display name. Used to look up the object by name in configs. |
-| `descriptions` | list of strings | One or more descriptions shown to the agent. |
-| `static` | bool | `true` = cannot be picked up (furniture, fixtures). `false` = portable. |
-| `type` | list of strings | One or more type tags — see valid types below. |
-| `stackable` | bool | `true` for small interchangeable objects (seeds, coins). `false` for unique objects. |
+### Adding a New Item or Room Type
 
-### Optional Base Fields
+Both items and rooms use the same contract-mixin pattern, defined in `inventory_items/items_validation/contract_mixin.py`. To add a new type:
 
-| Field | Type | Notes |
-|---|---|---|
-| `quantity` | positive int | Defaults to `1`. Must be `1` for non-stackable objects. |
-| `max_stack_size` | positive int | Maximum units per stack. Omit for unlimited. |
+1. Write a mixin class inheriting from `ContractMixin` (not `BaseModel`) in `item_pydantic_models.py` (items) or `room_pydantic_models.py` (rooms):
+    ```python
+    class MyTypeFields(ContractMixin):
+        model_description: ClassVar[str] = "Plain-English description of what this type represents."
+        my_required_key: str = Field(description="What this key does.")
+    ```
+2. Register it in `TYPE_FIELD_CONTRACTS` (items) or `ROOM_TYPE_FIELD_CONTRACTS` (rooms).
 
-### Object Types and Their Required Fields
+That's it — `validate_item_dict`/`validate_room_dict` and the AI generation schema (built by `ai_schema_builder.build_llm_schema`) both pick it up automatically.
 
-An object's type tags determine what the agent can do with it. Some types require additional fields beyond the base.
+`ContractMixin` enforces some rules strictly, at **class-definition time** (a bad mixin is an import error, not a runtime surprise):
+- Don't set `model_config` yourself — it forces `extra="forbid"` for you.
+- Every field needs a non-empty `Field(description=...)`.
+- No field may be typed `Any` or `object`.
+- No field may be `Optional` — mixin fields are always required; the schema builder wraps them in `Optional` automatically when constructing the LLM-facing generation schema, so you should never do that yourself.
 
-**Types with no extra required fields:**
-`misc`, `furniture`, `seat`, `bed`, `pillow`, `art_book`, `toggle_item_power`
+Optionally set `model_description` (surfaces as semantic context to the AI generator) and `examine_fields` / override `render_examine_section` (controls what shows up when the agent examines an item of this type).
 
-**`consumable`** — something the agent can eat, drink, or use for a stat effect:
-```json
-{
-    "name": "Apple",
-    "descriptions": ["A crisp, red apple."],
-    "static": false,
-    "type": ["consumable"],
-    "stackable": true,
-    "stats_edit": { "fullness": 10.0, "hydration": 2.0, "energy": 5.0 },
-    "effects": ["You eat the apple. Refreshing."]
-}
-```
-Required: `stats_edit` (object with `fullness`, `hydration`, `energy` as floats — negative values allowed) and `effects` (list of strings shown on use).
-
-**`seed`** — something that can be planted in a `planting_garden` room:
-```json
-{
-    "name": "Carrot Seeds",
-    "descriptions": ["Small seeds for growing carrots."],
-    "static": false,
-    "type": ["seed"],
-    "stackable": true,
-    "plant_type": "carrot"
-}
-```
-Required: `plant_type` — must be one of the valid plant types: `lettuce`, `carrot`, `cactus`, `tomato`, `potato`, `strawberry`, `rose`, `sunflower`, `mint`, `basil`.
-
-**`book`** — something the agent can read:
-```json
-{
-    "name": "Field Notes",
-    "descriptions": ["A worn notebook filled with observations."],
-    "static": false,
-    "type": ["book"],
-    "stackable": false,
-    "chapters": [
-        { "title": "Entry 1", "content": "Today I noticed...", "is_locked": false }
-    ],
-    "is_locked": false
-}
-```
-Required: `chapters` (list of chapter objects, each with `title`, `content`, and `is_locked`) and `is_locked` (bool — a locked book cannot have chapters added or edited by the agent).
-
-**`dispenser`** — a container that dispenses items:
-```json
-{
-    "name": "Candy Machine",
-    "descriptions": ["A colourful vending machine."],
-    "static": true,
-    "type": ["furniture", "dispenser"],
-    "stackable": false,
-    "dispenser_state": {
-        "contents": { "lemon candy": 10, "mint candy": 8 }
-    }
-}
-```
-Required: `dispenser_state` object with a `contents` dict mapping item names to quantities.
-
-**`candy_bag`** — a portable container with contents:
-
-Required: `contents` — a dict mapping item names in the item store to quantities, e.g. `{"candy": 5}`.
-
-**Togglable types** (`tv`, `bluesky_social`, `iPod`, `cellphone`, `maze`, `laptop`, `desktop_computer`) — objects with a power state the agent can toggle:
-```json
-{
-    "name": "Television",
-    "descriptions": ["A wide flatscreen television."],
-    "static": true,
-    "type": ["furniture", "tv"],
-    "stackable": false,
-    "power_toggle": false
-}
-```
-Required: `power_toggle` (bool) — `true` means the object starts powered on, `false` means off. When off, the affordances associated with that object type are unavailable to the agent until it toggles power on.
-
-### Multi-type Objects
-
-An object can carry multiple types simultaneously and must satisfy the required fields for all of them:
-
-```json
-{
-    "name": "Lettuce Seeds",
-    "descriptions": ["Pale seeds for growing lettuce. Edible in a pinch."],
-    "static": false,
-    "type": ["seed", "consumable"],
-    "stackable": true,
-    "plant_type": "lettuce",
-    "stats_edit": { "fullness": 0.3, "hydration": 0.2, "energy": 0.8 },
-    "effects": ["You chew a seed. Not much to it."]
-}
-```
-
-### Adding a New Object Type
-
-If none of the existing types fit what you're designing, you can register a new one. Two cases:
-
-**No extra fields needed** — add the type name string to the `item_types` list in `inventory_items/item_pydantic_models.py`. That's all. The validation and AI schema systems pick it up automatically.
-
-**Extra fields needed** — add the type to `item_types`, then write a field contract mixin and register it in `TYPE_FIELD_CONTRACTS` in the same file:
-
-```python
-class MyTypeFields(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    my_required_key: str = Field(description="What this key does.")
-
-TYPE_FIELD_CONTRACTS["my_new_type"] = MyTypeFields
-```
-
-To wire the new type to agent behaviors, see [Extending Behaviors](EXTENDING_BEHAVIORS.md).
+If none of the existing types fit, this is the whole process — no other registration is required. For wiring the new type into actual agent tools/behaviors (not just data validation), see [`EXTENDING_BEHAVIORS.md`](./EXTENDING_BEHAVIORS.md).
 
 ---
 
-## Putting It Together — A Complete Example
+## Generating Items with AI
 
-A minimal two-room Scene from scratch:
+For bulk item creation, `data_constructors/dev_crafter/batch_process.py` drives an LLM through `client.structured_output(...)`, using a schema scoped to exactly the item (or room) types you're generating — built via `build_llm_schema_for_types` / `build_room_llm_schema_for_types`, so the model only sees fields relevant to the types you asked for.
 
-**`houses_data/cozy_flat.json`**
-```json
-[
-    {
-        "name": "Main Room",
-        "image": "cozy_room",
-        "music": "lo_fi_afternoon",
-        "room_types": ["living_room", "bedroom"],
-        "descriptions": {
-            "early_morning": ["The flat is quiet, the city just waking outside."],
-            "morning": ["Morning light catches the dust in the air."],
-            "noon": ["The room feels warm and unhurried."],
-            "afternoon": ["A good afternoon for staying in."],
-            "late_afternoon": ["The light turns golden through the window."],
-            "night": ["The room glows softly from the lamp in the corner."],
-            "late_night": ["Deep quiet. The city has settled."]
-        },
-        "items": []
-    },
-    {
-        "name": "Kitchenette",
-        "image": "small_kitchen",
-        "music": null,
-        "room_types": ["kitchen"],
-        "descriptions": {
-            "early_morning": ["Cold and still. The kettle waits."],
-            "morning": ["The smell of coffee drifts through."],
-            "noon": ["Bright and a little cramped."],
-            "afternoon": ["Quiet between meals."],
-            "late_afternoon": ["Time to think about dinner."],
-            "night": ["The dishes are done. The kitchen rests."],
-            "late_night": ["Only the hum of the refrigerator."]
-        },
-        "items": []
-    }
-]
+You drive it with a YAML manifest — see `data_constructors/dev_crafter/manifest_lunar_items.yaml` for a full example. Each task in the manifest specifies:
+
+```yaml
+config:
+  provider: "openrouter"
+  model: "google/gemma-4-26b-a4b-it:free"
+  export_dir: "inventory_items/items_provider/items_data/lunar_items"
+
+tasks:
+  - mode: "item"                       # or "room"
+    types: ["fenestration_aperture", "toggleable"]
+    context:
+      - "Style/theme instructions..."
+    prompts:
+      - "A round viewport window mounted on a central horizontal axis..."
 ```
 
-**`houses_configs/cozy_flat_config.json`**
-```json
-{
-    "initial_room": "Main Room",
-    "Main Room": ["bed_single", "desk", "lamp", "bookshelf"],
-    "Kitchenette": ["kettle", "mug[x2]", "apple[x3]"],
-    "inventory": ["notebook", "pen"]
-}
-```
+Each `prompt` in a task generates one item (or room), constrained to carry exactly the `types` listed — the script force-overwrites the model's `type` field to match what you asked for even if the LLM tried to omit or add types. Results save incrementally to `<export_dir>/session_<timestamp>/items.json` (or `rooms.json`) after every successful generation, so a failed run partway through doesn't lose earlier output.
 
-**`configs/my_scenes.json`**
-```json
-{
-    "cozy_flat": {
-        "b_house_path": "inventory_items/base_state_manager/houses_data/cozy_flat.json",
-        "items_config": "inventory_items/base_state_manager/houses_configs/cozy_flat_config.json"
-    }
-}
-```
+**Generated output is a starting draft, not a final asset** — always manually review and curate what comes out before it goes into the store. Move approved items/rooms into their permanent home under `items_provider/items_data/` or `rooms_provider/rooms_data/`, editing as needed.
 
-The Scene `"cozy_flat"` is now registered and available for agent initialization.
+---
+
+## Putting It Together — Designing a New Environment
+
+1. **Draft the layout pair.** Create a new folder under `houses_layouts/`, and write a layout file (aliases, groups/connections, `initial_room`) and an items file (per-room object lists, optional `inventory`) — even before the rooms and items behind them exist. This gives you your target room names up front.
+2. **Populate the Room Store.** Write the actual room definitions (`name`, `image`/`music` referencing assets that already exist on disk, `room_types` if any apply, `outdoors_type` if it matters) and save them under `rooms_provider/rooms_data/`. Alias them from your layout as needed.
+3. **Generate item drafts with the AI tool.** Study `ITEM_SYSTEM_DOCS.md` for the types you need (or reuse what's already in the store), then write a manifest and run `batch_process.py`.
+4. **Curate.** Manually review every generated item and room — fix descriptions, correct fields, discard what doesn't fit — before moving them into the store proper.
+5. **Wire it all up.** Make sure every item name referenced in your items file exists in the Item Store, every room name in your layout resolves (via alias or directly) to something in the Room Store, and every room is explicitly placed in `groups` or `connections`.
+6. **Register the Scene.** Add an entry to `state_configs_map.json` (or a new config map file merged into that directory) pointing `layout_config` and `items_config` at your two files.
+7. **Verify.** `InitialStateConst.create_state("Your Scene Name")` — or `reload_configs()` first if the map file changed on disk during a live session — and confirm the state builds without missing-room or missing-item warnings.
 
 ---
 
 ## Managing Configs at Runtime
 
-The framework exposes three utility methods for managing Scene configs programmatically:
+`InitialStateConst` exposes:
 
-- `list_available_configs()` — returns all registered Scene names
-- `reload_configs()` — forces a full reload from disk (useful during development)
-- `add_state_configuration(config_map, subdirectory="")` — programmatically registers a new Scene config and saves it to the configs directory
+- `list_available_configs()` — all registered Scene names.
+- `reload_configs()` — force a full reload of the config map from disk.
+- `add_state_configuration(config_map, subdirectory="")` — programmatically register a new Scene config and persist it to disk.
+- `remove_state_configuration(config_name)` — delete a registered Scene config.

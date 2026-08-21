@@ -1,13 +1,15 @@
 {
   "aliases": {
     "compact garden": "Garden",
-    "comfy kitchen": "Kitchen",
+    "compact kitchen": "Kitchen",
     "compact bedroom": "Bedroom",
-    "comfy bedroom": "Bathroom",
+    "compact bathroom": "Bathroom",
     "compact living room": "Living Room"
   },
   "initial_room": "Living Room",
+  "rooms": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"],
   "groups": {
     "default": ["Living Room", "Kitchen", "Bedroom", "Bathroom", "Garden"]
-  }
+  },
+  "connections": []
 }

@@ -2,16 +2,16 @@
   "aliases": {
     "Lighthouse Stairs": "Stairway",
 
-    "Storage Room": "Storage Room",
-
     "Sleeping Nook": "Living Quarters",
     "Lighthouse Kitchen": "Kitchen",
 
-    "Lantern Room": "Lantern Room",
-    "Fresnel Lens": "Fresnel Lens",
     "Lighthouse Balcony": "Balcony"
 
   },
+  "rooms":["Stairway", "Storage Room", "Living Quarters", 
+            "Kitchen", "Lantern Room", "Fresnel Lens", "Balcony",
+            "Islet Base", "Service Room"],
+            
   "initial_room": "Balcony",
   "connections":[
     ["Stairway","Service Room"],

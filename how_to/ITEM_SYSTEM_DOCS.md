@@ -23,8 +23,18 @@ When an item includes one of these strings in its `type` list, it must satisfy t
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `consume_uses_left` | `int` | Logical bites or portions for consumables, dishes, bags, jars, bowls, etc. A single piece of bread has 5 bites, a full meal has 15, a milk carton has 25, etc.Set to 1 for single-bite items like single pieces of candy, chocolates, or other single-bite items. |
-| `stats_edit` | `ItemStatsEdit` | You should first think 'Is this a Potentially Hazardous Food?' (raw meats, spoiled foods, etc.). If it is, all the stat edits should be negative floats ranging from -10.0 to -0.5 depending on severity. If it is not, all the stat edits should be positive floats ranging from 0.5 to 10.0.  |
-| `effects` | `List[str]` | A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, having a bite or consuming a portion of this item, based on consume_uses_left. Each entry on the list is an individual singular bite and narration of the experience from different angles and dimensions. |
+| `stats_edit` | `ItemStatsEdit` | Rate the stat impact of consuming this item **exactly as it physically exists right now** — not what it could become after preparation. Ask yourself: if someone put this directly in their mouth and swallowed it, what happens?
+
+NEGATIVE floats (-0.5 to -10.0) for any item that is:
+  - Dry, chalky, or astringent in raw form (tea leaves, dried herbs, flour, raw grains, coffee beans) — these pull moisture from your mouth and offer nothing satisfying. hydration should be negative.
+  - Raw and unprepared (raw meat, uncooked beans, unroasted coffee, dry pasta) — the body can't absorb these well or they cause discomfort.
+  - Spoiled, rotten, or hazardous — strong negatives across all stats.
+  - Hard, inedible as-is, or normally only consumed after a transformation step (roasting, boiling, steeping, cooking).
+
+POSITIVE floats (0.5 to 10.0) only for items that are already in their final, ready-to-consume form — a poured juice, a cooked dish, a ripe fruit, a baked good.
+
+Key check: 'Does this item require a preparation step (steeping, cooking, roasting, boiling) before a person would normally eat or drink it?' If yes, the stats should reflect the discomfort and poor nutrition of consuming it raw and unprepared. |
+| `effects` | `List[str]` | Narrate the physical experience of consuming this item **in its current state**, not after any preparation. If it is dry leaves, the person is chewing dry leaves. If it is a raw bean, they are biting into a raw bean. Do not describe a brewed cup, a cooked dish, or any version of the item that requires a step not yet taken. Second-person, present tense. Each entry is one bite or portion, from a different sensory angle. |
 
 **Examine Tool Fields:** `consume_uses_left`
 
@@ -83,12 +93,11 @@ When an item includes one of these strings in its `type` list, it must satisfy t
 *No unique fields required (marker type).*
 
 ### Type: `fenestration_aperture`
-> These are architectural designs, ornamental, functional, furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world.
+> These are architectural designs, ornamental, functional, furniture and static fixtures of a room, ranging from windows, skylights, light wells, clerestories to sun tubes, portholes and any others designed as apertures of a room to peer through to the outside world. Describe only the object itself and not the outdoors it gives access to.
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `accessible` | `bool` | This true or false flag represents the accessibility, and reachability for the opening fixture. It asks if it is possible to stand no more than 1 feet besides it, if so, it should be set to true. Features like raised windows or skylights and other inaccessible apertures should be set as false. |
-| `outdoors_type` | `List[Literal]` | A list of outdoors types that can be seen from this aperture. From valid literals. |
 
 ### Type: `bookmaking_implements`
 > This type of item holds and provides the ability to create books, from DIY carry kits for simple books, simple areas for home-made binding in workbenches, DIY enthusiasts spaces, semi-profesional apparatuses, to large machinery, or any other.
@@ -110,16 +119,16 @@ When an item includes one of these strings in its `type` list, it must satisfy t
 | `narrative_sleeping` | `List[str]` | A list of different, separate **second-person, present tense** evocative and grounded narration lines of the phenomenal experience of, laying down and sleeping on this item. |
 
 ### Type: `cranny_host`
-> A nook, cranny, crevice, or hidden hollow within a piece of furniture or room feature that may conceal small forgotten or lost objects. The yield_pool depletes as items are pulled from it and replenishes over time via the tick system.
+> A nook, cranny, crevice, or hidden hollow bellow, bedind or under a piece of furniture or room feature that may conceal small forgotten or lost objects.
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `chance` | `float` | Base probability (0.0–1.0) that a search action finds anything at all. 0.05 is a tight crevice that rarely gives up its secrets; 0.3 is an obvious cubby. |
-| `yield_pool` | `float` | Current resource level of this nook (0.0–1.0). Always initialise at 1.0. Managed by the tool at runtime — decreases on a successful pull, replenishes each tick by refresh_rate up to 1.0. |
-| `yield_cost` | `float` | How much yield_pool is consumed by a single successful pull. 0.25 means the nook can be harvested ~4 times before running dry. A rare, singular hiding spot might use 1.0. |
-| `refresh_rate` | `float` | How much yield_pool is restored each tick. 0.1 means a fully drained nook refills over ~10 ticks. Set very low (0.01–0.05) for spots that should stay sparse for a long time. |
-| `reward_options` | `List[List[Literal]]` | A list of lists. Each nested list represents a collection of types for the possible rewarded item extracted from this cranny host. Use 'dust_bunnied_gleaning' if no logical item types fit. A front-weighted random pick selects one inner list, which is then passed to the crafter as the item type constraint. Example for a cranny behind a bookshelf: [['dust_bunnied_gleaning'], ['trinket'], ['consumable'], ['trinket', 'readable']]. |
-| `narrative_search` | `List[str]` | A list of **second-person, present tense** narration lines describing the physical act of reaching into or searching this nook. Each line should feel distinct — different angles of the same gesture. One is chosen at random per search. |
+| `yield_pool` | `float` | Current resource level of this nook (0.0–1.0). Always initialise at 1.0. Managed by the tool at runtime. |
+| `yield_cost` | `float` | How much yield_pool is consumed by a single successful pull. 0.25 means the nook can be harvested ~4 times before running dry. |
+| `refresh_rate` | `float` | How much yield_pool is restored each tick. 0.1 means a fully drained nook refills over ~10 ticks. |
+| `narrative_search` | `List[str]` | A list of second-person, present tense narration lines describing the physical act of reaching into or searching this nook. Each line should feel distinct. |
+| `reward_options` | `List[List[Literal]]` | A list of lists. Each nested list is a collection of types for the possible rewarded item. Use 'dust_bunnied_gleaning' if no logical item types fit. Example: [['dust_bunnied_gleaning'], ['consumable'], ['seed', 'consumable']]. |
 
 **Examine Tool Fields:** `yield_pool, yield_cost, refresh_rate`
 

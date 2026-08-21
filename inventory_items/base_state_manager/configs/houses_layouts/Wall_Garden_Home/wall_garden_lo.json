@@ -10,6 +10,23 @@
     "mooglies_hideout": "Section B3"
 
   },
+  "rooms":[
+    "garden",
+    "kitchen",
+    "bedroom",
+    "bathroom",
+    "living room",
+    "library",
+    "Hallway",
+    "Section B3",
+    "Nature Heaven",
+    "Section A2",
+    "Section A",
+    "Section B",
+    "Section B2",
+    "Section C"
+  ],
+  
   "initial_room":"living room",
   "groups": {
     "left_gray": ["living room", "kitchen"],

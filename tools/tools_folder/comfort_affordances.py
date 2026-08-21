@@ -60,7 +60,7 @@ class ComfortAffordances:
 
     def _get_medit_item_state(self, item_id: int) -> tuple[bool, dict | str]:
         found_response = self.state_manager.find_item(
-            item_id=item_id, required_type=MEDITATION_AID_ITEM, required_location="accessible"
+            item_id=item_id, required_type=MEDITATION_AID_ITEM, required_location="accessible", check_toggle=False
         )
         if found_response.error:
             return False, found_response.error
