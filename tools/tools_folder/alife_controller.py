@@ -131,17 +131,17 @@ class ALifeController:
     def list_simulations(self) -> str:
         return self.manager.list_simulations()
 
-    def details_of_simulation(self, sim_id: str) -> str:
-        return self.manager.details_of_simulation(sim_id)
+    def details_of_simulation(self, simulation_id: str) -> str:
+        return self.manager.details_of_simulation(simulation_id)
 
-    def update_simulation_name(self, sim_id: str, name: str) -> str:
-        return self.manager.update_simulation_name(sim_id, name)
+    def update_simulation_name(self, simulation_id: str, name: str) -> str:
+        return self.manager.update_simulation_name(simulation_id, name)
 
-    def add_simulation_detail(self, sim_id: str, detail: str) -> str:
-        return self.manager.add_simulation_detail(sim_id, detail)
+    def add_simulation_detail(self, simulation_id: str, detail: str) -> str:
+        return self.manager.add_simulation_detail(simulation_id, detail)
 
-    def delete_simulation(self, sim_id: str) -> str:
-        return self.manager.delete_simulation(sim_id)
+    def delete_simulation(self, simulation_id: str) -> str:
+        return self.manager.delete_simulation(simulation_id)
 
     def display_information(self) -> str:
         # Re-implementation of display_information to use the manager and simulation data

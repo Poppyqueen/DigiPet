@@ -638,6 +638,8 @@ class StoreEndpointFields(ContractMixin):
         description="Data specific to a store endpoint, including available categories and item listings. Managed by the store endpoint tool."
     )
 
+class ALIFEInterface(ContractMixin):
+    model_description: ClassVar[str] = "This specific endpoint provides access to an 'ALIFE' simulation to interact with, observe and analyze. It features a grid and entities that act on their environment in a tick based system, which is observable through an interface of commands."
 
 
 # =============================================================================
@@ -687,6 +689,7 @@ TYPE_FIELD_CONTRACTS: Dict[str, Type[ContractMixin]] = {
 
     "store_entry": StoreEntryFields,
     "store_endpoint": StoreEndpointFields,
+    "ALIFE_interface": ALIFEInterface
 
 }
 # =============================================================================

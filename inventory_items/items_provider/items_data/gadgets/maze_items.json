@@ -7,31 +7,36 @@
     ],
     "static": true,
     "type": [
-      "maze_interface"
+      "maze_interface",
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
     "maze_state": {
-      "seed": 48291,
-      "size": [
-        20,
-        20
-      ],
-      "difficulty": "normal",
+      "seed": null,
+      "size": null,
+      "difficulty": null,
       "pos": [
         0,
         0
       ],
-      "goal": [
-        19,
-        19
-      ],
+      "goal": null,
       "steps_taken": 0,
       "goal_reached": false,
       "maze_type": "garden",
       "type_locked": true,
-      "props_seed": 9921
+      "props_seed": null
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "on_description": "The cabinet screen glows bright, displaying a lush pixelated maze of ivy and stone paths.",
+      "off_description": "The cabinet sits dark and silent, its glass screen reflective in the dim light.",
+      "on_sequence": "You flip the power switch, and the arcade cabinet hums to life as a soft neon glow illuminates the floral etchings on the frame and the pixelated maze fills the CRT screen.",
+      "off_sequence": "You power down the cabinet, watching the screen collapse into a tiny white dot before fading into complete darkness as the gentle electronic hum ceases.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
     }
   },
   {
@@ -42,31 +47,36 @@
     ],
     "static": true,
     "type": [
-      "maze_interface"
+      "maze_interface",
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
     "maze_state": {
       "seed": null,
-      "size": [
-        20,
-        20
-      ],
-      "difficulty": "hardcore",
+      "size": null,
+      "difficulty": null,
       "pos": [
         0,
         0
       ],
-      "goal": [
-        19,
-        19
-      ],
+      "goal": null,
       "steps_taken": 0,
       "goal_reached": false,
       "maze_type": "dungeon",
       "type_locked": true,
-      "props_seed": 4829
+      "props_seed": null
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "on_description": "The glass monitor hums with an active violet light, projecting a dark dungeon maze.",
+      "off_description": "The towering monolith stands inactive, its chrome frame cold and screen pitch black.",
+      "on_sequence": "You toggle the heavy chrome switch, sending an electric jolt through the cabinet as the glass screen bursts with a flickering violet light and the dark labyrinth boots up.",
+      "off_sequence": "You cut the power, causing the flickering violet ambiance to vanish instantly as the internal vibration dies down into still silence.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
     }
   },
   {
@@ -76,31 +86,36 @@
     ],
     "static": true,
     "type": [
-      "maze_interface"
+      "maze_interface",
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
     "maze_state": {
-      "seed": 88291,
-      "size": [
-        20,
-        20
-      ],
-      "difficulty": "hardcore",
+      "seed": null,
+      "size": null,
+      "difficulty": null,
       "pos": [
-        1,
-        1
+        0,
+        0
       ],
-      "goal": [
-        18,
-        18
-      ],
+      "goal": null,
       "steps_taken": 0,
       "goal_reached": false,
       "maze_type": "ruins",
       "type_locked": true,
-      "props_seed": 4421
+      "props_seed": null
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "on_description": "The scanlines on the CRT screen glow steadily, rendering a crumbling stone labyrinth.",
+      "off_description": "The weathered wooden cabinet rests quietly with a cold, blank screen.",
+      "on_sequence": "You press the power button, hearing a high-pitched hum as scanlines rapidly trace across the glass to reveal the pixelated ruins.",
+      "off_sequence": "You shut off the unit, killing the high-pitched monitor buzz as the glowing green scanlines dissolve into the dark glass.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
     }
   },
   {
@@ -112,31 +127,61 @@
     ],
     "static": true,
     "type": [
-      "maze_interface"
+      "maze_interface",
+      "toggleable"
     ],
     "stackable": false,
     "quantity": 1,
     "max_stack_size": null,
     "maze_state": {
-      "seed": 482910,
-      "size": [
-        32,
-        32
-      ],
-      "difficulty": "hardcore",
+      "seed": null,
+      "size": null,
+      "difficulty": null,
       "pos": [
-        5,
-        5
+        0,
+        0
       ],
-      "goal": [
-        27,
-        28
-      ],
+      "goal": null,
       "steps_taken": 42,
       "goal_reached": false,
       "maze_type": "Gibraltar_2.0",
       "type_locked": true,
-      "props_seed": 99283
+      "props_seed": null
+    },
+    "toggle_state": {
+      "toggle_state": "off",
+      "on_description": "A vibrant magenta glow bathes the area as the monitor projects stylized pixelated peaks.",
+      "off_description": "The towering cabinet stands dormant, its ventilation fans quiet and screen unlit.",
+      "on_sequence": "You turn on the cabinet, feeling a brief static discharge as a deep magenta light floods the display and the cooling fans spin up with a warm scent of ozone.",
+      "off_sequence": "You flick the breaker switch off, immediately extinguishing the vivid magenta aura and letting the cabinet power down into a silent chill.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
+    }
+  },
+  {
+    "name": "The Biosphere-09 Simulation Cabinet",
+    "descriptions": [
+      "You stand before a gleaming metallic cabinet, its surface detailed with circuit patterns and glass panels. A worn control interface features a tactile grid layout alongside rows of physical toggle switches and biological status labels.",
+      "A glass CRT monitor sits embedded in the housing, directly connected to an internal hardware matrix designed for hosting tick-based artificial life environments."
+    ],
+    "static": true,
+    "type": [
+      "ALIFE_interface",
+      "toggleable"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "on_description": "The CRT display hums brightly, rendering an active, tick-based grid of artificial organisms interacting in real time.",
+      "off_description": "The metallic cabinet sits quiet and dormant, its grid display completely black.",
+      "on_sequence": "You power on the cabinet, feeling a mild static charge as the CRT monitor crackles to life, revealing an evolving ALIFE matrix governed by steady clock ticks.",
+      "off_sequence": "You hit the main power toggle, freezing the simulated ecosystem in place before the grid display fades out with a soft electronic whine.",
+      "perishable": false,
+      "ticks_lasting": 5,
+      "ticks_elapsed": 0
     }
   }
 ]
