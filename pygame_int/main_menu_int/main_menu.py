@@ -51,9 +51,9 @@ def run_config_main_menu_ui(screen, font, config_manager):
 
 
 
-    packages_button_x =  - gui_config.HORIZONTAL_PADDING + gui_config.ENTER_BUTTON_WIDTH
-    packages_button_y = title_rect.bottom + 15
-    packages_button = Button(packages_button_x, packages_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make Home", font, lambda: "create_new_package")
+    # packages_button_x =  - gui_config.HORIZONTAL_PADDING + gui_config.ENTER_BUTTON_WIDTH
+    # packages_button_y = title_rect.bottom + 15
+    # packages_button = Button(packages_button_x, packages_button_y, gui_config.ENTER_BUTTON_WIDTH, gui_config.ENTER_BUTTON_HEIGHT, "Make Home", font, lambda: "create_new_package")
 
     viewport_y = make_new_button.rect.bottom + 20
     viewport_height = screen_height - viewport_y - 20
@@ -149,14 +149,14 @@ def run_config_main_menu_ui(screen, font, config_manager):
                         scroll_offset_y = 0
                     continue  #
 
-                if packages_button.rect.collidepoint(mouse_pos):
-                    result = packages_button.handle_event(event, mouse_pos)
-                    if result == "create_new_package":
-                        run_config_creation_twilight_zone(screen, font, initial_states_manager) # To create base states 
-                        # Rebuild the list in case new configs were added
-                        scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
-                        scroll_offset_y = 0
-                    continue  #                        
+                # if packages_button.rect.collidepoint(mouse_pos):
+                #     result = packages_button.handle_event(event, mouse_pos)
+                #     if result == "create_new_package":
+                #         run_config_creation_twilight_zone(screen, font, initial_states_manager) # To create base states 
+                #         # Rebuild the list in case new configs were added
+                #         scrollable_buttons, delete_buttons, total_content_height = _build_scrollable_config_list(config_manager, font, viewport_rect.width)
+                #         scroll_offset_y = 0
+                #     continue  #                        
                 
                 # Only check scrollable content if the click is within the viewport
                 elif viewport_rect.collidepoint(mouse_pos):
@@ -227,7 +227,7 @@ def run_config_main_menu_ui(screen, font, config_manager):
         # Static elements are drawn last and use the original mouse_pos
         screen.blit(title_surface, title_rect)
         make_new_button.draw(screen, mouse_pos, 0)
-        packages_button.draw(screen,mouse_pos, 0)
+        # packages_button.draw(screen,mouse_pos, 0)
 
         pygame.display.flip()
         

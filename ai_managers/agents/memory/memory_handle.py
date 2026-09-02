@@ -73,7 +73,7 @@ class memory_manager:
                 print(f"Error initializing DeepMemory: {e}")
                 self.deep_memory = None
         else:
-            print("DeepMemory not initialized because ai_bot_instance is not available.")
+            print("DeepMemory not initialized.")
             self.deep_memory = None
             self.deep_memory_flag = False
 

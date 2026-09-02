@@ -2,17 +2,17 @@
 
 # AI Digital Pet Simulation
 
-This project implements a simulation environment for a digital pet, controlled by an AI agent, within a house setting. It features environment state management, AI interaction capabilities through an affordances system, and a multi-layered memory system.
+DigiPet is an engine for building virtual environments — rooms and items authored once as reusable building blocks, assembled into **Scenes** — for a tool-calling AI agent to inhabit and act within autonomously.
 
 ## Project Overview
 
-The core of the project involves an AI agent acting as a digital pet in a simulated house. Key components manage the game state, AI tools, and memory.
+A Scene is built from two reusable catalogues — a Room Store and an Item Store — plus a layout manifest describing how a specific set of rooms connects together and what starts in them. Several Scenes ship with the project (a default home, a compact home, a walled garden, and more), and new ones can be authored entirely through JSON — see `how_to/DESIGNING_SCENES.md`. The agent that inhabits a Scene is a digital pet; key components manage its game state, AI tools, and memory.
 
 *   **Core Game:** The main game logic and Pygame initialization are handled in `game.py`.
 
 *   **AI Agent & Interface:** An AI chatbot module, `CLIChatbot`, acts as an endpoint for the AI agent and is integrated into `game.py`. It manages signals and interactions. It uses a providers ABCs system supporting OpenAI, Gemini, Groq and Ollama, OpenRouter and Llama.cpp.
 
-*   **Environment State:** The `InventoryHouseManager` is central to managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types are defined in `inventory_items/item_pydantic_models.py`. A variety of items have unique keys and validation provided by the pydantic models. 
+*   **Environment State:** The `InventoryHouseManager` (`inventory_items/inventory_manager.py`) is the central facade managing the world state, including rooms, items (in rooms and player inventory), and the pet's statistics and emotes. State is saved to a JSON file using unique numerical IDs. Supported item types are defined in `inventory_items/items_validation/item_pydantic_models.py`. A variety of items have unique keys and validation provided by the pydantic models. 
 
 *   **Environment Affordances (Tools & Perception):** The AI interacts with its environment through an **affordances system** split across three files:
 
@@ -30,11 +30,11 @@ The core of the project involves an AI agent acting as a digital pet in a simula
 
     See `how_to/TOOL_FRAMEWORK.md` for the full guide on adding new affordances.
 
-*   **Memory System:** The system includes a comprehensive memory manager (`memory_manager`) and a deep memory system (`DeepMemory`). It handles short-term, long-term, and base memory stored in JSON files. Deep memory uses Named Entity Recognition (NER) extraction during consolidation — a separate LLM call extracts entities, their characteristics, and sources from exchanges, then creates embeddings. During retrieval (on each message), current exchanges are compared against entity embeddings to surface relevant context.
+*   **Memory System:** The default memory system (`memory_manager`) is a rolling window of summarized memory, kept at short-term, long-term, and base levels stored in JSON files. **Deep Memory** (`DeepMemory`) is an optional, experimental layer on top of this: it uses Named Entity Recognition (NER) extraction during consolidation — a separate LLM call extracts entities, their characteristics, and sources from exchanges, then creates embeddings. During retrieval (on each message), current exchanges are compared against entity embeddings to surface relevant context.
 
-*   **Content Generation:** AI models are used in separate scripts (`bundles_construct.py`, `tv_data_construct.py`, `room_generator.py`) to generate game data definitions for bundles, care packages, room descriptions, and TV content. This generation happens **outside the main runtime**.
+*   **Content Generation:** Content generation is currently a dev/creative-time task, not an in-runtime feature. Item and room definitions are authored via YAML manifests and generated with an LLM through `data_constructors/dev_crafter/batch_process.py`, validated against the same Pydantic contracts used everywhere else — see `manifest_lunar_items.yaml` for an example manifest, and `how_to/DESIGNING_SCENES.md` for the full workflow. An older in-runtime generation path (`bundles_construct.py`, `tv_data_construct.py`, `room_generator.py`) still exists in the codebase but its UI entry point has been removed and it predates the current Pydantic contract system — treat it as legacy, not the supported path.
 
-*   **Item Components:** Specific logic for item types, like books (`BookComponent`) or stats modification (`StatsComponent`), is handled by separate components. An items definitions data store is used across the system.
+*   **Item Behaviors:** Item-type-specific behavior (e.g. books) is implemented in tool classes under `tools/tools_folder/` — see `tools/tools_folder/book_tools.py` — which are subordinate to, and act only through, the `InventoryHouseManager` facade. This replaces the older pattern of separate sibling components (`BookComponent`, `StatsComponent`) sitting alongside the state manager; there is now a single state-management facade, and item behavior implementations call into it rather than living next to it. An items definitions data store (`ItemStore`) is used across the system.
 
 *   **GUI Configuration Manager:** A dedicated menu for managing the loading and creation of different Pets.
 
@@ -47,9 +47,9 @@ Optional integrations for the agent include *Wikipedia*, *YouTube*, *MusicBrainz
 
 ## Pet Play Modules
 
-*   **A-Life Simulation:** A grid-based A-Life simulation in the lab room (`ALIFE_research` room type). Supports entity types like plants, herbivores, and carnivores for the agent to observe and study.
+*   **A-Life Simulation:** A grid-based A-Life simulation for the agent to observe and study, provided through an item of type `ALIFE_interface` rather than a dedicated room type. Supports entity types like plants, herbivores, and carnivores.
 
-*   **Harvesting Garden:** A room type enabling gardening activities — planting, watering, and harvesting. A gamified idle garden simulation driven by in-game ticks for plant growth.
+*   **Harvesting Garden:** A room type (`open_soil_zone`) enabling gardening activities — planting, watering, and harvesting. A gamified idle garden simulation driven by in-game ticks for plant growth.
 
 *   **Cooking System:** A specialized AI cook integration. A boundless crafting system where a separate AI call generates dynamic item structures from given ingredients and a recipe. Uses Pydantic validation for AI-generated items.
 
@@ -165,7 +165,7 @@ in:
 
 ## Modifying Your Agent
 
-The `how_to/` folder contains guides for creating new tools, rooms, items, and more.
+The `how_to/` folder contains guides for creating new tools, rooms, items, and more. Start with `how_to/DESIGNING_SCENES.md` for building worlds (rooms, items, layouts, Scenes) without writing Python, and `how_to/ITEM_SYSTEM_DOCS.md` for the full, auto-generated item-type reference. For adding new agent capabilities in Python, see `how_to/TOOL_FRAMEWORK.md` and `how_to/EXTENDING_BEHAVIORS.md`.
 
 ## To-do
 

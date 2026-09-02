@@ -1,5 +1,4 @@
 """
-bluesky_client/controller.py
 
 LLM tool interface. One class: BlueskyTools.
 Owns self.client (BskyBotClient) directly.
