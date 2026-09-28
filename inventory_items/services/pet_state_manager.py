@@ -13,6 +13,8 @@ class PetStateManager:
                 self._signal_callback(signal_data)
             except Exception as e:
                 print(f"Error sending signal: {e}")
+
+    # TODO: RIP THIS EMOTE DATA OUT OF HERE, SPECIALLY THE possible_emotes LIST AND ITS DESCRIPTIONS
     # --- Emote Management ---
     def get_current_emote(self) -> str:
         current_emote = self._state_store.get_state_section("current_emote", "unknown")
@@ -28,6 +30,7 @@ class PetStateManager:
         else:
             return f"The current emote is '{current_emote}'. Description: {description}"
 
+    # TODO: EMOTE CHANGE
     def get_possible_emotes(self) -> str:
         possible_emotes = self._state_store.get_state_section("possible_emotes", {})
         if not isinstance(possible_emotes, dict):

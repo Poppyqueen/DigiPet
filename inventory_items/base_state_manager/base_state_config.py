@@ -349,6 +349,8 @@ class InitialStateConst():
             "rooms": final_rooms_list,
             "inventory": inventory_items,
             "current_emote": "neutral",
+            # TODO: EMOTE CHANGE
+
             "possible_emotes": {
                 "neutral": "You're feeling calm and attentive.",
                 "happy": "You're feeling cheerful and optimistic.",

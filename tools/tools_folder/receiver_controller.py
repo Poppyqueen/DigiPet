@@ -1,3 +1,6 @@
+# TODO: DOCUMENT HOW THIS WORKS
+
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 

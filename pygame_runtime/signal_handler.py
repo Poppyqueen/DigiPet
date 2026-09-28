@@ -106,6 +106,8 @@ def _on_emote_changed(signal_data: dict, music_player, **_kwargs) -> None:
     print("DEBUG EMOTE SOUND PATH: ", sound_path)
     print("DEBUG EMOTE MUSIC PLAYER: ", music_player)
 
+
+    # TODO: EMOTE CHANGE
     emote_map = {
         "sad":      animation.start_sad_animation,
         "happy":    animation.start_happy_animation,

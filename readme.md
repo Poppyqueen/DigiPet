@@ -117,11 +117,12 @@ pip install ".[google, openai, bluesky]"
 ```env
 LATITUDE=any_latitude_here
 LONGITUDE=any_longitude_here
-OPENAI_API_KEY=your_openai_api_key_here
 ```
     Location can be anywhere on Earth. Failure to set these will result in an error on startup.
 
 3.  Location and some settings are also configurable via the GUI, which will take precedence over the `.env` values.
+
+### Important Coordinates Note: While these coordinates are managed by env secrets, the codebase does not take care to hide or remove this data from logs or terminal.
 
 ## Running the Project
 

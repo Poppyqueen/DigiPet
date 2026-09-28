@@ -1,3 +1,6 @@
+# TODO: DOCUMENT HOW THIS WORKS
+
+
 """
 Garden Controller (Renamed to Plants Controller)
 =================
