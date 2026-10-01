@@ -906,7 +906,7 @@ base_tools=[
     {
     "type": "function",
     "name": "emit_inner_thought",
-    "description": "Emits a quick, ephemeral reflection or thought about the current or upcoming action. Used for internal reasoning, questioning, or subtle judgment.",
+    "description": "Writes a short private journal line for your character, a passing thought or feeling about what you're doing. It is saved to your history and has no effect on the world.",
     "parameters": {
         "type": "object",
         "properties": {

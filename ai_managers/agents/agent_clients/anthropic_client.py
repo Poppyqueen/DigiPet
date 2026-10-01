@@ -4,6 +4,7 @@
 import re
 import uuid
 from typing import List, Dict, Any, Optional, Tuple
+import os, json, time
 
 from anthropic import Anthropic
 
@@ -160,6 +161,28 @@ class AnthropicClient(AbstractLLMClient):
 
         return messages, system_context
 
+    def _log_empty_response(self, response, settings):
+        usage = getattr(response, "usage", None)
+        summary = {
+            "stop_reason": response.stop_reason,
+            "block_types": [b.type for b in response.content],
+            "output_tokens": getattr(usage, "output_tokens", None),
+            "input_tokens": getattr(usage, "input_tokens", None),
+            "request_id": getattr(response, "_request_id", None),
+            "n_messages": len(settings["messages"]),
+            "last_role": settings["messages"][-1]["role"],
+            "tool_choice": settings.get("tool_choice"),
+        }
+        print(f"[empty-response] {summary}")
+        try:
+            os.makedirs("debug_empty_responses", exist_ok=True)
+            path = os.path.join("debug_empty_responses", f"empty_{int(time.time())}.json")
+            with open(path, "w") as f:
+                json.dump({"summary": summary,
+                        "response": response.model_dump(),
+                        "request": settings}, f, indent=2, default=str)
+        except Exception as e:
+            print(f"[empty-response] could not write dump: {e}")
     # ------------------------------------------------------------------
     # Main entry point
     # ------------------------------------------------------------------
@@ -209,6 +232,10 @@ class AnthropicClient(AbstractLLMClient):
                     )
 
             text_content = "\n".join(text_parts).strip()
+
+            # Debug empty responses
+            # if not normalized_function_calls and not text_content:
+            #     self._log_empty_response(response, settings)
 
             return LLMResponse(
                 function_calls=normalized_function_calls if normalized_function_calls else None,

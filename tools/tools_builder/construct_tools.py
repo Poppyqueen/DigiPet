@@ -35,6 +35,13 @@ from .tool_availability import (
 from inventory_items.items_validation.item_pydantic_models import TYPE_FIELD_CONTRACTS
 
 import random
+import difflib
+
+
+MAX_CHANGE_LINES = 24
+MAX_LINE_CHARS = 220
+# Single-line comma-separated item summaries, diffed as sets instead of lines
+ITEM_LIST_SECTIONS = {"Items in this room", "Your inventory"}
 
 
 class FunctionBuilder:
@@ -135,7 +142,89 @@ class FunctionBuilder:
 
         return all_definitions
 
-    async def call_function(self, name, args):
+
+
+    async def _collect_perception_sections(self, skip_mcp: bool = True) -> dict:
+        """Per-tool agent_information keyed by display name (same gating as get_current_tools_info)."""
+        sections = {}
+        room_types, item_context = self._get_current_context()
+        checker = ToolAvailabilityChecker(item_context, room_types)
+        for tool_key, cfg in self.tool_definitions.items():
+            info_fn = cfg.get("agent_information")
+            if not info_fn or not checker.is_tool_available(cfg):
+                continue
+            if skip_mcp and getattr(info_fn, "_is_mcp_caller", False):
+                continue  # never touch mcp_loop from here
+            try:
+                info = await info_fn() if inspect.iscoroutinefunction(info_fn) else info_fn()
+            except Exception as e:
+                info = f"(Error: {e})"
+            if info:
+                sections[tool_key.replace("_", " ").title()] = str(info)
+        return sections
+
+    async def _snapshot_world(self):
+        """Time and stats are deliberately NOT included."""
+        try:
+            room = self.state_manager.get_current_room_data()
+            inv = self.state_manager.get_inventory_state()
+            snap = {
+                "__room__": room.title_display,
+                "Items in this room": inv.room_summary,
+                "Your inventory": inv.inventory_summary,
+                "Your emote": self.state_manager.get_emotes_data().message,
+            }
+            snap.update(await self._collect_perception_sections())
+            return snap
+        except Exception as e:
+            print(f"[change-tracking] snapshot failed: {e}")
+            return None
+
+    @staticmethod
+    def _split_items(text: str) -> list:
+        if "is empty" in text:
+            return []
+        _, _, tail = text.partition(": ")
+        return [p.strip() for p in tail.split(", ") if p.strip()]
+
+    @classmethod
+    def _diff_snapshots(cls, before: dict, after: dict) -> str:
+        if before.get("__room__") != after.get("__room__"):
+            return ""  # moved: the result already says so, and the next context shows everything
+        lines = []
+        for name, new_text in after.items():
+            if name == "__room__" or name not in before or before[name] == new_text:
+                continue
+
+            if name in ITEM_LIST_SECTIONS:
+                old_items = cls._split_items(before[name])
+                new_items = cls._split_items(new_text)
+                removed = [i for i in old_items if i not in new_items]
+                added = [i for i in new_items if i not in old_items]
+                if removed or added:
+                    lines.append(f"[{name}]")
+                    lines += [f"  - {i}" for i in removed] + [f"  + {i}" for i in added]
+                continue
+
+            changed = [
+                l for l in difflib.unified_diff(
+                    before[name].splitlines(), new_text.splitlines(), lineterm="", n=0)
+                if not l.startswith(("---", "+++", "@@")) and l[1:].strip()
+            ]
+            if changed:
+                lines.append(f"[{name}]")
+                lines.extend(f"  {l[0]} {l[1:].strip()[:MAX_LINE_CHARS]}" for l in changed)
+
+        if not lines:
+            return ""
+        if len(lines) > MAX_CHANGE_LINES:
+            print(f"[change-tracking] diff truncated ({len(lines)} lines)")
+            hidden = len(lines) - MAX_CHANGE_LINES
+            lines = lines[:MAX_CHANGE_LINES] + [f"  ... ({hidden} more changed lines)"]
+        return "Changes observed after this action (- before, + after):\n" + "\n".join(lines)
+
+
+    async def _dispatch(self, name, args):
         """Dispatch a named tool call with the given args."""
         from pygame_runtime.async_loop import mcp_loop
 
@@ -177,6 +266,18 @@ class FunctionBuilder:
             print(f"Warning: Unknown function '{name}' in room '{room_name}'")
             return f"Error: '{name}' is not available in {room_name} with your current inventory."
 
+        
+    async def call_function(self, name, args):
+        """Dispatch a tool call and append the world changes it caused."""
+        before = await self._snapshot_world()
+        result = await self._dispatch(name, args)
+
+        if before is None or not isinstance(result, str) or result.startswith("Error"):
+            return result
+
+        after = await self._snapshot_world()
+        changes = self._diff_snapshots(before, after) if after else ""
+        return f"{result}\n\n{changes}" if changes else result
     # -----------------------------------------------------------------------
     # Context / display information
     # -----------------------------------------------------------------------
