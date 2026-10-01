@@ -21,6 +21,7 @@ from pygame_int.main_menu_int.main_menu_modules.main_menu_utils import (calculat
 from ai_managers.ai_utils.ai_loader import AIConfiguration, UnifiedLoader
 
 import sys
+import re
 
 from pygame_int.main_digipet import gui_color_selector, gui_sound_selector
 
@@ -42,6 +43,13 @@ AVAILABLE_SIMPLE_AI=AIConfiguration.get_providers_by_mode("simple_ai")
 
 AVAILABLE_EMBEDDINGS=UnifiedLoader.get_available_providers("embeddings")
 
+def slugify_filename(name: str, replacement: str = "_") -> str:
+    # Keep letters, digits, dots, dashes, underscores; replace others
+    clean_name = re.sub(r'[^\w\.-]', replacement, name)
+    # Collapse repeated replacement characters
+    clean_name = re.sub(f'{re.escape(replacement)}+', replacement, clean_name)
+    # Strip leading/trailing dots or replacement chars
+    return clean_name.strip(f'.{replacement}') or 'unnamed_file'
 
 def run_config_creation_ui(screen, font, config_manager, state_configs):
     """
@@ -104,7 +112,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
     current_y = draw_labeled_dropdown_or_input(font, "general_ai_provider", "General AI Provider:", current_y, screen_width, elements, options=AVAILABLE_AGENTS)
     current_y = draw_labeled_dropdown_or_input(font, "memory_ai_provider", "Memory AI Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
     current_y = draw_labeled_dropdown_or_input(font, "cook_provider", "Runtime Crafter Provider:", current_y, screen_width, elements, options=AVAILABLE_SIMPLE_AI)
-    current_y = draw_labeled_dropdown_or_input(font, "pets_folder", "Pet's Folder:", current_y, screen_width, elements, is_dropdown=False)
+    # current_y = draw_labeled_dropdown_or_input(font, "pets_folder", "Pet's Folder:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "general_model", "General Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "memory_model", "Memory Model:", current_y, screen_width, elements, is_dropdown=False)
     current_y = draw_labeled_dropdown_or_input(font, "cook_model", "Runtime Crafter Model:", current_y, screen_width, elements, is_dropdown=False)
@@ -214,11 +222,11 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                                 "component": dropdowns['cook_provider'],
                                 "type": "dropdown"
                             },
-                            "pets_folder": {
-                                "value": text_inputs['pets_folder'].text,
-                                "component": text_inputs['pets_folder'],
-                                "type": "text"
-                            },
+                            # "pets_folder": {
+                            #     "value": text_inputs['pets_folder'].text,
+                            #     "component": text_inputs['pets_folder'],
+                            #     "type": "text"
+                            # },
                             "general_model": {
                                 "value": text_inputs['general_model'].text,
                                 "component": text_inputs['general_model'],
@@ -277,8 +285,9 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                         # -- Unconditional fields --
                         unconditional_fields = [
                             "config_name", "general_ai_provider", "memory_ai_provider",
-                            "cook_provider", "pets_folder", "general_model", "memory_model",
-                            "cook_model", "initial_state"
+                            "cook_provider", "general_model", "memory_model",
+                            "cook_model", "initial_state",
+                            # "pets_folder"
                         ]
 
                         # Validate each unconditional field
@@ -390,7 +399,7 @@ def run_config_creation_ui(screen, font, config_manager, state_configs):
                             config_manager.set_config("AI", "memory_ai_provider", dropdowns['memory_ai_provider'].selected_option)
                             config_manager.set_config("AI", "cook_provider", dropdowns['cook_provider'].selected_option)
                             
-                            config_manager.set_config("AI", "pets_folder", text_inputs['pets_folder'].text)
+                            config_manager.set_config("AI", "pets_folder", slugify_filename(config_name))
                             config_manager.set_config("AI", "general_model", text_inputs['general_model'].text)
                             config_manager.set_config("AI", "memory_model", text_inputs['memory_model'].text)
                             config_manager.set_config("AI", "cook_model", text_inputs['cook_model'].text)

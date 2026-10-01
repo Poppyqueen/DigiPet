@@ -916,7 +916,7 @@ base_tools=[
         },
         "thought": {
             "type": "string",
-            "description": "A brief, freeform inner thought. Can be a question, concern, instinct, or moment of reflection."
+            "description": "A brief, freeform thought. Can be a question, concern, instinct, or moment of reflection."
         }
         },
         "required": ["thought", "context"],
