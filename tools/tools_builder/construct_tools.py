@@ -261,6 +261,8 @@ class FunctionBuilder:
                 body_parts.append(f"\n--- {display_name} Details ---\n(Error: {e})")
 
             post_event_fn({"title": room_name, "body": "\n".join(p for p in body_parts if p)})
+
+            
     async def construct_context(self) -> str:
         """Build the full context string injected into the LLM system prompt."""
         try:

@@ -14,7 +14,8 @@ class OpenRouterTokenizer(TokenizerProvider):
         "google":    "_load_google", # this works
         "meta-llama":"_load_opensource", # this works
         # "mistralai": "_load_opensource", # TODO: implement Mistral-common tokenizer
-        "~deepseek":"_load_opensource" # works! 
+        "~deepseek":"_load_opensource", # works! 
+        "anthropic":"_load_anthropic" # You need an anthropic account with credits to use their tokenizer (tokenizer is free)
 
         # Add more providers as needed, see https://openrouter.ai/models 
         # use _load_opensource for... open source models...
@@ -43,6 +44,10 @@ class OpenRouterTokenizer(TokenizerProvider):
             )
 
         return getattr(self, loader)(model)
+
+    def _load_anthropic(self, model: str):
+        from ai_managers.tokens.token_providers.claude_tokenizer import AnthropicTokenizer
+        return AnthropicTokenizer(self._strip_provider_prefix(model))
 
     def _load_google(self, model: str):
         from ai_managers.tokens.token_providers.gemini_tokenizer import GeminiTokenizer

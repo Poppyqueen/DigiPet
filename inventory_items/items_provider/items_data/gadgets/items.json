@@ -845,7 +845,6 @@
     "name": "Laptop",
     "descriptions": [
       "A slim clamshell computer with a brushed metal shell, a glassy screen, and a faint warmth that gathers around the keys when it wakes.",
-      "Its lid closes with a soft, precise touch, and the trackpad carries the polish of long evenings spent answering messages and finishing small tasks.",
       "The chassis has a few gentle scuffs at the edges, like an object that lives on a desk beside a mug, a charger, and a half-read notebook."
     ],
     "static": false,

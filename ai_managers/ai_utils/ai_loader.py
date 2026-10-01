@@ -76,8 +76,16 @@ class UnifiedLoader:
                 "required_libraries": ["openai"],
                 "api_key_env": None,
                 "requires_api_key": False
+            },
+            "claude":{
+                "simple_ai_module":"ai_managers.simple_ai.providers.claude_provider",
+                "simple_ai_class":"AnthropicProv",
+                "agent_module":"ai_managers.agents.agent_clients.anthropic_client",
+                "agent_class":"AnthropicClient",
+                "required_libraries":["anthropic"],
+                "api_key_env": "ANTHROPIC_API_KEY",
+                "requires_api_key":True
             }
-
         },
         
         "tokenizers": {
@@ -116,9 +124,14 @@ class UnifiedLoader:
                 "class": "OpenSourceTokenizer",
                 "required_libraries": ["tokenizers"],
                 "needs_model": True
+            },
+            "claude":{
+                "module": "ai_managers.tokens.token_providers.claude_tokenizer",
+                "class": "AnthropicTokenizer",
+                "required_libraries": ["anthropic"],
+                "needs_model": True                
             }
         },
-        
         "embeddings": {
             "gemini": {
                 "module": "ai_managers.embeddings.providers.google_embeddings",
