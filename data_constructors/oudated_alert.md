@@ -1,1 +1,1 @@
-all this folder is outdated, a deep refactor to not only the code but process is needed.
+this main folder containing the automated creation of environments is outdated and non-compatible, a deep refactor to not only the code but process is needed. The dev_crafter folder contains up-to-date tools to manually create new items.

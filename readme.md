@@ -164,6 +164,11 @@ in:
 >
 > This is a workaround, not a solution. It is not known whether other providers exhibit the same behavior.
 
+> **XenoCanto Note - Output and recordings licensing.** The XenoCanto implementation features a setting to toggle Non Derivatives and Non Commercial recordings. Both toggled to filter them out as default. 
+>
+> Change this in: utils/xeno_canto_api.py
+
+
 ## Modifying Your Agent
 
 The `how_to/` folder contains guides for creating new tools, rooms, items, and more. Start with `how_to/DESIGNING_SCENES.md` for building worlds (rooms, items, layouts, Scenes) without writing Python, and `how_to/ITEM_SYSTEM_DOCS.md` for the full, auto-generated item-type reference. For adding new agent capabilities in Python, see `how_to/TOOL_FRAMEWORK.md` and `how_to/EXTENDING_BEHAVIORS.md`.

@@ -1,0 +1,18 @@
+========================================================================
+Third-Party / Sub-component Licenses
+========================================================================
+
+This repository contains third-party components and sub-directories that are 
+licensed under different terms than the main repository:
+
+1. Component: HYG Database Derivative Data
+   * Directory: `tools/tools_folder/tools_helpers/outdoors_helpers/sky_sim/HYG_Database/`
+   * License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+   * Original Creator: David Nash (astronexus.com)
+   * Details: The file `hyg_v42_naked_eye.csv` is a derivative work. See `tools/tools_folder/tools_helpers/outdoors_helpers/sky_sim/HYG_Database/HYG_ATTRIBUTION.md` in that directory for full attribution terms and modification details.
+
+2. Component: Inter Font
+   * Directory: `style/fonts/Inter/`
+   * License: SIL Open Font License, Version 1.1 (SIL OFL 1.1)
+   * Copyright: Copyright 2020 The Inter Project Authors (Rasmus Andersson)
+   * See `style/fonts/Inter/OFL.txt` for full terms.

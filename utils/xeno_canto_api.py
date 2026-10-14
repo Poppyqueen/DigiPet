@@ -53,7 +53,7 @@ from retry_requests import retry
 FILTER_NO_DERIVATIVES = True 
 
 # Set to True to prevent downloading sounds that forbid commercial use (CC BY-NC)
-FILTER_NON_COMMERCIAL = False
+FILTER_NON_COMMERCIAL = True
 
 
 # ---------------------------------------------------------------------------
