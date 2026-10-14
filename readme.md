@@ -181,12 +181,6 @@ The `how_to/` folder contains guides for creating new tools, rooms, items, and m
 
 * When double-clicking on the agent, send it a message like "you feel an unusual chill on your body" or "an itch on your back overcomes you for a second".
 
-* Add `excess` consumption to consumable item definitions — `excess_amount` and `excess_effect` (flavor text describing overconsumption).
-
 * Add sound settings (backend and GUI) for background music, sound effects, autonomous agent calls, and TTS — with volume and mute controls.
 
 * Wearables for the pet?
-
-#### Long term
-
-* Refactor the Pygame implementation so multiple agents can be active simultaneously on the same runtime.

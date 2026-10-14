@@ -873,6 +873,55 @@
     }
   },
   {
+    "name": "Silver-Plated Laptop",
+    "descriptions": [
+      "A slim clamshell computer with a brushed metal shell, a glassy screen, and a faint warmth that gathers around the keys when it wakes.",
+      "The chassis has a few gentle scuffs at the edges, like an object that lives on a desk beside a mug, a charger, and a half-read notebook."
+    ],
+    "static": false,
+    "type": [
+      "toggleable",
+      "youtube_playlists_endpoint", 
+      "discogs_endpoint", 
+      "musicbrainz_endpoint", 
+      "bluesky_social_endpoint", 
+      "wikipedia_endpoint", 
+      "searxng_endpoint",
+      "store_endpoint"
+    ],
+    "stackable": false,
+    "quantity": 1,
+    "max_stack_size": null,
+    "toggle_state": {
+      "toggle_state": "off",
+      "toggle_uses_left": null,
+      "on_description": "The screen glows and the keyboard lights up with a low, steady hum.",
+      "off_description": "The screen goes dark and the machine settles into a quiet, closed stillness.",
+      "on_sequence": "You lift the lid, and the hinge gives a smooth, familiar resistance before the display blooms awake. A soft hum rises through the palm rest, the keys brighten, and the surface under your hands begins to gather a little warmth.",
+      "off_sequence": "You close the lid, and the bright glass disappears with a muted click. The hum fades at once, the lights slip away, and the slim shell rests in a neat, silent line.",
+      "perishable": false,
+      "ticks_lasting": 8,
+      "ticks_elapsed": 0
+    },
+    "store_endpoint_data": {
+      "store_name": "Online Materializer Hole",
+      "store_types": [
+        "furniture",
+        "electronics",
+        "staples",
+        "condiments",
+        "snacks",
+        "hearty_meals",
+        "cookware&tableware",
+        "seeds",
+        "harvest",
+        "drinks",
+        "plant_based_foods"
+      ],
+      "welcome_message": "Logged In! Welcome to the Materializer Hole Hub."
+    }
+  },
+  {
     "name": "Cellphone",
     "descriptions": [
       "A slim little handset with a glass face, softly rounded edges, and a case worn smooth at the corners from daily handling.",
