@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "An exploration of AI agents"
 requires-python = ">=3.13"
 license = "GPL-3.0-or-later"
-license-files = ["LICENSE.txt", "THIRD_PARTY_NOTICES.txt"]
+license-files = ["LICENSE.txt", "THIRD-PARTY-NOTICES.txt"]
 dependencies = [
     "pygame>=2.6.1",
     "scikit-learn>=1.7.1",
